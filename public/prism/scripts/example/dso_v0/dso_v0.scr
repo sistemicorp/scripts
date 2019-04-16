@@ -1,0 +1,32 @@
+# Example: Connects to an Agilent DSO7000 DSO via VISA
+# !! NOTE: This example will only load if there is an Agilent DSO7000 Series on USB !!
+{
+  "info": {
+    "product": "pybrd_1",
+    "bom": "B00100-001",
+    "lot": "95135",
+    "location": "canada/ontario/milton"
+  },
+  "config": {
+    "fail_fast": false,
+    "drivers": [
+      "public.prism.drivers.fake.fake",
+      "public.prism.drivers.agilent_dso_usb_1.hwdrv_agilent_dso_usb_1"
+    ]
+  },
+  "tests": [
+    {
+      "module": "public.prism.scripts.example.dso_v0.pydso",
+      "options": {
+      },
+      "items": [
+        {"id": "PYDSO000SETUP",     "enable": true },
+        {"id": "PYDSO010SETCHAN",   "enable": true, "chan": 1 },
+        {"id": "PYDSO010SETCHAN",   "enable": true, "chan": 2 },
+        {"id": "PYDSO010SETCHAN",   "enable": true, "chan": 3 },
+        {"id": "PYDSO010SETCHAN",   "enable": true, "chan": 4 },
+        {"id": "PYDSO999TRDN",      "enable": true }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "config": {
+    # Should the result JSON files be stored as encrypted, true (default) or false,
+    # If the results were not encrypted by Prism, they won't be ecrypted by Lente
+    "results_bkup_encrypted": false,
+    # enter IP Address for upstream server, example "35.123.432.190",
+    # if upstream_server_url is null, upstream_stage/quarantine will not be used
+    "upstream_server_url": null,
+    "upstream_stage_dir": "./public/upstream/stage",
+    "upstream_quarantine_dir": "./public/upstream/quarantine"
+  },
+  "postgres": {
+    "ResultBaseKeysV1": {
+      "user": "postgres",
+      # !! Change "pw" to a real password for a real deployment
+      # !! This pw must match your postgres deployment too
+      "pw": "qwerty",
+      "ip": "lentedb"
+    }
+  }
+}

@@ -1,0 +1,56 @@
+# Example: Shows how fields can be assigned to variables to be set
+#          in the GUI.
+{
+  "subs": {
+    # Each item here is described by,
+    # "key":
+    #   "title": "<title>",
+    #   "type" : "<str|num>", "widget": "<textinput|select>",
+    #   "regex": <"regex"|null|omit>, "default": <default>
+    #
+    # Rules:
+    # 1. key must not have any spaces or special characters
+    # 2. regex can be omitted if not applicable
+    #
+    "Lot": {
+      "title": "Lot (format #####)",
+      "type" : "str", "widget": "textinput", "regex": "^\\d{5}$", "default": "95035"
+    },
+    "Loc": {
+      "title": "Location",
+      "type" : "str", "widget": "select", "choices": ["canada/ontario/milton", "us/newyork/bufalo"]
+    },
+    "TST000Max": {
+      "title": "TST000 Max Attenuation (db)",
+      "type" : "num", "widget": "select", "choices": [9, 10, 11]
+    }
+  },
+  "info": {
+    "product": "widget_1",
+    "bom": "B00012-002",
+    # list fields present user choice or fill in
+    "lot": "%%Lot",
+    "location": "%%Loc"
+  },
+  "config": {
+    "fail_fast": false,
+    "drivers": ["public.prism.drivers.fake.fake"]
+  },
+  "tests": [
+    {
+      "module": "public.prism.scripts.example.prod_v0.tst00xx",
+      "options": {
+        "fail_fast": false
+        # add more key/value as required
+      },
+      "items": [
+        {"id": "TST0xxSETUP",           "enable": true },
+        {"id": "TST000_Meas",           "enable": true, "args": {"min": 0, "max": "%%TST000Max"},
+                                        "fail": [ {"fid": "TST000-0", "msg": "Component apple R1"},
+                                                  {"fid": "TST000-1", "msg": "Component banana R1"}] },
+        {"id": "TST001_Skip",           "enable": false },
+        {"id": "TST0xxTRDN",            "enable": true }
+      ]
+    }
+  ]
+}
