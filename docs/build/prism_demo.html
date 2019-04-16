@@ -1,0 +1,274 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Prism Demo &#8212; Sistemi Lente/Prism Test System 0.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Screenshots" href="prism_screenshots.html" />
+    <link rel="prev" title="Prism" href="prism_main.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="prism_screenshots.html" title="Screenshots"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="prism_main.html" title="Prism"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="prism_main.html" accesskey="U">Prism</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="prism-demo">
+<h1>Prism Demo<a class="headerlink" href="#prism-demo" title="Permalink to this headline">¶</a></h1>
+<p><strong>Prism</strong></p>
+<p>This is the program that production operators would use, interfaces with test equipment and the Device Under Test (DUT)</p>
+<p>The instructions are split into two catagories,</p>
+<ul class="simple">
+<li>Basic<ul>
+<li>Simplest and fastest way to see <cite>Prism</cite></li>
+</ul>
+</li>
+<li>Full<ul>
+<li>Uses <cite>git</cite> to clone a prescriptive directory structure used by <cite>Prism</cite></li>
+</ul>
+</li>
+</ul>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><a class="reference internal" href="#requirements" id="id3">Requirements</a></li>
+<li><a class="reference internal" href="#basic" id="id4">Basic</a><ul>
+<li><a class="reference internal" href="#run-basic" id="id5">Run Basic</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#full" id="id6">Full</a><ul>
+<li><a class="reference internal" href="#additional-requirements" id="id7">Additional Requirements</a></li>
+<li><a class="reference internal" href="#clone-sistemi-scripts" id="id8">Clone Sistemi Scripts</a></li>
+<li><a class="reference internal" href="#run-full" id="id9">Run Full</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="requirements">
+<h2><a class="toc-backref" href="#id3">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Operating System<ul>
+<li>The system was developed and tested on Ubuntu 18.04</li>
+<li>All these instructions are for Ubuntu 18.04</li>
+</ul>
+</li>
+<li>Outside Software Requirements<ul>
+<li>Google Chrome browser (other browsers are not tested)</li>
+<li>install Docker CE (<a class="reference external" href="https://docs.docker.com/install/linux/docker-ce/ubuntu/">https://docs.docker.com/install/linux/docker-ce/ubuntu/</a>)</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="basic">
+<h2><a class="toc-backref" href="#id4">Basic</a><a class="headerlink" href="#basic" title="Permalink to this headline">¶</a></h2>
+<p>The Basic Demo is the easiest and fastest way to try out Prism.  However you will not be able to
+edit or create new scripts.</p>
+<div class="section" id="run-basic">
+<h3><a class="toc-backref" href="#id5">Run Basic</a><a class="headerlink" href="#run-basic" title="Permalink to this headline">¶</a></h3>
+<p>Sistemi Lente/Prism programs are deployed as Docker containers, which allows the programs to run in a virtual
+environment, and be independent of your host operating system.  This means, for example, that you don’t have
+to worry about python packages, versions of modules, etc</p>
+<ul class="simple">
+<li>First the <strong>Prism</strong> Docker container must be <cite>pulled</cite> from docker hub</li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">pull</span> <span class="n">sistemicorp</span><span class="o">/</span><span class="n">prism</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>run this pull command to check for updates to <strong>Prism</strong></li>
+<li>Run <strong>Prism</strong> container<ul>
+<li>it doesn’t matter which directory you are in</li>
+<li>replace ‘192.168.1.10’ with the IP address of computer you are running this on<ul>
+<li>do not use ‘127.0.0.1’ or ‘localhost’</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">d</span> <span class="o">-</span><span class="n">e</span> <span class="n">TMI_SERVERIP</span><span class="o">=</span><span class="mf">192.168</span><span class="o">.</span><span class="mf">1.10</span> <span class="o">-</span><span class="n">p</span> <span class="mi">6800</span><span class="p">:</span><span class="mi">6800</span> <span class="n">mgagcode</span><span class="o">/</span><span class="n">Prism</span>
+</pre></div>
+</div>
+<ul>
+<li><p class="first">Open Google Chrome to</p>
+<blockquote>
+<div><p><a class="reference external" href="http://127.0.0.1:6800">http://127.0.0.1:6800</a></p>
+<ul class="simple">
+<li>Note on slower computers, it may take 5-15 seconds for the Prism window to display</li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li>Prism login user/password is admin/admin</li>
+<li>Other users passwords are <cite>qwerty</cite></li>
+</ul>
+</li>
+<li><p class="first">Run your first script</p>
+<ul class="simple">
+<li>Select pulldown menu item <cite>Test Config</cite></li>
+<li>Select script <cite>prod_0.scr</cite></li>
+<li>Press button <cite>Submit</cite></li>
+<li>If everything checked out, the <cite>Test</cite> button will turn Green, press it, and you should be on the test screen, press Play to test</li>
+<li><strong>Note:</strong> The tests have delays in them for demo effect.  The delays are not needed.</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="full">
+<h2><a class="toc-backref" href="#id6">Full</a><a class="headerlink" href="#full" title="Permalink to this headline">¶</a></h2>
+<p>The Full Demo assume you have followed the instructions for the <a class="reference internal" href="#basic">basic</a> demo.</p>
+<p>The Full Demo works by creating a local file structure and telling the <code class="docutils literal notranslate"><span class="pre">Prism</span></code> Docker container to use that
+local file system.  This requires a more advanced <cite>docker run</cite> command.</p>
+<p><a class="reference external" href="https://git-scm.com/">Git</a> and <a class="reference external" href="http://www.github.com">Github</a> are used.</p>
+<div class="section" id="additional-requirements">
+<h3><a class="toc-backref" href="#id7">Additional Requirements</a><a class="headerlink" href="#additional-requirements" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first">install git:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span> <span class="n">update</span>
+<span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">git</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>if you are unfamiliar with <cite>git</cite>, in short it is a free cloud based software version control platform</li>
+<li><cite>git</cite> is an advanced tool, and although widely used, it can be an complicated tool.  There are
+GUI programs that try and make <cite>git</cite> easier for the novice user, and a quick google can point you to some for your host operating system.</li>
+<li>these instructions (attempt to) only use the simple basic commands of <cite>git</cite></li>
+<li>the perscriptive way to setup is described TBD</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="clone-sistemi-scripts">
+<h3><a class="toc-backref" href="#id8">Clone Sistemi Scripts</a><a class="headerlink" href="#clone-sistemi-scripts" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first">There is a prescriptive directory structure to use, and that is stored on <cite>github</cite> in a project called <code class="docutils literal notranslate"><span class="pre">scripts</span></code></p>
+</li>
+<li><p class="first">This <cite>github</cite> repo is where you would ultimately store and version control your own scripts</p>
+<ul class="simple">
+<li>Instead of cloning the repo, you would <em>fork</em> <a class="footnote-reference" href="#id2" id="id1">[1]</a> (copy) it, making it your own, and then add your own code</li>
+</ul>
+</li>
+<li><p class="first">The instructions below will create a folder called <em>git/scripts</em> which <cite>git</cite> will copy the required files into</p>
+</li>
+<li><p class="first">Clone <code class="docutils literal notranslate"><span class="pre">scripts</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">~/</span><span class="n">git</span>
+<span class="n">cd</span> <span class="o">~/</span><span class="n">git</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">sistemi</span><span class="o">-</span><span class="n">mg</span><span class="o">/</span><span class="n">scripts</span><span class="o">.</span><span class="n">git</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</div>
+<div class="section" id="run-full">
+<h3><a class="toc-backref" href="#id9">Run Full</a><a class="headerlink" href="#run-full" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Run Prism<ul>
+<li>You need to provide a Lente IP address<ul>
+<li>If you don’t have Lente running, then it won’t matter what IP address you use, use ‘127.0.0.1’</li>
+<li>If Lente is running on this computer, use this computer IP address, don’t use
+‘localhost’, or ‘127.0.0.1’</li>
+</ul>
+</li>
+<li>The last argument to the script, <cite>no</cite>, is for the <cite>restart</cite> setting.</li>
+</ul>
+</li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">git</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">public</span>
+<span class="o">./</span><span class="n">prism</span><span class="o">.</span><span class="n">sh</span> <span class="o">--</span><span class="n">server</span><span class="o">=&lt;</span><span class="n">lente_ip_address</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">restart</span><span class="o">=</span><span class="n">no</span> <span class="n">start</span>
+</pre></div>
+</div>
+<ul>
+<li><p class="first">Open Google Chrome to</p>
+<blockquote>
+<div><p><a class="reference external" href="http://127.0.0.1:6800">http://127.0.0.1:6800</a></p>
+</div></blockquote>
+</li>
+</ul>
+<table class="docutils footnote" frame="void" id="id2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>This is covered in section TBD</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="prism_main.html"
+                        title="previous chapter">Prism</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="prism_screenshots.html"
+                        title="next chapter">Screenshots</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="prism_screenshots.html" title="Screenshots"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="prism_main.html" title="Prism"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="prism_main.html" >Prism</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Sistemi Corp..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
+    </div>
+  </body>
+</html>

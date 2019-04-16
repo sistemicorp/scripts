@@ -8,4 +8,4 @@ commit_version=$(git describe --tags)
 commit_branch=$(git rev-parse --abbrev-ref HEAD)
 
 echo -e "prev_commit=$commit_hash\ndate=$commit_date\nbranch=$commit_branch\nversion=$commit_version" > public/VERSION
-git add VERSION
+git add public/VERSION
