@@ -7,13 +7,14 @@
 * APIs for recording measurements, setting Pass/Fail, locking resources, etc
 * Server dashboard to monitor production yield, rate, etc
 * Check out the [PDF](https://github.com/sistemicorp/scripts/blob/master/Sistemi_Overview_01.pdf) slide deck for more information
+* Check out online documentation [docs](https://sistemicorp.github.io/scripts/docs/build/html)
 * postgresql backend
 * deployed as Docker containers for easy installation
 
 # Screenshots
 ![prism_1](docs/source/_static/Screenshot_test_01.png)
 
-![prism_2](app/tmiserver_1.png)
+![prism_2](docs/source/_static/Screenshot_lente_dashboard_01.png)
 
     
 # Contact
