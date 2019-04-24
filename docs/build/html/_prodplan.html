@@ -1,0 +1,411 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Production Planning &#8212; Sistemi Lente/Prism Test System 0.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Development" href="_development.html" />
+    <link rel="prev" title="System" href="_system.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="_development.html" title="Development"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="_system.html" title="System"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="production-planning">
+<h1>Production Planning<a class="headerlink" href="#production-planning" title="Permalink to this headline">¶</a></h1>
+<p>What follows is a general discussion of a production flow, and how Lente/Prism
+would be configured.</p>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><a class="reference internal" href="#production-infrastructure-cycle" id="id1">Production Infrastructure Cycle</a></li>
+<li><a class="reference internal" href="#stages" id="id2">Stages</a></li>
+<li><a class="reference internal" href="#file-organization" id="id3">File Organization</a><ul>
+<li><a class="reference internal" href="#naming-conventions" id="id4">Naming Conventions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#naming-proposal" id="id5">Naming Proposal</a></li>
+<li><a class="reference internal" href="#ip-addressing" id="id6">IP Addressing</a><ul>
+<li><a class="reference internal" href="#prism-ips" id="id7">Prism IPs</a></li>
+<li><a class="reference internal" href="#lente-ips" id="id8">Lente IPs</a></li>
+<li><a class="reference internal" href="#example" id="id9">Example</a></li>
+<li><a class="reference internal" href="#further-work" id="id10">Further Work</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="production-infrastructure-cycle">
+<h2><a class="toc-backref" href="#id1">Production Infrastructure Cycle</a><a class="headerlink" href="#production-infrastructure-cycle" title="Permalink to this headline">¶</a></h2>
+<img alt="_images/Screenshot_prodplan_02.png" src="_images/Screenshot_prodplan_02.png" />
+</div>
+<div class="section" id="stages">
+<h2><a class="toc-backref" href="#id2">Stages</a><a class="headerlink" href="#stages" title="Permalink to this headline">¶</a></h2>
+<p>Consider the following simplified production flow diagram,</p>
+<img alt="_images/Screenshot_prodplan_01.png" src="_images/Screenshot_prodplan_01.png" />
+<ul class="simple">
+<li>There are two factories belonging to two different sub-contractors</li>
+<li>The product is represented by <code class="docutils literal notranslate"><span class="pre">DUT</span></code></li>
+<li>Factory 1 does two process steps (P1 and P2) to create the first version of the DUT,
+called BOM1 (Bill of Materials)</li>
+<li>The product is then tested, T1</li>
+<li>Then process step P3 is done, creating DUT BOM2, and the product is tested again, T2</li>
+<li>The DUT is shipped to the next factory, and the first thing that is done is a
+repeat of the (outgoing) test T2, this is so that any DUT material damaged in shipping is
+quantified before Factory 2 does any processing.<ul>
+<li>This re-testing is referred to as “incoming” inspection/test</li>
+<li>This is often required so that damaged or faulty DUT can be quantified before
+more processing is done on the DUT</li>
+<li>Responsibility for damaged or faulty product needs to be assigned to the right sub-contractor</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="file-organization">
+<h2><a class="toc-backref" href="#id3">File Organization</a><a class="headerlink" href="#file-organization" title="Permalink to this headline">¶</a></h2>
+<p>Naming and organizing the location of files is a difficult thing to prescribe because your needs
+may require a specific solution.  Regardless, a general proposal will be given and from there one can
+create a more specific solution.</p>
+<p>The proposed general purpose solution assumes that version control is an important issue for you.</p>
+<p>Consider the following scenario.  A product is in full production and there is a test that is having a 1% failure
+rate, but none of the customer returns are associated with failures for this test.  So an ECO is created to change the
+limit of the test to reduce the failure rate to an expected 0.5%.  How should you implement this change so that you
+can track the new failure rate?  Or search if a product returned would have failed at the previous limit?  These
+are the kinds of things you need to think about when you implement test program and script files.</p>
+<p>Prism has a high level prescribed directory structure.</p>
+<p>Constraints:</p>
+<ul class="simple">
+<li>all Prism files must be under <code class="docutils literal notranslate"><span class="pre">./public/prism</span></code></li>
+<li>all script files must be under <code class="docutils literal notranslate"><span class="pre">./public/prism/scripts</span></code></li>
+</ul>
+<div class="section" id="naming-conventions">
+<h3><a class="toc-backref" href="#id4">Naming Conventions</a><a class="headerlink" href="#naming-conventions" title="Permalink to this headline">¶</a></h3>
+<p>A naming strategy is totally up to you.  No strategy at also is also a choice.</p>
+<p>That being said, experience has taught that not having a strategy very quickly leads to confusion and
+chaos.  If you end up being successful, upfront planning will really pay off 1-2 years down the road when
+try to piece together when you built what, with what version of that, with what ECO, on what version of
+BOM, …</p>
+<p>Many small companies try to be cool and come up with nifty names to describe things.  That works short
+term but falls apart down the road.  The worst thing that can happen to you is that your successful!</p>
+<p>There is a reason why big companies use seemingly random numbers to name things… it works.  But you do
+need a “secret decoder ring” to determine what something is when you just have a generic number as a
+label.  This is whgat you keep track of in a spreadsheet (which is the secret decoder ring).</p>
+<p>Prism needs the names of the following,</p>
+<ul class="simple">
+<li>scripts<ul>
+<li>specific to<ul>
+<li>product</li>
+<li>stage (T1, T2, &amp; T3 in the diagram)</li>
+<li>version</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>program files<ul>
+<li>specific to<ul>
+<li>script</li>
+<li>stage (T1, T2, &amp; T3 in the diagram)</li>
+<li>version</li>
+<li>common (to everything)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Test Items (these are the test IDs indicated in the scripts and implemented in programs)<ul>
+<li>specific to<ul>
+<li>product</li>
+<li>stage (T1, T2, &amp; T3 in the diagram)</li>
+<li>version</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>This is a lot to wrap your head around, so to avoid future confusion, a proposal for structure is presented.</p>
+</div>
+</div>
+<div class="section" id="naming-proposal">
+<h2><a class="toc-backref" href="#id5">Naming Proposal</a><a class="headerlink" href="#naming-proposal" title="Permalink to this headline">¶</a></h2>
+<p>All of these naming conventions, versions, will end up in the results file, in that way, you precisely know
+by which scripts, programs, and methods a test was done.</p>
+<p>Product naming</p>
+<ul class="simple">
+<li>P###mm<ul>
+<li>### =&gt; 000, 001, etc, represents a class of product</li>
+<li>mm =&gt; 00, 01, etc, model or version of the product</li>
+</ul>
+</li>
+<li>In a spreadsheet (or other tool) keep a list of P### that correspond to internal project names,
+or actual BOM numbers, etc.</li>
+</ul>
+<p>Test Script naming</p>
+<ul class="simple">
+<li>P###mm_Tssvv_DESCRIPTION.scr<ul>
+<li>ss =&gt; 00, 01, etc, represents test stage number</li>
+<li>vv =&gt; 00, 01, etc, version</li>
+</ul>
+</li>
+</ul>
+<p>Test Program naming (product specific)</p>
+<ul class="simple">
+<li>P###mm_Tssvv_DESCRIPION.py<ul>
+<li>the test script and test program don’t need to have the same name</li>
+</ul>
+</li>
+</ul>
+<p>Test Program naming (common)</p>
+<ul class="simple">
+<li>Fnnnvv_DESCRIPTION.py<ul>
+<li>nnn =&gt; 000, 001, etc, represents test number</li>
+<li>vv =&gt; 00, 01, etc, version</li>
+</ul>
+</li>
+</ul>
+<p>Test Method naming</p>
+<ul class="simple">
+<li>TSTnnnvv_DESCRIPTION<ul>
+<li>nnn =&gt; 000, 001, etc, represents test number</li>
+</ul>
+</li>
+</ul>
+<p>Example of files,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">companyName</span>
+<span class="o">./</span><span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">companyName</span><span class="o">/</span><span class="n">P001</span>
+<span class="o">./</span><span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">companyName</span><span class="o">/</span><span class="n">P001</span><span class="o">/</span><span class="n">P00100_T0100_SmokeTests</span><span class="o">.</span><span class="n">scr</span>
+<span class="o">./</span><span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">companyName</span><span class="o">/</span><span class="n">P001</span><span class="o">/</span><span class="n">P00100_T0100_SmokeTests</span><span class="o">.</span><span class="n">py</span>
+<span class="o">./</span><span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">companyName</span><span class="o">/</span><span class="n">P001</span><span class="o">/</span><span class="n">P00100_T0200_LoadFinalCode</span><span class="o">.</span><span class="n">scr</span>
+<span class="o">./</span><span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">companyName</span><span class="o">/</span><span class="n">P001</span><span class="o">/</span><span class="n">P00100_T0200_LoadFinalCode</span><span class="o">.</span><span class="n">py</span>
+<span class="o">./</span><span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">companyName</span><span class="o">/</span><span class="n">comm</span><span class="o">/</span><span class="n">F00100_ResetSTM32F479</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>Example script P00100_T0100_SmokeTests.scr,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;info&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;product&quot;</span><span class="p">:</span> <span class="s2">&quot;P001_Shazam&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;bom&quot;</span><span class="p">:</span> <span class="s2">&quot;B00012-001&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;lot&quot;</span><span class="p">:</span> <span class="s2">&quot;1922-1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="s2">&quot;FACTORY1&quot;</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;public.prism.result.ResultBaseKeysV1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;fail_fast&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+    <span class="s2">&quot;drivers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;public.prism.drivers.fake.fake&quot;</span><span class="p">]</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;tests&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;public.prism.scripts.companyName.comm.F00100_ResetSTM32F479&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;options&quot;</span><span class="p">:</span> <span class="p">{},</span>
+      <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST0100_setBOOT0&quot;</span><span class="p">,</span>     <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;out&quot;</span><span class="p">:</span> <span class="s2">&quot;LOW&quot;</span><span class="p">}},</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST0200_powerVDD&quot;</span><span class="p">,</span>     <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;3300&quot;</span><span class="p">}},</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST0300_delayMS&quot;</span><span class="p">,</span>      <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;delay_ms&quot;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">}},</span>
+      <span class="p">]</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;public.prism.scripts.companyName.P001.P00100_T0100_SmokeTests&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;options&quot;</span><span class="p">:</span> <span class="p">{},</span>
+      <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST0100_powerUP&quot;</span><span class="p">,</span>  <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span> <span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST0200_measVDD&quot;</span><span class="p">,</span>  <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">3100</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mi">3400</span><span class="p">},</span>
+                                   <span class="s2">&quot;fail&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;fid&quot;</span><span class="p">:</span> <span class="s2">&quot;TST02-1&quot;</span><span class="p">,</span> <span class="s2">&quot;msg&quot;</span><span class="p">:</span> <span class="s2">&quot;Component U1&quot;</span><span class="p">},</span>
+                                            <span class="p">{</span><span class="s2">&quot;fid&quot;</span><span class="p">:</span> <span class="s2">&quot;TST02-2&quot;</span><span class="p">,</span> <span class="s2">&quot;msg&quot;</span><span class="p">:</span> <span class="s2">&quot;Component R1&quot;</span><span class="p">}]},</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST0300_measVCC&quot;</span><span class="p">,</span>  <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">2600</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mi">2800</span><span class="p">},</span>
+                                   <span class="s2">&quot;fail&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;fid&quot;</span><span class="p">:</span> <span class="s2">&quot;TST03-1&quot;</span><span class="p">,</span> <span class="s2">&quot;msg&quot;</span><span class="p">:</span> <span class="s2">&quot;Component U2&quot;</span><span class="p">}]},</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Example program F00100_ResetSTM32F479,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>! /usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import logging
+from core.test_item import TestItem
+from public.prism.api import ResultAPI
+
+# file name and class name must match
+class F00100_ResetSTM32F479(TestItem):
+
+    def __init__(self, controller, chan, shared_state):
+        super().__init__(controller, chan, shared_state)
+        self.logger = logging.getLogger(&quot;SC.{}.{}&quot;.format(__name__, self.chan))
+
+    def TST0100_setBOOT0(self):
+        context = self.item_start()  # always first line of test
+        ...
+        self.item_end() # always last line of test
+
+    def TST0200_powerVDD(self):
+        context = self.item_start()  # always first line of test
+        ...
+        self.item_end() # always last line of test
+
+    def TST0300_delayMS(self):
+        context = self.item_start()  # always first line of test
+        ...
+        self.item_end() # always last line of test
+</pre></div>
+</div>
+<p>Example program P00100_T0100_SmokeTests,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>! /usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import logging
+from core.test_item import TestItem
+from public.prism.api import ResultAPI
+
+# file name and class name must match
+class P00100_T0100_SmokeTests(TestItem):
+
+    def __init__(self, controller, chan, shared_state):
+        super().__init__(controller, chan, shared_state)
+        self.logger = logging.getLogger(&quot;SC.{}.{}&quot;.format(__name__, self.chan))
+
+    def TST0100_powerUP(self):
+        context = self.item_start()  # always first line of test
+        ...
+        self.item_end() # always last line of test
+
+    def TST0200_measVDD(self):
+        context = self.item_start()  # always first line of test
+        ...
+        self.item_end() # always last line of test
+
+    def TST0300_measVCC(self):
+        context = self.item_start()  # always first line of test
+        ...
+        self.item_end() # always last line of test
+</pre></div>
+</div>
+</div>
+<div class="section" id="ip-addressing">
+<h2><a class="toc-backref" href="#id6">IP Addressing</a><a class="headerlink" href="#ip-addressing" title="Permalink to this headline">¶</a></h2>
+<p>What follows is a simple design for allocating the IP addresses of Prism and Lente
+computers.  You may decide to do this differently.</p>
+<p>Assumptions:</p>
+<ul class="simple">
+<li>Fixed IP addresses are used</li>
+<li>the LAN IP is 192.168.0.X</li>
+</ul>
+<div class="section" id="prism-ips">
+<h3><a class="toc-backref" href="#id7">Prism IPs</a><a class="headerlink" href="#prism-ips" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Label each PC what its IP address is</li>
+<li>Addresses<ul>
+<li>192.168.0.100  (first Prism)</li>
+<li>192.168.0.101</li>
+<li>192.168.0.102</li>
+<li>etc</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="lente-ips">
+<h3><a class="toc-backref" href="#id8">Lente IPs</a><a class="headerlink" href="#lente-ips" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Label each PC what its IP address is</li>
+<li>Addresses<ul>
+<li>192.168.0.10 (first Lente, at lowest level in hierarchy)</li>
+<li>192.168.0.20 (second Lente, at next level in hierarchy)</li>
+<li>etc</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="example">
+<h3><a class="toc-backref" href="#id9">Example</a><a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h3>
+<p>In this example there are two factories,</p>
+<ul class="simple">
+<li>no computers are exchanged between the factories</li>
+<li>note Factory 1 has two levels of Lente, and note the IP addressing</li>
+<li>The IP address of Lente in the cloud is unknown, and is typically given to you</li>
+</ul>
+<img alt="_images/Screenshot_system_network_04.png" src="_images/Screenshot_system_network_04.png" />
+</div>
+<div class="section" id="further-work">
+<h3><a class="toc-backref" href="#id10">Further Work</a><a class="headerlink" href="#further-work" title="Permalink to this headline">¶</a></h3>
+<p>Consider using hostnames for Lente to avoid IP addressing….</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="_system.html"
+                        title="previous chapter">System</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="_development.html"
+                        title="next chapter">Development</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="_development.html" title="Development"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="_system.html" title="System"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Sistemi Corp..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
+    </div>
+  </body>
+</html>

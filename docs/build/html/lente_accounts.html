@@ -1,0 +1,182 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Accounts &#8212; Sistemi Lente/Prism Test System 0.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Cloud" href="lente_cloud.html" />
+    <link rel="prev" title="Config" href="lente_config.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="lente_cloud.html" title="Cloud"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="lente_config.html" title="Config"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="lente_main.html" accesskey="U">Lente</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="accounts">
+<h1>Accounts<a class="headerlink" href="#accounts" title="Permalink to this headline">¶</a></h1>
+<p>Lente has the concept of Users and Roles.</p>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><a class="reference internal" href="#users" id="id1">Users</a></li>
+<li><a class="reference internal" href="#roles" id="id2">Roles</a><ul>
+<li><a class="reference internal" href="#enabled" id="id3">Enabled</a></li>
+<li><a class="reference internal" href="#admin" id="id4">Admin</a></li>
+<li><a class="reference internal" href="#account" id="id5">Account</a></li>
+<li><a class="reference internal" href="#operator" id="id6">Operator</a></li>
+<li><a class="reference internal" href="#configman" id="id7">ConfigMan</a></li>
+<li><a class="reference internal" href="#developer" id="id8">Developer</a></li>
+<li><a class="reference internal" href="#serversync" id="id9">ServerSync</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="users">
+<h2><a class="toc-backref" href="#id1">Users</a><a class="headerlink" href="#users" title="Permalink to this headline">¶</a></h2>
+<p>Users should be added to the system, rather than using the Admin account.</p>
+<p>Users need to have unique username.</p>
+<p>Users are added by another user (Admin) who has Account role privileges.</p>
+<p>A new User account must have the role <cite>Enabled</cite> in order to login.</p>
+</div>
+<div class="section" id="roles">
+<h2><a class="toc-backref" href="#id2">Roles</a><a class="headerlink" href="#roles" title="Permalink to this headline">¶</a></h2>
+<p>The following roles are defined,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;roles&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="c1"># Framework Roles</span>
+    <span class="s2">&quot;ENABLED&quot;</span><span class="p">:</span> <span class="s2">&quot;Enabled&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ACCOUNT&quot;</span><span class="p">:</span> <span class="s2">&quot;Account&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ADMIN&quot;</span><span class="p">:</span>   <span class="s2">&quot;Administrator&quot;</span><span class="p">,</span>  <span class="c1"># rights to do anything</span>
+
+    <span class="c1"># App specific Roles</span>
+    <span class="s2">&quot;OPERATOR&quot;</span><span class="p">:</span>   <span class="s2">&quot;Operator&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CONFIGMAN&quot;</span><span class="p">:</span>  <span class="s2">&quot;Config Management&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DEVELOPER&quot;</span><span class="p">:</span>  <span class="s2">&quot;Developer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SERVERSYNC&quot;</span><span class="p">:</span> <span class="s2">&quot;ServerSync&quot;</span><span class="p">,</span>  <span class="c1"># causes user to be pushed to all stations</span>
+<span class="p">},</span>
+</pre></div>
+</div>
+<div class="section" id="enabled">
+<h3><a class="toc-backref" href="#id3">Enabled</a><a class="headerlink" href="#enabled" title="Permalink to this headline">¶</a></h3>
+<p>Without this role, the User cannot log into the system.  When a User is created,
+this role is NOT set.  After a User is created, you must access the Roles menu
+and add <cite>Enabled</cite> to the User for them to be able to login.</p>
+<p>This allows you to disable a User without deleting their account.</p>
+</div>
+<div class="section" id="admin">
+<h3><a class="toc-backref" href="#id4">Admin</a><a class="headerlink" href="#admin" title="Permalink to this headline">¶</a></h3>
+<p>The Admin(istrator) role has access to all system functions and menus.</p>
+<p>In general its good practice to have two Users with Admin role.</p>
+</div>
+<div class="section" id="account">
+<h3><a class="toc-backref" href="#id5">Account</a><a class="headerlink" href="#account" title="Permalink to this headline">¶</a></h3>
+<p>This role provides the User with Account functions, create user, edit user, edit roles.</p>
+</div>
+<div class="section" id="operator">
+<h3><a class="toc-backref" href="#id6">Operator</a><a class="headerlink" href="#operator" title="Permalink to this headline">¶</a></h3>
+<p>PRISM ONLY</p>
+<p>Basic role for operating Prism.</p>
+<p>Operator allows the User to scan a traveller and run tests.
+The User <strong>cannot</strong> use <cite>Test Config</cite> menu.</p>
+</div>
+<div class="section" id="configman">
+<h3><a class="toc-backref" href="#id7">ConfigMan</a><a class="headerlink" href="#configman" title="Permalink to this headline">¶</a></h3>
+<p>PRISM ONLY</p>
+<p>Allows the User to use the <cite>Test Config</cite> menu, which allows the user to pick which
+script to run, and fill in any parameters for the script, and also to be able to create
+a Traveller.</p>
+</div>
+<div class="section" id="developer">
+<h3><a class="toc-backref" href="#id8">Developer</a><a class="headerlink" href="#developer" title="Permalink to this headline">¶</a></h3>
+<p>Currently this has no purpose.</p>
+</div>
+<div class="section" id="serversync">
+<h3><a class="toc-backref" href="#id9">ServerSync</a><a class="headerlink" href="#serversync" title="Permalink to this headline">¶</a></h3>
+<p>A User with this setting means their profile is controlled from Lente.  You
+may edit the user here on Prism, but if Users are sync’d from Lente, your changes
+will be overridden by the profile on Lente.</p>
+<p>All changes to this User should be made on Lente.</p>
+<p>More on ServerSync TBD (link)</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="lente_config.html"
+                        title="previous chapter">Config</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="lente_cloud.html"
+                        title="next chapter">Cloud</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="lente_cloud.html" title="Cloud"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="lente_config.html" title="Config"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="lente_main.html" >Lente</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Sistemi Corp..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
+    </div>
+  </body>
+</html>
