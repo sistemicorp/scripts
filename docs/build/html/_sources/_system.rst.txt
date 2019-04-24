@@ -14,7 +14,7 @@ Architecture
 This is a typical Sistemi system architecture layout.  More complex systems are possible and
 shown later in this section.
 
-.. image:: _static/Screenshot_system_network_01.png
+.. image:: static/Screenshot_system_network_01.png
 
 Notes:
 
@@ -54,7 +54,7 @@ Notes:
 
 This is a more sophisticated Sistemi system plan.
 
-.. image:: _static/Screenshot_system_network_03.png
+.. image:: static/Screenshot_system_network_03.png
 
 Here two remote factories send their data to a cloud Lente so that Head Office can
 monitor all Result data.
@@ -73,7 +73,7 @@ This architecture shows how Lente can be stacked
 on top of each other.  Each Lente is aggregating more results that come from below it.  In
 this case, two factories are supplying results to a central Lente.
 
-.. image:: _static/Screenshot_system_network_02.png
+.. image:: static/Screenshot_system_network_02.png
 
 What follows is a description of lables A-F...
 

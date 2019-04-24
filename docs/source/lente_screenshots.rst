@@ -19,4 +19,4 @@ The left (green) table provides a list of all passing results, and the right (re
 The lower row graphs show test durations, test pass/fail rates per hour.  The bottom right red table
 is a summarized table of the top failure items.
 
-.. image:: _static/Screenshot_lente_dashboard_01.png
+.. image:: static/Screenshot_lente_dashboard_01.png
