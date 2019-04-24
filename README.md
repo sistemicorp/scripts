@@ -6,7 +6,7 @@
 * Write Python scripts to control measurement equipment and other fixtures
 * APIs for recording measurements, setting Pass/Fail, locking resources, etc
 * Server dashboard to monitor production yield, rate, etc
-* Check out the [PDF](https://github.com/sistemi-mg/scripts/blob/master/Sistemi_Overview_01.pdf) slide deck for more information
+* Check out the [PDF](https://github.com/sistemicorp/scripts/blob/master/Sistemi_Overview_01.pdf) slide deck for more information
 * postgresql backend
 * deployed as Docker containers for easy installation
 

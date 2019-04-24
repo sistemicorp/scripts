@@ -82,7 +82,7 @@ Run these commands to install `scripts`,
 
     mkdir ~/git
     cd ~/git
-    git clone https://github.com/sistemi-mg/scripts.git
+    git clone https://github.com/sistemicorp/scripts.git
 
 
 Run Sistemi postgres script to start a local Postgres DB,

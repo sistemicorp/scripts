@@ -44,7 +44,7 @@ are shown below
 
 ::
 
-        git clone https://github.com/mgagcode/scripts.git
+        git clone https://github.com/sistemicorp/scripts.git
 
 * Note that the `scripts` clone will be created under your current directory.
   Some prefer all their repositories to be under a common directory, so you might actually
@@ -54,7 +54,7 @@ are shown below
 
         mkdir ~/git
         cd ~/git
-        git clone https://github.com/sistemi-mg/cripts.git
+        git clone https://github.com/sistemicorp/cripts.git
 
 * Rename the local repository's current 'origin' to 'upstream'
 

@@ -86,7 +86,7 @@ Run Basic
 
 ::
 
-    docker run -d --net lentenet -p 6600:6600 sistemi/lente
+    docker run -d --net lentenet -p 6600:6600 sistemicorp/lente
 
 
 * Open Google Chrome to
@@ -127,7 +127,7 @@ Clone Sistemi Scripts
 
     mkdir ~/git
     cd ~/git
-    git clone https://github.com/sistemi-mg/scripts.git
+    git clone https://github.com/sistemicorp/scripts.git
 
 
 Run Full

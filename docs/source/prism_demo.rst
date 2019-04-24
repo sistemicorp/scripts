@@ -64,7 +64,7 @@ to worry about python packages, versions of modules, etc
 
 ::
 
-    docker run -d -e TMI_SERVERIP=192.168.1.10 -p 6800:6800 mgagcode/Prism
+    docker run -d -e TMI_SERVERIP=192.168.1.10 -p 6800:6800 sistemicorp/Prism
 
 * Open Google Chrome to
 
@@ -122,7 +122,7 @@ Clone Sistemi Scripts
 
     mkdir ~/git
     cd ~/git
-    git clone https://github.com/sistemi-mg/scripts.git
+    git clone https://github.com/sistemicorp/scripts.git
 
 Run Full
 ========
