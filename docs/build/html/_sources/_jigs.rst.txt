@@ -8,7 +8,7 @@ In general, it is your responsibility to develop your own test jigs based on you
 Sistemi (in general) does not build jigs.  That being said, Sistemi has a reference platform that you may
 be able to use, perhaps with some modifications.
 
-.. image:: _static/Screenshot_jigs_01.png
+.. image:: static/Screenshot_jigs_01.png
 
 
 .. contents::
@@ -86,7 +86,7 @@ MicroPython Pin Mux
 
 Full information is here https://docs.micropython.org/en/latest/pyboard/quickref.html
 
-.. image:: _static/Screenshot_upybrd_01.png
+.. image:: static/Screenshot_upybrd_01.png
 
 Beyond the MicroPython functions, the Interface board has,
 
@@ -98,7 +98,7 @@ Probe Grid Pattern
 
 Each gridline is 50mils.
 
-.. image:: _static/micropythonboardV1_probe_grid.PNG
+.. image:: static/micropythonboardV1_probe_grid.PNG
 
 None of these probe points are wired to any function on the MicroPython Interface Board V1.  There are convenient
 landing sites on the PCB however to make it easy to attach a wire to every probe point.
@@ -107,7 +107,7 @@ landing sites on the PCB however to make it easy to attach a wire to every probe
 3D View
 -------
 
-.. image:: _static/micropythonboardV1_3d.PNG
+.. image:: static/micropythonboardV1_3d.PNG
 
 * The DUT is meant to be underneath the MicroPython Interface board, below the probes (gold) shown
 * The probe points extend underneath the 3D view (hidden by the pcb in this view)
@@ -121,6 +121,6 @@ SCH Hilights
 
 The complete schematic is available on CircuitMaker.
 
-.. image:: _static/micropythonboardV1_sch1.PNG
-.. image:: _static/micropythonboardV1_sch2.PNG
+.. image:: static/micropythonboardV1_sch1.PNG
+.. image:: static/micropythonboardV1_sch2.PNG
 

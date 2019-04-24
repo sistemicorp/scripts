@@ -13,13 +13,13 @@ The image below shows the `Test Config` view, a script has been selected and
 the parameters selected, at this point the `Traveller` button turns Green
 indicating it can now be pressed.
 
-.. image:: _static/Screenshot_traveller_01.png
+.. image:: static/Screenshot_traveller_01.png
 
 
 Pressing the `Traveller` button will pop up a new tab in the browser, similiar
 to the following,
 
-.. image:: _static/Screenshot_traveller_02.png
+.. image:: static/Screenshot_traveller_02.png
 
 The traveller shows the User that created it, the time and date, and the parameters
 used when it was created.

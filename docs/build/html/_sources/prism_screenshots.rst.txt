@@ -5,7 +5,7 @@ Main view
 *********
 Shows a log of Prism status, the Software License, and the menu options for Admin user.
 
-.. image:: _static/Screenshot_main_01.png
+.. image:: static/Screenshot_main_01.png
 
 Test Config view
 ****************
@@ -18,7 +18,7 @@ Simple (No Variables) Script
 * The script is a JSON format text file, with the exception that lines begining with `#` are comment lines
 * This script example has no user configurable variables
 
-.. image:: _static/Screenshot_test_config_01.png
+.. image:: static/Screenshot_test_config_01.png
 
 Variables Script
 ================
@@ -30,7 +30,7 @@ Variables Script
   * fields can be text input
   * fields can be pull down selections
 
-.. image:: _static/Screenshot_test_config_02.png
+.. image:: static/Screenshot_test_config_02.png
 
 Test View
 *********
@@ -38,5 +38,5 @@ Test View
 * The result after 4 channels of the demo script have finished
 * For each channel a log table is shown
 
-.. image:: _static/Screenshot_test_01.png
+.. image:: static/Screenshot_test_01.png
 

@@ -11,7 +11,7 @@ would be configured.
 Production Infrastructure Cycle
 *******************************
 
-.. image:: _static/Screenshot_prodplan_02.png
+.. image:: static/Screenshot_prodplan_02.png
 
 
 Stages
@@ -19,7 +19,7 @@ Stages
 
 Consider the following simplified production flow diagram,
 
-.. image:: _static/Screenshot_prodplan_01.png
+.. image:: static/Screenshot_prodplan_01.png
 
 * There are two factories belonging to two different sub-contractors
 * The product is represented by ``DUT``
@@ -312,7 +312,7 @@ In this example there are two factories,
 * note Factory 1 has two levels of Lente, and note the IP addressing
 * The IP address of Lente in the cloud is unknown, and is typically given to you
 
-.. image:: _static/Screenshot_system_network_04.png
+.. image:: static/Screenshot_system_network_04.png
 
 
 Further Work

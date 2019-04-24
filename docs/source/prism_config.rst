@@ -27,7 +27,7 @@ And its contents will be similar to,
         # DEFAULT: "public/result/stage",
         "result_stage_dir": "public/result/stage",
 
-        # path to results for when they have been sent to TMI Server
+        # path to results for when they have been sent to Lente Server
         # (results are moved from stage to bkup after successfully sent to Lente)
         # (set to null for no backups)
         # DEFAULT: "public/result/bkup",
