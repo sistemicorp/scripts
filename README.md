@@ -13,7 +13,7 @@
 # Screenshots
 ![prism_1](docs/source/_static/Screenshot_test_01.png)
 
-![prism_2](app/tmiserver_1.png)
+![prism_2](docs/source/_static/Screenshot_lente_dashboard_01.png)
 
     
 # Contact
