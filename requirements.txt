@@ -1,0 +1,5 @@
+pyserial
+pyvisa-py
+pyusb
+qrcode
+numpy

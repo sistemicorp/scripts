@@ -46,7 +46,7 @@ function valid_ip() {
 }
 
 start () {
-    echo start Prism: $flag_restart $flag_hostname $flag_server_ip
+    # echo start Prism: $flag_restart $flag_hostname $flag_server_ip
     #
     # docker run --rm and --restart commands are exclusive of each other
     #

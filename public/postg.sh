@@ -33,7 +33,7 @@ start () {
     # docker run --rm and --restart commands are exclusive of each other
     #
     if [[ ${flag_password} == "qwerty" ]]; then
-        echo WARNING: pastgres password is insecure - this better not be production!
+        echo WARNING: postgres password is insecure - this better not be production!
     fi
     if [[ ${flag_restart} != "always" ]] && [[ ${flag_restart} != "no" ]]; then
         echo "--restart= must be always or no"
