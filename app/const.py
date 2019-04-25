@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2019
+Sistemi Corporation, copyright, all rights reserved, 2019 
 Martin Guthrie
 
 https://stackoverflow.com/questions/2682745/how-do-i-create-a-constant-in-python
