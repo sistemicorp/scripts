@@ -56,8 +56,8 @@ Considerations
 * Bed of Nails (probes) can wear out over time, you may want to consider a design that
   allows the Bed Of Nails to be replaced.  This ultimately depends on the cost of replacement.
 
-Interface Board MicroPythonV1
-==============================
+MicroPython Interface Board
+===========================
 
 NOTE: This is a work in progress and incomplete.
 
@@ -66,17 +66,20 @@ requirements.  The intent here is to re-use this design to bootstrap your test j
 
 This design is open sourced on CircuitMaker tool.  This tool allows you to fork the design, make it your own.
 
-The V1 design has a grid patter of probe points that **are NOT connected** to the controller, which is
-a MicroPython v1.1 board.  The idea is that when you design your PCB, you place test points on the grid
-pattern of the probe points without concern for the function (measurement or stimulous) type of the probe point.
-**Although you must take care that all the functions you do need can be addressed by the MicroPython board.**
+There are two boards, one is the MicroPython Interface board, the other is a Probe Board.  Ribbon
+cable makes the connection between the two boards.  The probe positions are on a separate board to allow them
+to change without affecting the layout of the Interface Board, and to accommodate the test jig design.
 
-During the test jig development cycle you use the V1 board and manually wire connections from the probe
-points to the function on the MicroPython board.  The V1 board design also includes a prototyping area so
+The idea is that when you design your PCB, you place test points on the grid pattern of the probe points
+without concern for the function (measurement or stimulous) type of the probe point.
+**Although you must take care that all the functions you do need can be addressed by the MicroPython Interface board.**
+
+During the test jig development cycle you use the MicroPython Interface board and manually wire connections from the probe
+points to the function on the MicroPython board.  The MicroPython Interface board design also includes a prototyping area so
 that you could also manually assemble extra functions.
 
-Finally once the development is done, you fork this V1 design and make the PCB connections.  You may also use
-the V1 design in production if that works for you.
+Finally once the development is done, you fork this MicroPython Interface design and make the PCB connections.  You may also use
+the MicroPython Interface design in production if that works for you.
 
 If the test point grid for V1 doesn't meet your needs, or the pin mux capability of the MicroPython board
 doesn't have all the features you need, then you will have to design your own interface board.
@@ -88,39 +91,45 @@ Full information is here https://docs.micropython.org/en/latest/pyboard/quickref
 
 .. image:: static/Screenshot_upybrd_01.png
 
+
+3D View
+-------
+
+.. image:: static/micropythonboard_a0103.PNG
+
+* The MicroPython board is in the upper right corner (a 3D model was not available)
+* There are two through hole headers below the MicroPython board that connect signals to the Probe Board
+
+.. image:: static/ProbeBoard_a0201_3d.PNG
+
+* The two DIP headers connect signals between the two boards
+
 Beyond the MicroPython functions, the Interface board has,
 
 * Two Texas Instruments LP3886, linear step down adjustable DC/DC converters, 1 Amp, 0.8-4V
-* One Texas Instruments INA220 current measurement IC (which can be connected to monitor current on any supply)
+* Two Texas Instruments INA220 current measurement ICs (to monitor current on any one of three supplies)
+* One Virtual Serial Port via USB
+* Prototyping area
+* Digital Resistor IC, TPL0102
+* Level translator, TXS0104
+* 2 SMA connectors
+* One 12V buffer Amplifier, LTC6090
 
-Probe Grid Pattern
-------------------
 
-Each gridline is 50mils.
+Probe Board Grid Pattern
+------------------------
 
-.. image:: static/micropythonboardV1_probe_grid.PNG
+Image gridline is 25mils.
+
+.. image:: static/ProbeBoard_a0201.PNG
 
 None of these probe points are wired to any function on the MicroPython Interface Board V1.  There are convenient
 landing sites on the PCB however to make it easy to attach a wire to every probe point.
 
 
-3D View
--------
+Schematic
+---------
 
-.. image:: static/micropythonboardV1_3d.PNG
-
-* The DUT is meant to be underneath the MicroPython Interface board, below the probes (gold) shown
-* The probe points extend underneath the 3D view (hidden by the pcb in this view)
-* The MicroPython board is in the upper right corner (a 3D model was not available)
-* USB Mini-B socket is used to get 5V power to the board
-* USB Type-A socket is to daisy chain power to another board
-
-
-SCH Hilights
-------------
-
-The complete schematic is available on CircuitMaker.
-
-.. image:: static/micropythonboardV1_sch1.PNG
-.. image:: static/micropythonboardV1_sch2.PNG
+The complete schematic is available to be forked on CircuitMaker.
+The Schematic and PCB layout are in PDF form in ./public/prism/drivers/micropythonbrd
 
