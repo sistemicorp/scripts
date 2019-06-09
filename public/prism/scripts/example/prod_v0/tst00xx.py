@@ -159,7 +159,10 @@ class tst00xx(TestItem):
 
         self.log_bullet("Please press a button!")
 
-        buttons = ["one", "two", "three"]
+        # make two random to confirm GUI button label is updated
+        _two = "two {:3.2f}".format(random.random())
+        self.log_bullet(_two)
+        buttons = ["one", _two, "three"]
         user_select = self.input_button(buttons)
         if user_select["success"]:
             b_idx = user_select["button"]
