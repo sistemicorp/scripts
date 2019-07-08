@@ -302,6 +302,11 @@ class MicroPyBrd(object):
 def parse_args():
     epilog = """
     Usage examples:
+    1) List all MicroPython boards attached to the system,
+       python3 upybrd.py --list
+    2) Setting the ID to 1 for the MicroPython board on COM3, 
+       python3 upybrd.py --port COM3 --set-id 1
+       
     """
     parser = argparse.ArgumentParser(description='upybrd',
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
