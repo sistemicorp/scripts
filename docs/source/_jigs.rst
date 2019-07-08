@@ -133,3 +133,44 @@ Schematic
 The complete schematic is available to be forked on CircuitMaker.
 The Schematic and PCB layout are in PDF form in ./public/prism/drivers/micropythonbrd
 
+
+Configuring MicroPythgon Board
+------------------------------
+
+Initially the MicroPython board must be configured with an ID, so that it is unique from other MicroPython boards
+in the test system.
+
+The `~/git/scripts/public/prism/drivers/micropythonbrd/upybrd.py` script file provides various functions for setting up
+a MicroPython Board.
+
+::
+
+    computer:~/git/scripts/public/prism/drivers/micropythonbrd$ python3 upybrd.py --help
+    usage: upybrd.py [-h] [-p PORT] [-s SET_ID] [-l] [-i] [-f] [-g READ_GPIO] [-v]
+                     [--version]
+
+    upybrd
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -p PORT, --port PORT  Active serial port
+      -s SET_ID, --set-id SET_ID
+                            Set channel <#> to <port>, ex: -s 0 -p COM3
+      -l, --list            list micropython boards
+      -i, --identify        blink red LED on specified port
+      -f, --files           List files on pyboard
+      -g READ_GPIO, --read-gpio READ_GPIO
+                            read gpio (X1, X2, ...)
+      -v, --verbose         Increase verbosity
+      --version             Show version and exit
+
+        Usage examples:
+        1) List all MicroPython boards attached to the system,
+           python3 upybrd.py --list
+        2) Setting the ID to 1 for the MicroPython board on COM3,
+           python3 upybrd.py --port COM3 --set-id 1
+
+Notes
+
+* The ID of the MicroPython board is represented as an empty file on the MicroPython filesystem with the name of format `ID<#>`
+

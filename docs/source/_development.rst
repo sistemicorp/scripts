@@ -165,3 +165,33 @@ Change README.md
 Change this file to suit your needs.  For example, document your script/program naming strategy.
 
 
+Command Line Development
+************************
+
+Initial development will be done in "headless" mode, whereupon coding is done outside of the GUI used in production.
+
+A command line version of the core engine of the system is at the top of the `scripts` folder, called `prism_dev.py`.
+The command line help,
+
+::
+
+    computer:~/git/scripts$ python3 prism_dev.py --help
+    usage: prism_dev.py [-h] --script SCRIPT
+
+    prism_dev
+
+    optional arguments:
+      -h, --help       show this help message and exit
+      --script SCRIPT  Path to script file to run
+
+    Usage examples:
+        python3 prism_dev.py --script ./public/prism/scripts/example/prod_v0/prod_0.scr
+
+Notes about the command line development environment,
+
+* parallel, multi-threaded, multiple test jigs are not supported
+* script is run as a single thread
+* NO results are sent to the Lente Server
+
+After your script is running in the command line mode, you can try it in the Prism GUI.
+
