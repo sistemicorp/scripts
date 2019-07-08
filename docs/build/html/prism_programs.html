@@ -4,23 +4,29 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Programs &#8212; Sistemi Lente/Prism Test System 0.1.0 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
-    
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Drivers" href="prism_drivers.html" />
     <link rel="prev" title="Scripts" href="prism_scripts.html" /> 
-  </head><body>
+  </head>
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -45,10 +51,10 @@
             
   <div class="section" id="programs">
 <h1>Programs<a class="headerlink" href="#programs" title="Permalink to this headline">¶</a></h1>
-<p>Programs are Python code that implement <a class="reference internal" href="prism_scripts.html#tests"><span class="std std-ref">tests</span></a> <code class="docutils literal notranslate"><span class="pre">items</span></code>, and the location and name of the
-program file is given in field <code class="docutils literal notranslate"><span class="pre">module</span></code>.</p>
+<p>Programs are Python code that implement <a class="reference internal" href="prism_scripts.html#tests"><span class="std std-ref">tests</span></a> <code class="docutils literal"><span class="pre">items</span></code>, and the location and name of the
+program file is given in field <code class="docutils literal"><span class="pre">module</span></code>.</p>
 <p>A very minimalist (“hello world”) (helloWorld.py) program file could look like this,</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>! /usr/bin/env python
+<div class="highlight-default"><div class="highlight"><pre><span></span>! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import logging
@@ -69,7 +75,7 @@ class helloWorld(TestItem):
 </pre></div>
 </div>
 <p>And, a minimalist script file that uses this program code, could look like this,</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
   <span class="s2">&quot;info&quot;</span><span class="p">:</span> <span class="p">{</span>
     <span class="s2">&quot;product&quot;</span><span class="p">:</span> <span class="s2">&quot;widget_1&quot;</span><span class="p">,</span>
     <span class="s2">&quot;bom&quot;</span><span class="p">:</span> <span class="s2">&quot;BOM1-1&quot;</span><span class="p">,</span>
@@ -94,13 +100,13 @@ class helloWorld(TestItem):
 <p>Lets make some general comments about the above script/program before diving into the details,</p>
 <ul class="simple">
 <li>script<ul>
-<li><code class="docutils literal notranslate"><span class="pre">options</span></code> has no key/value assignments.  This means that <code class="docutils literal notranslate"><span class="pre">fail_fast</span></code> is assumed to be true. See <a class="reference internal" href="prism_scripts.html#config"><span class="std std-ref">config</span></a></li>
-<li>the <code class="docutils literal notranslate"><span class="pre">module</span></code> value <code class="docutils literal notranslate"><span class="pre">public.prism.scripts.my_product.helloWorld</span></code> <strong>matches the class name and the program file name</strong></li>
-<li>has no (optional) <code class="docutils literal notranslate"><span class="pre">subs</span></code> section</li>
+<li><code class="docutils literal"><span class="pre">options</span></code> has no key/value assignments.  This means that <code class="docutils literal"><span class="pre">fail_fast</span></code> is assumed to be true. See <a class="reference internal" href="prism_scripts.html#config"><span class="std std-ref">config</span></a></li>
+<li>the <code class="docutils literal"><span class="pre">module</span></code> value <code class="docutils literal"><span class="pre">public.prism.scripts.my_product.helloWorld</span></code> <strong>matches the class name and the program file name</strong></li>
+<li>has no (optional) <code class="docutils literal"><span class="pre">subs</span></code> section</li>
 </ul>
 </li>
 <li>Program<ul>
-<li>there is no requirement for method names, the above uses <code class="docutils literal notranslate"><span class="pre">sayHello</span></code> for example<ul>
+<li>there is no requirement for method names, the above uses <code class="docutils literal"><span class="pre">sayHello</span></code> for example<ul>
 <li>However, you should plan to have a test naming structure, as these test names is what you will be doing backend
 database searches and filtering on.  See TBD-Planning</li>
 </ul>
@@ -111,7 +117,7 @@ database searches and filtering on.  See TBD-Planning</li>
 <div class="section" id="program-class-structure">
 <h2>Program Class Structure<a class="headerlink" href="#program-class-structure" title="Permalink to this headline">¶</a></h2>
 <p>Lets take a more detailed look at the program structrure,</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>! /usr/bin/env python
+<div class="highlight-default"><div class="highlight"><pre><span></span>! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import logging
@@ -139,24 +145,24 @@ class helloWorld(TestItem):
 can do with them</li>
 </ul>
 </li>
-<li>there are two methods shown in the example program, <code class="docutils literal notranslate"><span class="pre">__init__</span></code> and <code class="docutils literal notranslate"><span class="pre">sayHello</span></code></li>
-<li>From a Prism point of view, a method in the class is called IF it is referenced in the script <code class="docutils literal notranslate"><span class="pre">tests</span></code> <code class="docutils literal notranslate"><span class="pre">items</span></code>
-<code class="docutils literal notranslate"><span class="pre">id</span></code> field - if you reference the above simple script, <code class="docutils literal notranslate"><span class="pre">sayHello</span></code> is referenced<ul>
+<li>there are two methods shown in the example program, <code class="docutils literal"><span class="pre">__init__</span></code> and <code class="docutils literal"><span class="pre">sayHello</span></code></li>
+<li>From a Prism point of view, a method in the class is called IF it is referenced in the script <code class="docutils literal"><span class="pre">tests</span></code> <code class="docutils literal"><span class="pre">items</span></code>
+<code class="docutils literal"><span class="pre">id</span></code> field - if you reference the above simple script, <code class="docutils literal"><span class="pre">sayHello</span></code> is referenced<ul>
 <li><strong>``__init__`` is NOT to be referenced by the script in anyway</strong></li>
-<li><code class="docutils literal notranslate"><span class="pre">__init__</span></code> is called automatically when the script is loaded by the system.  You should not have any test
-code in the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method.  You can add more self.variable_name as required</li>
+<li><code class="docutils literal"><span class="pre">__init__</span></code> is called automatically when the script is loaded by the system.  You should not have any test
+code in the <code class="docutils literal"><span class="pre">__init__</span></code> method.  You can add more self.variable_name as required</li>
 </ul>
 </li>
-<li>Methods that you add that are called by the script, will NOT have any additional arguments, only <code class="docutils literal notranslate"><span class="pre">self</span></code></li>
+<li>Methods that you add that are called by the script, will NOT have any additional arguments, only <code class="docutils literal"><span class="pre">self</span></code></li>
 <li>The first line of every method is</li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
 </pre></div>
 </div>
 <ul class="simple">
 <li>The last line of every method is</li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span> <span class="c1"># always last line of test</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span> <span class="c1"># always last line of test</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -166,10 +172,10 @@ code in the <code class="docutils literal notranslate"><span class="pre">__init_
 <div class="section" id="context">
 <h3>context<a class="headerlink" href="#context" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><code class="docutils literal notranslate"><span class="pre">context</span></code> is your programmatic view of the script, and retrieving it is the first line of every method</li>
+<li><code class="docutils literal"><span class="pre">context</span></code> is your programmatic view of the script, and retrieving it is the first line of every method</li>
 <li>consider a little more complicated script,</li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
   <span class="s2">&quot;info&quot;</span><span class="p">:</span> <span class="p">{</span>
     <span class="s2">&quot;product&quot;</span><span class="p">:</span> <span class="s2">&quot;widget_1&quot;</span><span class="p">,</span>
     <span class="s2">&quot;bom&quot;</span><span class="p">:</span> <span class="s2">&quot;BOM1-1&quot;</span><span class="p">,</span>
@@ -195,9 +201,9 @@ code in the <code class="docutils literal notranslate"><span class="pre">__init_
 </pre></div>
 </div>
 <ul class="simple">
-<li>And lets assume we are in the <code class="docutils literal notranslate"><span class="pre">TST000_Meas</span></code> method, then we can access (print) anything that is relevent,</li>
+<li>And lets assume we are in the <code class="docutils literal"><span class="pre">TST000_Meas</span></code> method, then we can access (print) anything that is relevent,</li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">TST000_Meas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">TST000_Meas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="n">context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="p">)</span>          <span class="c1"># = {&quot;id&quot;: &quot;TST000&quot;, &quot;enable&quot;: True,  &quot;args&quot;: {&quot;min&quot;: 0, &quot;max&quot;: 10}}</span>
@@ -210,9 +216,9 @@ code in the <code class="docutils literal notranslate"><span class="pre">__init_
 </pre></div>
 </div>
 <ul class="simple">
-<li>in Python, you can do <code class="docutils literal notranslate"><span class="pre">print(dir(ctx))</span></code> to get a list of everything available to you</li>
+<li>in Python, you can do <code class="docutils literal"><span class="pre">print(dir(ctx))</span></code> to get a list of everything available to you</li>
 <li>When designing your test script and program structure, consider what user configurable variables you want to be
-defined in the script <code class="docutils literal notranslate"><span class="pre">args</span></code> section and which you want in the program.  Things like min/max limits may change
+defined in the script <code class="docutils literal"><span class="pre">args</span></code> section and which you want in the program.  Things like min/max limits may change
 overt he product life cycle, and its better to make those things editable by a non-programmer. See TBS-Planning</li>
 </ul>
 </div>
@@ -221,7 +227,7 @@ overt he product life cycle, and its better to make those things editable by a n
 <h2>Everything Example<a class="headerlink" href="#everything-example" title="Permalink to this headline">¶</a></h2>
 <p>Here is a fully documented program example that shows just about every feature of the Lente system.  This
 example program is distributed with the system, and may be more up to date than here, so please consult that example.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#! /usr/bin/env python</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="ch">#! /usr/bin/env python</span>
 <span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">core.test_item</span> <span class="k">import</span> <span class="n">TestItem</span>
@@ -506,7 +512,7 @@ example program is distributed with the system, and may be more up to date than 
 </pre></div>
 </div>
 <p>And here is the script that drives the program,</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Example: Shows most of all the features of test portal UI</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Example: Shows most of all the features of test portal UI</span>
 <span class="p">{</span>
   <span class="s2">&quot;info&quot;</span><span class="p">:</span> <span class="p">{</span>
     <span class="c1"># info is captured in the result record and can be searched/filtered</span>
@@ -577,7 +583,7 @@ a results (JSON) file and sent to a backend database.  What measurements to save
 Prism platform has an API to make storing measurements easy, and in a prescriptive way, so that these results
 can be analyzed from the backend database.</p>
 <p>Example of measurement API is show in the example above, but are reviewed here in detail.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">measurement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">measurement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    :param name: name of measurement</span>
 <span class="sd">    :param min: minimum value, None for ignore</span>
@@ -591,11 +597,11 @@ can be analyzed from the backend database.</p>
 <span class="sd">    &quot;&quot;&quot;</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">name</span></code> - this will be appended to the full name of the test, which is the path to the python
+<p><code class="docutils literal"><span class="pre">name</span></code> - this will be appended to the full name of the test, which is the path to the python
 program, the program filename, the class method, and finally this name.  As such the final test
 name is a unique identifier</p>
-<p><code class="docutils literal notranslate"><span class="pre">units</span></code> - from,</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ResultAPI</span><span class="p">(</span><span class="n">Const</span><span class="p">):</span>
+<p><code class="docutils literal"><span class="pre">units</span></code> - from,</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ResultAPI</span><span class="p">(</span><span class="n">Const</span><span class="p">):</span>
 
     <span class="c1"># More types can be created for your specific application needs</span>
     <span class="c1"># These items will be in the result record and backend database</span>
@@ -668,8 +674,8 @@ name is a unique identifier</p>
     <span class="n">BLOB_TYPES</span> <span class="o">=</span> <span class="p">[</span><span class="n">BLOB_UNKNOWN</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">],</span> <span class="n">BLOB_PLOTXY</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]]</span>
 </pre></div>
 </div>
-<p>Measurements are called thru the <code class="docutils literal notranslate"><span class="pre">ctx.record.measurement()</span></code> API like this,</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">myTest</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<p>Measurements are called thru the <code class="docutils literal"><span class="pre">ctx.record.measurement()</span></code> API like this,</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">myTest</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>   <span class="c1"># always first line of test</span>
 
     <span class="n">value</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">some_value_from_test_equipment</span><span class="o">&gt;</span>
@@ -683,12 +689,12 @@ name is a unique identifier</p>
 </pre></div>
 </div>
 <ul class="simple">
-<li>two results are returned, shown above as <code class="docutils literal notranslate"><span class="pre">_result,</span> <span class="pre">_bullet</span></code></li>
-<li><code class="docutils literal notranslate"><span class="pre">_bullet</span></code> string (second variable returned) is suitable for printing to the log via <code class="docutils literal notranslate"><span class="pre">self.log_bullet()</span></code></li>
-<li><code class="docutils literal notranslate"><span class="pre">_result</span></code> is meant to be sent to <code class="docutils literal notranslate"><span class="pre">self.item_end()</span></code> as shown and thus the state of the test is set (Pass or Fail)</li>
-<li><code class="docutils literal notranslate"><span class="pre">_result</span></code> may cause the program to take different action and not affect the state of the test item simply
-by not sending the result to <code class="docutils literal notranslate"><span class="pre">self.item_end()</span></code></li>
-<li>calling <code class="docutils literal notranslate"><span class="pre">ctx.record.measurement()</span></code> means that this value will be in the backend database</li>
+<li>two results are returned, shown above as <code class="docutils literal"><span class="pre">_result,</span> <span class="pre">_bullet</span></code></li>
+<li><code class="docutils literal"><span class="pre">_bullet</span></code> string (second variable returned) is suitable for printing to the log via <code class="docutils literal"><span class="pre">self.log_bullet()</span></code></li>
+<li><code class="docutils literal"><span class="pre">_result</span></code> is meant to be sent to <code class="docutils literal"><span class="pre">self.item_end()</span></code> as shown and thus the state of the test is set (Pass or Fail)</li>
+<li><code class="docutils literal"><span class="pre">_result</span></code> may cause the program to take different action and not affect the state of the test item simply
+by not sending the result to <code class="docutils literal"><span class="pre">self.item_end()</span></code></li>
+<li>calling <code class="docutils literal"><span class="pre">ctx.record.measurement()</span></code> means that this value will be in the backend database</li>
 </ul>
 </div>
 <div class="section" id="binning-failures">
@@ -696,22 +702,22 @@ by not sending the result to <code class="docutils literal notranslate"><span cl
 <p>When a failure occurs in production, typically the DUTs are “binned” according to the failure type.  Then the
 “bin” is bulk processed at a later time.  Given this typical process, Prism provides a means of indicating
 a “binning code” when a failure occurs.</p>
-<p>The “binning mechanism” is provided by the <code class="docutils literal notranslate"><span class="pre">fail</span></code> field for the test item in the script.  There is a list
-of binning failure IDs (<code class="docutils literal notranslate"><span class="pre">fid</span></code>) with a corresponding <code class="docutils literal notranslate"><span class="pre">msg</span></code> for the user in the script.  This is shown in the
-example <code class="docutils literal notranslate"><span class="pre">TST000_Meas</span></code> above.  Repeated here.</p>
+<p>The “binning mechanism” is provided by the <code class="docutils literal"><span class="pre">fail</span></code> field for the test item in the script.  There is a list
+of binning failure IDs (<code class="docutils literal"><span class="pre">fid</span></code>) with a corresponding <code class="docutils literal"><span class="pre">msg</span></code> for the user in the script.  This is shown in the
+example <code class="docutils literal"><span class="pre">TST000_Meas</span></code> above.  Repeated here.</p>
 <p>Example Notes:</p>
 <ul class="simple">
 <li>Two measurements are taken</li>
-<li>The measurement results are stored in a list, <code class="docutils literal notranslate"><span class="pre">measurement_results</span></code>.  This list will be passed
-to <code class="docutils literal notranslate"><span class="pre">self.item_end()</span></code> so that all the results are considered by the system.  If any one of these results
+<li>The measurement results are stored in a list, <code class="docutils literal"><span class="pre">measurement_results</span></code>.  This list will be passed
+to <code class="docutils literal"><span class="pre">self.item_end()</span></code> so that all the results are considered by the system.  If any one of these results
 is a FAIL, the test item will FAIL.</li>
 <li>There is a co-operation between the test script and the test code as per the index to the type of failure.
-This is coded in the constants <code class="docutils literal notranslate"><span class="pre">FAIL_APPLE</span></code> and <code class="docutils literal notranslate"><span class="pre">FAIL_BANANNA</span></code></li>
-<li><code class="docutils literal notranslate"><span class="pre">ctx.record.fail_msg()</span></code> is used to set the user facing “binning” message</li>
-<li>The <code class="docutils literal notranslate"><span class="pre">fid</span></code> text represents the “binning” code</li>
-<li>The <code class="docutils literal notranslate"><span class="pre">msg</span></code> is there to provide a hint to the test engineer of where the problem might be</li>
+This is coded in the constants <code class="docutils literal"><span class="pre">FAIL_APPLE</span></code> and <code class="docutils literal"><span class="pre">FAIL_BANANNA</span></code></li>
+<li><code class="docutils literal"><span class="pre">ctx.record.fail_msg()</span></code> is used to set the user facing “binning” message</li>
+<li>The <code class="docutils literal"><span class="pre">fid</span></code> text represents the “binning” code</li>
+<li>The <code class="docutils literal"><span class="pre">msg</span></code> is there to provide a hint to the test engineer of where the problem might be</li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST000_Meas&quot;</span><span class="p">,</span>  <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST000_Meas&quot;</span><span class="p">,</span>  <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
                        <span class="c1"># fail: this is a list of &#39;fid&#39; and &#39;msg&#39; that get displayed and</span>
                        <span class="c1">#       recorded with the test record.  The python code for this</span>
                        <span class="c1">#       test item assigns which item in the list best represents</span>
@@ -721,7 +727,7 @@ This is coded in the constants <code class="docutils literal notranslate"><span 
 </pre></div>
 </div>
 <p>Program code,</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">TST000_Meas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">TST000_Meas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Measurement example, with multiple failure messages</span>
 <span class="sd">    - example of taking multiple measurements, and sending as a list of results</span>
 <span class="sd">    - if any test fails, this test item fails</span>
@@ -791,14 +797,12 @@ production failures become understood.</p>
                         title="next chapter">Drivers</a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
-    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -823,7 +827,7 @@ production failures become understood.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Sistemi Corp..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
     </div>
   </body>
 </html>
