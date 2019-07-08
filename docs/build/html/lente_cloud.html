@@ -4,23 +4,29 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Cloud &#8212; Sistemi Lente/Prism Test System 0.1.0 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
-    
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="System" href="_system.html" />
     <link rel="prev" title="Accounts" href="lente_accounts.html" /> 
-  </head><body>
+  </head>
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -80,7 +86,7 @@ approach is to use Postgres as a separate resource from the VM running Lente.</p
 <p>Log into your Google Cloud Account.</p>
 <p>Create an instance VM and use a Ubuntu 18.04 Minimum image.</p>
 <p>Traffic to/from the GCP node needs to be allowed by the Firewall,</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">VPC</span> <span class="n">Network</span> <span class="o">-&gt;</span> <span class="n">Firewall</span> <span class="n">Rules</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">VPC</span> <span class="n">Network</span> <span class="o">-&gt;</span> <span class="n">Firewall</span> <span class="n">Rules</span>
 <span class="n">Name</span>            <span class="n">Type</span>        <span class="n">Targets</span>         <span class="n">Filters</span>                 <span class="n">Protocols</span> <span class="o">/</span> <span class="n">ports</span>           <span class="n">Action</span>      <span class="n">Priority</span>        <span class="n">Network</span>
 <span class="n">lente</span><span class="o">-</span><span class="n">egress</span>    <span class="n">Egress</span>  <span class="n">Apply</span> <span class="n">to</span> <span class="nb">all</span>        <span class="n">IP</span> <span class="n">ranges</span><span class="p">:</span> <span class="mf">0.0</span><span class="o">.</span><span class="mf">0.0</span><span class="o">/</span><span class="mi">0</span>    <span class="n">tcp</span><span class="p">:</span><span class="mi">6600</span>    <span class="n">udp</span><span class="p">:</span><span class="mi">6600</span>    <span class="n">Allow</span>   <span class="mi">1000</span>        <span class="n">default</span>
 <span class="n">lente</span><span class="o">-</span><span class="n">ingress</span>   <span class="n">Ingress</span> <span class="n">Apply</span> <span class="n">to</span> <span class="nb">all</span>    <span class="n">IP</span> <span class="n">ranges</span><span class="p">:</span> <span class="mf">0.0</span><span class="o">.</span><span class="mf">0.0</span><span class="o">/</span><span class="mi">0</span>    <span class="n">tcp</span><span class="p">:</span><span class="mi">6600</span>    <span class="n">udp</span><span class="p">:</span><span class="mi">6600</span>    <span class="n">Allow</span>   <span class="mi">1000</span>        <span class="n">default</span>
@@ -89,7 +95,7 @@ approach is to use Postgres as a separate resource from the VM running Lente.</p
 <p><strong>The above Firewall rules allow connection to Lente from any external IP.  You should instead limit access to Lente
 to your domain for extra security.</strong></p>
 <p>Open an SSH to the VM and run these commands, which will install Docker, these are copied from <a class="reference external" href="https://docs.docker.com/install/linux/docker-ce/ubuntu/">https://docs.docker.com/install/linux/docker-ce/ubuntu/</a></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
 <span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> \
     <span class="n">apt</span><span class="o">-</span><span class="n">transport</span><span class="o">-</span><span class="n">https</span> \
     <span class="n">ca</span><span class="o">-</span><span class="n">certificates</span> \
@@ -108,18 +114,18 @@ to your domain for extra security.</strong></p>
 </div>
 <p>After you have rebooted, open a new SSH terminal.
 Run these commands to install <cite>scripts</cite>,</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">~/</span><span class="n">git</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">~/</span><span class="n">git</span>
 <span class="n">cd</span> <span class="o">~/</span><span class="n">git</span>
 <span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">sistemicorp</span><span class="o">/</span><span class="n">scripts</span><span class="o">.</span><span class="n">git</span>
 </pre></div>
 </div>
 <p>Run Sistemi postgres script to start a local Postgres DB,</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">git</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">public</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">git</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">public</span>
 <span class="o">./</span><span class="n">postg</span><span class="o">.</span><span class="n">sh</span> <span class="o">--</span><span class="n">restart</span><span class="o">=</span><span class="n">always</span> <span class="n">start</span>
 </pre></div>
 </div>
 <p>Run the Lente start script</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">git</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">public</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">git</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">public</span>
 <span class="o">./</span><span class="n">lente</span><span class="o">.</span><span class="n">sh</span> <span class="o">--</span><span class="n">restart</span><span class="o">=</span><span class="n">always</span> <span class="n">start</span>
 </pre></div>
 </div>
@@ -141,14 +147,12 @@ Run these commands to install <cite>scripts</cite>,</p>
                         title="next chapter">System</a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
-    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -173,7 +177,7 @@ Run these commands to install <cite>scripts</cite>,</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Sistemi Corp..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
     </div>
   </body>
 </html>

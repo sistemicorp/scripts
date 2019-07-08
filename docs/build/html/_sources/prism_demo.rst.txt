@@ -64,7 +64,7 @@ to worry about python packages, versions of modules, etc
 
 ::
 
-    docker run -d -e SERVERIP=192.168.1.10 -p 6800:6800 sistemicorp/Prism
+    docker run -d -e SERVERIP=192.168.1.10 -p 6800:6800 sistemicorp/prism
 
 * Open Google Chrome to
 
