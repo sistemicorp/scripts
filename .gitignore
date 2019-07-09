@@ -6,3 +6,5 @@ core/__pycache__/
 create_manifest
 
 public/postgdata/
+
+public/result/
