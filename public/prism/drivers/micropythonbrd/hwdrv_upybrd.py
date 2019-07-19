@@ -73,19 +73,20 @@ class upybrdPlayPub(threading.Thread):
 
     def run(self):
 
+        self.logger.info("!!! run loop started !!!")
+
+        # TODO: this is running all the time needlessly... a timer should be started
+        #       and stopped based on state, not a dumb poll loop
+
         pub_play = False
         while not self.stopped():
             time.sleep(self.POLL_TIMER_SEC)
             if self.ch_state in [CHANNEL.STATE_DONE, CHANNEL.STATE_READY]:
-                self.pyb.enter_raw_repl()
-
                 cmds = ["from pyb import Pin",
                         "p_in = Pin('X1', Pin.IN, Pin.PULL_UP)",
                         "print(p_in.value())",
                         ]
-                cmd = "\n".join(cmds).strip()
-                success, result = self.pyb.execbuffer(cmd)
-                result = repl_result(result)[0]  # only expecting one line result
+                success, result = self.pyb.exec_cmd(cmds)
                 self.logger.debug("{}, {}".format(success, result))
                 if success:
                     # only if the fixture was in the previously opened state, then we play
@@ -99,8 +100,6 @@ class upybrdPlayPub(threading.Thread):
 
                 else:
                     pub_play = False
-
-                self.pyb.exit_raw_repl
 
                 self.logger.info("open_fixture: {}, play: {}".format(self.open_fixture, pub_play))
                 if pub_play:

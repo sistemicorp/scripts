@@ -446,11 +446,7 @@ if __name__ == '__main__':
         did_something = True
 
     if args.test_1:
-        # This is an example of how to execute code on the micropyboard
-        # 1) open repl
-        # 2) make list of pyboard python code, any output you need should be in print()
-        # 3) join them to one string
-        # 4) send via exec(), store result
+        # This is an example of how to execute non-blocking, long running async task
         pyb = pyboard2(args.port)
 
         cmds = [
