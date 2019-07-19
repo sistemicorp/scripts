@@ -10,11 +10,14 @@ import logging
 import threading
 import time
 from public.prism.drivers.micropythonbrd.list_serial import serial_ports
-from public.prism.drivers.micropythonbrd.upybrd import MicroPyBrd
+from public.prism.drivers.micropythonbrd.upybrd import MicroPyBrd, pyboard2
+#import ampy.files as files
+import ampy.pyboard as pyboard
 
 from pubsub import pub
 from app.const import PUB, CHANNEL
 from app.sys_log import pub_notice
+
 
 class upybrdPlayPub(threading.Thread):
     """ Creates a thread per channel that will poll the switch
@@ -33,7 +36,7 @@ class upybrdPlayPub(threading.Thread):
 
         self.ch = ch
         self.pyb_port = drv["obj"]["port"]
-        self.pyb = MicroPyBrd(loggerIn=self.logger)
+        self.pyb = pyboard2(self.pyb_port)
         self.ch_state = CHANNEL.STATE_UNKNOWN
         self.ch_pub = PUB.get_channel_num_play(ch)
         self.open_fixture = False  # assume fixture is closed
@@ -74,7 +77,7 @@ class upybrdPlayPub(threading.Thread):
         while not self.stopped():
             time.sleep(self.POLL_TIMER_SEC)
             if self.ch_state in [CHANNEL.STATE_DONE, CHANNEL.STATE_READY]:
-                self.pyb.open(self.pyb_port)
+                self.pyb.enter_raw_repl()
 
                 cmds = ["from pyb import Pin",
                         "p_in = Pin('X1', Pin.IN, Pin.PULL_UP)",
@@ -82,6 +85,7 @@ class upybrdPlayPub(threading.Thread):
                         ]
                 cmd = "\n".join(cmds).strip()
                 success, result = self.pyb.execbuffer(cmd)
+                result = repl_result(result)[0]  # only expecting one line result
                 self.logger.debug("{}, {}".format(success, result))
                 if success:
                     # only if the fixture was in the previously opened state, then we play
@@ -96,7 +100,7 @@ class upybrdPlayPub(threading.Thread):
                 else:
                     pub_play = False
 
-                self.pyb.close()
+                self.pyb.exit_raw_repl
 
                 self.logger.info("open_fixture: {}, play: {}".format(self.open_fixture, pub_play))
                 if pub_play:

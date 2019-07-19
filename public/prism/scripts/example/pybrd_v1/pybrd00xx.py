@@ -9,8 +9,9 @@ import logging
 import time
 from core.test_item import TestItem
 from public.prism.api import ResultAPI
-from public.prism.drivers.micropythonbrd.upybrd import MicroPyBrd
-
+#import ampy.files as files
+import ampy.pyboard as pyboard
+from public.prism.drivers.micropythonbrd.upybrd import pyboard2
 
 # file and class name must match
 class pybrd00xx(TestItem):
@@ -50,13 +51,13 @@ class pybrd00xx(TestItem):
         _, _, _bullet = ctx.record.measurement("pyboard_id", id, ResultAPI.UNIT_INT)
         self.log_bullet(_bullet)
 
-        self.pyb = MicroPyBrd(loggerIn=self.logger)
+        self.pyb = pyboard2(self.pyb_port)
 
         self.item_end()  # always last line of test
 
     def PYBRD0xxTRDN(self):
         ctx = self.item_start()  # always first line of test
-
+        self.pyb.close()
         self.item_end()  # always last line of test
 
     def PYBRD0010_LedToggle(self):
@@ -65,8 +66,6 @@ class pybrd00xx(TestItem):
         with different arguments)
         """
         ctx = self.item_start()  # always first line of test
-
-        self.pyb.open(self.pyb_port)
 
         # 1=red, 2=green, 3=yellow, 4=blue
         LED_COLORS = ["Red", "Green", "Yellow", "Blue"]
@@ -93,10 +92,14 @@ class pybrd00xx(TestItem):
                  "",
                  ]
         cmd = "\n".join(cmds)
-        self.pyb.execbuffer(cmd)
+        self.pyb.enter_raw_repl()
+
+        # Using exec_raw_no_follow() is NON-BLOCKING, so the above code will run forever
+        _ = self.pyb.exec_raw_no_follow(cmd)
 
         buttons = ["{}".format(LED_COLORS[lednum-1]), "None", "Other"]
         user_select = self.input_button(buttons)
+
         if user_select["success"]:
             b_idx = user_select["button"]
             self.log_bullet("{} was pressed!".format(buttons[b_idx]))
@@ -107,8 +110,7 @@ class pybrd00xx(TestItem):
             _result = ResultAPI.RECORD_RESULT_FAIL
             self.log_bullet(user_select.get("err", "UNKNOWN ERROR"))
 
-        self.pyb.open(self.pyb_port)  # causes reset to break the infinite loop in cmds
-        self.pyb.close()
+        self.pyb.exit_raw_repl()
 
         self.item_end(_result)  # always last line of test
 
@@ -138,8 +140,6 @@ class pybrd00xx(TestItem):
             self.item_end(ResultAPI.RECORD_RESULT_FAIL)  # always last line of test
             return
 
-        self.pyb.open(self.pyb_port)
-
         cmds = [
             "import pyb",
         ]
@@ -165,16 +165,13 @@ class pybrd00xx(TestItem):
 
         results = []
         for i in range(samples):
-            success, result = self.pyb.execbuffer(cmd)
-            self.logger.info("{} {} {}".format(i, success, result))
-            if not success:
-                # retry once
-                success, result = self.pyb.execbuffer(cmd)
-                self.logger.info("{} {} {}".format(i, success, result))
+            self.pyb.enter_raw_repl()  # this resets the target
+            result = self.pyb.exec(cmd)
+            self.logger.info("{} {}".format(i, result))
 
-            if success:
-                results.append(float(result))
-                time.sleep(delay_s)
+            self.pyb.exit_raw_repl()
+            results.append(float(result))
+            time.sleep(delay_s)
 
         if not success:
             self.log_bullet("ADC chan {}: Failed".format(chan))
@@ -194,8 +191,6 @@ class pybrd00xx(TestItem):
 
         _, _result, _bullet = ctx.record.measurement("{}".format(name), result, unit, min, max)
         self.log_bullet(_bullet)
-
-        self.pyb.close()
 
         self.item_end(_result)  # always last line of test
 

@@ -24,6 +24,95 @@ import ampy.pyboard as pyboard
 VERSION = "0.0.1"
 
 
+class StubLogger(object):
+    """ stubb out logger if none is provided"""
+    # TODO: support print to console.
+    def info(self, *args, **kwargs): pass
+    def error(self, *args, **kwargs): pass
+    def debug(self, *args, **kwargs): pass
+    def warning(self, *args, **kwargs): pass
+    def critical(self, *args, **kwargs): pass
+
+
+class pyboard2(pyboard.Pyboard):
+    """ Extend the base pyboard class with a little exec helper method, exec_cmd
+    to make it more script friendly
+
+    """
+
+    def __init__(self, device, baudrate=115200, user='micro', password='python', wait=0, rawdelay=0, loggerIn=None):
+        super().__init__(device, baudrate, user, password, wait, rawdelay)
+
+        if loggerIn: self.logger = loggerIn
+        else: self.logger = StubLogger()
+
+    def _repl_result(self, result):
+        """ return repl result as a list of strings for client to parse
+
+        :param result:
+        :return: success (True/False), list (on success) or original repl result of success False
+        """
+        if isinstance(result, bytes):
+            return True, result.decode("utf-8").splitlines()
+        else:
+            self.logger.warn("repl_result: unexpected return from pyboard type: {}".format(type(result)))
+        # the repl return type was odd at this point but maybe the client expects that
+        return False, result
+
+    def exec_cmd(self, cmds, repl_enter=True, repl_exit=True, blocking=True):
+        """ execute a buffer on the open pyboard
+
+        commands should be formed this way:
+            pyb = pyboard2(args.port)
+            cmds = ["from pyb import Pin",
+                    "p_in = Pin('{}', Pin.IN, Pin.PULL_UP)".format(args.read_gpio),
+                    "print(p_in.value())",
+                    'print("hello")',
+                    'print("world")'
+            ]
+            success, result = pyb.exec_cmd(cmds)
+            pyb.close()
+
+        NOTE:  !! to get results back you must wrap in a print() !!
+
+        :param buf: string of command(s)
+        :return: success (True/False), result (if any)
+        """
+        if not isinstance(cmds, list):
+            self.logger.error("cmd should be a list of micropython code (strings)")
+            return False, None
+
+        cmd = "\n".join(cmds)
+
+        # this was copied/ported from pyboard.py
+        try:
+            if repl_enter: self.enter_raw_repl()
+
+            if blocking:
+                ret, ret_err = self.exec_raw(cmd + '\n', timeout=1, data_consumer=None)
+            else:
+                self.exec_raw_no_follow(cmd)
+                ret_err = False
+                ret = None
+
+        except pyboard.PyboardError as er:
+            self.logger.error(er)
+            return False, None
+        except KeyboardInterrupt:
+            return False, None
+
+        if repl_exit: self.exit_raw_repl()
+
+        if ret_err:
+            pyboard.stdout_write_bytes(ret_err)
+            self.logger.error(ret_err)
+            return False, None
+
+        if ret:
+            return True, ret.decode("utf-8").strip()
+        return True, ""
+
+
 class MicroPyBrd(object):
     """  Driver for the micopython board
 
@@ -74,15 +163,6 @@ class MicroPyBrd(object):
 
     """
 
-    class StubLogger(object):
-        """ stubb out logger if none is provided"""
-        # TODO: support print to console.
-        def info(self, *args, **kwargs): pass
-        def error(self, *args, **kwargs): pass
-        def debug(self, *args, **kwargs): pass
-        def warning(self, *args, **kwargs): pass
-        def critical(self, *args, **kwargs): pass
-
     BAUDRATE = 115200
 
     LED_RED    = 1
@@ -93,7 +173,7 @@ class MicroPyBrd(object):
 
     def __init__(self, loggerIn=None):
         if loggerIn: self.logger = loggerIn
-        else: self.logger = self.StubLogger()
+        else: self.logger = StubLogger()
         self.pyb = None       # handle to the pyboard
         self.serial = None    # serial port to the pyboard
         self.logger.debug("Done")
@@ -164,11 +244,10 @@ class MicroPyBrd(object):
             board_files = files.Files(self.pyb)
             board_files.put('/flash/{}'.format(local), infile.read())
 
-    def _pyb_del_file(self, file):
-        cmds = ['import os', 'os.remove("{}")'.format(file)]
-        cmd = "\n".join(cmds)
-        success, result = self.execbuffer(cmd)
-        return success
+    def del_file(self, file):
+        board_files = files.Files(self.pyb)
+        board_files.rm(file)
+        return True
 
     def get_id(self):
         """ Get the id of an open pyboard
@@ -176,8 +255,9 @@ class MicroPyBrd(object):
         """
         files = self.get_files()
         for f in files:
-            if f.startswith("ID"):
-                channel = int(f[2:])
+            if f.startswith("/flash/ID"):
+                # from: /flash/ID2 - 3 bytes -> extract the ID value of 2
+                channel = int(f.split(" ")[0].split('/flash/ID')[1])
                 return channel
         return None
 
@@ -269,6 +349,9 @@ def parse_args():
     parser.add_argument("-g", '--read-gpio', dest='read_gpio',
                         action='store', help='read gpio (X1, X2, ...)')
 
+    parser.add_argument("-G", '--test-1', dest='test_1',
+                        action='store_true', help='test code (non-blocking example)')
+
     parser.add_argument("-c", '--copy', dest='copy_file',
                         action='store', help='copy local file to pyboard /flash')
 
@@ -344,15 +427,64 @@ if __name__ == '__main__':
         did_something = True
 
     if args.read_gpio:
-        pyb = MicroPyBrd(logging)
-        pyb.open(args.port)
+        # This is an example of how to execute code on the micropyboard
+        # 1) open repl
+        # 2) make list of pyboard python code, any output you need should be in print()
+        # 3) join them to one string
+        # 4) send via exec(), store result
+        pyb = pyboard2(args.port)
+
         cmds = ["from pyb import Pin",
                 "p_in = Pin('{}', Pin.IN, Pin.PULL_UP)".format(args.read_gpio),
                 "print(p_in.value())",
+                'print("hello")',
+                'print("world")'
                 ]
-        cmd = "\n".join(cmds).strip()
-        success, result = pyb.execbuffer(cmd)
-        logging.info("{}, {}".format(success, result.strip()))
+        success, result = pyb.exec_cmd(cmds)
+        pyb.close()
+        logging.info("{} {}".format(success, result))
+        did_something = True
+
+    if args.test_1:
+        # This is an example of how to execute code on the micropyboard
+        # 1) open repl
+        # 2) make list of pyboard python code, any output you need should be in print()
+        # 3) join them to one string
+        # 4) send via exec(), store result
+        pyb = pyboard2(args.port)
+
+        cmds = [
+            "import _thread",
+            "import time",
+            "",
+            "c = {'a':0}",
+            "def testThread():",
+            " while True:",
+            "  pyb.LED(1).on()",
+            "  print('Hello from thread {}'.format(c['a']))",
+            "  time.sleep(0.5)",
+            "  pyb.LED(1).off()",
+            "  time.sleep(0.5)",
+            "  c['a'] += 1",
+            "",
+            "",
+            "",
+            "",
+            "_thread.start_new_thread(testThread, ())"
+        ]
+
+        print("\n".join(cmds))
+        success, result = pyb.exec_cmd(cmds, repl_exit=False, blocking=False)
+        logging.info("{} {}".format(success, result))
+
+        while True:
+            data = pyb.read_until(1, b'\r\n', timeout=1, data_consumer=None)
+            logging.info(data.decode("utf-8"))
+            if data.decode("utf-8").find("11") >= 0:
+                break
+
+        logging.info(data)
+
         pyb.close()
         did_something = True
 
