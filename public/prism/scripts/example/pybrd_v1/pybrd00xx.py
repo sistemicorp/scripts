@@ -9,8 +9,7 @@ import logging
 import time
 from core.test_item import TestItem
 from public.prism.api import ResultAPI
-#import ampy.files as files
-import ampy.pyboard as pyboard
+#import ampy.files as files  # see this for file stuff
 from public.prism.drivers.micropythonbrd.upybrd import pyboard2
 
 # file and class name must match
@@ -64,6 +63,12 @@ class pybrd00xx(TestItem):
         """ In this test the user confirms if the LED under test blinked
         (this is also an example of one test item being run multiple times
         with different arguments)
+
+        {"id": "PYBRD0010_LedToggle",     "enable": true, "lednum": 2, "ontime_ms": 300 },
+
+        where,
+           lednum: 1=red, 2=green, 3=yellow, 4=blue
+
         """
         ctx = self.item_start()  # always first line of test
 
