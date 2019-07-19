@@ -159,6 +159,11 @@ class MicroPyBrd(object):
         self.logger.debug(files_list)
         return files_list
 
+    def copy_file(self, local):
+        with open(local, "rb") as infile:
+            board_files = files.Files(self.pyb)
+            board_files.put('/flash/{}'.format(local), infile.read())
+
     def _pyb_del_file(self, file):
         cmds = ['import os', 'os.remove("{}")'.format(file)]
         cmd = "\n".join(cmds)
@@ -264,6 +269,9 @@ def parse_args():
     parser.add_argument("-g", '--read-gpio', dest='read_gpio',
                         action='store', help='read gpio (X1, X2, ...)')
 
+    parser.add_argument("-c", '--copy', dest='copy_file',
+                        action='store', help='copy local file to pyboard /flash')
+
     parser.add_argument("-v", '--verbose', dest='verbose', default=0, action='count', help='Increase verbosity')
     parser.add_argument("--version", dest="show_version", action='store_true', help='Show version and exit')
 
@@ -273,21 +281,9 @@ def parse_args():
         logging.info("Version {}".format(VERSION))
         sys.exit(0)
 
-    if args.set_id is not None:
+    if not args.list:
         if not args.port:
-            parser.error("port is required for option --set-id")
-
-    if args.identify:
-        if not args.port:
-            parser.error("port is required for option --identify")
-
-    if args.files:
-        if not args.port:
-            parser.error("port is required for option --files")
-
-    if args.read_gpio:
-        if not args.port:
-            parser.error("port is required for option --read-gpio")
+            parser.error("--port is required")
 
     return args
 
@@ -341,7 +337,9 @@ if __name__ == '__main__':
     if args.files:
         pyb = MicroPyBrd(logging)
         pyb.open(args.port)
-        logging.info(pyb.get_files())
+        files_list = pyb.get_files()
+        for f in files_list:
+            logging.info(f)
         pyb.close()
         did_something = True
 
@@ -355,6 +353,13 @@ if __name__ == '__main__':
         cmd = "\n".join(cmds).strip()
         success, result = pyb.execbuffer(cmd)
         logging.info("{}, {}".format(success, result.strip()))
+        pyb.close()
+        did_something = True
+
+    if args.copy_file:
+        pyb = MicroPyBrd(logging)
+        pyb.open(args.port)
+        pyb.copy_file(args.copy_file)
         pyb.close()
         did_something = True
 
