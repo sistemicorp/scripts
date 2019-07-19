@@ -91,11 +91,14 @@ class pybrd00xx(TestItem):
                  "led_cycle()",
                  "",
                  ]
-        cmd = "\n".join(cmds)
-        self.pyb.enter_raw_repl()
 
-        # Using exec_raw_no_follow() is NON-BLOCKING, so the above code will run forever
-        _ = self.pyb.exec_raw_no_follow(cmd)
+        # blocking is False, so we can move on and ask user what is blinking
+        success, result = self.pyb.exec_cmd(cmds, blocking=False)
+        if not success:
+            _result = ResultAPI.RECORD_RESULT_FAIL
+            self.log_bullet("UNKNOWN PYBOARD ERROR")
+            self.item_end(_result)  # always last line of test
+            return
 
         buttons = ["{}".format(LED_COLORS[lednum-1]), "None", "Other"]
         user_select = self.input_button(buttons)
@@ -110,6 +113,7 @@ class pybrd00xx(TestItem):
             _result = ResultAPI.RECORD_RESULT_FAIL
             self.log_bullet(user_select.get("err", "UNKNOWN ERROR"))
 
+        # this resets the pyboard, so blinking will stop
         self.pyb.exit_raw_repl()
 
         self.item_end(_result)  # always last line of test
@@ -161,17 +165,15 @@ class pybrd00xx(TestItem):
             cmds.append("val = adc.read_vref()")
 
         cmds.append("print(val)")
-        cmd = "\n".join(cmds)
 
         results = []
+        success = True
         for i in range(samples):
-            self.pyb.enter_raw_repl()  # this resets the target
-            result = self.pyb.exec(cmd)
-            self.logger.info("{} {}".format(i, result))
-
-            self.pyb.exit_raw_repl()
+            success, result = self.pyb.exec_cmd(cmds)
+            self.logger.info("{} {} {}".format(i, success, result))
             results.append(float(result))
             time.sleep(delay_s)
+            if not success: break
 
         if not success:
             self.log_bullet("ADC chan {}: Failed".format(chan))
