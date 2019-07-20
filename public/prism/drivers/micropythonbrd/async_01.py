@@ -37,6 +37,7 @@ class MicroPyWorker(object):
             pyb.LED(1).off()
             time.sleep(0.5)
             self.ctx['a'] += 1
+            return self.ctx['a']
 
 
 def testThread():
@@ -52,8 +53,17 @@ def testThread():
                 method = getattr(w,w_method, None)
                 if method is not None:
                     result = method(w_args)
+                    print(result)
 
 
 q = MicroPyQueue()
 
 _thread.start_new_thread(testThread, ())
+
+# How to use this:
+# - copy this file over to micropython
+# - import it, import async_01, this will cause it to "run"
+# - send in a command via the q,
+#   async_01.q.put({"method":"toggle_led", "args":1})
+
+
