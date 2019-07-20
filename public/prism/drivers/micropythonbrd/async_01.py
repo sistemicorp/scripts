@@ -1,6 +1,7 @@
 import _thread
 import time
 import pyb
+import micropython
 
 
 class MicroPyQueue(object):
@@ -61,6 +62,7 @@ class MicroPyWorker(object):
     def __init__(self):
         self.ctx = {'a':0}
         self.timer = pyb.Timer(4)  # create a timer object using timer 4
+        self.isr_jig_closed_detect_ref = self.jig_closed_detect
 
     def _toggle_led(self, led, sleep=0.5):
         pyb.LED(led).on()
@@ -79,11 +81,15 @@ class MicroPyWorker(object):
         print("setting jig_closed_detect: {}".format(enable))
         if enable:
             self.timer.init(freq=2)  # trigger at Hz
-            self.timer.callback(self.jig_closed_detect)
+            self.timer.callback(self.isr_jig_closed_detect)
         else:
             self.timer.deinit()
 
-    def jig_closed_detect(self, timer):
+    def isr_jig_closed_detect(self, _):
+        # this method is not allowed to create memory or items in list
+        micropython.schedule(self.isr_jig_closed_detect_ref, 0)
+
+    def jig_closed_detect(self, _):
         self._toggle_led(3, sleep=0.1)
         q_ret.put(str({"method": "jig_closed_detect", "value": True}))
         # in reality, if the jig opens, that open result
