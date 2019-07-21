@@ -26,39 +26,44 @@ class MicroPyQueue(object):
         """ Get an item from the queue
 
         :param method: set to class_method to return a specific result
-        :return: return item
+        :return: return (ONE) item
         """
         with self.lock:
             if self.items:
                 if method is None:
-                    return self.items.pop(0)
+                    return [self.items.pop(0)]
 
                 for idx, item in iter(self.items):
                     if item["method"] == method:
-                        return self.items.pop(idx)
+                        return [self.items.pop(idx)]
 
-            return None
+            return []
 
     def peek(self, method=None, all=False):
-        """ Peek at item(s) in the queue, does not remove item
+        """ Peek at item(s) in the queue, does not remove item(s)
 
         :param method: if set, returns first item matching method string
-        :param all: returns all items, method param is ignored
-        :return: None for no item, or item
+        :param all: if set returns all items, if method is set, then all items with method returned
+        :return: None for no item, or [item(s)]
         """
         with self.lock:
-            if all:
+            if all and not method:
                 return self.items
 
             if self.items:
+                items = []
                 if method is None:
-                    return self.items[0]
+                    items.append(self.items[0])
+                    return items
 
-                for idx, item in iter(self.items):
-                    if item["method"] == method:
-                        return self.items[idx]
+                else:
+                    for idx, item in iter(self.items):
+                        if item["method"] == method:
+                            items.append(self.items[idx])
 
-            return None
+                    return self.items[idx]
+
+            return []
 
     def update(self, item_update):
         """ Update an item in queue, or append item if it doesn't exist
@@ -121,20 +126,19 @@ class MicroPyServer(object):
         :return: success (True/False)
         """
         if not isinstance(cmd, dict):
-            print('{"method": "cmd", "value": "cmd must be a dict", "success": false}')
+            self._ret.put({"method": "cmd", "value": "cmd must be a dict", "success": False})
             return False
 
         if not cmd.get("method", False):
-            print('{"method": "cmd", "value": "cmd dict must have method key", "success": false}')
+            self._ret.put({"method": "cmd", "value": "cmd dict must have method key", "success": False})
             return False
 
         if not getattr(self, cmd["method"], False):
-            print('''{{"method": "cmd", "value": "cmd['{}'] invalid", "success": false}}'''.format(cmd["method"]))
+            self._ret.put({"method": "cmd", "value": "cmd['{}'] invalid".format(cmd["method"]), "success": False})
             return False
 
         with self.lock:
             self._cmd.put(cmd)
-            print('{"method": "cmd", "value": true, "success": true}')
             return True
 
     def ret(self, method=None):
@@ -143,7 +147,6 @@ class MicroPyServer(object):
             if ret:
                 print(ret)
                 return True
-            print('{"method": "ret", "value": true}')
             return True
 
     def peek(self, method=None, all=False):
@@ -152,7 +155,6 @@ class MicroPyServer(object):
             if ret:
                 print(ret)
                 return True
-            print('{"method": "peek", "value": true}')
             return True
 
     def update(self, item_update):
@@ -167,14 +169,12 @@ class MicroPyServer(object):
         while True:
             item = self._cmd.get()
             if item:
-                method = item["method"]
-                args = item["args"]
+                method = item[0]["method"]
+                args = item[0]["args"]
                 method = getattr(self, method, None)
                 if method is not None:
                     with self.lock:
                         method(args)
-                        #result = method(args)
-                        #print(str(result) + "\n")
 
         # allows other threads to run, but generally speaking there should be no other threads(?)
         time.sleep(0.01)
@@ -195,15 +195,14 @@ class MicroPyServer(object):
         :return: success (True/False)
         """
         if not led in [self.LED_BLUE, self.LED_GREEN, self.LED_RED, self.LED_YELLOW]:
-            self._ret.put("""{"method": "toggle_led", "value": false}""")
+            self._ret.put({"method": "toggle_led", "value": False, "success": False})
             return
 
         self._toggle_led(led, sleep)
-        ret = """{"method": "toggle_led", "value": true}"""
-        self._ret.put(ret)
+        self._ret.put({"method": "toggle_led", "value": True, "success": True})
 
     def enable_jig_closed_detect(self, enable=True):
-        print("setting jig_closed_detect: {}".format(enable))
+        self._ret.put({"method": "enable_jig_closed_detect", "value": enable, "success": True})
         if enable:
             self.timer.init(freq=1)  # trigger at Hz
             self.timer.callback(self.isr_jig_closed_detect)
@@ -212,11 +211,12 @@ class MicroPyServer(object):
 
     def isr_jig_closed_detect(self, _):
         # this method is not allowed to create memory or items in list
+        # see http://docs.micropython.org/en/latest/reference/isr_rules.html
         micropython.schedule(self.isr_jig_closed_detect_ref, 0)
 
     def jig_closed_detect(self, _):
         self._toggle_led(3, sleep=0.1)
-        self._ret.put(str({"method": "jig_closed_detect", "value": "true"}))
+        self._ret.put({"method": "jig_closed_detect", "value": "true", "success": True})
         # in reality, if the jig opens, that open result
         # should not be replaces until the PC-side reads that result,
         # so, this code should peek at all messages, if there is a jig open

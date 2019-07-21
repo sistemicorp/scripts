@@ -171,9 +171,13 @@ class pyboard2(pyboard.Pyboard):
             return False, None
 
         print("A: {}".format(ret))
+        # TODO: list of result strings?  more flexible?
         if ret:
-            return True, json.loads(ret.decode("utf-8").strip())
-        return True, {}
+            # json-ize... TODO: find some more complete code...
+            items = ret.decode("utf-8").replace("'", '"').replace("True", "true").replace("False", "false").replace("None", "null")
+            items = json.loads(items)
+            return True, items
+        return True, []
 
 
 class MicroPyBrd(object):
@@ -515,25 +519,28 @@ if __name__ == '__main__':
         cmds = [
             "import upybrd_server_01",
             "upybrd_server_01.server.cmd({{'method': 'toggle_led', 'args': {}}})".format(pyb.LED_RED),
+            #"upybrd_server_01.server.ret()",
         ]
 
         success, result = pyb.server_cmd(cmds, repl_exit=False)
         logging.info("{} {}".format(success, result))
 
-        if True:
-            cmds = [
-                "upybrd_server_01.server.ret()",
-            ]
+        cmds = [
+            "upybrd_server_01.server.ret()",
+        ]
 
-            retry = 5
-            while retry:
-                success, result = pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
-                print(success, result)
-                if success and result.get("method", False) is 'toggle_led' and result.get("value", False):
-                    break
-                retry -= 1
+        retry = 5
+        succeeded = False
+        while retry and not succeeded:
+            success, result = pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
+            print(result)
+            if success:
+                for r in result:
+                    if r.get("method", False) == 'toggle_led' and r.get("value", False) == True:
+                        succeeded = True
+            retry -= 1
 
-            logging.info(result)
+        logging.info(result)
 
         pyb.close()
         did_something = True
