@@ -533,13 +533,12 @@ if __name__ == '__main__':
         succeeded = False
         while retry and not succeeded:
             success, result = pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
+            logging.info("{} {}".format(success, result))
             if success:
                 for r in result:
                     if r.get("method", False) == 'toggle_led' and r.get("value", False) == True:
                         succeeded = True
             retry -= 1
-
-        logging.info(result)
 
         pyb.close()
         did_something = True
@@ -568,13 +567,12 @@ if __name__ == '__main__':
         succeeded = False
         while retry and not succeeded:
             success, result = pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
+            logging.info("{} {}".format(success, result))
             if success:
                 for r in result:
                     if r.get("method", False) == 'toggle_led' and r.get("value", False) == True:
                         succeeded = True
             retry -= 1
-
-        logging.info(result)
 
         pyb.close()
         did_something = True
