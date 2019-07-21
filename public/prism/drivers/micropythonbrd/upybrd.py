@@ -144,7 +144,7 @@ class pyboard2(pyboard.Pyboard):
             return False, None
 
         cmd = "\n".join(cmds)
-        print(cmd)
+        #print("cmd:" + cmd)
 
         # this was copied/ported from pyboard.py
         try:
@@ -170,8 +170,7 @@ class pyboard2(pyboard.Pyboard):
             self.logger.error(ret_err)
             return False, None
 
-        print("A: {}".format(ret))
-        # TODO: list of result strings?  more flexible?
+        #print("A: {}".format(ret))
         if ret:
             # json-ize... TODO: find some more complete code...
             items = ret.decode("utf-8").replace("'", '"').replace("True", "true").replace("False", "false").replace("None", "null")
@@ -416,8 +415,10 @@ def parse_args():
     parser.add_argument("-g", '--read-gpio', dest='read_gpio',
                         action='store', help='read gpio (X1, X2, ...)')
 
-    parser.add_argument("-G", '--test-1', dest='test_1',
-                        action='store_true', help='test code (non-blocking example)')
+    parser.add_argument("-1", '--test-1', dest='test_1',
+                        action='store_true', help='test code, blink led')
+    parser.add_argument("-2", '--test-2', dest='test_2',
+                        action='store_true', help='test code, blink led check result later')
 
     parser.add_argument("-c", '--copy', dest='copy_file',
                         action='store', help='copy local file to pyboard /flash')
@@ -519,7 +520,41 @@ if __name__ == '__main__':
         cmds = [
             "import upybrd_server_01",
             "upybrd_server_01.server.cmd({{'method': 'toggle_led', 'args': {}}})".format(pyb.LED_RED),
-            #"upybrd_server_01.server.ret()",
+        ]
+
+        success, result = pyb.server_cmd(cmds, repl_enter=True, repl_exit=False)
+        logging.info("{} {}".format(success, result))
+
+        cmds = [
+            "upybrd_server_01.server.ret()",
+        ]
+
+        retry = 5
+        succeeded = False
+        while retry and not succeeded:
+            success, result = pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
+            if success:
+                for r in result:
+                    if r.get("method", False) == 'toggle_led' and r.get("value", False) == True:
+                        succeeded = True
+            retry -= 1
+
+        logging.info(result)
+
+        pyb.close()
+        did_something = True
+
+    if args.test_2:
+        # This is an example of how to execute non-blocking, long running async task
+        # This shows special case of 1, as the 'toggle_led' result is not posted until
+        # after the led blinks, so here the first server.ret() does not get the expected
+        # result and polling starts...
+        pyb = pyboard2(args.port)
+
+        cmds = [
+            "import upybrd_server_01",
+            "upybrd_server_01.server.cmd({{'method': 'toggle_led', 'args': {}}})".format(pyb.LED_RED),
+            "upybrd_server_01.server.ret()",
         ]
 
         success, result = pyb.server_cmd(cmds, repl_exit=False)
@@ -533,7 +568,6 @@ if __name__ == '__main__':
         succeeded = False
         while retry and not succeeded:
             success, result = pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
-            print(result)
             if success:
                 for r in result:
                     if r.get("method", False) == 'toggle_led' and r.get("value", False) == True:
