@@ -17,9 +17,11 @@ import os
 import time
 import logging
 import argparse
+import json
 
 import ampy.files as files
 import ampy.pyboard as pyboard
+
 
 VERSION = "0.0.1"
 
@@ -39,6 +41,11 @@ class pyboard2(pyboard.Pyboard):
     to make it more script friendly
 
     """
+
+    LED_RED    = 1
+    LED_GREEN  = 2
+    LED_YELLOW = 3
+    LED_BLUE   = 4
 
     def __init__(self, device, baudrate=115200, user='micro', password='python', wait=0, rawdelay=0, loggerIn=None):
         super().__init__(device, baudrate, user, password, wait, rawdelay)
@@ -83,6 +90,7 @@ class pyboard2(pyboard.Pyboard):
             return False, None
 
         cmd = "\n".join(cmds)
+        print(cmd)
 
         # this was copied/ported from pyboard.py
         try:
@@ -110,7 +118,62 @@ class pyboard2(pyboard.Pyboard):
 
         if ret:
             return True, ret.decode("utf-8").strip()
-        return True, ""
+        return True, {}
+
+    def server_cmd(self, cmds, repl_enter=True, repl_exit=True, blocking=True):
+        """ execute a buffer on the open pyboard
+
+        commands should be formed this way:
+            pyb = pyboard2(args.port)
+            cmds = ["from pyb import Pin",
+                    "p_in = Pin('{}', Pin.IN, Pin.PULL_UP)".format(args.read_gpio),
+                    "print(p_in.value())",
+                    'print("hello")',
+                    'print("world")'
+            ]
+            success, result = pyb.exec_cmd(cmds)
+            pyb.close()
+
+        NOTE:  !! to get results back you must wrap in a print() !!
+
+        :param buf: string of command(s)
+        :return: success (True/False), result (if any)
+        """
+        if not isinstance(cmds, list):
+            self.logger.error("cmd should be a list of micropython code (strings)")
+            return False, None
+
+        cmd = "\n".join(cmds)
+        print(cmd)
+
+        # this was copied/ported from pyboard.py
+        try:
+            if repl_enter: self.enter_raw_repl()
+
+            if blocking:
+                ret, ret_err = self.exec_raw(cmd + '\n', timeout=1, data_consumer=None)
+            else:
+                self.exec_raw_no_follow(cmd)
+                ret_err = False
+                ret = None
+
+        except pyboard.PyboardError as er:
+            self.logger.error(er)
+            return False, None
+        except KeyboardInterrupt:
+            return False, None
+
+        if repl_exit: self.exit_raw_repl()
+
+        if ret_err:
+            pyboard.stdout_write_bytes(ret_err)
+            self.logger.error(ret_err)
+            return False, None
+
+        print("A: {}".format(ret))
+        if ret:
+            return True, json.loads(ret.decode("utf-8").strip())
+        return True, {}
 
 
 class MicroPyBrd(object):
@@ -450,36 +513,27 @@ if __name__ == '__main__':
         pyb = pyboard2(args.port)
 
         cmds = [
-            "import _thread",
-            "import time",
-            "",
-            "c = {'a':0}",
-            "def testThread():",
-            " while True:",
-            "  pyb.LED(1).on()",
-            "  print('Hello from thread {}'.format(c['a']))",
-            "  time.sleep(0.5)",
-            "  pyb.LED(1).off()",
-            "  time.sleep(0.5)",
-            "  c['a'] += 1",
-            "",
-            "",
-            "",
-            "",
-            "_thread.start_new_thread(testThread, ())"
+            "import upybrd_server_01",
+            "upybrd_server_01.server.cmd({{'method': 'toggle_led', 'args': {}}})".format(pyb.LED_RED),
         ]
 
-        print("\n".join(cmds))
-        success, result = pyb.exec_cmd(cmds, repl_exit=False, blocking=False)
+        success, result = pyb.server_cmd(cmds, repl_exit=False)
         logging.info("{} {}".format(success, result))
 
-        while True:
-            data = pyb.read_until(1, b'\r\n', timeout=1, data_consumer=None)
-            logging.info(data.decode("utf-8"))
-            if data.decode("utf-8").find("11") >= 0:
-                break
+        if True:
+            cmds = [
+                "upybrd_server_01.server.ret()",
+            ]
 
-        logging.info(data)
+            retry = 5
+            while retry:
+                success, result = pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
+                print(success, result)
+                if success and result.get("method", False) is 'toggle_led' and result.get("value", False):
+                    break
+                retry -= 1
+
+            logging.info(result)
 
         pyb.close()
         did_something = True

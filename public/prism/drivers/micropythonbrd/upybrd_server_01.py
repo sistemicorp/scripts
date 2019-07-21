@@ -77,7 +77,7 @@ class MicroPyQueue(object):
             self.items.append(item)
 
 
-class MicroPyWorker(object):
+class MicroPyServer(object):
     """ Async Worker MicroPython Worker
     - runs in its own thread
 
@@ -85,10 +85,10 @@ class MicroPyWorker(object):
         - copy this file over to micropython
         - import it, import async_01, this will cause it to "run"
         - send in a command via the q,
-            async_01.w.cmd({"method":"toggle_led", "args":1})
-            async_01.w.cmd({"method":"enable_jig_closed_detect", "args":True})
+            upybrd_server_01.server.cmd({"method":"toggle_led", "args":1})
+            upybrd_server_01.server.cmd({"method":"enable_jig_closed_detect", "args":True})
         - to get a result,
-            async_01.w.get()
+            upybrd_server_01.server.get()
 
     cmds: Are in this format: {"method": <class_method>, "args": <args>}
 
@@ -96,45 +96,87 @@ class MicroPyWorker(object):
 
     """
 
+    LED_RED    = 1
+    LED_GREEN  = 2
+    LED_YELLOW = 3
+    LED_BLUE   = 4
+
     def __init__(self):
         self.lock = _thread.allocate_lock()
         self._cmd = MicroPyQueue()
         self._ret = MicroPyQueue()
-        self.ctx = {'a':0}         # use dict to store static data
+        self.ctx = {'a': 0}         # use dict to store static data
         self.timer = pyb.Timer(4)  # create a timer object using timer 4
         self.isr_jig_closed_detect_ref = self.jig_closed_detect
 
+    # ===================================================================================
+    # Public API to send commands and get results from the MicroPy Server
+    # NOTE: "results" must be print()'ed to be return values on the serial (repl) port
+
     def cmd(self, cmd):
+        """ Send (Add) a command to the MicroPy Server command queue
+        - commands are executed in the order they are received
+
+        :param cmd: dict format {"method": <class_method>, "args": <args>}
+        :return: success (True/False)
+        """
+        if not isinstance(cmd, dict):
+            print('{"method": "cmd", "value": "cmd must be a dict", "success": false}')
+            return False
+
+        if not cmd.get("method", False):
+            print('{"method": "cmd", "value": "cmd dict must have method key", "success": false}')
+            return False
+
+        if not getattr(self, cmd["method"], False):
+            print('''{{"method": "cmd", "value": "cmd['{}'] invalid", "success": false}}'''.format(cmd["method"]))
+            return False
+
         with self.lock:
             self._cmd.put(cmd)
+            print('{"method": "cmd", "value": true, "success": true}')
+            return True
 
     def ret(self, method=None):
         with self.lock:
-            return self._ret.get(method)
+            ret = self._ret.get(method)
+            if ret:
+                print(ret)
+                return True
+            print('{"method": "ret", "value": true}')
+            return True
 
     def peek(self, method=None, all=False):
         with self.lock:
-            return self._ret.peek(method, all)
+            ret = self._ret.peek(method, all)
+            if ret:
+                print(ret)
+                return True
+            print('{"method": "peek", "value": true}')
+            return True
 
     def update(self, item_update):
         with self.lock:
             return self._ret.update(item_update)
 
-    def run(self):
+    # ===================================================================================
+    # private
+
+    def _run(self):
         # run on thread
         while True:
             item = self._cmd.get()
-            if item is not None:
+            if item:
                 method = item["method"]
                 args = item["args"]
                 method = getattr(self, method, None)
                 if method is not None:
                     with self.lock:
-                        result = method(args)
-                        print(str(result) + "\n")
+                        method(args)
+                        #result = method(args)
+                        #print(str(result) + "\n")
 
-        # allows other threads to run, but generally speaking there should be none
-        # timer isr was working before adding this.  But this seems to be the right thing to do.
+        # allows other threads to run, but generally speaking there should be no other threads(?)
         time.sleep(0.01)
 
     # ===================================================================================
@@ -146,11 +188,19 @@ class MicroPyWorker(object):
         time.sleep(sleep)
 
     def toggle_led(self, led, sleep=0.5):
+        """ Toggle LED
+
+        :param led: one of LED_*
+        :param sleep: seconds between on/off
+        :return: success (True/False)
+        """
+        if not led in [self.LED_BLUE, self.LED_GREEN, self.LED_RED, self.LED_YELLOW]:
+            self._ret.put("""{"method": "toggle_led", "value": false}""")
+            return
+
         self._toggle_led(led, sleep)
-        self.ctx['a'] += 1
-        print('Hello from MicroPyWorker {}'.format(self.ctx['a']))
-        self._ret.put(str({"method": "toggle_led", "value": self.ctx['a']}))
-        return True
+        ret = """{"method": "toggle_led", "value": true}"""
+        self._ret.put(ret)
 
     def enable_jig_closed_detect(self, enable=True):
         print("setting jig_closed_detect: {}".format(enable))
@@ -166,13 +216,13 @@ class MicroPyWorker(object):
 
     def jig_closed_detect(self, _):
         self._toggle_led(3, sleep=0.1)
-        self._ret.put(str({"method": "jig_closed_detect", "value": True}))
+        self._ret.put(str({"method": "jig_closed_detect", "value": "true"}))
         # in reality, if the jig opens, that open result
         # should not be replaces until the PC-side reads that result,
         # so, this code should peek at all messages, if there is a jig open
         # message, then don't post a jig closed message.
 
 
-w = MicroPyWorker()
-_thread.start_new_thread(w.run, ())
+server = MicroPyServer()
+_thread.start_new_thread(server._run, ())
 
