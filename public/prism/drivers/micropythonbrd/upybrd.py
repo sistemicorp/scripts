@@ -495,22 +495,7 @@ if __name__ == '__main__':
         did_something = True
 
     if args.read_gpio:
-        # This is an example of how to execute code on the micropyboard
-        # 1) open repl
-        # 2) make list of pyboard python code, any output you need should be in print()
-        # 3) join them to one string
-        # 4) send via exec(), store result
-        pyb = pyboard2(args.port)
-
-        cmds = ["from pyb import Pin",
-                "p_in = Pin('{}', Pin.IN, Pin.PULL_UP)".format(args.read_gpio),
-                "print(p_in.value())",
-                'print("hello")',
-                'print("world")'
-                ]
-        success, result = pyb.exec_cmd(cmds)
-        pyb.close()
-        logging.info("{} {}".format(success, result))
+        # TODO:
         did_something = True
 
     if args.test_1:
@@ -519,7 +504,7 @@ if __name__ == '__main__':
 
         cmds = [
             "import upybrd_server_01",
-            "upybrd_server_01.server.cmd({{'method': 'toggle_led', 'args': {}}})".format(pyb.LED_RED),
+            "upybrd_server_01.server.cmd({{'method': 'toggle_led', 'args': {{ 'led': {} }} }})".format(pyb.LED_RED),
         ]
 
         success, result = pyb.server_cmd(cmds, repl_enter=True, repl_exit=False)
@@ -552,7 +537,7 @@ if __name__ == '__main__':
 
         cmds = [
             "import upybrd_server_01",
-            "upybrd_server_01.server.cmd({{'method': 'toggle_led', 'args': {}}})".format(pyb.LED_RED),
+            "upybrd_server_01.server.cmd({{'method': 'toggle_led', 'args': {{ 'led': {} }} }})".format(pyb.LED_RED),
             "upybrd_server_01.server.ret()",
         ]
 

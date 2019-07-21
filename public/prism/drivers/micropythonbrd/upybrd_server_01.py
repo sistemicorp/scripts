@@ -110,9 +110,11 @@ class MicroPyServer(object):
         self.lock = _thread.allocate_lock()
         self._cmd = MicroPyQueue()
         self._ret = MicroPyQueue()
-        self.ctx = {'a': 0}         # use dict to store static data
+        self.ctx = {'a': 0,
+                    "gpio": {},
+                   }         # use dict to store static data
         self.timer = pyb.Timer(4)  # create a timer object using timer 4
-        self.isr_jig_closed_detect_ref = self.jig_closed_detect
+        self._isr_jig_closed_detect_ref = self._jig_closed_detect
 
     # ===================================================================================
     # Public API to send commands and get results from the MicroPy Server
@@ -181,46 +183,104 @@ class MicroPyServer(object):
 
     # ===================================================================================
 
-    def _toggle_led(self, led, sleep=0.5):
+    def _toggle_led(self, led, sleep_ms=500):
         pyb.LED(led).on()
-        time.sleep(sleep)
+        time.sleep_ms(sleep_ms)
         pyb.LED(led).off()
-        time.sleep(sleep)
+        time.sleep_ms(sleep_ms)
 
-    def toggle_led(self, led, sleep=0.5):
+    def toggle_led(self, args):
         """ Toggle LED
 
+        args:
         :param led: one of LED_*
-        :param sleep: seconds between on/off
+        :param sleep_ms: seconds between on/off
         :return: success (True/False)
         """
+        led = args.get("led", None)
+        sleep_ms = args.get("sleep", 500)
         if not led in [self.LED_BLUE, self.LED_GREEN, self.LED_RED, self.LED_YELLOW]:
-            self._ret.put({"method": "toggle_led", "value": False, "success": False})
+            self._ret.put({"method": "toggle_led", "value": "unknown led {}".format(led), "success": False})
             return
 
-        self._toggle_led(led, sleep)
+        self._toggle_led(led, sleep_ms)
         self._ret.put({"method": "toggle_led", "value": True, "success": True})
 
-    def enable_jig_closed_detect(self, enable=True):
+    def _isr_jig_closed_detect(self, _):
+        # this method is not allowed to create memory or items in list
+        # see http://docs.micropython.org/en/latest/reference/isr_rules.html
+        micropython.schedule(self._isr_jig_closed_detect_ref, 0)
+
+    def _jig_closed_detect(self, _):
+        # this is not in ISR context
+
+        # if there is a jig msg in the queue, then it hasn't been read yet,
+        # and we don't put in a new state unless the previous state has been read
+        msgs = self.peek(method="jig_closed_detect", all=True)
+        if msgs:
+            return
+
+        # if the pin is HIGH, the jig is open
+        self._toggle_led(3, sleep=0.1) # just for debug
+        jig_pin_state = self.ctx["gpio"]["jig_closed"].value()
+
+        if jig_pin_state:
+            self._ret.put({"method": "jig_closed_detect", "value": "OPEN", "success": True})
+        else:
+            self._ret.put({"method": "jig_closed_detect", "value": "CLOSED", "success": True})
+
+    def enable_jig_closed_detect(self, enable=True, pin="X1"):
         self._ret.put({"method": "enable_jig_closed_detect", "value": enable, "success": True})
         if enable:
             self.timer.init(freq=1)  # trigger at Hz
-            self.timer.callback(self.isr_jig_closed_detect)
+            self.timer.callback(self._isr_jig_closed_detect)
+            self._init_gpio("jig_closed", "X1", pyb.Pin.IN, pyb.Pin.PULL_UP)
+
         else:
             self.timer.deinit()
 
-    def isr_jig_closed_detect(self, _):
-        # this method is not allowed to create memory or items in list
-        # see http://docs.micropython.org/en/latest/reference/isr_rules.html
-        micropython.schedule(self.isr_jig_closed_detect_ref, 0)
+    def _init_gpio(self, name, pin, mode, pull=pyb.Pin.PULL_NONE):
+        self.ctx["gpio"][name] = pyb.Pin(pin, mode, pull)
 
-    def jig_closed_detect(self, _):
-        self._toggle_led(3, sleep=0.1)
-        self._ret.put({"method": "jig_closed_detect", "value": "true", "success": True})
-        # in reality, if the jig opens, that open result
-        # should not be replaces until the PC-side reads that result,
-        # so, this code should peek at all messages, if there is a jig open
-        # message, then don't post a jig closed message.
+    def init_gpio(self, args):
+        """ init gpio
+        - a gpio must be set before it can be used
+        - see https://docs.micropython.org/en/latest/library/pyb.Pin.html#pyb-pin
+
+        args:
+        :param name: assign name to gpio for reference
+        :param pin: pin name of gpio, X1,X2, ...
+        :param mode: one of pyb.Pin.IN, Pin.OUT_PP, Pin.OUT_OD, ..
+        :param pull: one of pyb.Pin.PULL_NONE, pyb.Pin.PULL_UP, pyb.Pin.PULL_DN
+        :return: None
+        """
+        name = args.get("name", None)
+        pin = args.get("pin", None)
+        mode = args.get("mode")
+        pull = args.get("pull", pyb.Pin.PULL_NONE)
+        if None in [name, pin, mode]:
+            self._ret.put({"method": "init_gpio", "value": "missing or None parameter", "success": False})
+            return
+
+        self._init_gpio(name, pin, mode, pull)
+
+    def get_gpio(self, name):
+        if name not in self.ctx["gpio"]:
+            self._ret.put({"method": "get_gpio", "value": "{} has not been init_gpio".format(name), "success": False})
+            return
+
+        value = self.ctx["gpio"][name].value()
+        self._ret.put({"method": "get_gpio", "value": "{}".format(value), "success": True})
+
+    def set_gpio(self, name, value):
+        if name not in self.ctx["gpio"]:
+            self._ret.put({"method": "set_gpio", "value": "{} has not been init_gpio".format(name), "success": False})
+            return
+
+        if value:
+            self.ctx["gpio"][name].high()
+        else:
+            self.ctx["gpio"][name].low()
 
 
 server = MicroPyServer()

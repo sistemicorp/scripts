@@ -11,8 +11,6 @@ import threading
 import time
 from public.prism.drivers.micropythonbrd.list_serial import serial_ports
 from public.prism.drivers.micropythonbrd.upybrd import MicroPyBrd, pyboard2
-#import ampy.files as files
-import ampy.pyboard as pyboard
 
 from pubsub import pub
 from app.const import PUB, CHANNEL
@@ -36,7 +34,7 @@ class upybrdPlayPub(threading.Thread):
 
         self.ch = ch
         self.pyb_port = drv["obj"]["port"]
-        self.pyb = pyboard2(self.pyb_port)
+        self.pyb = drv["obj"]["pyb"]
         self.ch_state = CHANNEL.STATE_UNKNOWN
         self.ch_pub = PUB.get_channel_num_play(ch)
         self.open_fixture = False  # assume fixture is closed
@@ -78,34 +76,38 @@ class upybrdPlayPub(threading.Thread):
         # TODO: this is running all the time needlessly... a timer should be started
         #       and stopped based on state, not a dumb poll loop
 
+        # start the pyboard jog closed timer, it will always be running
+        # regardless of the state of test... if the jog becomes open during
+        # testing, we detect that case and handle it...
+        cmds = ["upybrd_server_01.server.cmd({'method': 'enable_jig_closed_detect', 'args': True })"]
+        success, result = self.pyb.server_cmd(cmds)
+        self.logger.info("{}, {}".format(success, result))
+
         pub_play = False
         while not self.stopped():
             time.sleep(self.POLL_TIMER_SEC)
-            if self.ch_state in [CHANNEL.STATE_DONE, CHANNEL.STATE_READY]:
-                cmds = ["from pyb import Pin",
-                        "p_in = Pin('X1', Pin.IN, Pin.PULL_UP)",
-                        "print(p_in.value())",
-                        ]
-                success, result = self.pyb.exec_cmd(cmds)
-                self.logger.debug("{}, {}".format(success, result))
-                if success:
-                    # only if the fixture was in the previously opened state, then we play
-                    # in other words, once lid is closed, it must be opened again to trigger play
-                    if self.open_fixture and result.strip() == "0":
-                        pub_play = True
-                        self.open_fixture = False
-                        self.logger.info("Channel {} PLAY".format(self.ch))
-                    elif result.strip() == "1":
-                        self.open_fixture = True
 
-                else:
-                    pub_play = False
+            cmds = ["upybrd_server_01.server.ret(method='jig_closed_detect')"]
+            success, result = self.pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
+            self.logger.info("{}, {}".format(success, result))
+            if success:
+                # only if the fixture was in the previously opened state, then we play
+                # in other words, once lid is closed, it must be opened again to trigger play
+                if self.open_fixture and result["value"] == "CLOSED":
+                    pub_play = True
+                    self.open_fixture = False
+                    self.logger.info("Channel {} PLAY".format(self.ch))
+                elif result["value"] == "OPEN":
+                    self.open_fixture = True
 
-                self.logger.info("open_fixture: {}, play: {}".format(self.open_fixture, pub_play))
-                if pub_play:
-                    pub_play = False
-                    d = {"channels": [self.ch], "from": "{}.{}".format(__class__.__name__, self.ch)}
-                    pub.sendMessage(self.ch_pub, item_dict=d)
+            else:
+                pub_play = False
+
+            self.logger.info("open_fixture: {}, play: {}".format(self.open_fixture, pub_play))
+            if pub_play:
+                pub_play = False
+                d = {"channels": [self.ch], "from": "{}.{}".format(__class__.__name__, self.ch)}
+                pub.sendMessage(self.ch_pub, item_dict=d)
 
         self.logger.info("!!! run loop stopped !!!")
 
@@ -172,7 +174,14 @@ class HWDriver(object):
 
             # divers can register a close() method which is called on channel destroy.
             # we don't need to set that there is none, but doing so helps remember we could set one
-            pyb[0]["close"] = False
+            pyb[0]["close"] = self.close
+
+            # now start the pyboard server
+            port = pyb[0]["port"]
+            pyb[0]["pyb"] = pyboard2(port)
+            cmds = ["import upybrd_server_01"]
+            success, result = pyb[0]["pyb"].server_cmd(cmds, repl_enter=True, repl_exit=False)
+            self.logger.info("{} {}".format(success, result))
 
             self.pybs.append(pyb[0])
             msg = "HWDriver:{}: {} -> {}".format(self.SFN, port, pyb[0])
@@ -188,6 +197,11 @@ class HWDriver(object):
         pub_notice("HWDriver:{}: Found {}!".format(self.SFN, self._num_chan), sender=sender)
         self.logger.info("Done: {} channels".format(self._num_chan))
         return self._num_chan
+
+    def close(self, pyb):
+        self.logger.info(pyb)
+        self.logger.info("closing {}".format(pyb["port"]))
+        pyb["pyb"].close()
 
     def num_channels(self):
         return self._num_chan
