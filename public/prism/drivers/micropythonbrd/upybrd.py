@@ -237,12 +237,19 @@ class pyboard2(pyboard.Pyboard):
         return success, result[0]
 
     def start_server(self):
-        pass
-        # TODO:
+        cmds = ["import upybrd_server_01"]
+        success, result = pyb.server_cmd(cmds, repl_exit=False)
+        self.logger.info("{} {}".format(success, result))
+        return success
 
     def led_toggle(self, led, on_ms=500):
         c = {'method': 'led_toggle', 'args': {'led': led, 'on_ms': 1}}
         return self._verify_single_cmd_ret(c)
+
+    def enable_jig_closed_detect(self, enable=True):
+        c = {'method': 'enable_jig_closed_detect', 'args': {} }
+        return self._verify_single_cmd_ret(c)
+
 
 
 class MicroPyBrd(object):
@@ -632,12 +639,12 @@ if __name__ == '__main__':
     if args.test_3:
         pyb = pyboard2(args.port)
 
-        cmds = ["import upybrd_server_01"]
-        success, result = pyb.server_cmd(cmds, repl_exit=False)
-        logging.info("{} {}".format(success, result))
-
-        success, result = pyb.led_toggle(2, 200)
-        logging.info("{} {}".format(success, result))
+        success = pyb.start_server()
+        if success:
+            success, result = pyb.led_toggle(2, 200)
+            logging.info("{} {}".format(success, result))
+        else:
+            logging.error("Unable to start server")
 
         pyb.close()
         did_something = True
@@ -645,26 +652,15 @@ if __name__ == '__main__':
     if args.test_4:
         pyb = pyboard2(args.port)
 
-        cmds = ["import upybrd_server_01"]
-        success, result = pyb.server_cmd(cmds, repl_exit=False)
-        logging.info("{} {}".format(success, result))
-
-        cmds = ["upybrd_server_01.server.cmd({'method': 'enable_jig_closed_detect', 'args': {} })"]
-        success, result = pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
+        success = pyb.start_server()
+        logging.info("{}".format(success))
+        if success:
+            success, result = pyb.enable_jig_closed_detect()
+            logging.info("{} {}".format(success, result))
+        else:
+            logging.error("Unable to start server")
 
         cmds = ["upybrd_server_01.server.ret()"]
-
-        retry = 5
-        succeeded = False
-        while retry and not succeeded:
-            success, result = pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
-            logging.info("{} {}".format(success, result))
-            if success:
-                for r in result:
-                    if r.get("method", False) == 'enable_jig_closed_detect' and r.get("value", False) == True:
-                        succeeded = True
-            retry -= 1
-            time.sleep(0.5)
 
         retry = 20
         succeeded = False
