@@ -24,6 +24,12 @@ class pybrd00xx(TestItem):
         self.pyb = None
         self.pyb_port = None
 
+    def _pybrd_cmd(self, cmds):
+        _cmds = []
+        for c in cmds:
+            _cmds.append("upybrd_server_01.server.cmd({})".format(c))
+        return self.pyb.server_cmd(_cmds, repl_enter=False, repl_exit=False)
+
     def PYBRD0xxSETUP(self):
         ctx = self.item_start()  # always first line of test
 
@@ -49,13 +55,7 @@ class pybrd00xx(TestItem):
         _, _, _bullet = ctx.record.measurement("pyboard_id", id, ResultAPI.UNIT_INT)
         self.log_bullet(_bullet)
 
-        #print("-" * 20)
         self.pyb = driver["obj"]["pyb"]
-        #cmds = ["upybrd_server_01.server.ret()"]
-        ## blocking is False, so we can move on and ask user what is blinking
-        #success, result = self.pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
-        #print(success, result)
-        #print("-" * 20)
 
         self.item_end()  # always last line of test
 
@@ -85,11 +85,8 @@ class pybrd00xx(TestItem):
 
         self.log_bullet("Watch which color Led blinks...")
 
-        cmds = ["upybrd_server_01.server.cmd({{'method': 'toggle_led', 'args': {{ 'led': {}, 'sleep_ms': {} }} }})".format(lednum, ontime_ms)]
-
-        # blocking is False, so we can move on and ask user what is blinking
-        success, result = self.pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
-        print(success, result)
+        cmds = ["{{'method': 'toggle_led', 'args': {{ 'led': {}, 'sleep_ms': {} }} }}".format(lednum, ontime_ms)]
+        success, result = self._pybrd_cmd(cmds)
         if not success:
             self.logger.error(result)
             _result = ResultAPI.RECORD_RESULT_FAIL

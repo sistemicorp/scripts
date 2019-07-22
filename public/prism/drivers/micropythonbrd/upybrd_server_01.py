@@ -192,6 +192,8 @@ class MicroPyServer(object):
     def toggle_led(self, args):
         """ Toggle LED
 
+        cmds = ["upybrd_server_01.server.cmd({{'method': 'toggle_led', 'args': {{ 'led': {}, 'sleep_ms': {} }} }})".format(lednum, ontime_ms)]
+
         args:
         :param led: one of LED_*
         :param sleep_ms: seconds between on/off
@@ -221,7 +223,7 @@ class MicroPyServer(object):
             return
 
         # if the pin is HIGH, the jig is open
-        self._toggle_led(3, sleep=0.1) # just for debug
+        #self._toggle_led(3, sleep=0.1) # just for debug
         jig_pin_state = self.ctx["gpio"]["jig_closed"].value()
 
         if jig_pin_state:
