@@ -23,22 +23,31 @@ class MicroPyQueue(object):
         with self.lock:
             self.items.append(item)
 
-    def get(self, method=None):
+    def get(self, method=None, all=False):
         """ Get an item from the queue
 
         :param method: set to class_method to return a specific result
-        :return: return (ONE) item
+        :param all: when set return all
+        :return: return item(s) in list
         """
         with self.lock:
-            if self.items:
-                if method is None:
-                    return [self.items.pop(0)]
+            if method is None:
+                if all:
+                    ret = self.items
+                    self.items = []
+                    return ret
 
-                for idx, item in enumerate(self.items):
-                    if item["method"] == method:
-                        return [self.items.pop(idx)]
+                if self.items: return [self.items.pop(0)]
+                else: return []
 
-            return []
+            items = []
+            for idx, item in enumerate(self.items):
+                if item["method"] == method:
+                    items.append(self.items.pop(idx))
+                    if not all:
+                        break
+
+            return items
 
     def peek(self, method=None, all=False):
         """ Peek at item(s) in the queue, does not remove item(s)
@@ -52,7 +61,8 @@ class MicroPyQueue(object):
                 if all:
                     return self.items
 
-                return [self.items[0]]
+                if self.items: return [self.items[0]]
+                else: return []
 
             items = []
             for idx, item in enumerate(self.items):
@@ -110,8 +120,9 @@ class MicroPyServer(object):
         self._ret = MicroPyQueue()
         self.ctx = {'a': 0,
                     "gpio": {},
+                    "timer": {},
                    }         # use dict to store static data
-        self.timer = pyb.Timer(4)  # create a timer object using timer 4
+        self.timer_jig_closed = pyb.Timer(4)  # create a timer object using timer 4
         self._isr_jig_closed_detect_ref = self._jig_closed_detect
 
     # ===================================================================================
@@ -141,7 +152,7 @@ class MicroPyServer(object):
             self._cmd.put(cmd)
             return True
 
-    def ret(self, method=None):
+    def ret(self, method=None, all=False):
         with self.lock:
             _ret = self._ret.get(method)
             print(_ret)
@@ -176,6 +187,10 @@ class MicroPyServer(object):
             time.sleep_ms(100)
 
     # ===================================================================================
+    # Methods
+    # NOTES:
+    # 1. !! DON'T access public API, ret/peek/update/cmd, functions, access the queue's directly
+    #    Else probably get into a lock lockup
 
     def _toggle_led(self, led, on_ms=500):
         pyb.LED(led).on()
@@ -240,15 +255,22 @@ class MicroPyServer(object):
 
     def enable_jig_closed_detect(self, args):
         enable = args.get("enable", True)
-        pin = args.get("pin", "X1")
+
+        if enable and "timer_jig_closed" in self.ctx["timer"]:
+            self._ret.put({"method": "enable_jig_closed_detect", "value": "ALREADY_RUNNING", "success": True})
+            return
+
         self._ret.put({"method": "enable_jig_closed_detect", "value": enable, "success": True})
         if enable:
-            self.timer.init(freq=1)  # trigger at Hz
-            self.timer.callback(self._isr_jig_closed_detect)
+            self.timer_jig_closed.init(freq=1)  # trigger at Hz
+            self.timer_jig_closed.callback(self._isr_jig_closed_detect)
+            pin = args.get("pin", "X1")
             self._init_gpio("jig_closed", pin, pyb.Pin.IN, pyb.Pin.PULL_UP)
+            self.ctx["timer"]["timer_jig_closed"] = True
 
         else:
-            self.timer.deinit()
+            self.timer_jig_closed.deinit()
+            self.ctx["timer"].pop("timer_jig_closed", None)
 
     def _init_gpio(self, name, pin, mode, pull=pyb.Pin.PULL_NONE):
         self.ctx["gpio"][name] = pyb.Pin(pin, mode, pull)

@@ -209,15 +209,16 @@ class pyboard2(pyboard.Pyboard):
 
         cmds = ["upybrd_server_01.server.ret(method='{}')".format(method)]
 
+        # it is assumed the command sent will post a return, with success set
         retry = 5
         succeeded = False
         while retry and not succeeded:
-            time.sleep(0.2)
+            time.sleep(0.1)
             success, result = self.server_cmd(cmds, repl_enter=False, repl_exit=False)
             self.logger.info("{} {}".format(success, result))
             if success:
                 for r in result:
-                    if r.get("method", False) == method and r.get("value", False) == True:
+                    if r.get("method", False) == method and r.get("success", False) == True:
                         succeeded = True
             else:
                 return success, result
@@ -247,9 +248,8 @@ class pyboard2(pyboard.Pyboard):
         return self._verify_single_cmd_ret(c)
 
     def enable_jig_closed_detect(self, enable=True):
-        c = {'method': 'enable_jig_closed_detect', 'args': {} }
+        c = {'method': 'enable_jig_closed_detect', 'args': {'enable': enable}}
         return self._verify_single_cmd_ret(c)
-
 
 
 class MicroPyBrd(object):
@@ -650,25 +650,46 @@ if __name__ == '__main__':
         did_something = True
 
     if args.test_4:
+        #pyb = pyboard2(args.port, loggerIn=logging) # verbose version
         pyb = pyboard2(args.port)
 
         success = pyb.start_server()
         logging.info("{}".format(success))
         if success:
+            logging.info("- Turning on Jig Closed Detect...")
             success, result = pyb.enable_jig_closed_detect()
             logging.info("{} {}".format(success, result))
+
+            logging.info("= Turning it on again...")
+            success, result = pyb.enable_jig_closed_detect()
+            logging.info("{} {}".format(success, result))
+
+            # for fun, try and ask for more results, while the jig closed timer is running
+            cmds = ["upybrd_server_01.server.ret(all=True)"]
+            retry = 20
+            succeeded = False
+            while retry and not succeeded:
+                success, result = pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
+                logging.info("{} {}".format(success, result))
+                retry -= 1
+                time.sleep(0.5)
+
+            # turn off the jig closed
+            logging.info("= Turn OFF jig closed timer...")
+            success, result = pyb.enable_jig_closed_detect(False)
+            logging.info("{} {}".format(success, result))
+
+            # read the server queue a few times to confirm there are no new events...
+            retry = 5
+            succeeded = False
+            while retry and not succeeded:
+                success, result = pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
+                logging.info("{} {}".format(success, result))
+                retry -= 1
+                time.sleep(0.5)
+
         else:
             logging.error("Unable to start server")
-
-        cmds = ["upybrd_server_01.server.ret()"]
-
-        retry = 20
-        succeeded = False
-        while retry and not succeeded:
-            success, result = pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
-            logging.info("{} {}".format(success, result))
-            retry -= 1
-            time.sleep(0.5)
 
         pyb.close()
         did_something = True
