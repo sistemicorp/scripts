@@ -47,23 +47,20 @@ class MicroPyQueue(object):
         :return: None for no item, or [item(s)]
         """
         with self.lock:
-            if all and not method:
-                return self.items
+            if method is None:
+                if all:
+                    return self.items
 
-            if self.items:
-                items = []
-                if method is None:
-                    items.append(self.items[0])
-                    return items
+                return [self.items[0]]
 
-                else:
-                    for idx, item in iter(self.items):
-                        if item["method"] == method:
-                            items.append(self.items[idx])
+            items = []
+            for idx, item in enumerate(self.items):
+                if item["method"] == method:
+                    items.append(self.items[idx])
+                    if not all:
+                        break
 
-                    return self.items[idx]
-
-            return []
+            return items
 
     def update(self, item_update):
         """ Update an item in queue, or append item if it doesn't exist
@@ -152,9 +149,7 @@ class MicroPyServer(object):
     def peek(self, method=None, all=False):
         with self.lock:
             ret = self._ret.peek(method, all)
-            if ret:
-                print(ret)
-                return True
+            print(ret)
             return True
 
     def update(self, item_update):
@@ -176,8 +171,8 @@ class MicroPyServer(object):
                     if method is not None:
                         method(args)
 
-        # allows other threads to run, but generally speaking there should be no other threads(?)
-        time.sleep(0.01)
+            # allows other threads to run, but generally speaking there should be no other threads(?)
+            time.sleep(0.01)
 
     # ===================================================================================
 

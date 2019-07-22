@@ -54,6 +54,8 @@ class pyboard2(pyboard.Pyboard):
         if loggerIn: self.logger = loggerIn
         else: self.logger = StubLogger()
 
+        self.device = device
+
         self.lock = threading.Lock()
 
     def _repl_result(self, result):
@@ -144,10 +146,11 @@ class pyboard2(pyboard.Pyboard):
         """
         if not isinstance(cmds, list):
             self.logger.error("cmd should be a list of micropython code (strings)")
-            return False, None
+            return False, "cmds should be a list"
+
 
         cmd = "\n".join(cmds)
-        self.logger.info("cmd:" + cmd)
+        self.logger.info("{} cmd: {}".format(self.device, cmd))
 
         with self.lock:
             # this was copied/ported from pyboard.py
@@ -234,7 +237,7 @@ class pyboard2(pyboard.Pyboard):
         return success, result[0]
 
     def led_toggle(self, led, on_ms=500):
-        c = {'method': 'led_toggle', 'args': {'led': led, 'on_ms': on_ms}}
+        c = {'method': 'led_toggle', 'args': {'led': led, 'on_ms': 1}}
         return self._verify_single_cmd_ret(c)
 
 
