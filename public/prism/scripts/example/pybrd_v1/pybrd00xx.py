@@ -79,7 +79,9 @@ class pybrd00xx(TestItem):
 
         self.log_bullet("Watch which color Led blinks...")
 
+        self.shared_lock("pyb{}".format(self.chan)).acquire()
         success, result = self.pyb.led_toggle(lednum, ontime_ms)
+        self.shared_lock("pyb{}".format(self.chan)).release()
         if not success:
             self.logger.error(result)
             _result = ResultAPI.RECORD_RESULT_FAIL

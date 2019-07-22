@@ -27,7 +27,7 @@ class upybrdPlayPub(threading.Thread):
     """
     POLL_TIMER_SEC = 1
 
-    def __init__(self, ch, drv):
+    def __init__(self, ch, drv, shared_state):
         super(upybrdPlayPub, self).__init__()
         self._stop_event = threading.Event()
         self.logger = logging.getLogger("SC.{}.{}".format(__class__.__name__, ch))
@@ -38,6 +38,7 @@ class upybrdPlayPub(threading.Thread):
         self.ch_state = CHANNEL.STATE_UNKNOWN
         self.ch_pub = PUB.get_channel_num_play(ch)
         self.open_fixture = False  # assume fixture is closed
+        self.shared_state = shared_state
 
         pub.subscribe(self.onSHUTDOWN, PUB.SHUTDOWN)
         pub.subscribe(self.onCHANNEL_STATE, PUB.CHANNEL_STATE)
@@ -76,8 +77,11 @@ class upybrdPlayPub(threading.Thread):
         # start the pyboard jog closed timer, it will always be running
         # regardless of the state of test... if the jog becomes open during
         # testing, we detect that case and handle it...
-        cmds = ["upybrd_server_01.server.cmd({'method': 'enable_jig_closed_detect', 'args': True })"]
+        cmds = ["upybrd_server_01.server.cmd({'method': 'enable_jig_closed_detect', 'args': {} })"]
+        self.shared_state.rsrc_lock_get("pyb{}".format(self.ch)).acquire()
         success, result = self.pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
+        self.shared_state.rsrc_lock_get("pyb{}".format(self.ch)).release()
+
         self.logger.info("{}, {}".format(success, result))
 
         pub_play = False
@@ -85,8 +89,11 @@ class upybrdPlayPub(threading.Thread):
             time.sleep(self.POLL_TIMER_SEC)
 
             cmds = ["upybrd_server_01.server.ret(method='jig_closed_detect')"]
+            self.shared_state.rsrc_lock_get("pyb{}".format(self.ch)).acquire()
             success, result = self.pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
-            self.logger.debug("{}, {}".format(success, result))
+            self.shared_state.rsrc_lock_get("pyb{}".format(self.ch)).release()
+
+            self.logger.info("{}, {}".format(success, result))
             if success:
                 # only if the fixture was in the previously opened state, then we play
                 # in other words, once lid is closed, it must be opened again to trigger play
@@ -222,6 +229,6 @@ class HWDriver(object):
                 continue
 
             self.logger.info("Adding 'play' support on channel {}".format(ch))
-            play_pub = upybrdPlayPub(ch, drivers[0])
+            play_pub = upybrdPlayPub(ch, drivers[0], self.shared_state)
             d = {"id": ch, "obj": play_pub, "close": play_pub.close}
             self.shared_state.add_drivers("upybrdPlayPub", [d])

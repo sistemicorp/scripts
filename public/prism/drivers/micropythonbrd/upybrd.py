@@ -151,15 +151,16 @@ class pyboard2(pyboard.Pyboard):
             if repl_enter: self.enter_raw_repl()
 
             if blocking:
-                ret, ret_err = self.exec_raw(cmd + '\n', timeout=1, data_consumer=None)
+                ret, ret_err = self.exec_raw(cmd + '\n', timeout=10, data_consumer=None)
             else:
                 self.exec_raw_no_follow(cmd)
                 ret_err = False
                 ret = None
 
         except pyboard.PyboardError as er:
-            self.logger.error(er)
-            return False, er
+            msg = "{}: {}".format(cmd, er)
+            self.logger.error(msg)
+            return False, msg
         except KeyboardInterrupt:
             return False, "KeyboardInterrupt"
 
@@ -167,8 +168,9 @@ class pyboard2(pyboard.Pyboard):
 
         if ret_err:
             pyboard.stdout_write_bytes(ret_err)
-            self.logger.error(ret_err)
-            return False, ret_err
+            msg = "{}: {}".format(cmd, ret_err)
+            self.logger.error(msg)
+            return False, msg
 
         #print("A: {}".format(ret))
         if ret:

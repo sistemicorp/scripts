@@ -127,19 +127,19 @@ class MicroPyServer(object):
         :param cmd: dict format {"method": <class_method>, "args": <args>}
         :return: success (True/False)
         """
-        if not isinstance(cmd, dict):
-            self._ret.put({"method": "cmd", "value": "cmd must be a dict", "success": False})
-            return False
-
-        if not cmd.get("method", False):
-            self._ret.put({"method": "cmd", "value": "cmd dict must have method key", "success": False})
-            return False
-
-        if not getattr(self, cmd["method"], False):
-            self._ret.put({"method": "cmd", "value": "cmd['{}'] invalid".format(cmd["method"]), "success": False})
-            return False
-
         with self.lock:
+            if not isinstance(cmd, dict):
+                self._ret.put({"method": "cmd", "value": "cmd must be a dict", "success": False})
+                return False
+
+            if not cmd.get("method", False):
+                self._ret.put({"method": "cmd", "value": "cmd dict must have method key", "success": False})
+                return False
+
+            if not getattr(self, cmd["method"], False):
+                self._ret.put({"method": "cmd", "value": "cmd['{}'] invalid".format(cmd["method"]), "success": False})
+                return False
+
             self._cmd.put(cmd)
             return True
 
@@ -167,13 +167,13 @@ class MicroPyServer(object):
     def _run(self):
         # run on thread
         while True:
-            item = self._cmd.get()
-            if item:
-                method = item[0]["method"]
-                args = item[0]["args"]
-                method = getattr(self, method, None)
-                if method is not None:
-                    with self.lock:
+            with self.lock:
+                item = self._cmd.get()
+                if item:
+                    method = item[0]["method"]
+                    args = item[0]["args"]
+                    method = getattr(self, method, None)
+                    if method is not None:
                         method(args)
 
         # allows other threads to run, but generally speaking there should be no other threads(?)
@@ -242,12 +242,14 @@ class MicroPyServer(object):
         else:
             self._ret.put({"method": "jig_closed_detect", "value": "CLOSED", "success": True})
 
-    def enable_jig_closed_detect(self, enable=True, pin="X1"):
+    def enable_jig_closed_detect(self, args):
+        enable = args.get("enable", True)
+        pin = args.get("pin", "X1")
         self._ret.put({"method": "enable_jig_closed_detect", "value": enable, "success": True})
         if enable:
             self.timer.init(freq=1)  # trigger at Hz
             self.timer.callback(self._isr_jig_closed_detect)
-            self._init_gpio("jig_closed", "X1", pyb.Pin.IN, pyb.Pin.PULL_UP)
+            self._init_gpio("jig_closed", pin, pyb.Pin.IN, pyb.Pin.PULL_UP)
 
         else:
             self.timer.deinit()
