@@ -148,7 +148,6 @@ class pyboard2(pyboard.Pyboard):
             self.logger.error("cmd should be a list of micropython code (strings)")
             return False, "cmds should be a list"
 
-
         cmd = "\n".join(cmds)
         self.logger.info("{} cmd: {}".format(self.device, cmd))
 
@@ -213,6 +212,7 @@ class pyboard2(pyboard.Pyboard):
         retry = 5
         succeeded = False
         while retry and not succeeded:
+            time.sleep(0.2)
             success, result = self.server_cmd(cmds, repl_enter=False, repl_exit=False)
             self.logger.info("{} {}".format(success, result))
             if success:
@@ -236,10 +236,13 @@ class pyboard2(pyboard.Pyboard):
 
         return success, result[0]
 
+    def start_server(self):
+        pass
+        # TODO:
+
     def led_toggle(self, led, on_ms=500):
         c = {'method': 'led_toggle', 'args': {'led': led, 'on_ms': 1}}
         return self._verify_single_cmd_ret(c)
-
 
 
 class MicroPyBrd(object):
@@ -483,6 +486,10 @@ def parse_args():
                         action='store_true', help='test code, blink led')
     parser.add_argument("-2", '--test-2', dest='test_2',
                         action='store_true', help='test code, blink led check result later')
+    parser.add_argument("-3", '--test-3', dest='test_3',
+                        action='store_true', help='test code, blink led check result later')
+    parser.add_argument("-4", '--test-4', dest='test_4',
+                        action='store_true', help='test code, blink led check result later')
 
     parser.add_argument("-c", '--copy', dest='copy_file',
                         action='store', help='copy local file to pyboard /flash')
@@ -618,6 +625,54 @@ if __name__ == '__main__':
                     if r.get("method", False) == 'led_toggle' and r.get("value", False) == True:
                         succeeded = True
             retry -= 1
+
+        pyb.close()
+        did_something = True
+
+    if args.test_3:
+        pyb = pyboard2(args.port)
+
+        cmds = ["import upybrd_server_01"]
+        success, result = pyb.server_cmd(cmds, repl_exit=False)
+        logging.info("{} {}".format(success, result))
+
+        success, result = pyb.led_toggle(2, 200)
+        logging.info("{} {}".format(success, result))
+
+        pyb.close()
+        did_something = True
+
+    if args.test_4:
+        pyb = pyboard2(args.port)
+
+        cmds = ["import upybrd_server_01"]
+        success, result = pyb.server_cmd(cmds, repl_exit=False)
+        logging.info("{} {}".format(success, result))
+
+        cmds = ["upybrd_server_01.server.cmd({'method': 'enable_jig_closed_detect', 'args': {} })"]
+        success, result = pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
+
+        cmds = ["upybrd_server_01.server.ret()"]
+
+        retry = 5
+        succeeded = False
+        while retry and not succeeded:
+            success, result = pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
+            logging.info("{} {}".format(success, result))
+            if success:
+                for r in result:
+                    if r.get("method", False) == 'enable_jig_closed_detect' and r.get("value", False) == True:
+                        succeeded = True
+            retry -= 1
+            time.sleep(0.5)
+
+        retry = 20
+        succeeded = False
+        while retry and not succeeded:
+            success, result = pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
+            logging.info("{} {}".format(success, result))
+            retry -= 1
+            time.sleep(0.5)
 
         pyb.close()
         did_something = True

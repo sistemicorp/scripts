@@ -89,15 +89,15 @@ class upybrdPlayPub(threading.Thread):
             cmds = ["upybrd_server_01.server.ret(method='jig_closed_detect')"]
             #cmds = ["upybrd_server_01.server.ret()"]
             success, result = self.pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
-            if success:
+            if success and len(result):
                 self.logger.info("{}, {}".format(success, result))
                 # only if the fixture was in the previously opened state, then we play
                 # in other words, once lid is closed, it must be opened again to trigger play
-                if self.open_fixture and result["value"] == "CLOSED":
+                if self.open_fixture and result[0]["value"] == "CLOSED":
                     pub_play = True
                     self.open_fixture = False
                     self.logger.info("Channel {} PLAY".format(self.ch))
-                elif result["value"] == "OPEN":
+                elif result[0]["value"] == "OPEN":
                     self.open_fixture = True
 
             else:

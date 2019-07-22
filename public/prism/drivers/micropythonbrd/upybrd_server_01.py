@@ -3,6 +3,7 @@ import time
 import pyb
 import micropython
 
+micropython.alloc_emergency_exception_buf(100)
 
 class MicroPyQueue(object):
     """ Special Queue for sending commands and getting return items from a MicroPython Process
@@ -70,7 +71,7 @@ class MicroPyQueue(object):
         """
         with self.lock:
             if self.items:
-                for idx, item in iter(self.items):
+                for idx, item in enumerate(self.items):
                     if item["method"] == item_update["method"]:
                         self.items[idx] = item_update
                         return
@@ -172,7 +173,7 @@ class MicroPyServer(object):
                         method(args)
 
             # allows other threads to run, but generally speaking there should be no other threads(?)
-            time.sleep(0.01)
+            time.sleep_ms(100)
 
     # ===================================================================================
 
@@ -215,21 +216,21 @@ class MicroPyServer(object):
         self._ret.put({"method": "led_toggle", "value": True, "success": True})
 
     def _isr_jig_closed_detect(self, _):
+        # run in ISR context
         # this method is not allowed to create memory or items in list
         # see http://docs.micropython.org/en/latest/reference/isr_rules.html
         micropython.schedule(self._isr_jig_closed_detect_ref, 0)
 
     def _jig_closed_detect(self, _):
         # this is not in ISR context
-
         # if there is a jig msg in the queue, then it hasn't been read yet,
         # and we don't put in a new state unless the previous state has been read
-        msgs = self.peek(method="jig_closed_detect", all=True)
+        msgs = self._ret.peek("jig_closed_detect")
         if msgs:
             return
 
         # if the pin is HIGH, the jig is open
-        #self._toggle_led(3, sleep=0.1) # just for debug
+        self._toggle_led(3, on_ms=100) # just for debug
         jig_pin_state = self.ctx["gpio"]["jig_closed"].value()
 
         if jig_pin_state:
