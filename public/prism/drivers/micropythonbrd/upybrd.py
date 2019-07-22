@@ -273,6 +273,7 @@ class MicroPyBrd(object):
                     # visual indication success
                     self.led_toggle(self.LED_GREEN, self.LED_FLASH_TIME_S)
                 self.pyb.close()
+                self.pyb = None
                 ports.append({"port": port, "id": id, "version": VERSION})
 
             except Exception as e:
@@ -510,9 +511,7 @@ if __name__ == '__main__':
         success, result = pyb.server_cmd(cmds, repl_enter=True, repl_exit=False)
         logging.info("{} {}".format(success, result))
 
-        cmds = [
-            "upybrd_server_01.server.ret()",
-        ]
+        cmds = ["upybrd_server_01.server.ret()"]
 
         retry = 5
         succeeded = False
@@ -544,9 +543,7 @@ if __name__ == '__main__':
         success, result = pyb.server_cmd(cmds, repl_exit=False)
         logging.info("{} {}".format(success, result))
 
-        cmds = [
-            "upybrd_server_01.server.ret()",
-        ]
+        cmds = ["upybrd_server_01.server.ret()"]
 
         retry = 5
         succeeded = False

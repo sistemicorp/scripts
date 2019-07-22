@@ -49,7 +49,13 @@ class pybrd00xx(TestItem):
         _, _, _bullet = ctx.record.measurement("pyboard_id", id, ResultAPI.UNIT_INT)
         self.log_bullet(_bullet)
 
+        #print("-" * 20)
         self.pyb = driver["obj"]["pyb"]
+        #cmds = ["upybrd_server_01.server.ret()"]
+        ## blocking is False, so we can move on and ask user what is blinking
+        #success, result = self.pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
+        #print(success, result)
+        #print("-" * 20)
 
         self.item_end()  # always last line of test
 

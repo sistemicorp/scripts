@@ -73,14 +73,11 @@ class upybrdPlayPub(threading.Thread):
 
         self.logger.info("!!! run loop started !!!")
 
-        # TODO: this is running all the time needlessly... a timer should be started
-        #       and stopped based on state, not a dumb poll loop
-
         # start the pyboard jog closed timer, it will always be running
         # regardless of the state of test... if the jog becomes open during
         # testing, we detect that case and handle it...
         cmds = ["upybrd_server_01.server.cmd({'method': 'enable_jig_closed_detect', 'args': True })"]
-        success, result = self.pyb.server_cmd(cmds)
+        success, result = self.pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
         self.logger.info("{}, {}".format(success, result))
 
         pub_play = False
@@ -89,7 +86,7 @@ class upybrdPlayPub(threading.Thread):
 
             cmds = ["upybrd_server_01.server.ret(method='jig_closed_detect')"]
             success, result = self.pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
-            self.logger.info("{}, {}".format(success, result))
+            self.logger.debug("{}, {}".format(success, result))
             if success:
                 # only if the fixture was in the previously opened state, then we play
                 # in other words, once lid is closed, it must be opened again to trigger play
@@ -101,6 +98,7 @@ class upybrdPlayPub(threading.Thread):
                     self.open_fixture = True
 
             else:
+                self.logger.error("self.pyb.server_cmd: {}".format(result))
                 pub_play = False
 
             self.logger.info("open_fixture: {}, play: {}".format(self.open_fixture, pub_play))
@@ -172,16 +170,16 @@ class HWDriver(object):
                 self.logger.info("port {} -> Missing ID".format(port))
                 continue
 
-            # divers can register a close() method which is called on channel destroy.
-            # we don't need to set that there is none, but doing so helps remember we could set one
-            pyb[0]["close"] = self.close
-
             # now start the pyboard server
             port = pyb[0]["port"]
             pyb[0]["pyb"] = pyboard2(port)
             cmds = ["import upybrd_server_01"]
             success, result = pyb[0]["pyb"].server_cmd(cmds, repl_enter=True, repl_exit=False)
             self.logger.info("{} {}".format(success, result))
+
+            # divers can register a close() method which is called on channel destroy.
+            # we don't need to set that there is none, but doing so helps remember we could set one
+            pyb[0]["close"] = pyb[0]["pyb"].close
 
             self.pybs.append(pyb[0])
             msg = "HWDriver:{}: {} -> {}".format(self.SFN, port, pyb[0])
@@ -198,10 +196,8 @@ class HWDriver(object):
         self.logger.info("Done: {} channels".format(self._num_chan))
         return self._num_chan
 
-    def close(self, pyb):
-        self.logger.info(pyb)
-        self.logger.info("closing {}".format(pyb["port"]))
-        pyb["pyb"].close()
+    def close(self):
+        pass
 
     def num_channels(self):
         return self._num_chan
@@ -210,6 +206,7 @@ class HWDriver(object):
         """ Function to instantiate a class/thread to trigger PLAY of script
         - this is called right after discover_channels
         """
+        return
         self.logger.info("Creating...")
 
         # Note that channels are mapped to 'id' in ascending order, which is done
