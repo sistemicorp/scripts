@@ -144,7 +144,7 @@ class pyboard2(pyboard.Pyboard):
             return False, None
 
         cmd = "\n".join(cmds)
-        #print("cmd:" + cmd)
+        self.logger.info("cmd:" + cmd)
 
         # this was copied/ported from pyboard.py
         try:
@@ -159,16 +159,16 @@ class pyboard2(pyboard.Pyboard):
 
         except pyboard.PyboardError as er:
             self.logger.error(er)
-            return False, None
+            return False, er
         except KeyboardInterrupt:
-            return False, None
+            return False, "KeyboardInterrupt"
 
         if repl_exit: self.exit_raw_repl()
 
         if ret_err:
             pyboard.stdout_write_bytes(ret_err)
             self.logger.error(ret_err)
-            return False, None
+            return False, ret_err
 
         #print("A: {}".format(ret))
         if ret:
@@ -177,6 +177,60 @@ class pyboard2(pyboard.Pyboard):
             items = json.loads(items)
             return True, items
         return True, []
+
+    # -------------------------------------------------------------------------------------------------
+    # API (wrapper functions)
+
+    def _verify_single_cmd_ret(self, cmd_dict):
+        method = cmd_dict.get("method", None)
+        args = cmd_dict.get("args", None)
+
+        if method is None:
+            return False, "method not specified"
+
+        if args is None:
+            return False, "args not specified"
+
+        cmds = []
+        c = str(cmd_dict)
+        cmds.append("upybrd_server_01.server.cmd({})".format(c))
+        success, result = self.server_cmd(cmds, repl_enter=False, repl_exit=False)
+        if not success:
+            self.logger.error("{} {}".format(success, result))
+            return success, result
+
+        cmds = ["upybrd_server_01.server.ret(method='{}')".format(method)]
+
+        retry = 5
+        succeeded = False
+        while retry and not succeeded:
+            success, result = self.server_cmd(cmds, repl_enter=False, repl_exit=False)
+            self.logger.info("{} {}".format(success, result))
+            if success:
+                for r in result:
+                    if r.get("method", False) == method and r.get("value", False) == True:
+                        succeeded = True
+            else:
+                return success, result
+
+            retry -= 1
+
+        if not succeeded:
+            return False, "Failed to verify method {} was executed".format(method)
+
+        if len(result) > 1:
+            self.logger.error("More results than expected: {}".format(result))
+            return False, "More results than expected, internal error"
+
+        if not result[0]["success"]:
+            return False, result[0]
+
+        return success, result[0]
+
+    def led_toggle(self, led, on_ms=500):
+        c = {'method': 'led_toggle', 'args': {'led': led, 'on_ms': on_ms}}
+        return self._verify_single_cmd_ret(c)
+
 
 
 class MicroPyBrd(object):
@@ -505,13 +559,13 @@ if __name__ == '__main__':
 
         cmds = [
             "import upybrd_server_01",
-            "upybrd_server_01.server.cmd({{'method': 'toggle_led', 'args': {{ 'led': {} }} }})".format(pyb.LED_RED),
+            "upybrd_server_01.server.cmd({{'method': 'led_toggle', 'args': {{ 'led': {} }} }})".format(pyb.LED_RED),
         ]
 
         success, result = pyb.server_cmd(cmds, repl_enter=True, repl_exit=False)
         logging.info("{} {}".format(success, result))
 
-        cmds = ["upybrd_server_01.server.ret()"]
+        cmds = ["upybrd_server_01.server.ret(method='led_toggle')"]
 
         retry = 5
         succeeded = False
@@ -520,7 +574,7 @@ if __name__ == '__main__':
             logging.info("{} {}".format(success, result))
             if success:
                 for r in result:
-                    if r.get("method", False) == 'toggle_led' and r.get("value", False) == True:
+                    if r.get("method", False) == 'led_toggle' and r.get("value", False) == True:
                         succeeded = True
             retry -= 1
 
@@ -536,7 +590,7 @@ if __name__ == '__main__':
 
         cmds = [
             "import upybrd_server_01",
-            "upybrd_server_01.server.cmd({{'method': 'toggle_led', 'args': {{ 'led': {} }} }})".format(pyb.LED_RED),
+            "upybrd_server_01.server.cmd({{'method': 'led_toggle', 'args': {{ 'led': {} }} }})".format(pyb.LED_RED),
             "upybrd_server_01.server.ret()",
         ]
 
@@ -552,7 +606,7 @@ if __name__ == '__main__':
             logging.info("{} {}".format(success, result))
             if success:
                 for r in result:
-                    if r.get("method", False) == 'toggle_led' and r.get("value", False) == True:
+                    if r.get("method", False) == 'led_toggle' and r.get("value", False) == True:
                         succeeded = True
             retry -= 1
 

@@ -172,7 +172,7 @@ class HWDriver(object):
 
             # now start the pyboard server
             port = pyb[0]["port"]
-            pyb[0]["pyb"] = pyboard2(port)
+            pyb[0]["pyb"] = pyboard2(port, loggerIn=logging.getLogger("SC.pyboard2.{}".format(pyb[0].get('id'))))
             cmds = ["import upybrd_server_01"]
             success, result = pyb[0]["pyb"].server_cmd(cmds, repl_enter=True, repl_exit=False)
             self.logger.info("{} {}".format(success, result))

@@ -19,16 +19,10 @@ class pybrd00xx(TestItem):
 
     def __init__(self, controller, chan, shared_state):
         super().__init__(controller, chan, shared_state)
-        self.logger = logging.getLogger("SC.{}.{}".format(__name__, self.chan))
+        self.logger = logging.getLogger("SC.pybrd00xx.{}".format(self.chan))
 
         self.pyb = None
         self.pyb_port = None
-
-    def _pybrd_cmd(self, cmds):
-        _cmds = []
-        for c in cmds:
-            _cmds.append("upybrd_server_01.server.cmd({})".format(c))
-        return self.pyb.server_cmd(_cmds, repl_enter=False, repl_exit=False)
 
     def PYBRD0xxSETUP(self):
         ctx = self.item_start()  # always first line of test
@@ -85,8 +79,7 @@ class pybrd00xx(TestItem):
 
         self.log_bullet("Watch which color Led blinks...")
 
-        cmds = ["{{'method': 'toggle_led', 'args': {{ 'led': {}, 'sleep_ms': {} }} }}".format(lednum, ontime_ms)]
-        success, result = self._pybrd_cmd(cmds)
+        success, result = self.pyb.led_toggle(lednum, ontime_ms)
         if not success:
             self.logger.error(result)
             _result = ResultAPI.RECORD_RESULT_FAIL

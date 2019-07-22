@@ -33,7 +33,7 @@ class MicroPyQueue(object):
                 if method is None:
                     return [self.items.pop(0)]
 
-                for idx, item in iter(self.items):
+                for idx, item in enumerate(self.items):
                     if item["method"] == method:
                         return [self.items.pop(idx)]
 
@@ -145,10 +145,8 @@ class MicroPyServer(object):
 
     def ret(self, method=None):
         with self.lock:
-            ret = self._ret.get(method)
-            if ret:
-                print(ret)
-                return True
+            _ret = self._ret.get(method)
+            print(_ret)
             return True
 
     def peek(self, method=None, all=False):
@@ -183,30 +181,43 @@ class MicroPyServer(object):
 
     # ===================================================================================
 
-    def _toggle_led(self, led, sleep_ms=500):
+    def _toggle_led(self, led, on_ms=500):
         pyb.LED(led).on()
-        time.sleep_ms(sleep_ms)
+        time.sleep_ms(on_ms)
         pyb.LED(led).off()
-        time.sleep_ms(sleep_ms)
 
-    def toggle_led(self, args):
-        """ Toggle LED
+    def _led_cycle(self, ):
+        pass
 
-        cmds = ["upybrd_server_01.server.cmd({{'method': 'toggle_led', 'args': {{ 'led': {}, 'sleep_ms': {} }} }})".format(lednum, ontime_ms)]
+    def led_cycle(self, args):
+        en = args.get("enable", True)
+        led = args.get("led", None)
+        on_ms = args.get("on_ms", 500)
+        off_ms = args.get("off_ms", 500)
+        if not led in [self.LED_BLUE, self.LED_GREEN, self.LED_RED, self.LED_YELLOW]:
+            self._ret.put({"method": "led_toggle", "value": "unknown led {}".format(led), "success": False})
+            return
+
+        self._ret.put({"method": "led_toggle", "value": True, "success": True})
+
+    def led_toggle(self, args):
+        """ Toggle LED on, does so only once
+
+        cmds = ["upybrd_server_01.server.cmd({{'method': 'led_toggle', 'args': {{ 'led': {}, 'on_ms': {} }} }})".format(lednum, ontime_ms)]
 
         args:
         :param led: one of LED_*
-        :param sleep_ms: seconds between on/off
+        :param on_ms: milli seconds on
         :return: success (True/False)
         """
         led = args.get("led", None)
-        sleep_ms = args.get("sleep", 500)
+        on_ms = args.get("on_ms", 500)
         if not led in [self.LED_BLUE, self.LED_GREEN, self.LED_RED, self.LED_YELLOW]:
-            self._ret.put({"method": "toggle_led", "value": "unknown led {}".format(led), "success": False})
+            self._ret.put({"method": "led_toggle", "value": "unknown led {}".format(led), "success": False})
             return
 
-        self._toggle_led(led, sleep_ms)
-        self._ret.put({"method": "toggle_led", "value": True, "success": True})
+        self._toggle_led(led, on_ms)
+        self._ret.put({"method": "led_toggle", "value": True, "success": True})
 
     def _isr_jig_closed_detect(self, _):
         # this method is not allowed to create memory or items in list
