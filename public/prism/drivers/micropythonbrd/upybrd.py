@@ -18,6 +18,7 @@ import time
 import logging
 import argparse
 import json
+import threading
 
 import ampy.files as files
 import ampy.pyboard as pyboard
@@ -52,6 +53,8 @@ class pyboard2(pyboard.Pyboard):
 
         if loggerIn: self.logger = loggerIn
         else: self.logger = StubLogger()
+
+        self.lock = threading.Lock()
 
     def _repl_result(self, result):
         """ return repl result as a list of strings for client to parse
@@ -146,39 +149,40 @@ class pyboard2(pyboard.Pyboard):
         cmd = "\n".join(cmds)
         self.logger.info("cmd:" + cmd)
 
-        # this was copied/ported from pyboard.py
-        try:
-            if repl_enter: self.enter_raw_repl()
+        with self.lock:
+            # this was copied/ported from pyboard.py
+            try:
+                if repl_enter: self.enter_raw_repl()
 
-            if blocking:
-                ret, ret_err = self.exec_raw(cmd + '\n', timeout=10, data_consumer=None)
-            else:
-                self.exec_raw_no_follow(cmd)
-                ret_err = False
-                ret = None
+                if blocking:
+                    ret, ret_err = self.exec_raw(cmd + '\n', timeout=10, data_consumer=None)
+                else:
+                    self.exec_raw_no_follow(cmd)
+                    ret_err = False
+                    ret = None
 
-        except pyboard.PyboardError as er:
-            msg = "{}: {}".format(cmd, er)
-            self.logger.error(msg)
-            return False, msg
-        except KeyboardInterrupt:
-            return False, "KeyboardInterrupt"
+            except pyboard.PyboardError as er:
+                msg = "{}: {}".format(cmd, er)
+                self.logger.error(msg)
+                return False, msg
+            except KeyboardInterrupt:
+                return False, "KeyboardInterrupt"
 
-        if repl_exit: self.exit_raw_repl()
+            if repl_exit: self.exit_raw_repl()
 
-        if ret_err:
-            pyboard.stdout_write_bytes(ret_err)
-            msg = "{}: {}".format(cmd, ret_err)
-            self.logger.error(msg)
-            return False, msg
+            if ret_err:
+                pyboard.stdout_write_bytes(ret_err)
+                msg = "{}: {}".format(cmd, ret_err)
+                self.logger.error(msg)
+                return False, msg
 
-        #print("A: {}".format(ret))
-        if ret:
-            # json-ize... TODO: find some more complete code...
-            items = ret.decode("utf-8").replace("'", '"').replace("True", "true").replace("False", "false").replace("None", "null")
-            items = json.loads(items)
-            return True, items
-        return True, []
+            #print("A: {}".format(ret))
+            if ret:
+                # json-ize... TODO: find some more complete code...
+                items = ret.decode("utf-8").replace("'", '"').replace("True", "true").replace("False", "false").replace("None", "null")
+                items = json.loads(items)
+                return True, items
+            return True, []
 
     # -------------------------------------------------------------------------------------------------
     # API (wrapper functions)

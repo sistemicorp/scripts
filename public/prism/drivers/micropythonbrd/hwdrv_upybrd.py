@@ -78,9 +78,7 @@ class upybrdPlayPub(threading.Thread):
         # regardless of the state of test... if the jog becomes open during
         # testing, we detect that case and handle it...
         cmds = ["upybrd_server_01.server.cmd({'method': 'enable_jig_closed_detect', 'args': {} })"]
-        self.shared_state.rsrc_lock_get("pyb{}".format(self.ch)).acquire()
         success, result = self.pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
-        self.shared_state.rsrc_lock_get("pyb{}".format(self.ch)).release()
 
         self.logger.info("{}, {}".format(success, result))
 
@@ -89,9 +87,7 @@ class upybrdPlayPub(threading.Thread):
             time.sleep(self.POLL_TIMER_SEC)
 
             cmds = ["upybrd_server_01.server.ret(method='jig_closed_detect')"]
-            self.shared_state.rsrc_lock_get("pyb{}".format(self.ch)).acquire()
             success, result = self.pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
-            self.shared_state.rsrc_lock_get("pyb{}".format(self.ch)).release()
 
             self.logger.info("{}, {}".format(success, result))
             if success:
@@ -213,7 +209,6 @@ class HWDriver(object):
         """ Function to instantiate a class/thread to trigger PLAY of script
         - this is called right after discover_channels
         """
-        return
         self.logger.info("Creating...")
 
         # Note that channels are mapped to 'id' in ascending order, which is done
