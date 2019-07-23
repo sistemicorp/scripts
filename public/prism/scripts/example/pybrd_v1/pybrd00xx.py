@@ -114,7 +114,7 @@ class pybrd00xx(TestItem):
         """
         ctx = self.item_start()  # always first line of test
 
-        pin = ctx.item.get("chan", None)
+        pin = ctx.item.get("pin", None)
         samples = ctx.item.get("samples", 1)
         unit = getattr(ResultAPI, ctx.item.get("unit", ResultAPI.UNIT_NONE), ResultAPI.UNIT_NONE)
         min = ctx.item.get("min", None)
@@ -123,7 +123,7 @@ class pybrd00xx(TestItem):
         name = ctx.item.get("name", pin)  # if no name supplied use channel
         scale = ctx.item.get("scale", 1.0)
 
-        success, result = self.pyb.adc_read("VREF", samples, delay_ms) # adc_read(self, pin, samples=1, samples_ms=1):
+        success, result = self.pyb.adc_read(pin, samples, delay_ms) # adc_read(self, pin, samples=1, samples_ms=1):
         self.logger.info("{} {}".format(success, result))
 
         if not success:
@@ -131,9 +131,9 @@ class pybrd00xx(TestItem):
             self.item_end(ResultAPI.RECORD_RESULT_FAIL)  # always last line of test
             return
 
-        self.log_bullet("ADC pin {}: {}".format(pin, result))
+        self.log_bullet("ADC pin {}: {}".format(pin, result["value"]))
 
-        _, _result, _bullet = ctx.record.measurement("{}".format(name), result, unit, min, max)
+        _, _result, _bullet = ctx.record.measurement("{}".format(name), result["value"], unit, min, max)
         self.log_bullet(_bullet)
 
         self.item_end(_result)  # always last line of test
