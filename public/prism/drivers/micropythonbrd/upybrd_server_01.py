@@ -2,92 +2,10 @@ import _thread
 import time
 import pyb
 import micropython
+import array
+import pyb_queue
 
 micropython.alloc_emergency_exception_buf(100)
-
-class MicroPyQueue(object):
-    """ Special Queue for sending commands and getting return items from a MicroPython Process
-
-    """
-
-    def __init__(self):
-        self.lock = _thread.allocate_lock()
-        self.items = []
-
-    def put(self, item):
-        """ Put an item into the queue
-
-        :param item: dict of format, {"method": <class_method>, "args": <args>}
-        :return: None
-        """
-        with self.lock:
-            self.items.append(item)
-
-    def get(self, method=None, all=False):
-        """ Get an item from the queue
-
-        :param method: set to class_method to return a specific result
-        :param all: when set return all
-        :return: return item(s) in list
-        """
-        with self.lock:
-            if method is None:
-                if all:
-                    ret = self.items
-                    self.items = []
-                    return ret
-
-                if self.items: return [self.items.pop(0)]
-                else: return []
-
-            items = []
-            for idx, item in enumerate(self.items):
-                if item["method"] == method:
-                    items.append(self.items.pop(idx))
-                    if not all:
-                        break
-
-            return items
-
-    def peek(self, method=None, all=False):
-        """ Peek at item(s) in the queue, does not remove item(s)
-
-        :param method: if set, returns first item matching method string
-        :param all: if set returns all items, if method is set, then all items with method returned
-        :return: None for no item, or [item(s)]
-        """
-        with self.lock:
-            if method is None:
-                if all:
-                    return self.items
-
-                if self.items: return [self.items[0]]
-                else: return []
-
-            items = []
-            for idx, item in enumerate(self.items):
-                if item["method"] == method:
-                    items.append(self.items[idx])
-                    if not all:
-                        break
-
-            return items
-
-    def update(self, item_update):
-        """ Update an item in queue, or append item if it doesn't exist
-
-        :param item_update: new item, of format, {"method": <class_method>, "args": <args>}
-        :return:
-        """
-        with self.lock:
-            if self.items:
-                for idx, item in enumerate(self.items):
-                    if item["method"] == item_update["method"]:
-                        self.items[idx] = item_update
-                        return
-
-            # if no matching, append this item
-            self.items.append(item)
 
 
 class MicroPyServer(object):
@@ -120,17 +38,24 @@ class MicroPyServer(object):
     ADC_VALID_PINS = ["X2",  "X3",  "X4",  "X5",  "X6",  "X7",  "X8",
                       "X11", "X12", "X19", "X20", "X21", "X22", "Y11", "Y8"]
     ADC_VALID_INTERNALS = ["VBAT", "TEMP", "VREF", "VDD"]
+    ADC_READ_MULTI_TIMER = 8
+
+    JIG_CLOSED_TIMER = 4
 
     def __init__(self):
         self.lock = _thread.allocate_lock()
-        self._cmd = MicroPyQueue()
-        self._ret = MicroPyQueue()
-        self.ctx = {'a': 0,
-                    "gpio": {},
-                    "timer": {},
-                   }         # use dict to store static data
-        self.timer_jig_closed = pyb.Timer(4)  # create a timer object using timer 4
-        self._isr_jig_closed_detect_ref = self._jig_closed_detect
+        self._cmd = pyb_queue.MicroPyQueue()
+        self._ret = pyb_queue.MicroPyQueue()
+
+        # use dict to store static data
+        self.ctx = {'a': 0,                # dummy for testing
+                    "gpio": {},            # gpios used are named here
+                    "timer": {},           # timers running are listed here
+                    "adc_read_multi": {},  # cache args
+                   }
+
+        self.timer_jig_closed = pyb.Timer(self.JIG_CLOSED_TIMER)  # create a timer object using timer
+        self._isr_jig_closed_detect_ref = self._jig_closed_detect # used to create memory before ISR
 
     # ===================================================================================
     # Public API to send commands and get results from the MicroPy Server
@@ -324,9 +249,10 @@ class MicroPyServer(object):
 
     def adc_read(self, args):
         """ (simple) read ADC on a pin
+        - this is a blocking call
 
         args:
-        :param pin: pin name of gpio, X1, X2, ... or vbat, temp, vref, core_vref
+        :param pin: pin name of gpio, X1, X2, ... or VBAT, TEMP, VREF, VDD
         :param samples: number of samples to take and then calculate average, default 1
         :param sample_ms: number of milliseconds between samples, default 1
         :return:
@@ -373,6 +299,60 @@ class MicroPyServer(object):
 
         #self._ret.put({"method": "adc_read", "value": "{:.4f}".format(result), "success": True})
         self._ret.put({"method": "adc_read", "value": result, "success": True})
+
+    def _adc_read_multi(self, _):
+        args = self.ctx["adc_read_multi"]
+        freq = args.get("freq", 100)
+        samples = args.get("samples", 100)
+        pins = args.get("pins", None)
+
+        adcs = []
+        results = []
+        for pin in pins:
+            adcs.append(pyb.ADC(pyb.Pin('{}'.format(pin))))
+            results.append(array.array('H', (0 for i in range(samples))))
+
+        tim = pyb.Timer(self.ADC_READ_MULTI_TIMER, freq=freq)  # Create timer
+        pyb.ADC.read_timed_multi(adcs, results, tim)
+        tim.deinit()
+
+        self._ret.put({"method": "adc_read_multi_results", "value": results, "success": True})
+
+    def adc_read_multi(self, args):
+        """ ADC read multiple pins, multiple times, at a given frequency
+        - this is non-blocking, the action is scheduled later
+
+        args:
+        :param pins: list of pins name of gpio, X1, X2, ... or vbat, temp, vref, core_vref
+        :param freq: frequency of taking samples (1 - 10kHz), default 100 Hz
+        :param samples: total samples to take (1 - 1000), default 100
+        :return:
+        """
+        freq = args.get("freq", 100)
+        if not (0 < freq < 10001):
+            self._ret.put({"method": "adc_read_multi", "value": "freq not within range supported", "success": False})
+            return
+
+        samples = args.get("samples", 100)
+        if not (0 < samples < 1001):
+            self._ret.put({"method": "adc_read_multi", "value": "samples not within range supported", "success": False})
+            return
+
+        pins = args.get("pins", None)
+        if not isinstance(pins, list):
+            self._ret.put({"method": "adc_read_multi", "value": "pins must be a list", "success": False})
+            return
+        for pin in pins:
+            if pin not in self.ADC_VALID_PINS:
+                self._ret.put({"method": "adc_read_multi", "value": "{} pin is not valid".format(pin), "success": False})
+                return
+
+        # everything is good, store the params
+        self.ctx["adc_read_multi"] = args
+        # schedule adc multi to run later
+        micropython.schedule(self._adc_read_multi, 0)
+
+        self._ret.put({"method": "adc_read_multi", "value": "scheduled", "success": True})
 
 
 server = MicroPyServer()

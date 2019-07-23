@@ -277,6 +277,10 @@ class pyboard2(pyboard.Pyboard):
         c = {'method': 'adc_read', 'args': {'pin': pin, 'samples': samples, 'samples_ms': samples_ms}}
         return self._verify_single_cmd_ret(c)
 
+    def adc_read_multi(self, pins, samples=100, freq=100):
+        c = {'method': 'adc_read_multi', 'args': {'pin': pins, 'samples': samples, 'freq': freq}}
+        return self._verify_single_cmd_ret(c)
+
 
 class MicroPyBrd(object):
     """  Driver for the micopython board
