@@ -243,12 +243,38 @@ class pyboard2(pyboard.Pyboard):
         self.logger.info("{} {}".format(success, result))
         return success
 
+    def get_server_method(self, method, all=False):
+        cmds = ["upybrd_server_01.server.ret(method='{}', all='{}')".format(method, all)]
+        retry = 5
+        succeeded = False
+        while retry and not succeeded:
+            time.sleep(0.1)
+            success, result = self.server_cmd(cmds, repl_enter=False, repl_exit=False)
+            self.logger.debug("{} {}".format(success, result))
+            if success:
+                for r in result:
+                    if r.get("method", False) == method:
+                        succeeded = True
+            else:
+                return success, result
+
+            retry -= 1
+
+        if not succeeded:
+            return False, "Failed to find method {}".format(method)
+
+        return success, result
+
     def led_toggle(self, led, on_ms=500):
         c = {'method': 'led_toggle', 'args': {'led': led, 'on_ms': 1}}
         return self._verify_single_cmd_ret(c)
 
     def enable_jig_closed_detect(self, enable=True):
         c = {'method': 'enable_jig_closed_detect', 'args': {'enable': enable}}
+        return self._verify_single_cmd_ret(c)
+
+    def adc_read(self, pin, samples=1, samples_ms=1):
+        c = {'method': 'adc_read', 'args': {'pin': pin, 'samples': samples, 'samples_ms': samples_ms}}
         return self._verify_single_cmd_ret(c)
 
 
@@ -497,6 +523,8 @@ def parse_args():
                         action='store_true', help='test code, blink led check result later')
     parser.add_argument("-4", '--test-4', dest='test_4',
                         action='store_true', help='test code, blink led check result later')
+    parser.add_argument("-5", '--test-5', dest='test_5',
+                        action='store_true', help='test code, adc read')
 
     parser.add_argument("-c", '--copy', dest='copy_file',
                         action='store', help='copy local file to pyboard /flash')
@@ -687,6 +715,23 @@ if __name__ == '__main__':
                 logging.info("{} {}".format(success, result))
                 retry -= 1
                 time.sleep(0.5)
+
+        else:
+            logging.error("Unable to start server")
+
+        pyb.close()
+        did_something = True
+
+    if args.test_5:
+        #pyb = pyboard2(args.port, loggerIn=logging) # verbose version
+        pyb = pyboard2(args.port)
+
+        success = pyb.start_server()
+        logging.info("{}".format(success))
+        if success:
+            logging.info("Reading ADC...")
+            success, result = pyb.adc_read("VREF")
+            logging.info("{} {}".format(success, result))
 
         else:
             logging.error("Unable to start server")

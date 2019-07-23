@@ -15,6 +15,7 @@ from public.prism.drivers.micropythonbrd.upybrd import MicroPyBrd, pyboard2
 from pubsub import pub
 from app.const import PUB, CHANNEL
 from app.sys_log import pub_notice
+import serial
 
 
 class upybrdPlayPub(threading.Thread):
@@ -75,28 +76,35 @@ class upybrdPlayPub(threading.Thread):
         self.logger.info("!!! run loop started !!!")
 
         # start the pyboard jog closed timer, it will always be running
-        # regardless of the state of test... if the jog becomes open during
+        # regardless of the state of test... if the jig becomes open during
         # testing, we detect that case and handle it...
-        cmds = ["upybrd_server_01.server.cmd({'method': 'enable_jig_closed_detect', 'args': {} })"]
-        success, result = self.pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
-
+        success, result = self.pyb.enable_jig_closed_detect()
         self.logger.info("{}, {}".format(success, result))
 
         pub_play = False
         while not self.stopped():
             time.sleep(self.POLL_TIMER_SEC)
 
-            cmds = ["upybrd_server_01.server.ret(method='jig_closed_detect')"]
-            #cmds = ["upybrd_server_01.server.ret()"]
-            success, result = self.pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
+            # this is a hack to deal with shutting down, the serial port
+            # is closed and this process is still running...
+            try:
+                success, result = self.pyb.get_server_method("jig_closed_detect")
+
+            except serial.serialutil.SerialException:
+                continue
+
+            except Exception as e:
+                self.logger.error(e)
+
             if success and len(result):
-                self.logger.info("{}, {}".format(success, result))
+                self.logger.debug("{}, {}".format(success, result))
                 # only if the fixture was in the previously opened state, then we play
                 # in other words, once lid is closed, it must be opened again to trigger play
                 if self.open_fixture and result[0]["value"] == "CLOSED":
                     pub_play = True
                     self.open_fixture = False
                     self.logger.info("Channel {} PLAY".format(self.ch))
+
                 elif result[0]["value"] == "OPEN":
                     self.open_fixture = True
 
@@ -104,8 +112,8 @@ class upybrdPlayPub(threading.Thread):
                 self.logger.error("self.pyb.server_cmd: {}".format(result))
                 pub_play = False
 
-            self.logger.info("open_fixture: {}, play: {}".format(self.open_fixture, pub_play))
             if pub_play:
+                self.logger.info("open_fixture: {}, play: {}".format(self.open_fixture, pub_play))
                 pub_play = False
                 d = {"channels": [self.ch], "from": "{}.{}".format(__class__.__name__, self.ch)}
                 pub.sendMessage(self.ch_pub, item_dict=d)
@@ -200,7 +208,7 @@ class HWDriver(object):
         return self._num_chan
 
     def close(self):
-        pass
+        self.logger.info("TBD?")
 
     def num_channels(self):
         return self._num_chan

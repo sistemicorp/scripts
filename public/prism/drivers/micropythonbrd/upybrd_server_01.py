@@ -114,6 +114,13 @@ class MicroPyServer(object):
     LED_YELLOW = 3
     LED_BLUE   = 4
 
+    # Valid ADC pins to read voltage.
+    # 1) X1 is NOT included because it its reserved for jig closed detection
+    # 2)
+    ADC_VALID_PINS = ["X2",  "X3",  "X4",  "X5",  "X6",  "X7",  "X8",
+                      "X11", "X12", "X19", "X20", "X21", "X22", "Y11", "Y8"]
+    ADC_VALID_INTERNALS = ["VBAT", "TEMP", "VREF", "VDD"]
+
     def __init__(self):
         self.lock = _thread.allocate_lock()
         self._cmd = MicroPyQueue()
@@ -314,6 +321,58 @@ class MicroPyServer(object):
             self.ctx["gpio"][name].high()
         else:
             self.ctx["gpio"][name].low()
+
+    def adc_read(self, args):
+        """ (simple) read ADC on a pin
+
+        args:
+        :param pin: pin name of gpio, X1, X2, ... or vbat, temp, vref, core_vref
+        :param samples: number of samples to take and then calculate average, default 1
+        :param sample_ms: number of milliseconds between samples, default 1
+        :return:
+        """
+        pin = args.get("pin", None)
+        if pin not in self.ADC_VALID_PINS and pin not in self.ADC_VALID_INTERNALS:
+            self._ret.put({"method": "adc_read", "value": "{} pin is not valid".format(pin), "success": False})
+            return
+
+        samples = args.get("samples", 1)
+        sample_ms = args.get("sample_ms", 1)
+
+        adc = None
+        adc_read = None
+        if pin in self.ADC_VALID_PINS:
+            adc = pyb.ADC(pyb.Pin('{}'.format(pin)))
+            adc_read = adc.read
+
+        else:
+            adc = pyb.ADCAll(12, 0x70000)
+
+            if pin == "TEMP":
+                adc_read = adc.read_core_temp
+            elif pin == "VBAT":
+                adc_read = adc.read_core_vbat
+            elif pin == "VREF":
+                adc_read = adc.read_core_vref
+            elif pin == "VDD":
+                adc_read = adc.read_vref
+
+        if adc is None or adc_read is None:
+            self._ret.put({"method": "adc_read", "value": "{} pin is not valid (internal error)".format(pin), "success": False})
+            return
+
+        results = []
+        for i in range(samples):
+            results.append(float(adc_read()))
+            if sample_ms:
+                time.sleep_ms(sample_ms)
+
+        sum = 0
+        for r in results: sum += r
+        result = float(sum / len(results))
+
+        #self._ret.put({"method": "adc_read", "value": "{:.4f}".format(result), "success": True})
+        self._ret.put({"method": "adc_read", "value": result, "success": True})
 
 
 server = MicroPyServer()

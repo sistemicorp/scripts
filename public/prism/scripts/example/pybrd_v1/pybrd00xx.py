@@ -105,7 +105,7 @@ class pybrd00xx(TestItem):
     def PYBRD0020_adc_read(self):
         """ Read ADC channel.
 
-        {"id": "PYBRD0020_adc_read",      "enable": true,  "chan": "temp", "samples": 2, "delay_s": 0, "name": "MyKnob",
+        {"id": "PYBRD0020_adc_read",      "enable": true,  "pin": "TEMP", "samples": 2, "delay_s": 0, "name": "MyKnob",
                                           "min": 18, "max": 26, "gain": 1, "unit": "UNIT_CELCIUS" },
 
         background: https://github.com/micropython/micropython/pull/3656
@@ -114,66 +114,24 @@ class pybrd00xx(TestItem):
         """
         ctx = self.item_start()  # always first line of test
 
-        chan = ctx.item.get("chan", None)
+        pin = ctx.item.get("chan", None)
         samples = ctx.item.get("samples", 1)
         unit = getattr(ResultAPI, ctx.item.get("unit", ResultAPI.UNIT_NONE), ResultAPI.UNIT_NONE)
         min = ctx.item.get("min", None)
         max = ctx.item.get("max", None)
-        delay_s = ctx.item.get("delay_s", 0)
-        name = ctx.item.get("name", chan)  # if no name supplied use channel
+        delay_ms = ctx.item.get("delay_s", 0)
+        name = ctx.item.get("name", pin)  # if no name supplied use channel
         scale = ctx.item.get("scale", 1.0)
 
-        if chan not in [0, 1, 2, 3, "temp", "vbat", "vref", "vcc"]:
-            self.log_bullet("Error: Invalid ADC channel: {}".format(chan))
-            self.item_end(ResultAPI.RECORD_RESULT_FAIL)  # always last line of test
-            return
-
-        cmds = [
-            "import pyb",
-        ]
-        if chan in [0, 1, 2, 3]:
-            pin_map = {0: "X19", 1: "X20", 2: "X21", 3: "X22"}
-            cmds.append("adc = pyb.ADC(pyb.Pin('{}'))".format(pin_map[chan]))
-            cmds.append("val = adc.read()")
-        elif chan == "temp":
-            cmds.append("adc = pyb.ADCAll(12, 0x70000)")
-            cmds.append("val = adc.read_core_temp()")
-        elif chan == "vbat":
-            cmds.append("adc = pyb.ADCAll(12, 0x70000)")
-            cmds.append("val = adc.read_core_vbat()")
-        elif chan == "vref":
-            cmds.append("adc = pyb.ADCAll(12, 0x70000)")
-            cmds.append("val = adc.read_core_vref()")
-        elif chan == "vcc":
-            cmds.append("adc = pyb.ADCAll(12, 0x70000)")
-            cmds.append("val = adc.read_vref()")
-
-        cmds.append("print(val)")
-
-        results = []
-        success = True
-        for i in range(samples):
-            success, result = self.pyb.exec_cmd(cmds)
-            self.logger.info("{} {} {}".format(i, success, result))
-            results.append(float(result))
-            time.sleep(delay_s)
-            if not success: break
+        success, result = self.pyb.adc_read("VREF", samples, delay_ms) # adc_read(self, pin, samples=1, samples_ms=1):
+        self.logger.info("{} {}".format(success, result))
 
         if not success:
-            self.log_bullet("ADC chan {}: Failed".format(chan))
+            self.log_bullet("ADC pin {}: Failed".format(pin))
             self.item_end(ResultAPI.RECORD_RESULT_FAIL)  # always last line of test
             return
 
-        self.log_bullet("ADC chan {}: {}".format(chan, result))
-
-        if samples != len(results):
-            self.log_bullet("Warning: samples {} != len(results {}".format(samples, len(results)))
-            # TODO: if there was an error taking samples, how to proceed?
-
-        sum = 0
-        for r in results: sum += r
-        result = float(sum / len(results))
-        result = float(result * scale)
+        self.log_bullet("ADC pin {}: {}".format(pin, result))
 
         _, _result, _bullet = ctx.record.measurement("{}".format(name), result, unit, min, max)
         self.log_bullet(_bullet)
