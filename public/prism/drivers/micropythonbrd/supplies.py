@@ -7,6 +7,7 @@ Notes:
 1)
 """
 import pyb
+from INA220 import INA220
 
 CHANNELS = ["V1", "V2", "V3"]
 LDOS = [
@@ -17,13 +18,6 @@ LDOS = [
 PG_GOOD = "PG_GOOD"
 PG_BAD = "PG_BAD"
 PG_UNSUPPORTED = "PG_UNSUPPORTED"
-
-
-class INA220(object):
-    def __init__(self):
-        pass
-
-    # your code here...
 
 
 class SupplyStats(object):
