@@ -149,7 +149,7 @@ class pyboard2(pyboard.Pyboard):
             return False, "cmds should be a list"
 
         cmd = "\n".join(cmds)
-        self.logger.info("{} cmd: {}".format(self.device, cmd))
+        self.logger.debug("{} cmd: {}".format(self.device, cmd))
 
         with self.lock:
             # this was copied/ported from pyboard.py
@@ -215,7 +215,7 @@ class pyboard2(pyboard.Pyboard):
         while retry and not succeeded:
             time.sleep(0.1)
             success, result = self.server_cmd(cmds, repl_enter=False, repl_exit=False)
-            self.logger.info("{} {}".format(success, result))
+            self.logger.debug("{} {}".format(success, result))
             if success:
                 for r in result:
                     if r.get("method", False) == method and r.get("success", False) == True:
