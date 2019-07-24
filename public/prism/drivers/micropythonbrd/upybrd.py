@@ -180,9 +180,11 @@ class pyboard2(pyboard.Pyboard):
 
             #print("A: {}".format(ret))
             if ret:
-                # json-ize... TODO: find some more complete code...
-                items = ret.decode("utf-8").replace("'", '"').replace("True", "true").replace("False", "false").replace("None", "null")
-                items = json.loads(items)
+                # json-ize...
+                # TODO: find some more complete code...
+                fixed_string = ret.decode("utf-8").replace("'", '"').replace("True", "true").replace("False", "false").replace("None", "null")
+                self.logger.info(fixed_string)
+                items = json.loads(fixed_string)
                 return True, items
             return True, []
 
@@ -201,13 +203,13 @@ class pyboard2(pyboard.Pyboard):
 
         cmds = []
         c = str(cmd_dict)
-        cmds.append("upybrd_server_01.server.cmd({})".format(c))
+        cmds.append("upyb_server_01.server.cmd({})".format(c))
         success, result = self.server_cmd(cmds, repl_enter=False, repl_exit=False)
         if not success:
             self.logger.error("{} {}".format(success, result))
             return success, result
 
-        cmds = ["upybrd_server_01.server.ret(method='{}')".format(method)]
+        cmds = ["upyb_server_01.server.ret(method='{}')".format(method)]
 
         # it is assumed the command sent will post a return, with success set
         retry = 5
@@ -215,7 +217,7 @@ class pyboard2(pyboard.Pyboard):
         while retry and not succeeded:
             time.sleep(0.1)
             success, result = self.server_cmd(cmds, repl_enter=False, repl_exit=False)
-            self.logger.debug("{} {}".format(success, result))
+            self.logger.info("{} {}".format(success, result))
             if success:
                 for r in result:
                     if r.get("method", False) == method and r.get("success", False) == True:
@@ -238,13 +240,13 @@ class pyboard2(pyboard.Pyboard):
         return success, result[0]
 
     def start_server(self):
-        cmds = ["import upybrd_server_01"]
+        cmds = ["import upyb_server_01"]
         success, result = pyb.server_cmd(cmds, repl_exit=False)
         self.logger.info("{} {}".format(success, result))
         return success
 
     def get_server_method(self, method, all=False):
-        cmds = ["upybrd_server_01.server.ret(method='{}', all='{}')".format(method, all)]
+        cmds = ["upyb_server_01.server.ret(method='{}', all='{}')".format(method, all)]
         retry = 5
         succeeded = False
         while retry and not succeeded:
@@ -278,7 +280,7 @@ class pyboard2(pyboard.Pyboard):
         return self._verify_single_cmd_ret(c)
 
     def adc_read_multi(self, pins, samples=100, freq=100):
-        c = {'method': 'adc_read_multi', 'args': {'pin': pins, 'samples': samples, 'freq': freq}}
+        c = {'method': 'adc_read_multi', 'args': {'pins': pins, 'samples': samples, 'freq': freq}}
         return self._verify_single_cmd_ret(c)
 
 
@@ -529,6 +531,8 @@ def parse_args():
                         action='store_true', help='test code, blink led check result later')
     parser.add_argument("-5", '--test-5', dest='test_5',
                         action='store_true', help='test code, adc read')
+    parser.add_argument("-6", '--test-6', dest='test_6',
+                        action='store_true', help='test code, adc multi read')
 
     parser.add_argument("-c", '--copy', dest='copy_file',
                         action='store', help='copy local file to pyboard /flash')
@@ -613,14 +617,14 @@ if __name__ == '__main__':
         pyb = pyboard2(args.port)
 
         cmds = [
-            "import upybrd_server_01",
-            "upybrd_server_01.server.cmd({{'method': 'led_toggle', 'args': {{ 'led': {} }} }})".format(pyb.LED_RED),
+            "import upyb_server_01",
+            "upyb_server_01.server.cmd({{'method': 'led_toggle', 'args': {{ 'led': {} }} }})".format(pyb.LED_RED),
         ]
 
         success, result = pyb.server_cmd(cmds, repl_enter=True, repl_exit=False)
         logging.info("{} {}".format(success, result))
 
-        cmds = ["upybrd_server_01.server.ret(method='led_toggle')"]
+        cmds = ["upyb_server_01.server.ret(method='led_toggle')"]
 
         retry = 5
         succeeded = False
@@ -644,15 +648,15 @@ if __name__ == '__main__':
         pyb = pyboard2(args.port)
 
         cmds = [
-            "import upybrd_server_01",
-            "upybrd_server_01.server.cmd({{'method': 'led_toggle', 'args': {{ 'led': {} }} }})".format(pyb.LED_RED),
-            "upybrd_server_01.server.ret()",
+            "import upyb_server_01",
+            "upyb_server_01.server.cmd({{'method': 'led_toggle', 'args': {{ 'led': {} }} }})".format(pyb.LED_RED),
+            "upyb_server_01.server.ret()",
         ]
 
         success, result = pyb.server_cmd(cmds, repl_exit=False)
         logging.info("{} {}".format(success, result))
 
-        cmds = ["upybrd_server_01.server.ret()"]
+        cmds = ["upyb_server_01.server.ret()"]
 
         retry = 5
         succeeded = False
@@ -697,7 +701,7 @@ if __name__ == '__main__':
             logging.info("{} {}".format(success, result))
 
             # for fun, try and ask for more results, while the jig closed timer is running
-            cmds = ["upybrd_server_01.server.ret(all=True)"]
+            cmds = ["upyb_server_01.server.ret(all=True)"]
             retry = 20
             succeeded = False
             while retry and not succeeded:
@@ -735,6 +739,25 @@ if __name__ == '__main__':
         if success:
             logging.info("Reading ADC...")
             success, result = pyb.adc_read("VREF")
+            logging.info("{} {}".format(success, result))
+
+        else:
+            logging.error("Unable to start server")
+
+        pyb.close()
+        did_something = True
+
+    if args.test_6:
+        #pyb = pyboard2(args.port, loggerIn=logging) # verbose version
+        pyb = pyboard2(args.port)
+
+        success = pyb.start_server()
+        logging.info("{}".format(success))
+        if success:
+            logging.info("Reading (multi) ADC...")
+            success, result = pyb.adc_read_multi(pins=["X19", "X20"])
+            logging.info("{} {}".format(success, result))
+            success, result = pyb.get_server_method("adc_read_multi_results")
             logging.info("{} {}".format(success, result))
 
         else:

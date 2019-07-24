@@ -3,7 +3,7 @@ import time
 import pyb
 import micropython
 import array
-import pyb_queue
+import upyb_queue
 
 micropython.alloc_emergency_exception_buf(100)
 
@@ -44,8 +44,8 @@ class MicroPyServer(object):
 
     def __init__(self):
         self.lock = _thread.allocate_lock()
-        self._cmd = pyb_queue.MicroPyQueue()
-        self._ret = pyb_queue.MicroPyQueue()
+        self._cmd = upyb_queue.MicroPyQueue()
+        self._ret = upyb_queue.MicroPyQueue()
 
         # use dict to store static data
         self.ctx = {'a': 0,                # dummy for testing
@@ -316,7 +316,12 @@ class MicroPyServer(object):
         pyb.ADC.read_timed_multi(adcs, results, tim)
         tim.deinit()
 
-        self._ret.put({"method": "adc_read_multi_results", "value": results, "success": True})
+        # reformat results to be a simple list  TODO: is there a better way to do this?
+        r = []
+        for result in results:
+            r.append([r for r in result])
+
+        self._ret.put({"method": "adc_read_multi_results", "value": r, "success": True})
 
     def adc_read_multi(self, args):
         """ ADC read multiple pins, multiple times, at a given frequency
@@ -349,10 +354,11 @@ class MicroPyServer(object):
 
         # everything is good, store the params
         self.ctx["adc_read_multi"] = args
+
+        self._ret.put({"method": "adc_read_multi", "value": "scheduled", "success": True})
         # schedule adc multi to run later
         micropython.schedule(self._adc_read_multi, 0)
 
-        self._ret.put({"method": "adc_read_multi", "value": "scheduled", "success": True})
 
 
 server = MicroPyServer()
