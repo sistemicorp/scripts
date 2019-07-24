@@ -17,25 +17,13 @@ import os
 import time
 import logging
 import argparse
-import json
-import threading
 
 import ampy.files as files
 import ampy.pyboard as pyboard
 from upybrd import pyboard2
+from stublogger import StubLogger
 
 VERSION = "0.0.1"
-
-
-class StubLogger(object):
-    """ stubb out logger if none is provided"""
-    # TODO: support print to console.
-    def info(self, *args, **kwargs): pass
-    def error(self, *args, **kwargs): pass
-    def debug(self, *args, **kwargs): pass
-    def warning(self, *args, **kwargs): pass
-    def critical(self, *args, **kwargs): pass
-
 
 
 class MicroPyBrd(object):

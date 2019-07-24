@@ -10,19 +10,10 @@ import json
 import threading
 
 import ampy.pyboard as pyboard
+from stublogger import StubLogger
 
 
 VERSION = "0.0.1"
-
-
-class StubLogger(object):
-    """ stubb out logger if none is provided"""
-    # TODO: support print to console.
-    def info(self, *args, **kwargs): pass
-    def error(self, *args, **kwargs): pass
-    def debug(self, *args, **kwargs): pass
-    def warning(self, *args, **kwargs): pass
-    def critical(self, *args, **kwargs): pass
 
 
 class pyboard2(pyboard.Pyboard):
