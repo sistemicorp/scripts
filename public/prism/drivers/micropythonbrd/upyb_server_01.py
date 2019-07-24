@@ -52,7 +52,7 @@ class MicroPyServer(object):
                     "gpio": {},            # gpios used are named here
                     "timer": {},           # timers running are listed here
                     "adc_read_multi": {},  # cache args
-                   }
+                    }
 
         self.timer_jig_closed = pyb.Timer(self.JIG_CLOSED_TIMER)  # create a timer object using timer
         self._isr_jig_closed_detect_ref = self._jig_closed_detect # used to create memory before ISR
@@ -355,10 +355,10 @@ class MicroPyServer(object):
         # everything is good, store the params
         self.ctx["adc_read_multi"] = args
 
-        self._ret.put({"method": "adc_read_multi", "value": "scheduled", "success": True})
         # schedule adc multi to run later
         micropython.schedule(self._adc_read_multi, 0)
 
+        self._ret.put({"method": "adc_read_multi", "value": "scheduled", "success": True})
 
 
 server = MicroPyServer()
