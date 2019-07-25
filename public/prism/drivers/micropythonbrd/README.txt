@@ -54,4 +54,6 @@ How to use these files...
         True
         >>>
 
+   B) Use the cli, upybrd_cli_server.py to write test code in a simple environment.
+
 

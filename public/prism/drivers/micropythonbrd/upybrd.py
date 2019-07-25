@@ -170,7 +170,7 @@ class pyboard2(pyboard.Pyboard):
     # -------------------------------------------------------------------------------------------------
     # API (wrapper functions)
 
-    def _verify_single_cmd_ret(self, cmd_dict):
+    def _verify_single_cmd_ret(self, cmd_dict, delay_poll=0.1):
         method = cmd_dict.get("method", None)
         args = cmd_dict.get("args", None)
 
@@ -194,7 +194,7 @@ class pyboard2(pyboard.Pyboard):
         retry = 5
         succeeded = False
         while retry and not succeeded:
-            time.sleep(0.1)
+            time.sleep(delay_poll)
             success, result = self.server_cmd(cmds, repl_enter=False, repl_exit=False)
             self.logger.info("{} {}".format(success, result))
             if success:
@@ -247,8 +247,16 @@ class pyboard2(pyboard.Pyboard):
         return success, result
 
     def led_toggle(self, led, on_ms=500):
-        c = {'method': 'led_toggle', 'args': {'led': led, 'on_ms': 1}}
-        return self._verify_single_cmd_ret(c)
+        """ toggle and LED ON and then OFF
+        - this is a blocking command
+
+        :param led: # of LED, see self.LED_*
+        :param on_ms: # of milliseconds to turn on LED
+        :return:
+        """
+        on_time_ms = 400
+        c = {'method': 'led_toggle', 'args': {'led': led, 'on_ms': on_time_ms}}
+        return self._verify_single_cmd_ret(c, delay_poll=on_time_ms)
 
     def enable_jig_closed_detect(self, enable=True):
         c = {'method': 'enable_jig_closed_detect', 'args': {'enable': enable}}

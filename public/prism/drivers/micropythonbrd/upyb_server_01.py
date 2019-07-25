@@ -145,6 +145,7 @@ class MicroPyServer(object):
 
     def led_toggle(self, args):
         """ Toggle LED on, does so only once
+        - this is a BLOCKING command, the return msg is posted AFTER the led has been toggled
 
         cmds = ["upybrd_server_01.server.cmd({{'method': 'led_toggle', 'args': {{ 'led': {}, 'on_ms': {} }} }})".format(lednum, ontime_ms)]
 
