@@ -71,10 +71,11 @@ def test_led_toggle(args, pyb):
     all = args.all_funcs or _all
     _success = True
 
-    if args.t1 or all:
+    if all or args.t1:
         # This is an example of how to execute non-blocking, long running async task
         # using the server.cmd({}) interface
         did_something = True
+        logging.info("T1: Toggle Red LED with raw commands...")
 
         cmds = [
             "upyb_server_01.server.cmd({{'method': 'led_toggle', 'args': {{ 'led': {} }} }})".format(pyb.LED_RED),
@@ -99,12 +100,13 @@ def test_led_toggle(args, pyb):
 
         if _success and not success: _success = False
 
-    if args.t2 or all:
+    if all or args.t2:
         # This is an example of how to execute non-blocking, long running async task
         # This shows special case of 1, as the 'toggle_led' result is not posted until
         # after the led blinks, so here the first server.ret() does not get the expected
         # result and polling starts...
         did_something = True
+        logging.info("T2: Toggle Red LED with raw commands... poll ret fast")
 
         cmds = [
             "upyb_server_01.server.cmd({{'method': 'led_toggle', 'args': {{ 'led': {} }} }})".format(pyb.LED_RED),
@@ -130,8 +132,9 @@ def test_led_toggle(args, pyb):
 
         if _success and not success: _success = False
 
-    if args.t3 or all:
+    if all or args.t3:
         did_something = True
+        logging.info("T1: Toggle Red LED with wrapper API...")
 
         success, result = pyb.led_toggle(2, 200)
         logging.info("{} {}".format(success, result))
@@ -150,14 +153,14 @@ def test_jig_closed(args, pyb):
     all = args.all_funcs or _all
     _success = True
 
-    if args.t1 or all:
+    if all or args.t1:
         did_something = True
 
-        logging.info("- Turning on Jig Closed Detect...")
+        logging.info("T1: Turning on Jig Closed Detect...")
         success, result = pyb.enable_jig_closed_detect()
         logging.info("{} {}".format(success, result))
 
-        logging.info("= Turning it on again...")
+        logging.info("Turning it on again...")
         success, result = pyb.enable_jig_closed_detect()
         logging.info("{} {}".format(success, result))
 
@@ -172,7 +175,7 @@ def test_jig_closed(args, pyb):
             time.sleep(0.5)
 
         # turn off the jig closed
-        logging.info("= Turn OFF jig closed timer...")
+        logging.info("Turn OFF jig closed timer...")
         success, result = pyb.enable_jig_closed_detect(False)
         logging.info("{} {}".format(success, result))
 
@@ -199,18 +202,18 @@ def test_adc(args, pyb):
     all = args.all_funcs or _all
     _success = True
 
-    if args.t1 or all:
+    if all or args.t1:
         did_something = True
-        logging.info("Reading ADC...")
+        logging.info("T1: Reading ADC...")
         success, result = pyb.adc_read("VREF")
         logging.info("{} {}".format(success, result))
 
         if _success and not success: _success = False
 
-    if args.t2 or all:
+    if all or args.t2:
         did_something = True
 
-        logging.info("Reading (multi) ADC...")
+        logging.info("T2: Reading (multi) ADC...")
         success, result = pyb.adc_read_multi(pins=["X19", "X20"])
         logging.info("{} {}".format(success, result))
         success, result = pyb.get_server_method("adc_read_multi_results")

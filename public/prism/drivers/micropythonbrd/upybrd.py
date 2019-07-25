@@ -50,75 +50,10 @@ class pyboard2(pyboard.Pyboard):
         # the repl return type was odd at this point but maybe the client expects that
         return False, result
 
-    def exec_cmd(self, cmds, repl_enter=True, repl_exit=True, blocking=True):
-        """ execute a buffer on the open pyboard
-
-        commands should be formed this way:
-            pyb = pyboard2(args.port)
-            cmds = ["from pyb import Pin",
-                    "p_in = Pin('{}', Pin.IN, Pin.PULL_UP)".format(args.read_gpio),
-                    "print(p_in.value())",
-                    'print("hello")',
-                    'print("world")'
-            ]
-            success, result = pyb.exec_cmd(cmds)
-            pyb.close()
-
-        NOTE:  !! to get results back you must wrap in a print() !!
-
-        :param buf: string of command(s)
-        :return: success (True/False), result (if any)
-        """
-        if not isinstance(cmds, list):
-            self.logger.error("cmd should be a list of micropython code (strings)")
-            return False, None
-
-        cmd = "\n".join(cmds)
-        print(cmd)
-
-        # this was copied/ported from pyboard.py
-        try:
-            if repl_enter: self.enter_raw_repl()
-
-            if blocking:
-                ret, ret_err = self.exec_raw(cmd + '\n', timeout=1, data_consumer=None)
-            else:
-                self.exec_raw_no_follow(cmd)
-                ret_err = False
-                ret = None
-
-        except pyboard.PyboardError as er:
-            self.logger.error(er)
-            return False, None
-        except KeyboardInterrupt:
-            return False, None
-
-        if repl_exit: self.exit_raw_repl()
-
-        if ret_err:
-            pyboard.stdout_write_bytes(ret_err)
-            self.logger.error(ret_err)
-            return False, None
-
-        if ret:
-            return True, ret.decode("utf-8").strip()
-        return True, {}
-
     def server_cmd(self, cmds, repl_enter=True, repl_exit=True, blocking=True):
         """ execute a buffer on the open pyboard
 
-        commands should be formed this way:
-            pyb = pyboard2(args.port)
-            cmds = ["from pyb import Pin",
-                    "p_in = Pin('{}', Pin.IN, Pin.PULL_UP)".format(args.read_gpio),
-                    "print(p_in.value())",
-                    'print("hello")',
-                    'print("world")'
-            ]
-            success, result = pyb.exec_cmd(cmds)
-            pyb.close()
-
-        NOTE:  !! to get results back you must wrap in a print() !!
+        NOTE:  !! to get results back, the pyboard python code must wrap result in a print() !!
 
         :param buf: string of command(s)
         :return: success (True/False), result (if any)
@@ -167,10 +102,7 @@ class pyboard2(pyboard.Pyboard):
                 return True, items
             return True, []
 
-    # -------------------------------------------------------------------------------------------------
-    # API (wrapper functions)
-
-    def _verify_single_cmd_ret(self, cmd_dict, delay_poll=0.1):
+    def _verify_single_cmd_ret(self, cmd_dict, delay_poll_ms=100):
         method = cmd_dict.get("method", None)
         args = cmd_dict.get("args", None)
 
@@ -194,7 +126,7 @@ class pyboard2(pyboard.Pyboard):
         retry = 5
         succeeded = False
         while retry and not succeeded:
-            time.sleep(delay_poll)
+            time.sleep(delay_poll_ms / 1000)
             success, result = self.server_cmd(cmds, repl_enter=False, repl_exit=False)
             self.logger.info("{} {}".format(success, result))
             if success:
@@ -218,6 +150,10 @@ class pyboard2(pyboard.Pyboard):
 
         return success, result[0]
 
+    # -------------------------------------------------------------------------------------------------
+    # API (wrapper functions)
+    # these are the important functions
+
     def start_server(self):
         cmds = ["import upyb_server_01"]
         success, result = self.server_cmd(cmds, repl_exit=False)
@@ -225,7 +161,43 @@ class pyboard2(pyboard.Pyboard):
         return success
 
     def get_server_method(self, method, all=False):
+        """ Get return value message(s) from the server for a specific method
+        - this function will remove the message(s) from the server queue
+
+        :param method:
+        :param all: set True for all the return messages
+        :return: success, result
+        """
         cmds = ["upyb_server_01.server.ret(method='{}', all='{}')".format(method, all)]
+        retry = 5
+        succeeded = False
+        while retry and not succeeded:
+            time.sleep(0.1)
+            success, result = self.server_cmd(cmds, repl_enter=False, repl_exit=False)
+            self.logger.debug("{} {}".format(success, result))
+            if success:
+                for r in result:
+                    if r.get("method", False) == method:
+                        succeeded = True
+            else:
+                return success, result
+
+            retry -= 1
+
+        if not succeeded:
+            return False, "Failed to find method {}".format(method)
+
+        return success, result
+
+    def peek_server_method(self, method=None, all=False):
+        """ Peek return message value(s from the server for a specific method
+        - this function will NOT remove the message(s) from the server queue
+
+        :param method:
+        :param all: set True for all the return messages
+        :return:
+        """
+        cmds = ["upyb_server_01.server.peek(method='{}', all='{}')".format(method, all)]
         retry = 5
         succeeded = False
         while retry and not succeeded:
@@ -256,17 +228,45 @@ class pyboard2(pyboard.Pyboard):
         """
         on_time_ms = 400
         c = {'method': 'led_toggle', 'args': {'led': led, 'on_ms': on_time_ms}}
-        return self._verify_single_cmd_ret(c, delay_poll=on_time_ms)
+        return self._verify_single_cmd_ret(c, delay_poll_ms=on_time_ms)
 
     def enable_jig_closed_detect(self, enable=True):
+        """ Enable Jig Closed feature on pyboard
+        - starts a timer on the pyboard that reads the jig closed GPIO (X1)
+        - posts messages on the state of the jig closed pin
+        - NON-BLOCKING
+        - client must read a result before the next result can be queued
+
+        :param enable: True/False
+        :return: success, result
+        """
         c = {'method': 'enable_jig_closed_detect', 'args': {'enable': enable}}
         return self._verify_single_cmd_ret(c)
 
     def adc_read(self, pin, samples=1, samples_ms=1):
+        """ Read an ADC pin
+        - This is a BLOCKING function
+        - result is raw ADC value, client needs to scale to VREF (3.3V)
+
+        :param pin: pin name, X2, X3, etc
+        :param samples: Number of samples to average over
+        :param samples_ms: Delay between samples
+        :return: success, result
+        """
         c = {'method': 'adc_read', 'args': {'pin': pin, 'samples': samples, 'samples_ms': samples_ms}}
         return self._verify_single_cmd_ret(c)
 
     def adc_read_multi(self, pins, samples=100, freq=100):
+        """ Read single or Multiple pins at Freq rate
+        - NON-BLOCKING
+        - the result is a list of samples
+        - results are raw ADC values, client needs to scale to VREF (3.3V)
+
+        :param pins: list of pins
+        :param samples: # of samples to take
+        :param freq: rate of taking samples
+        :return: success, result
+        """
         c = {'method': 'adc_read_multi', 'args': {'pins': pins, 'samples': samples, 'freq': freq}}
         return self._verify_single_cmd_ret(c)
 
