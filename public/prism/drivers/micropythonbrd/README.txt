@@ -16,6 +16,7 @@ How to use these files...
         /home/martin/sistemi/git/scripts/public/prism/drivers/micropythonbrd> cp upyb_*.py /flash
         /home/martin/sistemi/git/scripts/public/prism/drivers/micropythonbrd>
 
+
 2) MicroPyboards must get an "ID file" written to them to be used with the Prism system.
    Use the upybrd_cli.py program to set the ID.
 
@@ -26,7 +27,15 @@ How to use these files...
           INFO  212 removing ID: /flash/ID2 - 3 bytes
           INFO  221 Setting ID: ID2
 
+
 3) The upybrd_cli.py can be used for other things, like testing code.  See '--help' for all its functions.
+   For example, instead of using rshell to copy files over, one can use upybrd_cly.py,
+
+    martin@martin-Lenovo:~/sistemi/git/scripts/public/prism/drivers/micropythonbrd$ python3 upybrd_cli.py --port /dev/ttyACM0 --copy upyb_INA220.py -v
+     DEBUG   95 Done
+     DEBUG  137 open /dev/ttyACM0
+     DEBUG  142 close
+
 
 4) How to debug problems with code on the MicroPython?
 

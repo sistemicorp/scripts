@@ -4,6 +4,10 @@
 Sistemi Corporation, copyright, all rights reserved, 2019
 Martin Guthrie
 
+upybrd_cli.py:
+- provides command line functions to setup a pyboard.
+- does NOT use the upyboard server
+
 """
 try:
     # for when used by Prism
@@ -20,7 +24,6 @@ import argparse
 
 import ampy.files as files
 import ampy.pyboard as pyboard
-from upybrd import pyboard2
 from stublogger import StubLogger
 
 VERSION = "0.0.1"
@@ -260,22 +263,6 @@ def parse_args():
     parser.add_argument("-f", '--files', dest='files', default=False,
                         action='store_true', help='List files on pyboard')
 
-    parser.add_argument("-g", '--read-gpio', dest='read_gpio',
-                        action='store', help='read gpio (X1, X2, ...)')
-
-    parser.add_argument("-1", '--test-1', dest='test_1',
-                        action='store_true', help='test code, blink led')
-    parser.add_argument("-2", '--test-2', dest='test_2',
-                        action='store_true', help='test code, blink led check result later')
-    parser.add_argument("-3", '--test-3', dest='test_3',
-                        action='store_true', help='test code, blink led check result later')
-    parser.add_argument("-4", '--test-4', dest='test_4',
-                        action='store_true', help='test code, blink led check result later')
-    parser.add_argument("-5", '--test-5', dest='test_5',
-                        action='store_true', help='test code, adc read')
-    parser.add_argument("-6", '--test-6', dest='test_6',
-                        action='store_true', help='test code, adc multi read')
-
     parser.add_argument("-c", '--copy', dest='copy_file',
                         action='store', help='copy local file to pyboard /flash')
 
@@ -347,164 +334,6 @@ if __name__ == '__main__':
         files_list = pyb.get_files()
         for f in files_list:
             logging.info(f)
-        pyb.close()
-        did_something = True
-
-    if args.read_gpio:
-        # TODO:
-        did_something = True
-
-    if args.test_1:
-        # This is an example of how to execute non-blocking, long running async task
-        pyb = pyboard2(args.port)
-
-        cmds = [
-            "import upyb_server_01",
-            "upyb_server_01.server.cmd({{'method': 'led_toggle', 'args': {{ 'led': {} }} }})".format(pyb.LED_RED),
-        ]
-
-        success, result = pyb.server_cmd(cmds, repl_enter=True, repl_exit=False)
-        logging.info("{} {}".format(success, result))
-
-        cmds = ["upyb_server_01.server.ret(method='led_toggle')"]
-
-        retry = 5
-        succeeded = False
-        while retry and not succeeded:
-            success, result = pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
-            logging.info("{} {}".format(success, result))
-            if success:
-                for r in result:
-                    if r.get("method", False) == 'led_toggle' and r.get("value", False) == True:
-                        succeeded = True
-            retry -= 1
-
-        pyb.close()
-        did_something = True
-
-    if args.test_2:
-        # This is an example of how to execute non-blocking, long running async task
-        # This shows special case of 1, as the 'toggle_led' result is not posted until
-        # after the led blinks, so here the first server.ret() does not get the expected
-        # result and polling starts...
-        pyb = pyboard2(args.port)
-
-        cmds = [
-            "import upyb_server_01",
-            "upyb_server_01.server.cmd({{'method': 'led_toggle', 'args': {{ 'led': {} }} }})".format(pyb.LED_RED),
-            "upyb_server_01.server.ret()",
-        ]
-
-        success, result = pyb.server_cmd(cmds, repl_exit=False)
-        logging.info("{} {}".format(success, result))
-
-        cmds = ["upyb_server_01.server.ret()"]
-
-        retry = 5
-        succeeded = False
-        while retry and not succeeded:
-            success, result = pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
-            logging.info("{} {}".format(success, result))
-            if success:
-                for r in result:
-                    if r.get("method", False) == 'led_toggle' and r.get("value", False) == True:
-                        succeeded = True
-            retry -= 1
-
-        pyb.close()
-        did_something = True
-
-    if args.test_3:
-        pyb = pyboard2(args.port)
-
-        success = pyb.start_server()
-        if success:
-            success, result = pyb.led_toggle(2, 200)
-            logging.info("{} {}".format(success, result))
-        else:
-            logging.error("Unable to start server")
-
-        pyb.close()
-        did_something = True
-
-    if args.test_4:
-        #pyb = pyboard2(args.port, loggerIn=logging) # verbose version
-        pyb = pyboard2(args.port)
-
-        success = pyb.start_server()
-        logging.info("{}".format(success))
-        if success:
-            logging.info("- Turning on Jig Closed Detect...")
-            success, result = pyb.enable_jig_closed_detect()
-            logging.info("{} {}".format(success, result))
-
-            logging.info("= Turning it on again...")
-            success, result = pyb.enable_jig_closed_detect()
-            logging.info("{} {}".format(success, result))
-
-            # for fun, try and ask for more results, while the jig closed timer is running
-            cmds = ["upyb_server_01.server.ret(all=True)"]
-            retry = 20
-            succeeded = False
-            while retry and not succeeded:
-                success, result = pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
-                logging.info("{} {}".format(success, result))
-                retry -= 1
-                time.sleep(0.5)
-
-            # turn off the jig closed
-            logging.info("= Turn OFF jig closed timer...")
-            success, result = pyb.enable_jig_closed_detect(False)
-            logging.info("{} {}".format(success, result))
-
-            # read the server queue a few times to confirm there are no new events...
-            retry = 5
-            succeeded = False
-            while retry and not succeeded:
-                success, result = pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
-                logging.info("{} {}".format(success, result))
-                retry -= 1
-                time.sleep(0.5)
-
-        else:
-            logging.error("Unable to start server")
-
-        pyb.close()
-        did_something = True
-
-    if args.test_5:
-        #pyb = pyboard2(args.port, loggerIn=logging) # verbose version
-        pyb = pyboard2(args.port)
-
-        success = pyb.start_server()
-        logging.info("{}".format(success))
-        if success:
-            logging.info("Reading ADC...")
-            success, result = pyb.adc_read("VREF")
-            logging.info("{} {}".format(success, result))
-
-        else:
-            logging.error("Unable to start server")
-
-        pyb.close()
-        did_something = True
-
-    if args.test_6:
-        #pyb = pyboard2(args.port, loggerIn=logging) # verbose version
-        pyb = pyboard2(args.port)
-
-        success = pyb.start_server()
-        logging.info("{}".format(success))
-        if success:
-            logging.info("Reading (multi) ADC...")
-            success, result = pyb.adc_read_multi(pins=["X19", "X20"])
-            logging.info("{} {}".format(success, result))
-            success, result = pyb.get_server_method("adc_read_multi_results")
-            logging.info("{} {}".format(success, result))
-
-        else:
-            logging.error("Unable to start server")
-
         pyb.close()
         did_something = True
 
