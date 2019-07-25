@@ -11,8 +11,8 @@ from INA220 import INA220
 
 CHANNELS = ["V1", "V2", "V3"]
 LDOS = [
-    {"channel": "V1", "control_addr": 0x00, },
-    {"channel": "V2", "control_addr": 0x00, },
+    {"name": "V1", "control_addr": 0x00, },
+    {"name": "V2", "control_addr": 0x00, },
 ]
 
 PG_GOOD = "PG_GOOD"
@@ -51,7 +51,7 @@ class SupplyStats(object):
         """
         return True, None
 
-    def get_measurements(self, name):
+    def get_stats(self, name):
         """
 
         :param name:
@@ -165,7 +165,7 @@ class LDO(object):
         :return: success, PG pin value (True = good)
         """
         # check the pin via the I2C GPIO mux
-        return True, "GOOD"
+        return True, PG_GOOD
 
 
 class Supplies(object):
@@ -211,7 +211,7 @@ class Supplies(object):
         supply = self._get_supply_obj(name)
         if supply is None: return False, {}
 
-        return self.stats.get_measurements(supply)
+        return self.stats.get_stats(supply)
 
     def bypass_stats(self):
         """ Set the INA circuit to be bypassed
