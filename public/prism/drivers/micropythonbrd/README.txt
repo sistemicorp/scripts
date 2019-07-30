@@ -1,5 +1,14 @@
 How to use these files...
 
+0) How to setup a "fresh" MicroPython Pyboard ver 1.1 for use with Sistemi Prism:
+
+    A) Boot the Pyboard into DFU mode, by shorting the 3V3 pin to the BOOT0 pin and resetting (button) the board.
+        See https://github.com/micropython/micropython/wiki/Pyboard-Firmware-Update
+    B) Update the firmware with this command,
+        $ sudo python3 pydfu.py -u pybv11-thread-20190730-v1.11-182-g7c15e50eb.dfu
+    C) Set the ID of the board, (All MicroPython boards should have a unique ID),
+        $ python3 upybrd_cli.py --port /dev/ttyACM0 --set-id 2
+
 1) All files names upyb_*.py need to be copied to the MicroPyboard.
    Use rshell (put link to install rshell here) or ampy.
 
@@ -55,5 +64,30 @@ How to use these files...
         >>>
 
    B) Use the cli, upybrd_cli_server.py to write test code in a simple environment.
+
+   C) Error "could not exec command" is often an issue with arguments, make sure new functions match argument patterns.
+   
+
+5) How to program/update the pyboard?
+
+    See,
+        https://github.com/micropython/micropython/wiki/Pyboard-Firmware-Update
+        https://github.com/micropython/micropython/blob/master/tools/pydfu.py
+
+    Example session,
+
+        $ sudo python3 pydfu.py -u pybv11-thread-20190730-v1.11-182-g7c15e50eb.dfu
+        File: pybv11-thread-20190730-v1.11-182-g7c15e50eb.dfu
+            b'DfuSe' v1, image size: 337101, targets: 1
+            b'Target' 0, alt setting: 0, name: "ST...", size: 336816, elements: 2
+              0, address: 0x08000000, size: 14816
+              1, address: 0x08020000, size: 321984
+            usb: 0483:df11, device: 0x0000, dfu: 0x011a, b'UFD', 16, 0x1801e670
+        Writing memory...
+        0x08000000   14816 [=========================] 100%
+        0x08020000  321984 [=========================] 100%
+        Exiting DFU...
+
+
 
 

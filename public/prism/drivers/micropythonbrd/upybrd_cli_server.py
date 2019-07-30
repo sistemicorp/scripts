@@ -41,16 +41,18 @@ def parse_args():
     led_toggle_parser.add_argument('-2', dest="t2", action='store_true', help='toggle led using wrapper API', default=False, required=False)
     led_toggle_parser.add_argument('-3', dest="t3", action='store_true', help='toggle led using wrapper API only once', default=False, required=False)
 
-    #subp1 = parser.add_subparsers(dest="jig_closed", help='jig_closed')
     jig_closed_parser = subp.add_parser('jig_closed')
     jig_closed_parser.add_argument('-a', "--all", dest="all", action='store_true', help='run all tests sequentially', default=False, required=False)
     jig_closed_parser.add_argument('-1', dest="t1", action='store_true', help='start jig closed, and poll', default=False, required=False)
 
-    #subp2 = parser.add_subparsers(dest="adc", help='adc')
     adc_parser = subp.add_parser('adc')
     adc_parser.add_argument('-a', "--all", dest="all", action='store_true', help='run all tests sequentially', default=False, required=False)
     adc_parser.add_argument('-1', dest="t1", action='store_true', help='adc_read', default=False, required=False)
     adc_parser.add_argument('-2', dest="t2", action='store_true', help='adc_read_multi', default=False, required=False)
+
+    misc_parser = subp.add_parser('misc')
+    misc_parser.add_argument('-a', "--all", dest="all", action='store_true', help='run all tests sequentially', default=False, required=False)
+    misc_parser.add_argument('-1', dest="t1", action='store_true', help='unique id', default=False, required=False)
 
     args = parser.parse_args()
 
@@ -213,6 +215,27 @@ def test_adc(args, pyb):
     return False
 
 
+def test_misc(args, pyb):
+    did_something = False
+    _all = False
+    if args._cmd == "adc": _all = args.all
+    all = args.all_funcs or _all
+    _success = True
+    logging.info("test_misc:")
+
+    if all or args.t1:
+        did_something = True
+        logging.info("T1: Reading unique id...")
+        success, result = pyb.unique_id()
+        logging.info("{} {}".format(success, result))
+
+        if _success and not success: _success = False
+
+    if did_something: return _success
+    else: logging.error("No Tests were specified")
+    return False
+
+
 if __name__ == '__main__':
     args = parse_args()
     all_funcs = args.all_funcs
@@ -250,6 +273,13 @@ if __name__ == '__main__':
         success = test_adc(args, pyb)
         if not success:
             logging.error("Failed testing adc")
+            pyb.close()
+            exit(1)
+
+    if args._cmd == "misc" or all_funcs:
+        success = test_misc(args, pyb)
+        if not success:
+            logging.error("Failed testing misc")
             pyb.close()
             exit(1)
 

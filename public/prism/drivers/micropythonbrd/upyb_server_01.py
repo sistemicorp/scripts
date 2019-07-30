@@ -6,6 +6,7 @@ import array
 import upyb_queue
 
 import upyb_i2c
+import machine
 
 micropython.alloc_emergency_exception_buf(100)
 
@@ -135,6 +136,18 @@ class MicroPyServer(object):
     # NOTES:
     # 1. !! DON'T access public API, ret/peek/update/cmd, functions, access the queue's directly
     #    Else probably get into a lock lockup
+
+    def unique_id(self, _):
+        """ Get the Unique ID of the Micro Pyboard
+
+        args: None
+        :return:
+        """
+        id_bytes = machine.unique_id()
+        res = ""
+        for b in id_bytes:
+            res += "%02x" % b
+        self._ret.put({"method": "unique_id", "value": res, "success": True})
 
     def _toggle_led(self, led, on_ms, off_ms, once=False):
         thread_name = "led{}".format(led)

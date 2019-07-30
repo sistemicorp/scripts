@@ -165,6 +165,10 @@ class pyboard2(pyboard.Pyboard):
         self.logger.info("{} {}".format(success, result))
         return success, result
 
+    def unique_id(self):
+        c = {'method': 'unique_id', 'args': {}}
+        return self._verify_single_cmd_ret(c)
+
     def get_server_method(self, method, all=False):
         """ Get return value message(s) from the server for a specific method
         - this function will remove the message(s) from the server queue
