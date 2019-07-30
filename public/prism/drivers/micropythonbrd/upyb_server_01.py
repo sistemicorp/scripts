@@ -136,7 +136,7 @@ class MicroPyServer(object):
     # 1. !! DON'T access public API, ret/peek/update/cmd, functions, access the queue's directly
     #    Else probably get into a lock lockup
 
-    def _toggle_led(self, led, on_ms, off_ms):
+    def _toggle_led(self, led, on_ms, off_ms, once=False):
         thread_name = "led{}".format(led)
         while self.ctx["threads"][thread_name]:
             pyb.LED(led).on()
@@ -144,22 +144,26 @@ class MicroPyServer(object):
             if off_ms:
                 pyb.LED(led).off()
                 time.sleep_ms(off_ms)
+            if once: break
 
         self.ctx["threads"][thread_name] = False
         pyb.LED(led).off()
 
     def led_toggle(self, args):
         """ Toggle LED on
+        - a led is toggled on its own thread
 
         args: { 'led': <#>, 'on_ms': <#>, 'off_ms': <#> }
         :param led: one of LED_*
         :param on_ms: milli seconds on, if 0 the led will be turned off
         :param off_ms: milli seconds off
+        :param once: if set, LED is toggled on for on_ms and then off, does not repeat
         :return: success (True/False)
         """
         led = args.get("led", None)
         on_ms = args.get("on_ms", 500)
         off_ms = args.get("off_ms", 500)
+        once = args.get("once", False)
         if not led in [self.LED_BLUE, self.LED_GREEN, self.LED_RED, self.LED_YELLOW]:
             self._ret.put({"method": "led_toggle", "value": "unknown led {}".format(led), "success": False})
             return
@@ -168,7 +172,7 @@ class MicroPyServer(object):
         if on_ms > 0:
             if thread_name not in self.ctx["threads"] or not self.ctx["threads"][thread_name]:
                 self.ctx["threads"][thread_name] = True
-                _thread.start_new_thread(self._toggle_led, (led, on_ms, off_ms))
+                _thread.start_new_thread(self._toggle_led, (led, on_ms, off_ms, once))
 
             else:
                 # thread appears to already be running... do nothing...

@@ -39,6 +39,7 @@ def parse_args():
     led_toggle_parser.add_argument('-a', "--all", dest="all", action='store_true', help='run all tests sequentially', default=False, required=False)
     led_toggle_parser.add_argument('-1', dest="t1", action='store_true', help='toggle led using server.cmd', default=False, required=False)
     led_toggle_parser.add_argument('-2', dest="t2", action='store_true', help='toggle led using wrapper API', default=False, required=False)
+    led_toggle_parser.add_argument('-3', dest="t3", action='store_true', help='toggle led using wrapper API only once', default=False, required=False)
 
     #subp1 = parser.add_subparsers(dest="jig_closed", help='jig_closed')
     jig_closed_parser = subp.add_parser('jig_closed')
@@ -114,6 +115,14 @@ def test_led_toggle(args, pyb):
         time.sleep(5)  # let the led toggle for a bit
 
         success, result = pyb.led_toggle(2, 0)
+        logging.info("{} {}".format(success, result))
+        if _success and not success: _success = False
+
+    if all or args.t3:
+        did_something = True
+        logging.info("T3: Toggle Orange LED with wrapper API for 1.5 sec ON")
+
+        success, result = pyb.led_toggle(3, 1500, once=True)
         logging.info("{} {}".format(success, result))
         if _success and not success: _success = False
 
