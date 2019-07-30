@@ -10,7 +10,8 @@ import logging
 import threading
 import time
 from public.prism.drivers.micropythonbrd.list_serial import serial_ports
-from public.prism.drivers.micropythonbrd.upybrd import MicroPyBrd, pyboard2
+from public.prism.drivers.micropythonbrd.upybrd import pyboard2
+from public.prism.drivers.micropythonbrd.upybrd_cli import MicroPyBrd
 
 from pubsub import pub
 from app.const import PUB, CHANNEL
@@ -129,6 +130,7 @@ class HWDriver(object):
     SFN = os.path.basename(__file__)
 
     DRIVER_TYPE = "MicroPyBrd"
+    MICROPYTHON_FIRMWARE_RELEASE = "1.11.0"  # from os.uname() on pyboard
 
     def __init__(self, shared_state):
         self.logger = logging.getLogger("SC.{}.{}".format(__class__.__name__, self.SFN))
@@ -178,14 +180,20 @@ class HWDriver(object):
                 continue
 
             if pyb[0].get('id', None) is None:
-                self.logger.info("port {} -> Missing ID".format(port))
+                self.logger.error("port {} -> Missing ID".format(port))
                 continue
+
+            # confirm the release
+            release = pyb[0]["uname"]["release"]
+            if release != self.MICROPYTHON_FIRMWARE_RELEASE:
+                self.logger.error("port {} -> Unsupported release {} (expecting {})".format(port, release, self.MICROPYTHON_FIRMWARE_RELEASE))
+                continue
+            self.logger.info("port {} -> supported release {}".format(port, release))
 
             # now start the pyboard server
             port = pyb[0]["port"]
             pyb[0]["pyb"] = pyboard2(port, loggerIn=logging.getLogger("SC.pyboard2.{}".format(pyb[0].get('id'))))
-            cmds = ["import upybrd_server_01"]
-            success, result = pyb[0]["pyb"].server_cmd(cmds, repl_enter=True, repl_exit=False)
+            success, result = pyb[0]["pyb"].start_server()
             self.logger.info("{} {}".format(success, result))
 
             # divers can register a close() method which is called on channel destroy.

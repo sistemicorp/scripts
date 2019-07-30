@@ -239,7 +239,7 @@ if __name__ == '__main__':
         logging.basicConfig(level=logging.DEBUG, format='%(levelname)6s %(lineno)4s %(message)s')
         pyb = pyboard2(args.port, loggerIn=logging) # verbose version
 
-    success = pyb.start_server()
+    success, result = pyb.start_server()
     if not success:
         logging.error("Unable to start server")
         pyb.close()

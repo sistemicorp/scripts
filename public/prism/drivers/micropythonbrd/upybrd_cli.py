@@ -24,7 +24,11 @@ import argparse
 
 import ampy.files as files
 import ampy.pyboard as pyboard
-from stublogger import StubLogger
+
+try:
+    from stublogger import StubLogger
+except:
+    from public.prism.drivers.micropythonbrd.stublogger import StubLogger
 
 VERSION = "0.0.1"
 
@@ -104,6 +108,26 @@ class MicroPyBrd(object):
         self.pyb.exec('pyb.LED({}).off()'.format(led))
         self.pyb.exit_raw_repl()
 
+    def uname(self):
+        # get pyboard version info
+        self.pyb.enter_raw_repl()
+        cmds = ['import os',
+                'print(os.uname())']
+        cmd = "\n".join(cmds) + "\n"
+        ret, _ = self.pyb.exec_raw(cmd)
+        ret_string = ret.decode("utf-8").strip()
+        # uname looks like: "(sysname='pyboard', nodename='pyboard', release='1.11.0', version='v1.11 on 2019-05-29', machine='PYBv1.1 with STM32F405RG')"
+        # turn this into a dict
+        items = list(ret_string.replace("(", "").replace(")", "").replace("'", "").split(","))
+        uname = {}
+        for item in items:
+            key = item.split("=")[0].strip()
+            value = item.split("=")[1].strip()
+            uname[key] = value
+        self.logger.info(uname)
+        self.pyb.exit_raw_repl()
+        return uname
+
     def scan_ports(self, port=None):
         """ Finds/validates all connected pyboards
         :return: list of pyboards, [(<port>, <ID>), ...]
@@ -122,9 +146,10 @@ class MicroPyBrd(object):
                 if id is not None:
                     # visual indication success
                     self.led_toggle(self.LED_GREEN, self.LED_FLASH_TIME_S)
+                uname = self.uname()
                 self.pyb.close()
                 self.pyb = None
-                ports.append({"port": port, "id": id, "version": VERSION})
+                ports.append({"port": port, "id": id, "version": VERSION, "uname": uname})
 
             except Exception as e:
                 self.logger.info(e)

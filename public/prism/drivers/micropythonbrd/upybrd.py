@@ -10,7 +10,12 @@ import json
 import threading
 
 import ampy.pyboard as pyboard
-from stublogger import StubLogger
+
+try:
+    from stublogger import StubLogger
+except:
+    from public.prism.drivers.micropythonbrd.stublogger import StubLogger
+
 
 
 VERSION = "0.0.1"
@@ -158,7 +163,7 @@ class pyboard2(pyboard.Pyboard):
         cmds = ["import upyb_server_01"]
         success, result = self.server_cmd(cmds, repl_exit=False)
         self.logger.info("{} {}".format(success, result))
-        return success
+        return success, result
 
     def get_server_method(self, method, all=False):
         """ Get return value message(s) from the server for a specific method
