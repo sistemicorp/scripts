@@ -15,6 +15,13 @@ LDOS = [
     {"name": "V2", "control_addr": 0x00, },
 ]
 
+SAMPLES_1 = 8
+SAMPLES_2 = 9
+SAMPLES_4 = 10
+SAMPLES_8 = 11
+SAMPLES_16 = 12
+SAMPLES_32 = 13
+
 PG_GOOD = "PG_GOOD"
 PG_BAD = "PG_BAD"
 PG_UNSUPPORTED = "PG_UNSUPPORTED"
@@ -28,18 +35,22 @@ class SupplyStats(object):
 
     """
 
-    LOW_INA220_I2C_ADDR = 0x01
-    HIGH_INA220_I2C_ADDR = 0x02
+    INA220_LOW_ADDR = 64
+    INA220_HIGH_ADDR = 65
 
-    LOW_SENSE = 20
-    HIGH_SENSE = 0.2
+    INA220_RSENSE_0R6 = 0.6
+    INA220_RSENSE_75 = 75
+    samples = SAMPLES_1
 
     # etc... from your code...
 
     def __init__(self, i2c, supplies):
         self.supplies = supplies  # this gives you access to the LDOs, V3
 
-    # etc... from your code...
+        self.i2c = i2c
+        self.INA220_LOW = INA220(self.i2c, self.INA220_LOW_ADDR,  self.INA220_RSENSE_75, "LOW", self.samples)
+        self.INA220_HIGH = INA220(self.i2c, self.INA220_HIGH_ADDR, self.INA220_RSENSE_0R6, "HIGH", self.samples)
+
 
     def _get_supply_obj(self, name):
         return self.supplies.get(name, None)
@@ -226,3 +237,5 @@ if __name__ == "main":
 
     i2c = pyb.I2C("X9", "X10")
     supplies = Supplies(i2c)
+    success, n = supplies.stats.INA220_LOW.read_bus_voltage()
+    print(success, n)
