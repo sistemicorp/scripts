@@ -5,6 +5,8 @@ import micropython
 import array
 import upyb_queue
 
+import upyb_i2c
+
 micropython.alloc_emergency_exception_buf(100)
 
 
@@ -41,6 +43,8 @@ class MicroPyServer(object):
     ADC_READ_MULTI_TIMER = 8
 
     JIG_CLOSED_TIMER = 4
+    JIG_CLOSED_TIMER_FREQ = 1  # Hz
+    JIG_CLOSED_PIN = "X1"
 
     def __init__(self):
         self.lock = _thread.allocate_lock()
@@ -52,10 +56,16 @@ class MicroPyServer(object):
                     "gpio": {},            # gpios used are named here
                     "timer": {},           # timers running are listed here
                     "adc_read_multi": {},  # cache args
+                    "i2c1": None,
                     }
 
+        # Jig closed
         self.timer_jig_closed = pyb.Timer(self.JIG_CLOSED_TIMER)  # create a timer object using timer
         self._isr_jig_closed_detect_ref = self._jig_closed_detect # used to create memory before ISR
+
+        # init I2C (1) on X9/10
+        self.ctx["i2c1"] = upyb_i2c.UPYB_I2C()
+        self.ctx["i2c1"].init(upyb_i2c.UPYB_I2C_HW_I2C1)
 
     # ===================================================================================
     # Public API to send commands and get results from the MicroPy Server
@@ -164,17 +174,28 @@ class MicroPyServer(object):
         self._ret.put({"method": "led_toggle", "value": True, "success": True})
 
     def _isr_jig_closed_detect(self, _):
-        # run in ISR context
-        # this method is not allowed to create memory or items in list
-        # see http://docs.micropython.org/en/latest/reference/isr_rules.html
+        """ ISR function (in ISR context)
+        - this method is !NOT ALLOWED! to create memory or items in list
+        - see http://docs.micropython.org/en/latest/reference/isr_rules.html
+        - exit as quickly as possible, just schedule a normal context function
+
+        :param _: not used
+        :return: none
+        """
         micropython.schedule(self._isr_jig_closed_detect_ref, 0)
 
     def _jig_closed_detect(self, _):
-        # this is not in ISR context
-        # if there is a jig msg in the queue, then it hasn't been read yet,
-        # and we don't put in a new state unless the previous state has been read
+        """ Normal context ISR handler
+        - scheduled by _isr_jig_closed_detect()
+        - if there is a jig msg in the queue, then it hasn't been read yet,
+          and we don't put in a new state unless the previous state has been read
+
+        :param _:
+        :return:
+        """
         msgs = self._ret.peek("jig_closed_detect")
         if msgs:
+            # msg in queue still waiting to be processed
             return
 
         # if the pin is HIGH, the jig is open
@@ -187,7 +208,14 @@ class MicroPyServer(object):
             self._ret.put({"method": "jig_closed_detect", "value": "CLOSED", "success": True})
 
     def enable_jig_closed_detect(self, args):
+        """ Enable/Disable Jig Closed Timer/Detect
+        - runs on a timer to measure state of jig closed GPIO, and puts that in msg queue
+
+        :param args: { 'enable': True/False, 'freq' : 1 }
+        :return:
+        """
         enable = args.get("enable", True)
+        freq = args.get("freq", self.JIG_CLOSED_TIMER_FREQ)
 
         if enable and "timer_jig_closed" in self.ctx["timer"]:
             self._ret.put({"method": "enable_jig_closed_detect", "value": "ALREADY_RUNNING", "success": True})
@@ -195,9 +223,9 @@ class MicroPyServer(object):
 
         self._ret.put({"method": "enable_jig_closed_detect", "value": enable, "success": True})
         if enable:
-            self.timer_jig_closed.init(freq=1)  # trigger at Hz
+            self.timer_jig_closed.init(freq=freq)  # trigger at Hz
             self.timer_jig_closed.callback(self._isr_jig_closed_detect)
-            pin = args.get("pin", "X1")
+            pin = args.get("pin", self.JIG_CLOSED_PIN)
             self._init_gpio("jig_closed", pin, pyb.Pin.IN, pyb.Pin.PULL_UP)
             self.ctx["timer"]["timer_jig_closed"] = True
 
@@ -302,6 +330,12 @@ class MicroPyServer(object):
         self._ret.put({"method": "adc_read", "value": result, "success": True})
 
     def _adc_read_multi(self, _):
+        """ async callback for adc_read_multi
+        - args for this function are cached in self.ctx["adc_read_multi"]
+
+        :param _: not used
+        :return:
+        """
         args = self.ctx["adc_read_multi"]
         freq = args.get("freq", 100)
         samples = args.get("samples", 100)
