@@ -69,6 +69,7 @@ def test_led_toggle(args, pyb):
     if args._cmd == "led_toggle": _all = args.all
     all = args.all_funcs or _all
     _success = True
+    logging.info("test_led_toggle:")
 
     if all or args.t1:
         # This is an example of how to execute non-blocking, long running async task
@@ -127,6 +128,7 @@ def test_jig_closed(args, pyb):
     if args._cmd == "jig_closed": _all = args.all
     all = args.all_funcs or _all
     _success = True
+    logging.info("test_jig_closed:")
 
     if all or args.t1:
         did_something = True
@@ -176,6 +178,7 @@ def test_adc(args, pyb):
     if args._cmd == "adc": _all = args.all
     all = args.all_funcs or _all
     _success = True
+    logging.info("test_adc:")
 
     if all or args.t1:
         did_something = True

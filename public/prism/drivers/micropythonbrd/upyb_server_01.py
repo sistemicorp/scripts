@@ -206,7 +206,6 @@ class MicroPyServer(object):
             return
 
         # if the pin is HIGH, the jig is open
-        self._toggle_led(3, on_ms=100) # just for debug
         jig_pin_state = self.ctx["gpio"]["jig_closed"].value()
 
         if jig_pin_state:
