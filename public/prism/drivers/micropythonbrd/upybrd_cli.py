@@ -17,7 +17,6 @@ except:
     from list_serial import serial_ports
 
 import sys
-import os
 import time
 import logging
 import argparse
@@ -52,25 +51,6 @@ class MicroPyBrd(object):
          scan = pyb.scan_ports()
          # scan is a list of tuples, [(port, id#), (..), ..]
          pyb.close()
-
-         Note: if id is None, then the board doesn't have an id assigned to it.
-               Expect every pyboard in the system to have a different id (integer)
-
-    3) Set the ID of the pyboard
-        The ID is an identifier for the pyboard, so when you have multiple
-        pyboards they can be identified.  When a pyboard ID has been set, that pyboard
-        should be labelled with that ID number, so the operator can know which one it is.
-
-        Use the Command Line Interface (CLI),
-         python upybrd.py --port COM3 --set-id 1
-
-        or, programmatically,
-         pyb = MicroPyBrd(logging)
-         pyb.set_pyb_id(<port>, <id>)
-         pyb.close()
-
-    Design:
-    1) The id of the pyboard is a empty file in form of ID<#>
 
     LESSONS:
     1) pyb.enter_raw_repl()  # this does a softreset....!
@@ -195,67 +175,20 @@ class MicroPyBrd(object):
         """ Get the id of an open pyboard
         :return: id, or None if no id on pyboard
         """
-        files = self.get_files()
-        for f in files:
-            if f.startswith("/flash/ID"):
-                # from: /flash/ID2 - 3 bytes -> extract the ID value of 2
-                channel = int(f.split(" ")[0].split('/flash/ID')[1])
-                return channel
-        return None
-
-    def set_pyb_id(self, port, id):
-        """ Set (assign) the pyboard ID
-        :param port: port of the pyboard
-        :param id: integer ID of the pyboard
-        :return: True on success, False otherwise
-        """
-        if not self.pyb:
-            # make sure the port is valid
-            port_candidates = serial_ports()
-            if not port in port_candidates:
-                self.logger.error("{} NOT in available ports {}".format(port, port_candidates))
-                return False
-
-            # scan the port, make sure its a pyboard
-            current_configs = self.scan_ports(port)
-            valid_port = False
-            for cfg in current_configs:
-                if cfg["port"] == port:
-                    valid_port = True
-                    break
-            if not valid_port:
-                self.logger.error("{} is not a valid micropython port".format(port))
-                return False
-
-            # ok, should be good, open that port
-            self.open(port)
-
-        board_files = files.Files(self.pyb)
-
-        # remove the old ID if it exists
-        files_list = self.get_files()
-        for f in files_list:
-            if f.startswith("/flash/ID"):
-                # file list format looks like, '/flash/ID1 - 3 bytes'
-                self.logger.info("removing ID: {}".format(f))
-                board_files.rm(f.split(" ")[0])
-
-        # create a dummy local file with contents
-        fname = 'ID{}'.format(id)
-        with open("dummy", "w") as f:
-            f.write(fname)
-
-        try:
-            self.logger.info("Setting ID: {}".format(fname))
-            with open("dummy", "rb") as infile:
-                board_files.put('/flash/{}'.format(fname), infile.read())
-
-            os.remove('dummy')
-            return True
-
-        except Exception as e:
-            self.logger.error(e)
-            return False
+        # get pyboard version info
+        self.pyb.enter_raw_repl()
+        cmds = ['import machine',
+                'id_bytes = machine.unique_id()',
+                'res = ""',
+                'for b in id_bytes:',
+                ' res += "%02x" % b',
+                'print(res)']
+        cmd = "\n".join(cmds) + "\n"
+        ret = self.pyb.exec(cmd)
+        ret = ret.decode('utf-8').strip()
+        self.logger.info("{}".format(ret))
+        self.pyb.exit_raw_repl()
+        return ret
 
 
 # Command Line Interface...
@@ -264,10 +197,7 @@ def parse_args():
     epilog = """
     Usage examples:
     1) List all MicroPython boards attached to the system,
-       python3 upybrd_cli.py --list
-    2) Setting the ID to 1 for the MicroPython board on COM3, 
-       python3 upybrd_cli.py --port COM3 --set-id 1
-       
+       python3 upybrd_cli.py --list      
     """
     parser = argparse.ArgumentParser(description='upybrd',
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -275,9 +205,6 @@ def parse_args():
 
     parser.add_argument("-p", '--port', dest='port', default=None, type=str,
                         action='store', help='Active serial port')
-
-    parser.add_argument("-s", '--set-id', dest='set_id', default=None, type=int,
-                        action='store', help='Set channel <#> to <port>, ex: -s 0 -p COM3')
 
     parser.add_argument("-l", '--list', dest='list', default=False,
                         action='store_true', help='list micropython boards')
@@ -334,12 +261,6 @@ if __name__ == '__main__':
     if args.list:
         pyb = MicroPyBrd(logging)
         pyb.scan_ports()
-        pyb.close()
-        did_something = True
-
-    if args.set_id is not None:
-        pyb = MicroPyBrd(logging)
-        pyb.set_pyb_id(args.port, args.set_id)
         pyb.close()
         did_something = True
 

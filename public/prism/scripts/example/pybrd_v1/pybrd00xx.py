@@ -100,6 +100,8 @@ class pybrd00xx(TestItem):
             _result = ResultAPI.RECORD_RESULT_FAIL
             self.log_bullet(user_select.get("err", "UNKNOWN ERROR"))
 
+        # turn off blinky led
+        self.pyb.led_toggle(lednum, 0)
         self.item_end(_result)  # always last line of test
 
     def PYBRD0020_adc_read(self):

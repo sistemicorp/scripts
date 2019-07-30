@@ -1,15 +1,16 @@
 How to use these files...
 
-0) How to setup a "fresh" MicroPython Pyboard ver 1.1 for use with Sistemi Prism:
+1) How to setup a "fresh" MicroPython Pyboard ver 1.1 for use with Sistemi Prism:
 
     A) Boot the Pyboard into DFU mode, by shorting the 3V3 pin to the BOOT0 pin and resetting (button) the board.
         See https://github.com/micropython/micropython/wiki/Pyboard-Firmware-Update
     B) Update the firmware with this command,
         $ sudo python3 pydfu.py -u pybv11-thread-20190730-v1.11-182-g7c15e50eb.dfu
-    C) Set the ID of the board, (All MicroPython boards should have a unique ID),
-        $ python3 upybrd_cli.py --port /dev/ttyACM0 --set-id 2
+    C) Copy all the upyb_*.py files to the MicroPython Board, use rshell, see #1.
 
-1) All files names upyb_*.py need to be copied to the MicroPyboard.
+    The pyboard should now be ready to go.
+
+2) All files names upyb_*.py need to be copied to the MicroPyboard.
    Use rshell (put link to install rshell here) or ampy.
 
    example rshell session:
@@ -24,17 +25,6 @@ How to use these files...
         Welcome to rshell. Use Control-D (or the exit command) to exit rshell.
         /home/martin/sistemi/git/scripts/public/prism/drivers/micropythonbrd> cp upyb_*.py /flash
         /home/martin/sistemi/git/scripts/public/prism/drivers/micropythonbrd>
-
-
-2) MicroPyboards must get an "ID file" written to them to be used with the Prism system.
-   Use the upybrd_cli.py program to set the ID.
-
-   Example session:
-          martin@martin-Lenovo:~/sistemi/git/scripts/public/prism/drivers/micropythonbrd$ python3 upybrd_cli.py --port /dev/ttyACM0 --set-id 2
-          INFO  112 Looking for Pyboard in ['/dev/ttyACM0']
-          INFO  130 Found [{'port': '/dev/ttyACM0', 'id': 2, 'version': '0.0.1'}]
-          INFO  212 removing ID: /flash/ID2 - 3 bytes
-          INFO  221 Setting ID: ID2
 
 
 3) The upybrd_cli.py can be used for other things, like testing code.  See '--help' for all its functions.
@@ -66,7 +56,7 @@ How to use these files...
    B) Use the cli, upybrd_cli_server.py to write test code in a simple environment.
 
    C) Error "could not exec command" is often an issue with arguments, make sure new functions match argument patterns.
-   
+
 
 5) How to program/update the pyboard?
 
