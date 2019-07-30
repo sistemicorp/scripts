@@ -223,7 +223,7 @@ class pyboard2(pyboard.Pyboard):
 
         return success, result
 
-    def led_toggle(self, led, on_ms=500):
+    def led_toggle(self, led, on_ms=500, off_ms=500):
         """ toggle and LED ON and then OFF
         - this is a blocking command
 
@@ -231,9 +231,8 @@ class pyboard2(pyboard.Pyboard):
         :param on_ms: # of milliseconds to turn on LED
         :return:
         """
-        on_time_ms = 400
-        c = {'method': 'led_toggle', 'args': {'led': led, 'on_ms': on_time_ms}}
-        return self._verify_single_cmd_ret(c, delay_poll_ms=on_time_ms)
+        c = {'method': 'led_toggle', 'args': {'led': led, 'on_ms': on_ms, 'off_ms': off_ms}}
+        return self._verify_single_cmd_ret(c)
 
     def enable_jig_closed_detect(self, enable=True):
         """ Enable Jig Closed feature on pyboard

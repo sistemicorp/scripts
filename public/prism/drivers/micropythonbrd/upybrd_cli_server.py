@@ -38,8 +38,7 @@ def parse_args():
     led_toggle_parser = subp.add_parser('led_toggle')
     led_toggle_parser.add_argument('-a', "--all", dest="all", action='store_true', help='run all tests sequentially', default=False, required=False)
     led_toggle_parser.add_argument('-1', dest="t1", action='store_true', help='toggle led using server.cmd', default=False, required=False)
-    led_toggle_parser.add_argument('-2', dest="t2", action='store_true', help='toggle led using server.cmd, check return', default=False, required=False)
-    led_toggle_parser.add_argument('-3', dest="t3", action='store_true', help='toggle led using wrapper API', default=False, required=False)
+    led_toggle_parser.add_argument('-2', dest="t2", action='store_true', help='toggle led using wrapper API', default=False, required=False)
 
     #subp1 = parser.add_subparsers(dest="jig_closed", help='jig_closed')
     jig_closed_parser = subp.add_parser('jig_closed')
@@ -77,9 +76,7 @@ def test_led_toggle(args, pyb):
         did_something = True
         logging.info("T1: Toggle Red LED with raw commands...")
 
-        cmds = [
-            "upyb_server_01.server.cmd({{'method': 'led_toggle', 'args': {{ 'led': {} }} }})".format(pyb.LED_RED),
-        ]
+        cmds = ["upyb_server_01.server.cmd({{'method': 'led_toggle', 'args': {{ 'led': {} }} }})".format(pyb.LED_RED)]
 
         success, result = pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
         logging.info("{} {}".format(success, result))
@@ -100,45 +97,23 @@ def test_led_toggle(args, pyb):
 
         if _success and not success: _success = False
 
-    if all or args.t2:
-        # This is an example of how to execute non-blocking, long running async task
-        # This shows special case of 1, as the 'toggle_led' result is not posted until
-        # after the led blinks, so here the first server.ret() does not get the expected
-        # result and polling starts...
-        did_something = True
-        logging.info("T2: Toggle Red LED with raw commands... poll ret fast")
-
-        cmds = [
-            "upyb_server_01.server.cmd({{'method': 'led_toggle', 'args': {{ 'led': {} }} }})".format(pyb.LED_RED),
-            "upyb_server_01.server.ret()",
-        ]
+        cmds = ["upyb_server_01.server.cmd({{'method': 'led_toggle', 'args': {{ 'led': {}, 'on_ms': 0 }} }})".format(pyb.LED_RED)]
 
         success, result = pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
         logging.info("{} {}".format(success, result))
 
-        cmds = ["upyb_server_01.server.ret()"]
-
-        retry = 5
-        succeeded = False
-        while retry and not succeeded:
-            time.sleep(0.5)
-            success, result = pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
-            logging.info("{} {}".format(success, result))
-            if success:
-                for r in result:
-                    if r.get("method", False) == 'led_toggle' and r.get("value", False) == True:
-                        succeeded = True
-            retry -= 1
-
-        if _success and not success: _success = False
-
-    if all or args.t3:
+    if all or args.t2:
         did_something = True
-        logging.info("T1: Toggle Red LED with wrapper API...")
+        logging.info("T2: Toggle Red LED with wrapper API...")
 
         success, result = pyb.led_toggle(2, 200)
         logging.info("{} {}".format(success, result))
+        if _success and not success: _success = False
 
+        time.sleep(5)  # let the led toggle for a bit
+
+        success, result = pyb.led_toggle(2, 0)
+        logging.info("{} {}".format(success, result))
         if _success and not success: _success = False
 
     if did_something: return _success

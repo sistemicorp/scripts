@@ -28,6 +28,7 @@ class MicroPyServer(object):
     ret: Are in this format: {"method": <class_method>, "value": <value>}
 
     """
+    SERVER_CMD_SLEEP_MS = 100  # polling time for processing new commands
 
     LED_RED    = 1
     LED_GREEN  = 2
@@ -57,6 +58,7 @@ class MicroPyServer(object):
                     "timer": {},           # timers running are listed here
                     "adc_read_multi": {},  # cache args
                     "i2c1": None,
+                    "threads": {},
                     }
 
         # Jig closed
@@ -126,7 +128,7 @@ class MicroPyServer(object):
                         method(args)
 
             # allows other threads to run, but generally speaking there should be no other threads(?)
-            time.sleep_ms(100)
+            time.sleep_ms(self.SERVER_CMD_SLEEP_MS)
 
     # ===================================================================================
     # Methods
@@ -134,16 +136,27 @@ class MicroPyServer(object):
     # 1. !! DON'T access public API, ret/peek/update/cmd, functions, access the queue's directly
     #    Else probably get into a lock lockup
 
-    def _toggle_led(self, led, on_ms=500):
-        pyb.LED(led).on()
-        time.sleep_ms(on_ms)
+    def _toggle_led(self, led, on_ms, off_ms):
+        thread_name = "led{}".format(led)
+        while self.ctx["threads"][thread_name]:
+            pyb.LED(led).on()
+            time.sleep_ms(on_ms)
+            if off_ms:
+                pyb.LED(led).off()
+                time.sleep_ms(off_ms)
+
+        self.ctx["threads"][thread_name] = False
         pyb.LED(led).off()
 
-    def _led_cycle(self, ):
-        pass
+    def led_toggle(self, args):
+        """ Toggle LED on
 
-    def led_cycle(self, args):
-        en = args.get("enable", True)
+        args: { 'led': <#>, 'on_ms': <#>, 'off_ms': <#> }
+        :param led: one of LED_*
+        :param on_ms: milli seconds on, if 0 the led will be turned off
+        :param off_ms: milli seconds off
+        :return: success (True/False)
+        """
         led = args.get("led", None)
         on_ms = args.get("on_ms", 500)
         off_ms = args.get("off_ms", 500)
@@ -151,26 +164,20 @@ class MicroPyServer(object):
             self._ret.put({"method": "led_toggle", "value": "unknown led {}".format(led), "success": False})
             return
 
-        self._ret.put({"method": "led_toggle", "value": True, "success": True})
+        thread_name = "led{}".format(led)
+        if on_ms > 0:
+            if thread_name not in self.ctx["threads"] or not self.ctx["threads"][thread_name]:
+                self.ctx["threads"][thread_name] = True
+                _thread.start_new_thread(self._toggle_led, (led, on_ms, off_ms))
 
-    def led_toggle(self, args):
-        """ Toggle LED on, does so only once
-        - this is a BLOCKING command, the return msg is posted AFTER the led has been toggled
+            else:
+                # thread appears to already be running... do nothing...
+                pass
 
-        cmds = ["upybrd_server_01.server.cmd({{'method': 'led_toggle', 'args': {{ 'led': {}, 'on_ms': {} }} }})".format(lednum, ontime_ms)]
+        else:
+            if thread_name in self.ctx["threads"]:
+                self.ctx["threads"][thread_name] = False
 
-        args:
-        :param led: one of LED_*
-        :param on_ms: milli seconds on
-        :return: success (True/False)
-        """
-        led = args.get("led", None)
-        on_ms = args.get("on_ms", 500)
-        if not led in [self.LED_BLUE, self.LED_GREEN, self.LED_RED, self.LED_YELLOW]:
-            self._ret.put({"method": "led_toggle", "value": "unknown led {}".format(led), "success": False})
-            return
-
-        self._toggle_led(led, on_ms)
         self._ret.put({"method": "led_toggle", "value": True, "success": True})
 
     def _isr_jig_closed_detect(self, _):
