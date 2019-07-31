@@ -1,14 +1,20 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import upyb_i2c
+from time import sleep
+
 class INA220(object):
-    def __init__(self, i2c_addr, rsense, name, samples):
+
+    # self.INA220_LOW = INA220(self.i2c, self.INA220_LOW_ADDR, self.INA220_RSENSE_75, "LOW", self.samples)
+
+    def __init__(self, i2c, i2c_addr, rsense, name, samples):
         self.INA220_ADDRESS = i2c_addr
         self.rsense = rsense
         self.name = name
         self.SAMPLES = samples
 
-        # self.INA220_I2C = i2c, i2c should be at a higher level
+        self.INA220_I2C = i2c   # i2c should be at a higher level
 
         self.INA220_CONFIG = 0x00
         self.INA220_SV = 0x01
@@ -88,6 +94,7 @@ class INA220(object):
         return False
 
     def write_word(self, reg_addr, val):
+
         """ write data to INA220
 
         example usage: self.write_word(self.INA220_CONFIG, bytearray(b'\xB9\x9F'))
@@ -98,6 +105,7 @@ class INA220(object):
         """
         n = [(val >> 8) & 0xFF, (val) & 0xFF]
         bytes_sent = self.INA220_I2C.writeto_mem(self.INA220_ADDRESS, reg_addr, bytes(bytearray(n)))
+
         return True
         # TODO: use write that returns the num of bytes sent
         # if bytes_sent == len(data):

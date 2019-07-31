@@ -7,13 +7,20 @@ Notes:
 1)
 """
 import pyb
-from INA220 import INA220
+import machine
+from upyb_INA220 import INA220
 
 CHANNELS = ["V1", "V2", "V3"]
 LDOS = [
-    {"name": "V1", "control_addr": 0x00, },
-    {"name": "V2", "control_addr": 0x00, },
+    {"name": "V1", "control_addr": 0x18, },
+    {"name": "V2", "control_addr": 0x19, },
 ]
+LDOS_V3 = {"name": "V3", "control_addr": 0x1e, }
+
+INPUT_COM = 0x00
+OUTPUT_COM = 0x01
+POLARITY_COM = 0x02
+CONFIG_COM = 0x03
 
 SAMPLES_1 = 8
 SAMPLES_2 = 9
@@ -93,6 +100,7 @@ class V3(object):
 
     def __init__(self, i2c, addr, name="V3"):
         # disable on init
+        pass
 
     def _state(self):
         # for debugging, print everything
@@ -136,6 +144,21 @@ class LDO(object):
         self._addr = addr
         self._voltage_mv = 0
 
+        # set potenial outputs to their default state of all 0
+        for name in LDOS:
+            set_output_low = self.create_bit(OUTPUT_COM, 0x00)
+            self.micropy_i2c.writeto(LDOS["control_addr"], set_output_low)
+
+            # set polarity to its default value
+            set_polarity_default = self.create_bit(POLARITY_COM, 0x70)
+            self.micropy_i2c.writeto(LDOS["control_addr"], set_polarity_default)
+
+    def create_bit(self, command, value):
+        _bit = command | value
+        bit = [(_bit >> 8) & 0xFF, (_bit) & 0xFF]
+        bit = bytes(bytearray(bit)
+        return bit
+
     def _state(self):
         # for debugging, print everything
         pass
@@ -147,6 +170,12 @@ class LDO(object):
         :return: success, enable
         """
         # set the LDO control pins via the I2C GPIO mux
+        # config pins 0-5 to be outputs
+        for name in LDOS:
+            # set all LDO pins to outputs
+            set_config_out = self.create_bit(CONFIG_COM, 0xc00)
+            self.micropy_i2c.writeto(LDOS["control_addr"], set_config_out)
+
         return True, enable
 
     def get_feedback_resistance(self):
@@ -194,7 +223,7 @@ class Supplies(object):
             self.ctx["supplies"][name] = LDO(self.i2c, i2c_addr, name)
 
         # init special V3 case
-        self.ctx["supplies"]["V3"] = V3(name)
+        self.ctx["supplies"]["V3"] = V3(self.i2c, LDOS_V3["control_addr"], LDOS_V3["name"])
 
         self.stats = SupplyStats(self.i2c, self.ctx)
 
@@ -233,9 +262,9 @@ class Supplies(object):
 
 
 # Test code
-if __name__ == "main":
+if True:
 
-    i2c = pyb.I2C("X9", "X10")
+    i2c = machine.I2C("X", freq=400000)
     supplies = Supplies(i2c)
     success, n = supplies.stats.INA220_LOW.read_bus_voltage()
     print(success, n)
