@@ -7,6 +7,8 @@ from time import sleep
 class INA220(object):
 
     # self.INA220_LOW = INA220(self.i2c, self.INA220_LOW_ADDR, self.INA220_RSENSE_75, "LOW", self.samples)
+    INA220_CONFIG_RESET_VALUE = 0x399F
+    INA220_SHUNT_CONVERSION_FACTOR = 0.000010
 
     def __init__(self, i2c, i2c_addr, rsense, name, samples):
         self.INA220_ADDRESS = i2c_addr

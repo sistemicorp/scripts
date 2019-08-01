@@ -9,6 +9,7 @@ Notes:
 import pyb
 import machine
 from upyb_INA220 import INA220
+from time import sleep
 
 CHANNELS = ["V1", "V2", "V3"]
 LDOS = [
@@ -17,10 +18,10 @@ LDOS = [
 ]
 LDOS_V3 = {"name": "V3", "control_addr": 0x1e, }
 
-INPUT_COM = 0x00
-OUTPUT_COM = 0x01
-POLARITY_COM = 0x02
-CONFIG_COM = 0x03
+GPIO_COMMAND_INPUT = 0x00
+GPIO_COMMAND_OUTPUT = 0x01
+GPIO_COMMAND_POLARITY = 0x02
+GPIO_COMMAND_CONFIG = 0x03
 
 SAMPLES_1 = 8
 SAMPLES_2 = 9
@@ -138,6 +139,8 @@ class V3(object):
 
 class LDO(object):
 
+    LDO_ENABLE_SHIFT = 6
+
     def __init__(self, i2c, addr, name):
         self._name = name
         self._i2c = i2c
@@ -145,19 +148,26 @@ class LDO(object):
         self._voltage_mv = 0
 
         # set potenial outputs to their default state of all 0
-        for name in LDOS:
-            set_output_low = self.create_bit(OUTPUT_COM, 0x00)
-            self.micropy_i2c.writeto(LDOS["control_addr"], set_output_low)
+        # LDO is conrolled by the GPIO expander
+        self._GPIO_write(GPIO_COMMAND_OUTPUT, 0x00)
 
-            # set polarity to its default value
-            set_polarity_default = self.create_bit(POLARITY_COM, 0x70)
-            self.micropy_i2c.writeto(LDOS["control_addr"], set_polarity_default)
+        # set polarity to its default value
+        self._GPIO_write(GPIO_COMMAND_POLARITY, 0x70)
 
-    def create_bit(self, command, value):
-        _bit = command | value
-        bit = [(_bit >> 8) & 0xFF, (_bit) & 0xFF]
-        bit = bytes(bytearray(bit)
-        return bit
+        # set all GPIO pins 0-5 and 7 to input, p6 must be set to an output
+        # LDO is disable and set to lowest output value
+        self._GPIO_write(GPIO_COMMAND_CONFIG, 0xbf)
+
+    def _GPIO_write(self, command, value):
+        bytes_write = [(command) & 0xFF, (value) & 0xFF]
+        bytes_write = bytes(bytearray(bytes_write))
+        self._i2c.writeto(self._addr, bytes_write)
+
+    def _GPIO_read(self, command):
+        self._i2c.writeto(self._addr, bytes(bytearray([command & 0xff])))
+        read = self._i2c.readfrom(self._addr, 1)
+        # print("register: {}".format(read))
+        return ord(read)
 
     def _state(self):
         # for debugging, print everything
@@ -171,11 +181,16 @@ class LDO(object):
         """
         # set the LDO control pins via the I2C GPIO mux
         # config pins 0-5 to be outputs
-        for name in LDOS:
-            # set all LDO pins to outputs
-            set_config_out = self.create_bit(CONFIG_COM, 0xc00)
-            self.micropy_i2c.writeto(LDOS["control_addr"], set_config_out)
+        _register = self._GPIO_read(GPIO_COMMAND_CONFIG)
 
+        if enable:
+            register = _register | (0x01 << self.LDO_ENABLE_SHIFT)
+
+        else:
+            register = _register & ~(0x01 << self.LDO_ENABLE_SHIFT)
+
+        self._GPIO_write(GPIO_COMMAND_CONFIG, register)
+        print("register: {} -> {}".format(_register, register))
         return True, enable
 
     def get_feedback_resistance(self):
@@ -268,3 +283,9 @@ if True:
     supplies = Supplies(i2c)
     success, n = supplies.stats.INA220_LOW.read_bus_voltage()
     print(success, n)
+    supplies.ctx["supplies"]["V1"].enable()
+    for i in range(4):
+        supplies.ctx["supplies"]["V1"].enable()
+        sleep(2)
+        supplies.ctx["supplies"]["V1"].enable(False)
+        sleep(1)
