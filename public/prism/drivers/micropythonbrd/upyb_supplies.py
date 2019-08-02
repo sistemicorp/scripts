@@ -50,6 +50,7 @@ class SupplyStats(object):
     GPIO_CONFIG_ALL_INPUT = 0x3f   # has the effect of setting p0-p5 to high
     GPIO_LATCH_SET_MASK = 0X02     # b10
     GPIO_LATCH_RESET_MASK = 0x01   # b01
+    GPIO_LATCH_CLEAR_MASK = 0x03   # b11
 
     GPIO_RELAY_ADDR = 30
 
@@ -65,8 +66,8 @@ class SupplyStats(object):
     def __init__(self, i2c):
 
         self._i2c = i2c
-        self.INA220_LOW = INA220(self._i2c.i2c, self.INA220_LOW_ADDR,  self.INA220_RSENSE_75, "LOW", self.samples)
-        self.INA220_HIGH = INA220(self._i2c.i2c, self.INA220_HIGH_ADDR, self.INA220_RSENSE_0R6, "HIGH", self.samples)
+        self.INA220_LOW = INA220(self._i2c, self.INA220_LOW_ADDR,  self.INA220_RSENSE_75, "LOW", self.samples)
+        self.INA220_HIGH = INA220(self._i2c, self.INA220_HIGH_ADDR, self.INA220_RSENSE_0R6, "HIGH", self.samples)
 
         # set all outputs to low
         self._GPIO_write(GPIO_COMMAND_OUTPUT, 0x00)
@@ -76,20 +77,47 @@ class SupplyStats(object):
     def _GPIO_write(self, command, value):
         bytes_write = [(command) & 0xFF, (value) & 0xFF]
         bytes_write = bytes(bytearray(bytes_write))
-        self._i2c.acquire()
-        self._i2c.i2c.writeto(self.GPIO_RELAY_ADDR, bytes_write)
-        self._i2c.release()
+        # self._i2c.acquire()
+        self._i2c.writeto(self.GPIO_RELAY_ADDR, bytes_write)
+       #  self._i2c.release()
 
     def _GPIO_read(self, command):
-        self._i2c.acquire()
-        self._i2c.i2c.writeto(self.GPIO_RELAY_ADDR, bytes(bytearray([command & 0xff])))
-        read = self._i2c.i2c.readfrom(self.GPIO_RELAY_ADDR, 1)
-        self._i2c.release()
+        # self._i2c.acquire()
+        self._i2c.writeto(self.GPIO_RELAY_ADDR, bytes(bytearray([command & 0xff])))
+        read = self._i2c.readfrom(self.GPIO_RELAY_ADDR, 1)
+        # self._i2c.release()
         # print("register: {}".format(read))
         return ord(read)
 
     def _set_ina_channel(self, channel):
-        pass
+
+        reg_cache = self._GPIO_read(GPIO_COMMAND_CONFIG)
+        if channel == CHANNELS[0]:   # v1
+            _reg_cache = reg_cache & ~(self.GPIO_LATCH_CLEAR_MASK << self.V1_RELAY_SHIFT)
+            set_channel = self.GPIO_LATCH_SET_MASK << self.V1_RELAY_SHIFT
+
+        elif channel == CHANNELS[1]:  # v2
+            _reg_cache = reg_cache & ~(self.GPIO_LATCH_CLEAR_MASK << self.V2_RELAY_SHIFT)
+            set_channel = self.GPIO_LATCH_SET_MASK << self.V2_RELAY_SHIFT
+
+        elif channel == CHANNELS[2]:  # v3
+            _reg_cache = reg_cache & ~(self.GPIO_LATCH_CLEAR_MASK << self.V3_RELAY_SHIFT)
+            set_channel = self.GPIO_LATCH_SET_MASK << self.V3_RELAY_SHIFT
+
+        else:
+            print("_set_ina_channel: unknown supply channel")
+            return False
+
+        set_channel |= _reg_cache
+        print("set_channel: {}".format(set_channel))
+        self._GPIO_write(GPIO_COMMAND_CONFIG, set_channel)
+        sleep(0.1)
+
+        config_register_p67 = reg_cache & 0xc0
+        config_reg = config_register_p67 | self.GPIO_CONFIG_ALL_INPUT
+        print("_set_ina_channel: reseting back to all input {}".format(config_reg))
+        self._GPIO_write(GPIO_COMMAND_CONFIG, config_reg)
+        return True
 
     def bypass(self):
         """ Set the INA circuit bypassed
@@ -97,7 +125,9 @@ class SupplyStats(object):
         :return: success
         """
         config_reg_cache = self._GPIO_read(GPIO_COMMAND_CONFIG)
-        config_reg = self.GPIO_LATCH_RESET_MASK << self.V1_RELAY_SHIFT | self.GPIO_LATCH_RESET_MASK << self.V2_RELAY_SHIFT | self.GPIO_LATCH_RESET_MASK << self.V3_RELAY_SHIFT
+        config_reg = self.GPIO_LATCH_RESET_MASK << self.V1_RELAY_SHIFT | \
+                     self.GPIO_LATCH_RESET_MASK << self.V2_RELAY_SHIFT | \
+                     self.GPIO_LATCH_RESET_MASK << self.V3_RELAY_SHIFT
 
         config_register_p67 = config_reg_cache & 0xc0
         config_reg |= config_register_p67
@@ -110,7 +140,6 @@ class SupplyStats(object):
         config_reg = config_register_p67 | self.GPIO_CONFIG_ALL_INPUT
         print("config_reg INPUT: {}".format(config_reg))
         self._GPIO_write(GPIO_COMMAND_CONFIG, config_reg)
-
         return True, None
 
     def get_stats(self, ldo_obj):
@@ -198,20 +227,22 @@ class LDO(object):
 
         # set all GPIO pins 0-5 and 7 to input, p6 must be set to an output
         # LDO is disable and set to lowest output value
-        self._GPIO_write(GPIO_COMMAND_CONFIG, 0xbf)
+        self._GPIO_write(GPIO_COMMAND_CONFIG, 0xb7)
 
     def _GPIO_write(self, command, value):
+        # intakes the command bits and the value, creates one byte and writes to GPIO
         bytes_write = [(command) & 0xFF, (value) & 0xFF]
         bytes_write = bytes(bytearray(bytes_write))
-        self._i2c.acquire()
-        self._i2c.i2c.writeto(self._addr, bytes_write)
-        self._i2c.release()
+        # self._i2c.acquire()
+        self._i2c.writeto(self._addr, bytes_write)
+        # self._i2c.release()
 
     def _GPIO_read(self, command):
-        self._i2c.acquire()
-        self._i2c.i2c.writeto(self._addr, bytes(bytearray([command & 0xff])))
-        read = self._i2c.i2c.readfrom(self._addr, 1)
-        self._i2c.release()
+        # intakes the command bits and reads that register on the GPIO
+        # self._i2c.acquire()
+        self._i2c.writeto(self._addr, bytes(bytearray([command & 0xff])))
+        read = self._i2c.readfrom(self._addr, 1)
+        # self._i2c.release()
         # print("register: {}".format(read))
         return ord(read)
 
@@ -236,7 +267,7 @@ class LDO(object):
             register = _register & ~(0x01 << self.LDO_ENABLE_SHIFT)
 
         self._GPIO_write(GPIO_COMMAND_CONFIG, register)
-        print("register: {} -> {}".format(_register, register))
+        print("{} enable: register: {} -> {}".format(self._name, _register, register))
         return True, enable
 
     def get_feedback_resistance(self):
@@ -325,8 +356,9 @@ class Supplies(object):
 # Test code
 if True:
 
-    i2c = UPYB_I2C()
-    i2c.init(UPYB_I2C_HW_I2C1)
+    i2c = machine.I2C("X", freq=400000)
+    # i2c = UPYB_I2C()
+    # i2c.init(UPYB_I2C_HW_I2C1)
     supplies = Supplies(i2c)
     supplies_stats = SupplyStats(i2c)
     supplies.ctx["supplies"]["V1"].enable()
@@ -334,9 +366,26 @@ if True:
         supplies.ctx["supplies"]["V1"].enable()
         success, n = supplies.stats.INA220_LOW.read_bus_voltage()
         print(success, n)
+        supplies.stats._set_ina_channel("V1")
         sleep(2)
+        supplies.stats.bypass()
         supplies.ctx["supplies"]["V1"].enable(False)
         sleep(1)
+
+if False :
+
+    i2c = UPYB_I2C()
+    success, message = i2c.init(UPYB_I2C_HW_I2C1)
+    print(success, message)
+    supplies = Supplies(i2c)
+    supplies.ctx["supplies"]["V1"].enable()
+    for i in range(100):
+        supplies.stats._set_ina_channel("V1")
+        sleep(2)
+        supplies.stats.bypass()
+        sleep(1)
+
+
 
 
 
