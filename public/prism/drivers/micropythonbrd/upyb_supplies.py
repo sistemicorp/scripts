@@ -95,27 +95,33 @@ class SupplyStats(object):
         reg_cache = self._GPIO_read(GPIO_COMMAND_CONFIG)
         if channel == CHANNELS[0]:   # v1
             _reg_cache = reg_cache & ~(self.GPIO_LATCH_CLEAR_MASK << self.V1_RELAY_SHIFT)
-            set_channel = self.GPIO_LATCH_SET_MASK << self.V1_RELAY_SHIFT
+            set_channel = self.GPIO_LATCH_SET_MASK << self.V1_RELAY_SHIFT | _reg_cache
 
         elif channel == CHANNELS[1]:  # v2
             _reg_cache = reg_cache & ~(self.GPIO_LATCH_CLEAR_MASK << self.V2_RELAY_SHIFT)
-            set_channel = self.GPIO_LATCH_SET_MASK << self.V2_RELAY_SHIFT
+            set_channel = self.GPIO_LATCH_SET_MASK << self.V2_RELAY_SHIFT | _reg_cache
 
         elif channel == CHANNELS[2]:  # v3
             _reg_cache = reg_cache & ~(self.GPIO_LATCH_CLEAR_MASK << self.V3_RELAY_SHIFT)
-            set_channel = self.GPIO_LATCH_SET_MASK << self.V3_RELAY_SHIFT
+            set_channel = self.GPIO_LATCH_SET_MASK << self.V3_RELAY_SHIFT | _reg_cache
 
         else:
             print("I2C ADDRESS {} : _set_ina_channel: unknown supply channel".format(self.GPIO_RELAY_ADDR))
             return False
 
-        set_channel |= _reg_cache
+        # set P6 LOW for the FET bypass helper
+        set_channel_pfet = reg_cache & (~(0x1 << 6) & 0xff)
+        self._GPIO_write(GPIO_COMMAND_CONFIG, set_channel_pfet)
+        #sleep(0.005)
+
+        set_channel &= (~(0x1 << 6) & 0xff)  # keep P6 LOW when relay is set
         print("I2C ADDRESS {} : set_channel: {}".format(self.GPIO_RELAY_ADDR, set_channel))
         self._GPIO_write(GPIO_COMMAND_CONFIG, set_channel)
         self.led.on()
-        sleep(0.1)
+        sleep(0.005)
 
-        config_register_p67 = reg_cache & 0xc0
+        # P6 should be set HIGH again, so the PFET is turned back off, now that the relay has switched
+        config_register_p67 = reg_cache & 0xc0 | (0x1 << 6)
         config_reg = config_register_p67 | self.GPIO_CONFIG_ALL_INPUT
         print("I2C ADDRESS {} : _set_ina_channel: reseting back to all input {}".format(self.GPIO_RELAY_ADDR, config_reg))
         self._GPIO_write(GPIO_COMMAND_CONFIG, config_reg)
@@ -230,7 +236,7 @@ class LDO(object):
 
         # set all GPIO pins 0-5 and 7 to input, p6 must be set to an output
         # LDO is disable and set to lowest output value
-        self._GPIO_write(GPIO_COMMAND_CONFIG, 0xb7)
+        self._GPIO_write(GPIO_COMMAND_CONFIG, 0xb0)
 
     def _GPIO_write(self, command, value):
         # intakes the command bits and the value, creates one byte and writes to GPIO
