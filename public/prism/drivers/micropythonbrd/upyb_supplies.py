@@ -221,6 +221,23 @@ class LDO(object):
 
     LDO_ENABLE_SHIFT = 6
 
+    LDO_VOLTAGE_MIN = 900  # mv
+    LDO_VOLTAGE_MAX = 3500  # mv
+    LDO_SET_VOLTAGE_LENGTH = 0x3f
+    LDO_VOLTAGE_SET_BIT = 0x1
+    LDO_VOLTAGE_50mv = 50   # LSB of the LDO volt range
+    LDO_VOLTAGE_50mv_SHIFT = 0
+    LDO_VOLTAGE_100mv = 100
+    LDO_VOLTAGE_100mv_SHIFT = 1
+    LDO_VOLTAGE_200mv = 200
+    LDO_VOLTAGE_200mv_SHIFT = 2
+    LDO_VOLTAGE_400mv = 400
+    LDO_VOLTAGE_400mv_SHIFT = 3
+    LDO_VOLTAGE_800mv = 800
+    LDO_VOLTAGE_800mv_SHIFT = 4
+    LDO_VOLTAGE_1600mv = 1600
+    LDO_VOLTAGE_1600mv_SHIFT = 5
+
     def __init__(self, i2c, addr, name):
         self._name = name
         self._i2c = i2c
@@ -295,37 +312,41 @@ class LDO(object):
         :return: success, voltage_mv
         """
         # validate voltage_mv, check range, and divisible by 50 mV
-        if 500 < voltage_mv < 3500 and voltage_mv % 50 == 0:
+        if self.LDO_VOLTAGE_MIN <= voltage_mv <= self.LDO_VOLTAGE_MAX and voltage_mv % self.LDO_VOLTAGE_50mv == 0:
             self._voltage = voltage_mv
             # set the LDO control pins via the I2C GPIO mux
             set_voltage = 0
-            if voltage_mv % 1600 == 0:
-                set_voltage |= (0x01 << 5) & 0x3f
-                voltage_mv -= 1600
+            voltage_mv = voltage_mv - 500
+            if voltage_mv and voltage_mv - self.LDO_VOLTAGE_1600mv >= 0:
+                set_voltage |= (self.LDO_VOLTAGE_SET_BIT << self.LDO_VOLTAGE_1600mv_SHIFT) & self.LDO_SET_VOLTAGE_LENGTH
+                voltage_mv -= self.LDO_VOLTAGE_1600mv
 
-            if voltage_mv and voltage_mv % 800 == 0:
-                set_voltage |= (0x01 << 4) & 0x3f
-                voltage_mv -= 800
+            if voltage_mv and voltage_mv - self.LDO_VOLTAGE_800mv >= 0:
+                set_voltage |= (self.LDO_VOLTAGE_SET_BIT << self.LDO_VOLTAGE_800mv_SHIFT) & self.LDO_SET_VOLTAGE_LENGTH
+                voltage_mv -= self.LDO_VOLTAGE_800mv
 
-            if voltage_mv % 400 == 0:
-                set_voltage |= (0x1 << 3) & 0x3f
-                voltage_mv -= 400
+            if voltage_mv and voltage_mv - self.LDO_VOLTAGE_400mv >= 0:
+                set_voltage |= (self.LDO_VOLTAGE_SET_BIT << self.LDO_VOLTAGE_400mv_SHIFT) & self.LDO_SET_VOLTAGE_LENGTH
+                voltage_mv -= self.LDO_VOLTAGE_400mv
 
-            if voltage_mv % 200 == 0:
-                set_voltage |= (0x1 << 2) & 0x3f
-                voltage_mv -= 200
+            if voltage_mv and voltage_mv - self.LDO_VOLTAGE_200mv >= 0:
+                set_voltage |= (self.LDO_VOLTAGE_SET_BIT << self.LDO_VOLTAGE_200mv_SHIFT) & self.LDO_SET_VOLTAGE_LENGTH
+                voltage_mv -= self.LDO_VOLTAGE_200mv
 
-            if voltage_mv % 100 == 0:
-                set_voltage |= (0x1 << 1) & 0x3f
-                voltage_mv -= 100
+            if voltage_mv and voltage_mv - self.LDO_VOLTAGE_100mv >= 0:
+                set_voltage |= (self.LDO_VOLTAGE_SET_BIT << self.LDO_VOLTAGE_100mv_SHIFT) & self.LDO_SET_VOLTAGE_LENGTH
+                voltage_mv -= self.LDO_VOLTAGE_100mv
 
-            if voltage_mv % 50 == 0:
-                set_voltage |= (0x1 << 0) & 0x3f
-                voltage_mv -= 50
+            if voltage_mv and voltage_mv - self.LDO_VOLTAGE_50mv >= 0:
+                set_voltage |= (self.LDO_VOLTAGE_SET_BIT << self.LDO_VOLTAGE_50mv_SHIFT) & self.LDO_SET_VOLTAGE_LENGTH
+                voltage_mv -= self.LDO_VOLTAGE_50mv
 
+            _voltage_mv = self._GPIO_read(GPIO_COMMAND_CONFIG)
+            _voltage_mv = (_voltage_mv & ~ self.LDO_SET_VOLTAGE_LENGTH) | set_voltage
             print("set_voltage: {0:b}".format(set_voltage))
-            # self._GPIO_write(GPIO_COMMAND_CONFIG, _voltage_mv)
-            return True, voltage_mv
+            print("_voltage_mv : {0:b}".format(_voltage_mv))
+            self._GPIO_write(GPIO_COMMAND_CONFIG, _voltage_mv)
+            return True, set_voltage
         print("I2C ADDRESS {} : voltage_mv: selected voltage is not supported, {}".format(self._addr, voltage_mv))
         return False, 0
 
@@ -419,6 +440,8 @@ if True:
     supplies.ctx["supplies"]["V1"].enable()
     for i in range(2):
         supplies.stats._set_ina_channel("V1")
+        supplies.ctx["supplies"]["V1"].voltage_mv(1400)
+        supplies.ctx["supplies"]["V1"].voltage_mv(3200)
         supplies.ctx["supplies"]["V1"].voltage_mv(900)
         sleep(2)
         supplies.stats.bypass()
