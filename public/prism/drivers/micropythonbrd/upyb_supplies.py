@@ -223,6 +223,7 @@ class LDO(object):
 
     LDO_VOLTAGE_MIN = 900  # mv
     LDO_VOLTAGE_MAX = 3500  # mv
+    LDO_VOLTAGE_CALIBRATION = 500
     LDO_SET_VOLTAGE_LENGTH = 0x3f
     LDO_VOLTAGE_SET_BIT = 0x1
     LDO_VOLTAGE_50mv = 50   # LSB of the LDO volt range
@@ -316,7 +317,7 @@ class LDO(object):
             self._voltage = voltage_mv
             # set the LDO control pins via the I2C GPIO mux
             set_voltage = 0
-            voltage_mv = voltage_mv - 500
+            voltage_mv = voltage_mv - self.LDO_VOLTAGE_CALIBRATION
             if voltage_mv and voltage_mv - self.LDO_VOLTAGE_1600mv >= 0:
                 set_voltage |= (self.LDO_VOLTAGE_SET_BIT << self.LDO_VOLTAGE_1600mv_SHIFT) & self.LDO_SET_VOLTAGE_LENGTH
                 voltage_mv -= self.LDO_VOLTAGE_1600mv
@@ -440,8 +441,8 @@ if True:
     supplies.ctx["supplies"]["V1"].enable()
     for i in range(2):
         supplies.stats._set_ina_channel("V1")
-        supplies.ctx["supplies"]["V1"].voltage_mv(1400)
-        supplies.ctx["supplies"]["V1"].voltage_mv(3200)
+        supplies.ctx["supplies"]["V1"].voltage_mv(1300)
+        supplies.ctx["supplies"]["V1"].voltage_mv(3500)
         supplies.ctx["supplies"]["V1"].voltage_mv(900)
         sleep(2)
         supplies.stats.bypass()
