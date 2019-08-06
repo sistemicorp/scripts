@@ -112,7 +112,7 @@ class SupplyStats(object):
         # set P6 LOW for the FET bypass helper
         set_channel_pfet = reg_cache & (~(0x1 << 6) & 0xff)
         self._GPIO_write(GPIO_COMMAND_CONFIG, set_channel_pfet)
-        #sleep(0.005)
+        # sleep(0.005)
 
         set_channel &= (~(0x1 << 6) & 0xff)  # keep P6 LOW when relay is set
         print("I2C ADDRESS {} : set_channel: {}".format(self.GPIO_RELAY_ADDR, set_channel))
@@ -123,7 +123,7 @@ class SupplyStats(object):
         # P6 should be set HIGH again, so the PFET is turned back off, now that the relay has switched
         config_register_p67 = reg_cache & 0xc0 | (0x1 << 6)
         config_reg = config_register_p67 | self.GPIO_CONFIG_ALL_INPUT
-        print("I2C ADDRESS {} : _set_ina_channel: reseting back to all input {}".format(self.GPIO_RELAY_ADDR, config_reg))
+        print("I2C ADDRESS {} : _set_ina_channel: reset all back to all input {}".format(self.GPIO_RELAY_ADDR, config_reg))
         self._GPIO_write(GPIO_COMMAND_CONFIG, config_reg)
         return True
 
@@ -236,7 +236,7 @@ class LDO(object):
 
         # set all GPIO pins 0-5 and 7 to input, p6 must be set to an output
         # LDO is disable and set to lowest output value
-        self._GPIO_write(GPIO_COMMAND_CONFIG, 0xb0)
+        self._GPIO_write(GPIO_COMMAND_CONFIG, 0xb0)  # shhould be 0xBF?
 
     def _GPIO_write(self, command, value):
         # intakes the command bits and the value, creates one byte and writes to GPIO
@@ -268,12 +268,13 @@ class LDO(object):
         # set the LDO control pins via the I2C GPIO mux
         # config pins 0-5 to be outputs
         _register = self._GPIO_read(GPIO_COMMAND_CONFIG)
-
+        print("starting register: {}".format(_register))
         if enable:
             register = _register | (0x01 << self.LDO_ENABLE_SHIFT)
-
+            print("set register: {}".format())
         else:
             register = _register & ~(0x01 << self.LDO_ENABLE_SHIFT)
+            print("set register: {}".format())
 
         self._GPIO_write(GPIO_COMMAND_CONFIG, register)
         print("I2C ADDRESS {} : {} enable: register: {} -> {}".format(self._addr, self._name, _register, register))
@@ -293,12 +294,39 @@ class LDO(object):
         :param voltage_mv:
         :return: success, voltage_mv
         """
-
         # validate voltage_mv, check range, and divisible by 50 mV
-        # set the LDO control pins via the I2C GPIO mux
+        if 500 < voltage_mv < 3500 and voltage_mv % 50 == 0:
+            self._voltage = voltage_mv
+            # set the LDO control pins via the I2C GPIO mux
+            if voltage_mv % 1600 == 0:
+                set_voltage = (0x01 << 5) & 0x3f
+                voltage_mv -= 1600
 
-        self._voltage = voltage_mv
-        return True, voltage_mv
+            if voltage_mv and voltage_mv % 800 == 0:
+                set_voltage = (0x01 << 4) & 0x3f
+                voltage_mv -= 800
+
+            if voltage_mv % 400 == 0:
+                set_voltage = (0x1 << 3) & 0x3f
+                voltage_mv -= 400
+
+            if voltage_mv % 200 == 0:
+                set_voltage = (0x1 << 2) & 0x3f
+                voltage_mv -= 200
+
+            if voltage_mv % 100 == 0:
+                set_voltage = (0x1 << 1) & 0x3f
+                voltage_mv -= 100
+
+            if voltage_mv % 50 == 0:
+                set_voltage = (0x1 << 0) & 0x3f
+                voltage_mv -= 50
+
+            print("set_voltage: {}".format(set_voltage))
+            # self._GPIO_write(GPIO_COMMAND_CONFIG, _voltage_mv)
+            return True, voltage_mv
+        print("I2C ADDRESS {} : voltage_mv: selected voltage is not supported, {}".format(self._addr, voltage_mv))
+        return False, 0
 
     def power_good(self):
         """ Return the PG pin status
