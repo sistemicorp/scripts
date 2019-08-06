@@ -268,13 +268,13 @@ class LDO(object):
         # set the LDO control pins via the I2C GPIO mux
         # config pins 0-5 to be outputs
         _register = self._GPIO_read(GPIO_COMMAND_CONFIG)
-        print("starting register: {}".format(_register))
+        # print("starting register: {}".format(_register))
         if enable:
             register = _register | (0x01 << self.LDO_ENABLE_SHIFT)
-            print("set register: {}".format())
+            # print("set register: {}".format())
         else:
             register = _register & ~(0x01 << self.LDO_ENABLE_SHIFT)
-            print("set register: {}".format())
+            # print("set register: {}".format())
 
         self._GPIO_write(GPIO_COMMAND_CONFIG, register)
         print("I2C ADDRESS {} : {} enable: register: {} -> {}".format(self._addr, self._name, _register, register))
@@ -298,31 +298,32 @@ class LDO(object):
         if 500 < voltage_mv < 3500 and voltage_mv % 50 == 0:
             self._voltage = voltage_mv
             # set the LDO control pins via the I2C GPIO mux
+            set_voltage = 0
             if voltage_mv % 1600 == 0:
-                set_voltage = (0x01 << 5) & 0x3f
+                set_voltage |= (0x01 << 5) & 0x3f
                 voltage_mv -= 1600
 
             if voltage_mv and voltage_mv % 800 == 0:
-                set_voltage = (0x01 << 4) & 0x3f
+                set_voltage |= (0x01 << 4) & 0x3f
                 voltage_mv -= 800
 
             if voltage_mv % 400 == 0:
-                set_voltage = (0x1 << 3) & 0x3f
+                set_voltage |= (0x1 << 3) & 0x3f
                 voltage_mv -= 400
 
             if voltage_mv % 200 == 0:
-                set_voltage = (0x1 << 2) & 0x3f
+                set_voltage |= (0x1 << 2) & 0x3f
                 voltage_mv -= 200
 
             if voltage_mv % 100 == 0:
-                set_voltage = (0x1 << 1) & 0x3f
+                set_voltage |= (0x1 << 1) & 0x3f
                 voltage_mv -= 100
 
             if voltage_mv % 50 == 0:
-                set_voltage = (0x1 << 0) & 0x3f
+                set_voltage |= (0x1 << 0) & 0x3f
                 voltage_mv -= 50
 
-            print("set_voltage: {}".format(set_voltage))
+            print("set_voltage: {0:b}".format(set_voltage))
             # self._GPIO_write(GPIO_COMMAND_CONFIG, _voltage_mv)
             return True, voltage_mv
         print("I2C ADDRESS {} : voltage_mv: selected voltage is not supported, {}".format(self._addr, voltage_mv))
@@ -416,11 +417,13 @@ if True:
     print(success, message)
     supplies = Supplies(i2c)
     supplies.ctx["supplies"]["V1"].enable()
-    for i in range(100):
+    for i in range(2):
         supplies.stats._set_ina_channel("V1")
+        supplies.ctx["supplies"]["V1"].voltage_mv(900)
         sleep(2)
         supplies.stats.bypass()
         sleep(1)
+
 
 
 
