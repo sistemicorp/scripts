@@ -244,6 +244,8 @@ class LDO(object):
         self._i2c = i2c
         self._addr = addr
         self._voltage_mv = 0
+        self.led = pyb.LED(3)
+
 
         # set potenial outputs to their default state of all 0
         # LDO is conrolled by the GPIO expander
@@ -255,6 +257,9 @@ class LDO(object):
         # set all GPIO pins 0-5 and 7 to input, p6 must be set to an output
         # LDO is disable and set to lowest output value
         self._GPIO_write(GPIO_COMMAND_CONFIG, 0xb0)  # shhould be 0xBF?
+
+        # set LDO starting voltage at 0
+        self.voltage_mv(0)
 
     def _GPIO_write(self, command, value):
         # intakes the command bits and the value, creates one byte and writes to GPIO
@@ -312,6 +317,19 @@ class LDO(object):
         :param voltage_mv:
         :return: success, voltage_mv
         """
+        if voltage_mv == 0:
+            # reset voltage to 0
+            set_voltage = 0x3F
+            _voltage_mv = self._GPIO_read(GPIO_COMMAND_CONFIG)
+            _voltage_mv = (_voltage_mv & ~ self.LDO_SET_VOLTAGE_LENGTH) | set_voltage
+            print("voltage_mv : set_voltage: {0:8b}".format(set_voltage))
+            print("voltage_mv : _voltage_mv : {0:8b}".format(_voltage_mv))
+            self.led.on()
+            self._GPIO_write(GPIO_COMMAND_CONFIG, _voltage_mv)
+            sleep(5)
+            self.led.off()
+            return True, set_voltage
+
         # validate voltage_mv, check range, and divisible by 50 mV
         if self.LDO_VOLTAGE_MIN <= voltage_mv <= self.LDO_VOLTAGE_MAX and voltage_mv % self.LDO_VOLTAGE_50mv == 0:
             self._voltage = voltage_mv
@@ -342,11 +360,15 @@ class LDO(object):
                 set_voltage |= (self.LDO_VOLTAGE_SET_BIT << self.LDO_VOLTAGE_50mv_SHIFT) & self.LDO_SET_VOLTAGE_LENGTH
                 voltage_mv -= self.LDO_VOLTAGE_50mv
 
+            set_voltage = ~ (set_voltage) & self.LDO_SET_VOLTAGE_LENGTH
             _voltage_mv = self._GPIO_read(GPIO_COMMAND_CONFIG)
             _voltage_mv = (_voltage_mv & ~ self.LDO_SET_VOLTAGE_LENGTH) | set_voltage
-            print("set_voltage: {0:b}".format(set_voltage))
-            print("_voltage_mv : {0:b}".format(_voltage_mv))
+            print("voltage_mv : set_voltage: {0:8b}".format(set_voltage))
+            print("voltage_mv : _voltage_mv : {0:8b}".format(_voltage_mv))
+            self.led.on()
             self._GPIO_write(GPIO_COMMAND_CONFIG, _voltage_mv)
+            # sleep(1)
+            self.led.off()
             return True, set_voltage
         print("I2C ADDRESS {} : voltage_mv: selected voltage is not supported, {}".format(self._addr, voltage_mv))
         return False, 0
@@ -432,21 +454,53 @@ if False:
         supplies.ctx["supplies"]["V1"].enable(False)
         sleep(1)
 
-if True:
+if False:
 
     i2c = UPYB_I2C()
     success, message = i2c.init(UPYB_I2C_HW_I2C1)
     print(success, message)
     supplies = Supplies(i2c)
     supplies.ctx["supplies"]["V1"].enable()
-    for i in range(2):
+    for i in range(5):
         supplies.stats._set_ina_channel("V1")
-        supplies.ctx["supplies"]["V1"].voltage_mv(1300)
-        supplies.ctx["supplies"]["V1"].voltage_mv(3500)
-        supplies.ctx["supplies"]["V1"].voltage_mv(900)
-        sleep(2)
+        sleep(3)
+        supplies.ctx["supplies"]["V1"].voltage_mv(2000)
+        sleep(1)
+        supplies.ctx["supplies"]["V1"].voltage_mv(0)
         supplies.stats.bypass()
         sleep(1)
+
+if True:
+    i2c = UPYB_I2C()
+    success, message = i2c.init(UPYB_I2C_HW_I2C1)
+    print(success, message)
+    supplies = Supplies(i2c)
+    supplies.ctx["supplies"]["V1"].enable()
+    volt = 900
+    i = 0
+    supplies.stats._set_ina_channel("V1")
+    while 900 <= volt <= 3500:
+        if i <= 52:
+            volt += 50
+            i += 1
+            supplies.ctx["supplies"]["V1"].voltage_mv(volt)
+
+        if 52 < i < 104:
+            volt -= 50
+            i += 1
+            supplies.ctx["supplies"]["V1"].voltage_mv(volt)
+
+        if i == 104:
+            volt = 0
+            supplies.ctx["supplies"]["V1"].voltage_mv(volt)
+
+        sleep(0.05)
+    supplies.stats.bypass()
+
+
+
+
+
 
 
 
