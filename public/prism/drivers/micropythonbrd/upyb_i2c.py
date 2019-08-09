@@ -6,7 +6,8 @@ from machine import I2C
 UPYB_I2C_HW_I2C1 = "X"   # on X9/10
 UPYB_I2C_HW_I2C2 = "Y"   # on Y9/10
 
-class UPYB_I2C(object):
+
+class UPYB_I2C(I2C):
     """ Wrapper Class for I2C on MicroPython
     - adds a lock to sequence clients
 
@@ -20,27 +21,16 @@ class UPYB_I2C(object):
     """
     I2C_HW_IDs = [UPYB_I2C_HW_I2C1, UPYB_I2C_HW_I2C2]
 
-    def __init__(self):
+    def __init__(self, freq=400000):
         """
         - see http://docs.micropython.org/en/latest/pyboard/quickref.html#i2c-bus
         - note that we want to use HW I2C, not software emulated, so have id=1 for X10/X9, and
           id=2 for Y9/10
 
         """
+        # this function defaults to "X" this board does not support "Y"
+        super().__init__(freq)
         self.lock = _thread.allocate_lock()
-        self.i2c = None
-        self.init_done = False
-
-    def init(self, id, freq=400000):
-        if id not in self.I2C_HW_IDs:
-            return False, "Not a valid I2C port id"
-
-        if self.init_done:
-            return False, "Already inited"
-
-        self.i2c = I2C(id, freq=freq)
-        self.init_done = True
-        return True, None
 
     def acquire(self):
         return self.lock.acquire()

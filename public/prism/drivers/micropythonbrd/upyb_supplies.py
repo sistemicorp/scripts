@@ -67,8 +67,8 @@ class SupplyStats(object):
 
         self._i2c = i2c
         self.led = pyb.LED(2)
-        self.INA220_LOW = INA220(self._i2c.i2c, self.INA220_LOW_ADDR,  self.INA220_RSENSE_75, "LOW", self.samples)
-        self.INA220_HIGH = INA220(self._i2c.i2c, self.INA220_HIGH_ADDR, self.INA220_RSENSE_0R6, "HIGH", self.samples)
+        self.INA220_LOW = INA220(self._i2c, self.INA220_LOW_ADDR,  self.INA220_RSENSE_75, "LOW", self.samples)
+        self.INA220_HIGH = INA220(self._i2c, self.INA220_HIGH_ADDR, self.INA220_RSENSE_0R6, "HIGH", self.samples)
 
         # set all outputs to low
         self._GPIO_write(GPIO_COMMAND_OUTPUT, 0x00)
@@ -79,13 +79,13 @@ class SupplyStats(object):
         bytes_write = [(command) & 0xFF, (value) & 0xFF]
         bytes_write = bytes(bytearray(bytes_write))
         self._i2c.acquire()
-        self._i2c.i2c.writeto(self.GPIO_RELAY_ADDR, bytes_write)
+        self._i2c.writeto(self.GPIO_RELAY_ADDR, bytes_write)
         self._i2c.release()
 
     def _GPIO_read(self, command):
         self._i2c.acquire()
-        self._i2c.i2c.writeto(self.GPIO_RELAY_ADDR, bytes(bytearray([command & 0xff])))
-        read = self._i2c.i2c.readfrom(self.GPIO_RELAY_ADDR, 1)
+        self._i2c.writeto(self.GPIO_RELAY_ADDR, bytes(bytearray([command & 0xff])))
+        read = self._i2c.readfrom(self.GPIO_RELAY_ADDR, 1)
         self._i2c.release()
         # print("register: {}".format(read))
         return ord(read)
@@ -266,14 +266,14 @@ class LDO(object):
         bytes_write = [(command) & 0xFF, (value) & 0xFF]
         bytes_write = bytes(bytearray(bytes_write))
         self._i2c.acquire()
-        self._i2c.i2c.writeto(self._addr, bytes_write)
+        self._i2c.writeto(self._addr, bytes_write)
         self._i2c.release()
 
     def _GPIO_read(self, command):
         # intakes the command bits and reads that register on the GPIO
         self._i2c.acquire()
-        self._i2c.i2c.writeto(self._addr, bytes(bytearray([command & 0xff])))
-        read = self._i2c.i2c.readfrom(self._addr, 1)
+        self._i2c.writeto(self._addr, bytes(bytearray([command & 0xff])))
+        read = self._i2c.readfrom(self._addr, 1)
         self._i2c.release()
         # print("register: {}".format(read))
         return ord(read)
@@ -455,10 +455,10 @@ if False:
         sleep(1)
 
 if False:
-
-    i2c = UPYB_I2C()
-    success, message = i2c.init(UPYB_I2C_HW_I2C1)
-    print(success, message)
+    UPYB_I2C_HW_I2C1 = "X"
+    i2c = UPYB_I2C(UPYB_I2C_HW_I2C1)
+    # success, message = i2c.init(UPYB_I2C_HW_I2C1)
+    # print(success, message)
     supplies = Supplies(i2c)
     supplies.ctx["supplies"]["V1"].enable()
     for i in range(5):
@@ -471,9 +471,10 @@ if False:
         sleep(1)
 
 if True:
-    i2c = UPYB_I2C()
-    success, message = i2c.init(UPYB_I2C_HW_I2C1)
-    print(success, message)
+    UPYB_I2C_HW_I2C1 = "X"
+    i2c = UPYB_I2C(UPYB_I2C_HW_I2C1)
+    # success, message = i2c.init(UPYB_I2C_HW_I2C1)
+    # print(success, message)
     supplies = Supplies(i2c)
     supplies.ctx["supplies"]["V1"].enable()
     volt = 900
