@@ -225,8 +225,8 @@ class LDO(object):
 
     LDO_VOLTAGE_MIN = 900  # mv
     LDO_VOLTAGE_MAX = 3500  # mv
-    LDO_VOLTAGE_CALIBRATION = 500
     LDO_SET_VOLTAGE_LENGTH = 0x3f
+    LDO_VOLTAGE_CALIBRATION = 500
     LDO_VOLTAGE_SET_BIT = 0x1
     LDO_VOLTAGE_50mv = 50   # LSB of the LDO volt range
     LDO_VOLTAGE_50mv_SHIFT = 0
@@ -259,9 +259,6 @@ class LDO(object):
         # set all GPIO pins 0-5 and 7 to input, p6 must be set to an output
         # LDO is disable and set to lowest output value
         self._GPIO_write(GPIO_COMMAND_CONFIG, 0xbf)  # shhould be 0xBF?
-
-        # set LDO starting voltage to 0 mV
-        self.voltage_mv(0)
 
     def _GPIO_write(self, command, value):
         # intakes the command bits and the value, creates one byte and writes to GPIO
@@ -319,19 +316,6 @@ class LDO(object):
         :param voltage_mv:
         :return: success, voltage_mv
         """
-        if voltage_mv == 0:
-            # reset voltage to 0
-            set_voltage = 0x3F
-            _voltage_mv = self._GPIO_read(GPIO_COMMAND_CONFIG)
-            _voltage_mv = (_voltage_mv & ~ self.LDO_SET_VOLTAGE_LENGTH) | set_voltage
-            if DEBUG: print("voltage_mv : set_voltage: {0:8b}".format(set_voltage))
-            if DEBUG: print("voltage_mv : _voltage_mv : {0:8b}".format(_voltage_mv))
-            # self.led.on()
-            self._GPIO_write(GPIO_COMMAND_CONFIG, _voltage_mv)
-            # sleep(2)
-            # self.led.off()
-            return True, set_voltage
-
         # validate voltage_mv, check range, and divisible by 50 mV
         if self.LDO_VOLTAGE_MIN <= voltage_mv <= self.LDO_VOLTAGE_MAX and voltage_mv % self.LDO_VOLTAGE_50mv == 0:
             self._voltage = voltage_mv
@@ -440,6 +424,17 @@ class Supplies(object):
         if supply is None: return False, {}
 
         return self.stats.get_stats(supply)
+
+    def power_good(self, name):
+        """
+
+        :param name:
+        :return: success, status
+        """
+        supply = self._get_supply_obj(name)
+        if supply is None: return False, "unknown supply"
+
+        return supply.power_good()
 
     def bypass_stats(self):
         """ Set the INA circuit to be bypassed

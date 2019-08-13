@@ -290,11 +290,20 @@ class pyboard2(pyboard.Pyboard):
         return self._verify_single_cmd_ret(c)
 
     def set_ldo_voltage(self, name, voltage_mv):
-        """
+        """ set LDO voltage
 
         :param name: "V1", "V2", "V3"
         :param voltage_mv: 900 to 3500
         :return: success, result
         """
         c = {'method': 'set_ldo_voltage', 'args': {'name': name, 'voltage_mv': voltage_mv}}
+        return self._verify_single_cmd_ret(c)
+
+    def power_good(self, name):
+        """ Check the status of the power good pin
+
+        :param name: "V1", "V2", "V3"
+        :return: success, status
+        """
+        c = {'method': 'power_good', 'args': {'name': name}}
         return self._verify_single_cmd_ret(c)

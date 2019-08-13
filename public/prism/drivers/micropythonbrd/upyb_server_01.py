@@ -302,9 +302,29 @@ class MicroPyServer(object):
         else:
             self.ctx["gpio"][name].low()
 
-    def set_ldo_voltage(self, name, voltage_mv):
+    def set_ldo_voltage(self, args):
+        """
+
+        args:
+        :param name: name of the supply
+        :param voltage: set voltage value between 900 to 3500
+        :return:
+        """
+        name = args.get("name", None)
+        voltage_mv = args.get("voltage_mv", -1)
         success, volt = self.supplies.set_voltage_mv(name, voltage_mv)
         self._ret.put({"method": "set_ldo_voltage", "value": "{} ".format(volt), "success": success})
+
+    def power_good(self, args):
+        """
+        checking the status of the power good
+        args:
+        :param name: name of the supply
+        :return:
+        """
+        name = args.get("name", None)
+        success, status = self.supplies.power_good(name)
+        self._ret.put({"method": "power_good", "value": "{} ".format(status), "success": success})
 
     def adc_read(self, args):
         """ (simple) read ADC on a pin
