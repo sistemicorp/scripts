@@ -237,18 +237,28 @@ def test_supplies(args, pyb):
         did_something = True
         logging.info("T100: Setting V1 to 1800")
         success, result = pyb.set_ldo_voltage("V1", 1800)
+        if _success and not success:
+            _success = False
+            logging.error("failed to set voltage")
+
         logging.info("T100: Setting V1 to 500")
+        # this test should fail
         success, result = pyb.set_ldo_voltage("V1", 500)
         logging.info("{} {}".format(success, result))
+        if not success:
+            success = True
+        else:
+            logging.error("setting invaild voltage should have failed")
+            success = False
 
         if _success and not success: _success = False
 
     if all or args.t101:
         did_something = True
-        logging.info("T101: Setting V2 to 2700")
-        success, result = pyb.set_ldo_voltage("V2", 2700)
-        logging.info("T101: Setting V2 to 3550")
-        success, result = pyb.set_ldo_voltage("V2", 3550)
+        logging.info("T101: Setting V2 to 900")
+        success, result = pyb.set_ldo_voltage("V2", 900)
+        logging.info("T101: Setting V2 to 3500")
+        success, result = pyb.set_ldo_voltage("V2", 3500)
         logging.info("{} {}".format(success, result))
         if _success and not success: _success = False
 
@@ -362,6 +372,6 @@ if __name__ == '__main__':
             pyb.close()
             exit(1)
 
-
+    logging.info("all tests passed")
     pyb.close()
 

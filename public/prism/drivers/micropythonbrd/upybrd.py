@@ -147,7 +147,7 @@ class pyboard2(pyboard.Pyboard):
             self.logger.info("{} {}".format(success, result))
             if success:
                 for r in result:
-                    if r.get("method", False) == method and r.get("success", False) == True:
+                    if r.get("method", False) == method:
                         succeeded = True
             else:
                 return success, result
@@ -161,10 +161,7 @@ class pyboard2(pyboard.Pyboard):
             self.logger.error("More results than expected: {}".format(result))
             return False, "More results than expected, internal error"
 
-        if not result[0]["success"]:
-            return False, result[0]
-
-        return success, result[0]
+        return result[0]["success"], result[0]
 
     # -------------------------------------------------------------------------------------------------
     # API (wrapper functions)
