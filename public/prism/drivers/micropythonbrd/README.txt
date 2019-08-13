@@ -5,7 +5,7 @@ How to use these files...
     A) Boot the Pyboard into DFU mode, by shorting the 3V3 pin to the BOOT0 pin and resetting (button) the board.
         See https://github.com/micropython/micropython/wiki/Pyboard-Firmware-Update
     B) Update the firmware with this command,
-        $ sudo python3 pydfu.py -u pybv11-thread-20190730-v1.11-182-g7c15e50eb.dfu
+        $ sudo python3 pydfu.py -m -u pybv11-thread-20190730-v1.11-182-g7c15e50eb.dfu
     C) Copy all the upyb_*.py files to the MicroPython Board, use rshell, see #1.
 
     The pyboard should now be ready to go.
