@@ -37,22 +37,22 @@ def parse_args():
     subp = parser.add_subparsers(dest="_cmd", help='commands')
     led_toggle_parser = subp.add_parser('led_toggle')
     led_toggle_parser.add_argument('-a', "--all", dest="all", action='store_true', help='run all tests sequentially', default=False, required=False)
-    led_toggle_parser.add_argument('-1', dest="t1", action='store_true', help='toggle led using server.cmd', default=False, required=False)
-    led_toggle_parser.add_argument('-2', dest="t2", action='store_true', help='toggle led using wrapper API', default=False, required=False)
-    led_toggle_parser.add_argument('-3', dest="t3", action='store_true', help='toggle led using wrapper API only once', default=False, required=False)
+    led_toggle_parser.add_argument('--100', dest="t100", action='store_true', help='toggle led using server.cmd', default=False, required=False)
+    led_toggle_parser.add_argument('--101', dest="t101", action='store_true', help='toggle led using wrapper API', default=False, required=False)
+    led_toggle_parser.add_argument('--102', dest="t102", action='store_true', help='toggle led using wrapper API only once', default=False, required=False)
 
     jig_closed_parser = subp.add_parser('jig_closed')
     jig_closed_parser.add_argument('-a', "--all", dest="all", action='store_true', help='run all tests sequentially', default=False, required=False)
-    jig_closed_parser.add_argument('-1', dest="t1", action='store_true', help='start jig closed, and poll', default=False, required=False)
+    jig_closed_parser.add_argument('--100', dest="t100", action='store_true', help='start jig closed, and poll', default=False, required=False)
 
     adc_parser = subp.add_parser('adc')
     adc_parser.add_argument('-a', "--all", dest="all", action='store_true', help='run all tests sequentially', default=False, required=False)
-    adc_parser.add_argument('-1', dest="t1", action='store_true', help='adc_read', default=False, required=False)
-    adc_parser.add_argument('-2', dest="t2", action='store_true', help='adc_read_multi', default=False, required=False)
+    adc_parser.add_argument('--100', dest="t100", action='store_true', help='adc_read', default=False, required=False)
+    adc_parser.add_argument('--200', dest="t200", action='store_true', help='adc_read_multi', default=False, required=False)
 
     misc_parser = subp.add_parser('misc')
     misc_parser.add_argument('-a', "--all", dest="all", action='store_true', help='run all tests sequentially', default=False, required=False)
-    misc_parser.add_argument('-1', dest="t1", action='store_true', help='unique id', default=False, required=False)
+    misc_parser.add_argument('--100', dest="t100", action='store_true', help='unique id', default=False, required=False)
 
     supplies_parser = subp.add_parser('supplies')
     supplies_parser.add_argument('-a', "--all", dest="all", action='store_true', help='run all tests sequentially',
@@ -84,11 +84,11 @@ def test_led_toggle(args, pyb):
     _success = True
     logging.info("test_led_toggle:")
 
-    if all or args.t1:
+    if all or args.t100:
         # This is an example of how to execute non-blocking, long running async task
         # using the server.cmd({}) interface
         did_something = True
-        logging.info("T1: Toggle Red LED with raw commands...")
+        logging.info("T100: Toggle Red LED with raw commands...")
 
         cmds = ["upyb_server_01.server.cmd({{'method': 'led_toggle', 'args': {{ 'led': {} }} }})".format(pyb.LED_RED)]
 
@@ -116,9 +116,9 @@ def test_led_toggle(args, pyb):
         success, result = pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
         logging.info("{} {}".format(success, result))
 
-    if all or args.t2:
+    if all or args.t101:
         did_something = True
-        logging.info("T2: Toggle Red LED with wrapper API...")
+        logging.info("T101: Toggle Red LED with wrapper API...")
 
         success, result = pyb.led_toggle(2, 200)
         logging.info("{} {}".format(success, result))
@@ -130,9 +130,9 @@ def test_led_toggle(args, pyb):
         logging.info("{} {}".format(success, result))
         if _success and not success: _success = False
 
-    if all or args.t3:
+    if all or args.t102:
         did_something = True
-        logging.info("T3: Toggle Orange LED with wrapper API for 1.5 sec ON")
+        logging.info("T102: Toggle Orange LED with wrapper API for 1.5 sec ON")
 
         success, result = pyb.led_toggle(3, 1500, once=True)
         logging.info("{} {}".format(success, result))
@@ -151,10 +151,10 @@ def test_jig_closed(args, pyb):
     _success = True
     logging.info("test_jig_closed:")
 
-    if all or args.t1:
+    if all or args.t100:
         did_something = True
 
-        logging.info("T1: Turning on Jig Closed Detect...")
+        logging.info("T100: Turning on Jig Closed Detect...")
         success, result = pyb.enable_jig_closed_detect()
         logging.info("{} {}".format(success, result))
 
@@ -201,18 +201,18 @@ def test_adc(args, pyb):
     _success = True
     logging.info("test_adc:")
 
-    if all or args.t1:
+    if all or args.t100:
         did_something = True
-        logging.info("T1: Reading ADC...")
+        logging.info("T100: Reading ADC...")
         success, result = pyb.adc_read("VREF")
         logging.info("{} {}".format(success, result))
 
         if _success and not success: _success = False
 
-    if all or args.t2:
+    if all or args.t200:
         did_something = True
 
-        logging.info("T2: Reading (multi) ADC...")
+        logging.info("T200: Reading (multi) ADC...")
         success, result = pyb.adc_read_multi(pins=["X19", "X20"])
         logging.info("{} {}".format(success, result))
         success, result = pyb.get_server_method("adc_read_multi_results")
@@ -287,39 +287,6 @@ def test_supplies(args, pyb):
     return False
 
 
-def test_power_good(args, pyb):
-    did_something = False
-    _all = False
-    if args._cmd == "PG": _all = args.all
-    all = args.all_funcs or _all
-    _success = True
-    logging.info("test_power_good:")
-
-    if all or args.t4:
-        did_something = True
-        logging.info("T4: Checking V1 PG status")
-        success, result = pyb.power_good("V1")
-        logging.info("{} {}".format(success, result))
-        if _success and not success: _success = False
-
-    if all or args.t5:
-        did_something = True
-        logging.info("T5: Checking V2 PG status")
-        success, result = pyb.power_good("V2")
-        logging.info("{} {}".format(success, result))
-        if _success and not success: _success = False
-
-    if all or args.t6:
-        did_something = True
-        logging.info("T6: Checking V3 PG status")
-        success, result = pyb.power_good("V3")
-        logging.info("{} {}".format(success, result))
-        if _success and not success: _success = False
-
-    if did_something: return _success
-    else: logging.error("No Tests were specified")
-    return False
-
 def test_misc(args, pyb):
     did_something = False
     _all = False
@@ -328,9 +295,9 @@ def test_misc(args, pyb):
     _success = True
     logging.info("test_misc:")
 
-    if all or args.t1:
+    if all or args.t100:
         did_something = True
-        logging.info("T1: Reading unique id...")
+        logging.info("T100: Reading unique id...")
         success, result = pyb.unique_id()
         logging.info("{} {}".format(success, result))
 
