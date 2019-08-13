@@ -3,6 +3,7 @@
 
 import upyb_i2c
 from time import sleep
+DEBUG = False
 
 class INA220(object):
 
@@ -89,10 +90,10 @@ class INA220(object):
         self.write_word(self.INA220_CONFIG, val)
         config_mode = self.read_config()
         if config_mode == self.config_register:
-            print("{}: Successfully Configured".format(self.name))
+            if DEBUG: print("{}: Successfully Configured".format(self.name))
             return True
 
-        print("set_config: error failed to set correct config: {}".format(config_mode))
+        if DEBUG: print("set_config: error failed to set correct config: {}".format(config_mode))
         return False
 
     def write_word(self, reg_addr, val):
@@ -127,13 +128,13 @@ class INA220(object):
         # print("read_config: {:04X}".format(read_config))
         mode = read_config & self.INA220_CONFIG_MODE_MASK
         if mode == self.INA220_CONFIG_MODE_SANDBVOLT_CONTINUOUS:
-            print("{}: Set to continuous mode shunt and voltage mode".format(self.name))
+            if DEBUG: print("{}: Set to continuous mode shunt and voltage mode".format(self.name))
         elif mode == self.INA220_CONFIG_MODE_SANDBVOLT_TRIGGERED:
-            print("{}: Set to triggered shunt and voltage mode".format(self.name))
+            if DEBUG: print("{}: Set to triggered shunt and voltage mode".format(self.name))
         elif mode == self.INA220_CONFIG_MODE_SVOLT_TRIGGERED:
-            print("{}: Set to triggered shunt voltage mode".format(self.name))
+            if DEBUG: print("{}: Set to triggered shunt voltage mode".format(self.name))
         else:
-            print("{}: unknown mode: {}".format(self.name, mode))
+            if DEBUG: print("{}: unknown mode: {}".format(self.name, mode))
 
     def reset(self):
         success = self.write_word(self.INA220_CONFIG, 0xB99F)
@@ -142,7 +143,7 @@ class INA220(object):
             val = self.read_config()
             if val == self.INA220_CONFIG_RESET_VALUE:
                 return True
-        print("reset: error failed to reset: {}".format(val))
+        if DEBUG: print("reset: error failed to reset: {}".format(val))
         return False
 
     def read_bus_voltage(self):
@@ -168,7 +169,7 @@ class INA220(object):
             if vbus_reg & 0x2:
                 volt = (vbus_reg >> 3) * self.INA220_VBUS_CONVERSION_FACTOR
             return True, volt
-        print("_conversion_ready: exceeded retry count")
+        if DEBUG: print("_conversion_ready: exceeded retry count")
         return False, 0
 
     def read_shunt_voltage(self):
@@ -186,7 +187,7 @@ class INA220(object):
 
             vshunt = vshunt * self.INA220_SHUNT_CONVERSION_FACTOR
             # print("read_shunt_voltage: MODE: {:08x}".format(self.read_config()))
-            print("{} : the shunt voltage:{:10.6f}".format(self.name, vshunt))
+            if DEBUG: print("{} : the shunt voltage:{:10.6f}".format(self.name, vshunt))
             return True, vshunt
 
         return False, 0
@@ -195,5 +196,5 @@ class INA220(object):
         success, voltage = self.read_shunt_voltage()
         current = voltage / self.rsense
         # print("measure_current: MODE: {:08x}".format(self.read_config()))
-        print("{} : the current:{:10.6f}".format(self.name, current))
+        if DEBUG: print("{} : the current:{:10.6f}".format(self.name, current))
         return success, current

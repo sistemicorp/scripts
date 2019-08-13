@@ -68,8 +68,7 @@ class MicroPyServer(object):
         self._isr_jig_closed_detect_ref = self._jig_closed_detect # used to create memory before ISR
 
         # init I2C (1) on X9/10
-        self.ctx["i2c1"] = upyb_i2c.UPYB_I2C()
-        self.ctx["i2c1"].init(upyb_i2c.UPYB_I2C_HW_I2C1)
+        self.ctx["i2c1"] = upyb_i2c.UPYB_I2C("X")
 
         self.supplies = upyb_supplies.Supplies(self.ctx["i2c1"])
 
@@ -324,6 +323,8 @@ class MicroPyServer(object):
 
         samples = args.get("samples", 1)
         sample_ms = args.get("sample_ms", 1)
+
+        #print("DEBUG: test")
 
         adc = None
         adc_read = None

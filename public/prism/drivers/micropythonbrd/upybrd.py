@@ -99,12 +99,23 @@ class pyboard2(pyboard.Pyboard):
 
             #print("A: {}".format(ret))
             if ret:
-                # json-ize...
-                # TODO: find some more complete code...
-                fixed_string = ret.decode("utf-8").replace("'", '"').replace("True", "true").replace("False", "false").replace("None", "null")
-                self.logger.info(fixed_string)
-                items = json.loads(fixed_string)
-                return True, items
+                pyb_str = ret.decode("utf-8")
+                if pyb_str.startswith("DEBUG"):
+                    self.logger.info(pyb_str)
+
+                else:
+                    # expecting a JSON like dict object in string format, convert this string JSON to python dict
+                    # fix bad characters...
+                    fixed_string = pyb_str.replace("'", '"').replace("True", "true").replace("False", "false").replace("None", "null")
+                    try:
+                        self.logger.info(fixed_string.strip())
+                        items = json.loads(fixed_string)
+                    except Exception as e:
+                        self.logger.error(e)
+                        return False, []
+
+                    return True, items
+
             return True, []
 
     def _verify_single_cmd_ret(self, cmd_dict, delay_poll_ms=100):

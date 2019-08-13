@@ -35,6 +35,9 @@ PG_GOOD = "PG_GOOD"
 PG_UNSUPPORTED = "PG_UNSUPPORTED"
 PG_BAD = "PG_BAD"
 
+DEBUG = False
+
+
 class SupplyStats(object):
     """
 
@@ -105,7 +108,7 @@ class SupplyStats(object):
             set_channel = self.GPIO_LATCH_SET_MASK << self.V3_RELAY_SHIFT | _reg_cache
 
         else:
-            print("I2C ADDRESS {} : _set_ina_channel: unknown supply channel".format(self.GPIO_RELAY_ADDR))
+            if DEBUG: print("I2C ADDRESS {} : _set_ina_channel: unknown supply channel".format(self.GPIO_RELAY_ADDR))
             return False
 
         # set P6 LOW for the FET bypass helper
@@ -114,7 +117,7 @@ class SupplyStats(object):
         # sleep(0.005)
 
         set_channel &= (~(0x1 << 6) & 0xff)  # keep P6 LOW when relay is set
-        print("I2C ADDRESS {} : set_channel: {}".format(self.GPIO_RELAY_ADDR, set_channel))
+        if DEBUG: print("I2C ADDRESS {} : set_channel: {}".format(self.GPIO_RELAY_ADDR, set_channel))
         self._GPIO_write(GPIO_COMMAND_CONFIG, set_channel)
         self.led.on()
         sleep(0.005)
@@ -122,7 +125,7 @@ class SupplyStats(object):
         # P6 should be set HIGH again, so the PFET is turned back off, now that the relay has switched
         config_register_p67 = reg_cache & 0xc0 | (0x1 << 6)
         config_reg = config_register_p67 | self.GPIO_CONFIG_ALL_INPUT
-        print("I2C ADDRESS {} : _set_ina_channel: reset all back to all input {}".format(self.GPIO_RELAY_ADDR, config_reg))
+        if DEBUG: print("I2C ADDRESS {} : _set_ina_channel: reset all back to all input {}".format(self.GPIO_RELAY_ADDR, config_reg))
         self._GPIO_write(GPIO_COMMAND_CONFIG, config_reg)
         return True
 
@@ -139,14 +142,14 @@ class SupplyStats(object):
 
         config_register_p67 = config_reg_cache & 0xc0
         config_reg |= config_register_p67
-        print("I2C ADDRESS {}: config_reg RESET: {}".format(self.GPIO_RELAY_ADDR, config_reg))
+        if DEBUG: print("I2C ADDRESS {}: config_reg RESET: {}".format(self.GPIO_RELAY_ADDR, config_reg))
 
         self._GPIO_write(GPIO_COMMAND_CONFIG, config_reg)
         sleep(0.5)
         # config = self._GPIO_read(GPIO_COMMAND_CONFIG)
         # print("read_config: {}".format(config))
         config_reg = config_register_p67 | self.GPIO_CONFIG_ALL_INPUT
-        print("I2C ADDRESS {} : config_reg INPUT: {}".format(self. GPIO_RELAY_ADDR, config_reg))
+        if DEBUG: print("I2C ADDRESS {} : config_reg INPUT: {}".format(self. GPIO_RELAY_ADDR, config_reg))
         self._GPIO_write(GPIO_COMMAND_CONFIG, config_reg)
         return True, None
 
@@ -299,7 +302,7 @@ class LDO(object):
             # print("set register: {}".format())
 
         self._GPIO_write(GPIO_COMMAND_CONFIG, register)
-        print("I2C ADDRESS {} : {} enable: register: {} -> {}".format(self._addr, self._name, _register, register))
+        if DEBUG: print("I2C ADDRESS {} : {} enable: register: {} -> {}".format(self._addr, self._name, _register, register))
         return True, enable
 
     def get_feedback_resistance(self):
@@ -321,8 +324,8 @@ class LDO(object):
             set_voltage = 0x3F
             _voltage_mv = self._GPIO_read(GPIO_COMMAND_CONFIG)
             _voltage_mv = (_voltage_mv & ~ self.LDO_SET_VOLTAGE_LENGTH) | set_voltage
-            print("voltage_mv : set_voltage: {0:8b}".format(set_voltage))
-            print("voltage_mv : _voltage_mv : {0:8b}".format(_voltage_mv))
+            if DEBUG: print("voltage_mv : set_voltage: {0:8b}".format(set_voltage))
+            if DEBUG: print("voltage_mv : _voltage_mv : {0:8b}".format(_voltage_mv))
             # self.led.on()
             self._GPIO_write(GPIO_COMMAND_CONFIG, _voltage_mv)
             # sleep(2)
@@ -362,8 +365,8 @@ class LDO(object):
             set_voltage = ~ (set_voltage) & self.LDO_SET_VOLTAGE_LENGTH
             _voltage_mv = self._GPIO_read(GPIO_COMMAND_CONFIG)
             _voltage_mv = (_voltage_mv & ~ self.LDO_SET_VOLTAGE_LENGTH) | set_voltage
-            print("voltage_mv : set_voltage: {0:8b}".format(set_voltage))
-            print("voltage_mv : _voltage_mv : {0:8b}".format(_voltage_mv))
+            if DEBUG: print("voltage_mv : set_voltage: {0:8b}".format(set_voltage))
+            if DEBUG: print("voltage_mv : _voltage_mv : {0:8b}".format(_voltage_mv))
             # self.led.on()
             self._GPIO_write(GPIO_COMMAND_CONFIG, _voltage_mv)
             sleep(0.1)
@@ -372,7 +375,7 @@ class LDO(object):
             if success:
                 return success, set_voltage
             return success, "PG failure"
-        print("I2C ADDRESS {} : voltage_mv: selected voltage is not supported, {}".format(self._addr, voltage_mv))
+        if DEBUG: print("I2C ADDRESS {} : voltage_mv: selected voltage is not supported, {}".format(self._addr, voltage_mv))
         return False, "selected voltage is not supported"
 
     def power_good(self):
@@ -385,11 +388,11 @@ class LDO(object):
         pg_cache = (pg_cache & ~0x7F) & 0xff
         if pg_cache == 0x80:
             # power good
-            print("I2C ADDRESS {} : power_good status {}". format(self._addr, PG_GOOD))
+            if DEBUG: print("I2C ADDRESS {} : power_good status {}". format(self._addr, PG_GOOD))
             return True, PG_GOOD
 
         # power bad
-        print("I2C ADDRESS {} : power_good status {}".format(self._addr, PG_BAD))
+        if DEBUG: print("I2C ADDRESS {} : power_good status {}".format(self._addr, PG_BAD))
         return False, PG_BAD
 
 
@@ -458,7 +461,7 @@ if False:
     for i in range(4):
         supplies.ctx["supplies"]["V1"].enable()
         success, n = supplies.stats.INA220_LOW.read_bus_voltage()
-        print(success, n)
+        if DEBUG: print(success, n)
         supplies.stats._set_ina_channel("V1")
         sleep(2)
         supplies.stats.bypass()
@@ -481,7 +484,7 @@ if False:
         supplies.stats.bypass()
         sleep(1)
 
-if True:
+if False:
     UPYB_I2C_HW_I2C1 = "X"
     i2c = UPYB_I2C(UPYB_I2C_HW_I2C1)
     # success, message = i2c.init(UPYB_I2C_HW_I2C1)
