@@ -6,6 +6,7 @@ import array
 import upyb_queue
 
 import upyb_i2c
+import upyb_supplies
 import machine
 
 micropython.alloc_emergency_exception_buf(100)
@@ -69,6 +70,9 @@ class MicroPyServer(object):
         # init I2C (1) on X9/10
         self.ctx["i2c1"] = upyb_i2c.UPYB_I2C()
         self.ctx["i2c1"].init(upyb_i2c.UPYB_I2C_HW_I2C1)
+
+        self.supplies = upyb_supplies.Supplies(self.ctx["i2c1"])
+
 
     # ===================================================================================
     # Public API to send commands and get results from the MicroPy Server
@@ -298,6 +302,10 @@ class MicroPyServer(object):
             self.ctx["gpio"][name].high()
         else:
             self.ctx["gpio"][name].low()
+
+    def set_ldo_voltage(self, name, voltage_mv):
+        success, volt = self.supplies.set_voltage_mv(name, voltage_mv)
+        self._ret.put({"method": "set_ldo_voltage", "value": "{} ".format(volt), "success": success})
 
     def adc_read(self, args):
         """ (simple) read ADC on a pin

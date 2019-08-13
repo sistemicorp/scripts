@@ -32,9 +32,8 @@ SAMPLES_16 = 12
 SAMPLES_32 = 13
 
 PG_GOOD = "PG_GOOD"
-PG_BAD = "PG_BAD"
 PG_UNSUPPORTED = "PG_UNSUPPORTED"
-
+PG_BAD = "PG_BAD"
 
 class SupplyStats(object):
     """
@@ -256,9 +255,9 @@ class LDO(object):
 
         # set all GPIO pins 0-5 and 7 to input, p6 must be set to an output
         # LDO is disable and set to lowest output value
-        self._GPIO_write(GPIO_COMMAND_CONFIG, 0xb0)  # shhould be 0xBF?
+        self._GPIO_write(GPIO_COMMAND_CONFIG, 0xbf)  # shhould be 0xBF?
 
-        # set LDO starting voltage at 0
+        # set LDO starting voltage to 0 mV
         self.voltage_mv(0)
 
     def _GPIO_write(self, command, value):
@@ -324,10 +323,10 @@ class LDO(object):
             _voltage_mv = (_voltage_mv & ~ self.LDO_SET_VOLTAGE_LENGTH) | set_voltage
             print("voltage_mv : set_voltage: {0:8b}".format(set_voltage))
             print("voltage_mv : _voltage_mv : {0:8b}".format(_voltage_mv))
-            self.led.on()
+            # self.led.on()
             self._GPIO_write(GPIO_COMMAND_CONFIG, _voltage_mv)
-            sleep(5)
-            self.led.off()
+            # sleep(2)
+            # self.led.off()
             return True, set_voltage
 
         # validate voltage_mv, check range, and divisible by 50 mV
@@ -365,13 +364,16 @@ class LDO(object):
             _voltage_mv = (_voltage_mv & ~ self.LDO_SET_VOLTAGE_LENGTH) | set_voltage
             print("voltage_mv : set_voltage: {0:8b}".format(set_voltage))
             print("voltage_mv : _voltage_mv : {0:8b}".format(_voltage_mv))
-            self.led.on()
+            # self.led.on()
             self._GPIO_write(GPIO_COMMAND_CONFIG, _voltage_mv)
-            # sleep(1)
-            self.led.off()
-            return True, set_voltage
+            sleep(0.1)
+            # self.led.off()
+            success, pg_status = self.power_good()
+            if success:
+                return success, set_voltage
+            return success, "PG failure"
         print("I2C ADDRESS {} : voltage_mv: selected voltage is not supported, {}".format(self._addr, voltage_mv))
-        return False, 0
+        return False, "selected voltage is not supported"
 
     def power_good(self):
         """ Return the PG pin status
@@ -379,7 +381,16 @@ class LDO(object):
         :return: success, PG pin value (True = good)
         """
         # check the pin via the I2C GPIO mux
-        return True, PG_GOOD
+        pg_cache = self._GPIO_read(GPIO_COMMAND_CONFIG)
+        pg_cache = (pg_cache & ~0x7F) & 0xff
+        if pg_cache == 0x80:
+            # power good
+            print("I2C ADDRESS {} : power_good status {}". format(self._addr, PG_GOOD))
+            return True, PG_GOOD
+
+        # power bad
+        print("I2C ADDRESS {} : power_good status {}".format(self._addr, PG_BAD))
+        return False, PG_BAD
 
 
 class Supplies(object):

@@ -278,3 +278,12 @@ class pyboard2(pyboard.Pyboard):
         c = {'method': 'adc_read_multi', 'args': {'pins': pins, 'samples': samples, 'freq': freq}}
         return self._verify_single_cmd_ret(c)
 
+    def set_ldo_voltage(self, name, voltage_mv):
+        """
+
+        :param name: "V1", "V2", "V3"
+        :param voltage_mv: 900 to 3500
+        :return: success, result
+        """
+        c = {'method': 'set_ldo_voltage', 'args': {'name': name, 'voltage_mv': voltage_mv}}
+        return self._verify_single_cmd_ret(c)
