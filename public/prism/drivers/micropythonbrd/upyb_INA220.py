@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import upyb_i2c
+import machine
 from time import sleep
 DEBUG = False
 
@@ -12,6 +13,9 @@ class INA220(object):
     INA220_SHUNT_CONVERSION_FACTOR = 0.000010
 
     def __init__(self, i2c, i2c_addr, rsense, name, samples):
+        self.pin = machine.Pin("X3", machine.Pin.OUT)
+        self.pin.value(0)
+
         self.INA220_ADDRESS = i2c_addr
         self.rsense = rsense
         self.name = name
@@ -75,7 +79,7 @@ class INA220(object):
 
         # the config register is made up of 5 categories to select the correct mode for the INA220
         # modes: vbus range (BRNG), vshunt range and gain (PG), bus ADC (BAD), Shunt ADC (SAD), operating mode (MODE)
-        self.config_register = self.INA220_CONFIG_MODE_SANDBVOLT_TRIGGERED | \
+        self.config_register = self.INA220_CONFIG_MODE_SANDBVOLT_CONTINUOUS | \
                                (samples << 3) | \
                                self.INA220_CONFIG_BADCRES_12BIT | \
                                self.INA220_CONFIG_GAIN_8_320MV | \
@@ -176,16 +180,18 @@ class INA220(object):
         self._trigger()
         success, _ = self._conversion_ready()
         if success:
+            self.pin.value(1)
             _vshunt = self.read_word(self.INA220_SV)
+            self.pin.value(0)
             # print("_vshunt:{:04x}".format(_vshunt))
             vshunt = (_vshunt & 0x7FFF)
-            # print("vshunt:{}".format(vshunt))
+            if DEBUG: print("vshunt before equation, no sign bit:{}".format(vshunt))
             if _vshunt & self.INA220_SVOLT_SIGN:
                 # print("hello")
                 vshunt = (self.INA220_SVOLT_SIGN_2BYTES - _vshunt) + 1
-                # print("{}: vshunt after equation: {}".format(self.name, vshunt))
+                if DEBUG: print("{}: vshunt after equation: {}".format(self.name, vshunt))
 
-            vshunt = vshunt * self.INA220_SHUNT_CONVERSION_FACTOR
+            vshunt = (vshunt * self.INA220_SHUNT_CONVERSION_FACTOR)
             # print("read_shunt_voltage: MODE: {:08x}".format(self.read_config()))
             if DEBUG: print("{} : the shunt voltage:{:10.6f}".format(self.name, vshunt))
             return True, vshunt
@@ -194,7 +200,7 @@ class INA220(object):
 
     def measure_current(self):
         success, voltage = self.read_shunt_voltage()
-        current = voltage / self.rsense
+        current = (voltage / self.rsense)
         # print("measure_current: MODE: {:08x}".format(self.read_config()))
         if DEBUG: print("{} : the current:{:10.6f}".format(self.name, current))
         return success, current

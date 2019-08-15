@@ -35,7 +35,7 @@ PG_GOOD = "PG_GOOD"
 PG_UNSUPPORTED = "PG_UNSUPPORTED"
 PG_BAD = "PG_BAD"
 
-DEBUG = False
+DEBUG = True
 
 
 class SupplyStats(object):
@@ -56,12 +56,17 @@ class SupplyStats(object):
 
     GPIO_RELAY_ADDR = 30
 
-    INA220_LOW_ADDR = 64
-    INA220_HIGH_ADDR = 65
+    INA220_HIGH_ADDR = 64
+    INA220_LOW_ADDR = 65
+
+    INA220_LOW_MIN = 0
+    INA220_LOW_MAX = 0.002667
+    INA220_HIGH_MIN = 0
+    INA220_HIGH_MAX = 0.533333
 
     INA220_RSENSE_0R6 = 0.6
     INA220_RSENSE_75 = 75
-    samples = SAMPLES_1
+    samples = SAMPLES_2
 
     # etc... from your code...
 
@@ -153,22 +158,45 @@ class SupplyStats(object):
         self._GPIO_write(GPIO_COMMAND_CONFIG, config_reg)
         return True, None
 
-    def get_stats(self, ldo_obj):
+    def get_stats(self, channel):
         """
 
         :param name:
-        :return: success, voltage, current
+        :return: success, current, pg status
         """
-        name = ldo_obj._name
-        # switch the relays as required...
 
-        # on error, return False, {}
+        # switch the relays as required...
+        self._set_ina_channel(channel)
 
         # make the measurements...
-        voltage_mv = 1
-        current_ua = 1
-        pg = supply.power_good()
-        return True, {"v_mv": voltage_mv, "c_ua": current_ua, "pg": pg}
+        _, voltagelow = self.INA220_LOW.read_shunt_voltage()
+        _, voltagehigh = self.INA220_HIGH.read_shunt_voltage()
+        if DEBUG: print("voltage low_mv: {:10.6f}, voltage high_mv: {:10.6f}".format(voltagelow, voltagehigh))
+
+        success1, high_ina = self.INA220_HIGH.measure_current()
+        success2, low_ina = self.INA220_LOW.measure_current()
+        if DEBUG: print("high INA Current:{:10.6f}A, low INA Current:{:10.6f}A".format(high_ina, low_ina))
+
+        if success1 and success2:
+            _success, pg = supplies.power_good(channel)
+
+            if _success:
+                if self.INA220_LOW_MIN < low_ina < self.INA220_HIGH_MAX or self.INA220_LOW_MIN < high_ina < self.INA220_HIGH_MAX:
+                    if low_ina < self.INA220_LOW_MAX:
+                        if DEBUG: print("GET_STATS: CURRENT_LOW: {:10.6f}, PG: {}".format(low_ina, pg))
+                        return True, {"c_ua": low_ina, "pg": pg}
+
+                    if DEBUG: print("GET_STATS: CURRENT_HIGH: {:10.6f}, PG: {}".format(high_ina, pg))
+                    return True, {"c_ua": high_ina, "pg": pg}
+
+                if DEBUG: print("GET_STATS: CURRENT OUT OF RANGE: {:10.6f}, PG: {}".format(0, pg))
+                return False, "current out of range"
+
+            if DEBUG: print("GET_STATS: CURRENT: {:10.6f}, PG FAILED: {}".format(0, pg))
+            return False, {"c_ua": 0, "pg": pg}
+
+        if DEBUG: print("Failed to get measurements")
+        return False, "Failed to read measurements"
 
 
 class V3(object):
@@ -463,20 +491,22 @@ if False:
         supplies.ctx["supplies"]["V1"].enable(False)
         sleep(1)
 
-if False:
+if True:
     UPYB_I2C_HW_I2C1 = "X"
     i2c = UPYB_I2C(UPYB_I2C_HW_I2C1)
     # success, message = i2c.init(UPYB_I2C_HW_I2C1)
     # print(success, message)
     supplies = Supplies(i2c)
     supplies.ctx["supplies"]["V1"].enable()
-    for i in range(5):
+    for i in range(10):
         supplies.stats._set_ina_channel("V1")
-        sleep(3)
-        supplies.ctx["supplies"]["V1"].voltage_mv(2000)
         sleep(1)
-        supplies.ctx["supplies"]["V1"].voltage_mv(0)
-        supplies.stats.bypass()
+        supplies.ctx["supplies"]["V1"].voltage_mv(2700)
+        sleep(0.5)
+        supplies.stats.get_stats("V1")
+        sleep(5)
+        # supplies.stats.bypass()
+        print("\n")
         sleep(1)
 
 if False:
