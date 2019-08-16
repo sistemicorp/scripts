@@ -24,10 +24,10 @@ GPIO_COMMAND_OUTPUT = 0x01      # register pointer of the output port
 GPIO_COMMAND_POLARITY = 0x02    # register pointer of the polarity port
 GPIO_COMMAND_CONFIG = 0x03      # register pointer of the config port
 
-SAMPLES_1 = 8   # 1 sample taken
-SAMPLES_2 = 9   # 2 samples taken
-SAMPLES_4 = 10  # 4 samples taken
-SAMPLES_8 = 11  # 8 samples taken
+SAMPLES_1 = 8    # 1 sample taken
+SAMPLES_2 = 9    # 2 samples taken
+SAMPLES_4 = 10   # 4 samples taken
+SAMPLES_8 = 11   # 8 samples taken
 SAMPLES_16 = 12  # 16 samples taken
 SAMPLES_32 = 13  # 32 samples taken
 
@@ -129,7 +129,7 @@ class SupplyStats(object):
             set_channel = self.GPIO_LATCH_SET_MASK << self.V3_RELAY_SHIFT | _reg_cache
 
         else:
-            if DEBUG: print("I2C ADDRESS {} : _set_ina_channel: unknown supply channel".format(self.GPIO_RELAY_ADDR))
+            print(DEBUG, "I2C ADDRESS {} : _set_ina_channel: unknown supply channel".format(self.GPIO_RELAY_ADDR))
             return False
 
         # set P6 LOW for the FET bypass helper
@@ -138,7 +138,7 @@ class SupplyStats(object):
         # sleep(0.005)
 
         set_channel &= (~(0x1 << 6) & 0xff)  # keep P6 LOW when relay is set
-        if DEBUG: print("I2C ADDRESS {} : set_channel: {}".format(self.GPIO_RELAY_ADDR, set_channel))
+        print(DEBUG, "I2C ADDRESS {} : set_channel: {}".format(self.GPIO_RELAY_ADDR, set_channel))
         self._GPIO_write(GPIO_COMMAND_CONFIG, set_channel)
         self.led.on()
         sleep(0.005)
@@ -146,7 +146,7 @@ class SupplyStats(object):
         # P6 should be set HIGH again, so the PFET is turned back off, now that the relay has switched
         config_register_p67 = reg_cache & 0xc0 | (0x1 << 6)
         config_reg = config_register_p67 | self.GPIO_CONFIG_ALL_INPUT
-        if DEBUG: print("I2C ADDRESS {} : _set_ina_channel: reset all back to all input {}".format(self.GPIO_RELAY_ADDR, config_reg))
+        print(DEBUG, "I2C ADDRESS {} : _set_ina_channel: reset all back to all input {}".format(self.GPIO_RELAY_ADDR, config_reg))
         self._GPIO_write(GPIO_COMMAND_CONFIG, config_reg)
         return True
 
@@ -163,14 +163,14 @@ class SupplyStats(object):
 
         config_register_p67 = config_reg_cache & 0xc0
         config_reg |= config_register_p67
-        if DEBUG: print("I2C ADDRESS {}: config_reg RESET: {}".format(self.GPIO_RELAY_ADDR, config_reg))
+        print(DEBUG, "I2C ADDRESS {}: config_reg RESET: {}".format(self.GPIO_RELAY_ADDR, config_reg))
 
         self._GPIO_write(GPIO_COMMAND_CONFIG, config_reg)
         sleep(0.5)
         # config = self._GPIO_read(GPIO_COMMAND_CONFIG)
         # print("read_config: {}".format(config))
         config_reg = config_register_p67 | self.GPIO_CONFIG_ALL_INPUT
-        if DEBUG: print("I2C ADDRESS {} : config_reg INPUT: {}".format(self. GPIO_RELAY_ADDR, config_reg))
+        print(DEBUG, "I2C ADDRESS {} : config_reg INPUT: {}".format(self. GPIO_RELAY_ADDR, config_reg))
         self._GPIO_write(GPIO_COMMAND_CONFIG, config_reg)
         return True, None
 
@@ -180,18 +180,17 @@ class SupplyStats(object):
         :param channel: the supply channel under test
         :return: success, current, pg status
         """
-
         # switch the relays as required...
         self._set_ina_channel(channel)
 
         # make the measurements...
         _, voltagelow = self.INA220_LOW.read_shunt_voltage()
         _, voltagehigh = self.INA220_HIGH.read_shunt_voltage()
-        if DEBUG: print("voltage low_mv: {:10.6f}, voltage high_mv: {:10.6f}".format(voltagelow, voltagehigh))
+        print(DEBUG, "voltage low_mv: {:10.6f}, voltage high_mv: {:10.6f}".format(voltagelow, voltagehigh))
 
         success1, high_ina = self.INA220_HIGH.measure_current()
         success2, low_ina = self.INA220_LOW.measure_current()
-        if DEBUG: print("high INA Current:{:10.6f}A, low INA Current:{:10.6f}A".format(high_ina, low_ina))
+        print(DEBUG, "high INA Current:{:10.6f}A, low INA Current:{:10.6f}A".format(high_ina, low_ina))
 
         if success1 and success2:
             _success, pg = supplies.power_good(channel)
@@ -200,19 +199,19 @@ class SupplyStats(object):
                 if self.INA220_MIN < low_ina < self.INA220_HIGH_MAX or \
                         self.INA220_MIN < high_ina < self.INA220_HIGH_MAX:
                     if low_ina < self.INA220_LOW_MAX:
-                        if DEBUG: print("GET_STATS: CURRENT_LOW: {:10.6f}, PG: {}".format(low_ina, pg))
+                        print(DEBUG, "GET_STATS: CURRENT_LOW: {:10.6f}, PG: {}".format(low_ina, pg))
                         return True, {"c_ua": low_ina, "pg": pg}
 
-                    if DEBUG: print("GET_STATS: CURRENT_HIGH: {:10.6f}, PG: {}".format(high_ina, pg))
+                    print(DEBUG, "GET_STATS: CURRENT_HIGH: {:10.6f}, PG: {}".format(high_ina, pg))
                     return True, {"c_ua": high_ina, "pg": pg}
 
-                if DEBUG: print("GET_STATS: CURRENT OUT OF RANGE: {:10.6f}, PG: {}".format(0, pg))
+                print(DEBUG, "GET_STATS: CURRENT OUT OF RANGE: {:10.6f}, PG: {}".format(0, pg))
                 return False, "current out of range"
 
-            if DEBUG: print("GET_STATS: CURRENT: {:10.6f}, PG FAILED: {}".format(0, pg))
+            print(DEBUG, "GET_STATS: CURRENT: {:10.6f}, PG FAILED: {}".format(0, pg))
             return False, {"c_ua": 0, "pg": pg}
 
-        if DEBUG: print("Failed to get measurements")
+        print(DEBUG, "Failed to get measurements")
         return False, "Failed to read measurements"
 
 
@@ -306,12 +305,12 @@ class LDO(object):
 
     def _GPIO_write(self, command, value):
         """ writes to the GPIO expander tha controls the two LDOs
+            intakes the command bits and the value, creates one byte and writes to GPIO
 
         :param command: which command register is being accessed
         :param value: the data being writen
         :return:
         """
-        # intakes the command bits and the value, creates one byte and writes to GPIO
         bytes_write = [command & 0xFF, value & 0xFF]
         bytes_write = bytes(bytearray(bytes_write))
         self._i2c.acquire()
@@ -324,7 +323,6 @@ class LDO(object):
         :param command: which command register is being accessed
         :return: read (int)
         """
-        # intakes the command bits and reads that register on the GPIO
         self._i2c.acquire()
         self._i2c.writeto(self._addr, bytes(bytearray([command & 0xff])))
         read = self._i2c.readfrom(self._addr, 1)
@@ -354,7 +352,7 @@ class LDO(object):
             # print("set register: {}".format())
 
         self._GPIO_write(GPIO_COMMAND_CONFIG, register)
-        if DEBUG: print("I2C ADDRESS {} : {} enable: register: {} -> {}".format(self._addr, self._name, _register, register))
+        print(DEBUG, "I2C ADDRESS {} : {} enable: register: {} -> {}".format(self._addr, self._name, _register, register))
         return True, enable
 
     def get_feedback_resistance(self):
@@ -404,7 +402,7 @@ class LDO(object):
             set_voltage = ~ set_voltage & self.LDO_SET_VOLTAGE_LENGTH
             _voltage_mv = self._GPIO_read(GPIO_COMMAND_CONFIG)
             _voltage_mv = (_voltage_mv & ~ self.LDO_SET_VOLTAGE_LENGTH) | set_voltage
-            if DEBUG: print("voltage_mv : set_voltage: {0:8b}".format(set_voltage))
+            print(DEBUG, "voltage_mv : set_voltage: {0:8b}".format(set_voltage))
 
             self._GPIO_write(GPIO_COMMAND_CONFIG, _voltage_mv)
             sleep(0.1)
@@ -426,11 +424,11 @@ class LDO(object):
         pg_cache = (pg_cache & ~0x7F) & 0xff
         if pg_cache == 0x80:
             # power good
-            if DEBUG: print("I2C ADDRESS {} : power_good status {}". format(self._addr, PG_GOOD))
+            print(DEBUG, "I2C ADDRESS {} : power_good status {}". format(self._addr, PG_GOOD))
             return True, PG_GOOD
 
         # power bad
-        if DEBUG: print("I2C ADDRESS {} : power_good status {}".format(self._addr, PG_BAD))
+        print(DEBUG, "I2C ADDRESS {} : power_good status {}".format(self._addr, PG_BAD))
         return False, PG_BAD
 
 
@@ -510,7 +508,7 @@ if False:
     for i in range(4):
         supplies.ctx["supplies"]["V1"].enable()
         success, n = supplies.stats.INA220_LOW.read_bus_voltage()
-        if DEBUG: print(success, n)
+        print(DEBUG, success, n)
         supplies.stats._set_ina_channel("V1")
         sleep(2)
         supplies.stats.bypass()

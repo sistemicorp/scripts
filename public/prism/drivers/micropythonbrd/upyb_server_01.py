@@ -345,7 +345,7 @@ class MicroPyServer(object):
         samples = args.get("samples", 1)
         sample_ms = args.get("sample_ms", 1)
 
-        #print("DEBUG: test")
+        # print("DEBUG: test")
 
         adc = None
         adc_read = None
