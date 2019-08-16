@@ -316,8 +316,9 @@ class MicroPyServer(object):
         self._ret.put({"method": "set_ldo_voltage", "value": "{} ".format(volt), "success": success})
 
     def power_good(self, args):
-        """
-        checking the status of the power good
+        """ Get the power good from the named supply
+        - this is a blocking call
+
         args:
         :param name: name of the supply
         :return:

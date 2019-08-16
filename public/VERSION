@@ -1,4 +1,4 @@
-prev_commit=144c61104cce5854c79991a3818d04f3885f11a5
-date=2019-08-13 15:36:46 -0400
+prev_commit=bb00926c16f6353f7b82f51663c71b602c61239a
+date=2019-08-15 15:43:44 -0400
 branch=feature/6-WriteFile
-version=scripts-0.1-95-g144c611
+version=scripts-0.1-96-gbb00926

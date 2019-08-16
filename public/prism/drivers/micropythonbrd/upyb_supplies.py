@@ -12,30 +12,30 @@ from upyb_INA220 import INA220
 from time import sleep
 from upyb_i2c import UPYB_I2C, UPYB_I2C_HW_I2C1
 
-CHANNELS = ["V1", "V2", "V3"]
-LDOS = [
+CHANNELS = ["V1", "V2", "V3"]               # possible supply channels supported
+LDOS = [                                    # LDO names and corresponding I2C addresses
     {"name": "V1", "control_addr": 0x18, },
     {"name": "V2", "control_addr": 0x19, },
 ]
 LDOS_V3 = {"name": "V3", "control_addr": 0x1e, }
 
-GPIO_COMMAND_INPUT = 0x00
-GPIO_COMMAND_OUTPUT = 0x01
-GPIO_COMMAND_POLARITY = 0x02
-GPIO_COMMAND_CONFIG = 0x03
+GPIO_COMMAND_INPUT = 0x00       # register pointer of the input port
+GPIO_COMMAND_OUTPUT = 0x01      # register pointer of the output port
+GPIO_COMMAND_POLARITY = 0x02    # register pointer of the polarity port
+GPIO_COMMAND_CONFIG = 0x03      # register pointer of the config port
 
-SAMPLES_1 = 8
-SAMPLES_2 = 9
-SAMPLES_4 = 10
-SAMPLES_8 = 11
-SAMPLES_16 = 12
-SAMPLES_32 = 13
+SAMPLES_1 = 8   # 1 sample taken
+SAMPLES_2 = 9   # 2 samples taken
+SAMPLES_4 = 10  # 4 samples taken
+SAMPLES_8 = 11  # 8 samples taken
+SAMPLES_16 = 12  # 16 samples taken
+SAMPLES_32 = 13  # 32 samples taken
 
-PG_GOOD = "PG_GOOD"
-PG_UNSUPPORTED = "PG_UNSUPPORTED"
-PG_BAD = "PG_BAD"
+PG_GOOD = "PG_GOOD"                 # PG good status
+PG_UNSUPPORTED = "PG_UNSUPPORTED"   # PG unknown status
+PG_BAD = "PG_BAD"                   # vPG bad status
 
-DEBUG = True
+DEBUG = True    # Debug for prints
 
 
 class SupplyStats(object):
@@ -45,28 +45,28 @@ class SupplyStats(object):
     measures on one of the supplies.
 
     """
-    V1_RELAY_SHIFT = 0
-    V2_RELAY_SHIFT = 2
-    V3_RELAY_SHIFT = 4
+    V1_RELAY_SHIFT = 0  # bit location of supply V1 relay controlled by GPIO expander
+    V2_RELAY_SHIFT = 2  # bit location of supply V2 relay controlled by GPIO expander
+    V3_RELAY_SHIFT = 4  # bit location of supply V3 relay controlled by GPIO expander
 
     GPIO_CONFIG_ALL_INPUT = 0x3f   # has the effect of setting p0-p5 to high
     GPIO_LATCH_SET_MASK = 0X02     # b10
     GPIO_LATCH_RESET_MASK = 0x01   # b01
     GPIO_LATCH_CLEAR_MASK = 0x03   # b11
 
-    GPIO_RELAY_ADDR = 30
+    GPIO_RELAY_ADDR = 0x1e    # I2C address of GPIO expander tha controls the relays
 
-    INA220_HIGH_ADDR = 64
-    INA220_LOW_ADDR = 65
+    INA220_HIGH_ADDR = 0x40   # I2C address of INA220 with the high current range (rsense = 0.6)
+    INA220_LOW_ADDR = 0x41    # I2C address of INA220 with the low current range (rsense = 75)
 
-    INA220_LOW_MIN = 0
-    INA220_LOW_MAX = 0.002667
-    INA220_HIGH_MIN = 0
-    INA220_HIGH_MAX = 0.533333
+    INA220_MIN = 0               # the INA220 minimum current measurable
+    INA220_LOW_MAX = 0.002667    # the low range INA220 maximum current measurable
+    INA220_HIGH_MAX = 0.533333   # the High range INA220 maximum current measurable
 
-    INA220_RSENSE_0R6 = 0.6
-    INA220_RSENSE_75 = 75
-    samples = SAMPLES_2
+    INA220_RSENSE_0R6 = 0.6     # high range current INA220 rsense of 0,6 ohms
+    INA220_RSENSE_75 = 75       # low range current INA220 rsense of 75 ohms
+
+    samples = SAMPLES_4  # number of samples the INA220 will take
 
     # etc... from your code...
 
@@ -83,13 +83,24 @@ class SupplyStats(object):
         self.bypass()
 
     def _GPIO_write(self, command, value):
-        bytes_write = [(command) & 0xFF, (value) & 0xFF]
+        """ writes to the GPIO expander that controls the relays
+
+        :param command: which command register is being accessed
+        :param value: the data being written
+        :return:
+        """
+        bytes_write = [command & 0xFF, value & 0xFF]
         bytes_write = bytes(bytearray(bytes_write))
         self._i2c.acquire()
         self._i2c.writeto(self.GPIO_RELAY_ADDR, bytes_write)
         self._i2c.release()
 
     def _GPIO_read(self, command):
+        """ reads from the GPIO expander
+
+        :param command: which command register it is reading from
+        :return: read (int)
+        """
         self._i2c.acquire()
         self._i2c.writeto(self.GPIO_RELAY_ADDR, bytes(bytearray([command & 0xff])))
         read = self._i2c.readfrom(self.GPIO_RELAY_ADDR, 1)
@@ -98,17 +109,22 @@ class SupplyStats(object):
         return ord(read)
 
     def _set_ina_channel(self, channel):
+        """ sets the supply channel by changing the relays
+
+        :param channel: the desired supply channel (V1, V2, V3)
+        :return: success (True/False)
+        """
 
         reg_cache = self._GPIO_read(GPIO_COMMAND_CONFIG)
-        if channel == CHANNELS[0]:   # v1
+        if channel == CHANNELS[0]:   # V1
             _reg_cache = reg_cache & ~(self.GPIO_LATCH_CLEAR_MASK << self.V1_RELAY_SHIFT)
             set_channel = self.GPIO_LATCH_SET_MASK << self.V1_RELAY_SHIFT | _reg_cache
 
-        elif channel == CHANNELS[1]:  # v2
+        elif channel == CHANNELS[1]:  # V2
             _reg_cache = reg_cache & ~(self.GPIO_LATCH_CLEAR_MASK << self.V2_RELAY_SHIFT)
             set_channel = self.GPIO_LATCH_SET_MASK << self.V2_RELAY_SHIFT | _reg_cache
 
-        elif channel == CHANNELS[2]:  # v3
+        elif channel == CHANNELS[2]:  # V3
             _reg_cache = reg_cache & ~(self.GPIO_LATCH_CLEAR_MASK << self.V3_RELAY_SHIFT)
             set_channel = self.GPIO_LATCH_SET_MASK << self.V3_RELAY_SHIFT | _reg_cache
 
@@ -137,7 +153,7 @@ class SupplyStats(object):
     def bypass(self):
         """ Set the INA circuit bypassed
 
-        :return: success
+        :return: success (True/False)
         """
         self.led.off()
         config_reg_cache = self._GPIO_read(GPIO_COMMAND_CONFIG)
@@ -159,9 +175,9 @@ class SupplyStats(object):
         return True, None
 
     def get_stats(self, channel):
-        """
+        """ triggers the IN220 to measure and calculate
 
-        :param name:
+        :param channel: the supply channel under test
         :return: success, current, pg status
         """
 
@@ -181,7 +197,8 @@ class SupplyStats(object):
             _success, pg = supplies.power_good(channel)
 
             if _success:
-                if self.INA220_LOW_MIN < low_ina < self.INA220_HIGH_MAX or self.INA220_LOW_MIN < high_ina < self.INA220_HIGH_MAX:
+                if self.INA220_MIN < low_ina < self.INA220_HIGH_MAX or \
+                        self.INA220_MIN < high_ina < self.INA220_HIGH_MAX:
                     if low_ina < self.INA220_LOW_MAX:
                         if DEBUG: print("GET_STATS: CURRENT_LOW: {:10.6f}, PG: {}".format(low_ina, pg))
                         return True, {"c_ua": low_ina, "pg": pg}
@@ -249,25 +266,25 @@ class V3(object):
 
 class LDO(object):
 
-    LDO_ENABLE_SHIFT = 6
+    LDO_ENABLE_SHIFT = 6    # bit location of the LDOs enable pin
 
-    LDO_VOLTAGE_MIN = 900  # mv
-    LDO_VOLTAGE_MAX = 3500  # mv
-    LDO_SET_VOLTAGE_LENGTH = 0x3f
-    LDO_VOLTAGE_CALIBRATION = 500
-    LDO_VOLTAGE_SET_BIT = 0x1
-    LDO_VOLTAGE_50mv = 50   # LSB of the LDO volt range
-    LDO_VOLTAGE_50mv_SHIFT = 0
-    LDO_VOLTAGE_100mv = 100
-    LDO_VOLTAGE_100mv_SHIFT = 1
-    LDO_VOLTAGE_200mv = 200
-    LDO_VOLTAGE_200mv_SHIFT = 2
-    LDO_VOLTAGE_400mv = 400
-    LDO_VOLTAGE_400mv_SHIFT = 3
-    LDO_VOLTAGE_800mv = 800
-    LDO_VOLTAGE_800mv_SHIFT = 4
-    LDO_VOLTAGE_1600mv = 1600
-    LDO_VOLTAGE_1600mv_SHIFT = 5
+    LDO_VOLTAGE_MIN = 900           # LDO output minimum
+    LDO_VOLTAGE_MAX = 3500          # LDO output maximum
+    LDO_SET_VOLTAGE_LENGTH = 0x3f   # mask of the voltage set pins
+    LDO_VOLTAGE_CALIBRATION = 500   # LDO internal reference voltage
+    LDO_VOLTAGE_SET_BIT = 0x1       # b01
+    LDO_VOLTAGE_50mv = 50           # LSB of the LDO volt range
+    LDO_VOLTAGE_50mv_SHIFT = 0      # register location of the 50mv pin
+    LDO_VOLTAGE_100mv = 100         # voltage value of the 100mv pin
+    LDO_VOLTAGE_100mv_SHIFT = 1     # register location of the 100mv pin
+    LDO_VOLTAGE_200mv = 200         # voltage value of the 200mv pin
+    LDO_VOLTAGE_200mv_SHIFT = 2     # register location of the 200mv pin
+    LDO_VOLTAGE_400mv = 400         # voltage value of the 400mv pin
+    LDO_VOLTAGE_400mv_SHIFT = 3     # register location of the 400mv pin
+    LDO_VOLTAGE_800mv = 800         # voltage value of the 800mv pin
+    LDO_VOLTAGE_800mv_SHIFT = 4     # register location of the 800mv pin
+    LDO_VOLTAGE_1600mv = 1600       # voltage value of the 1600mv pin
+    LDO_VOLTAGE_1600mv_SHIFT = 5    # register location of the 16000mv pin
 
     def __init__(self, i2c, addr, name):
         self._name = name
@@ -276,9 +293,8 @@ class LDO(object):
         self._voltage_mv = 0
         self.led = pyb.LED(3)
 
-
-        # set potenial outputs to their default state of all 0
-        # LDO is conrolled by the GPIO expander
+        # set potential outputs to their default state of all 0
+        # LDO is controlled by the GPIO expander
         self._GPIO_write(GPIO_COMMAND_OUTPUT, 0x00)
 
         # set polarity to its default value
@@ -286,17 +302,28 @@ class LDO(object):
 
         # set all GPIO pins 0-5 and 7 to input, p6 must be set to an output
         # LDO is disable and set to lowest output value
-        self._GPIO_write(GPIO_COMMAND_CONFIG, 0xbf)  # shhould be 0xBF?
+        self._GPIO_write(GPIO_COMMAND_CONFIG, 0xbf)
 
     def _GPIO_write(self, command, value):
+        """ writes to the GPIO expander tha controls the two LDOs
+
+        :param command: which command register is being accessed
+        :param value: the data being writen
+        :return:
+        """
         # intakes the command bits and the value, creates one byte and writes to GPIO
-        bytes_write = [(command) & 0xFF, (value) & 0xFF]
+        bytes_write = [command & 0xFF, value & 0xFF]
         bytes_write = bytes(bytearray(bytes_write))
         self._i2c.acquire()
         self._i2c.writeto(self._addr, bytes_write)
         self._i2c.release()
 
     def _GPIO_read(self, command):
+        """ reads from the GPIO expander that conrols the two LDOs
+
+        :param command: which command register is being accessed
+        :return: read (int)
+        """
         # intakes the command bits and reads that register on the GPIO
         self._i2c.acquire()
         self._i2c.writeto(self._addr, bytes(bytearray([command & 0xff])))
@@ -374,20 +401,19 @@ class LDO(object):
                 set_voltage |= (self.LDO_VOLTAGE_SET_BIT << self.LDO_VOLTAGE_50mv_SHIFT) & self.LDO_SET_VOLTAGE_LENGTH
                 voltage_mv -= self.LDO_VOLTAGE_50mv
 
-            set_voltage = ~ (set_voltage) & self.LDO_SET_VOLTAGE_LENGTH
+            set_voltage = ~ set_voltage & self.LDO_SET_VOLTAGE_LENGTH
             _voltage_mv = self._GPIO_read(GPIO_COMMAND_CONFIG)
             _voltage_mv = (_voltage_mv & ~ self.LDO_SET_VOLTAGE_LENGTH) | set_voltage
             if DEBUG: print("voltage_mv : set_voltage: {0:8b}".format(set_voltage))
-            if DEBUG: print("voltage_mv : _voltage_mv : {0:8b}".format(_voltage_mv))
-            # self.led.on()
+
             self._GPIO_write(GPIO_COMMAND_CONFIG, _voltage_mv)
             sleep(0.1)
-            # self.led.off()
             success, pg_status = self.power_good()
+
             if success:
                 return success, set_voltage
             return success, "PG failure"
-        if DEBUG: print("I2C ADDRESS {} : voltage_mv: selected voltage is not supported, {}".format(self._addr, voltage_mv))
+        # if DEBUG: print("I2C ADDRESS {} : voltage_mv: selected voltage is not supported, {}".format(self._addr, voltage_mv))
         return False, "selected voltage is not supported"
 
     def power_good(self):
@@ -454,7 +480,7 @@ class Supplies(object):
         return self.stats.get_stats(supply)
 
     def power_good(self, name):
-        """
+        """ Gets the power good pin status
 
         :param name:
         :return: success, status
@@ -474,7 +500,7 @@ class Supplies(object):
 
 # Test code
 if False:
-
+    # sets supply channel and put INA220 circuit in bypass
     i2c = machine.I2C("X", freq=400000)
     # i2c = UPYB_I2C()
     # i2c.init(UPYB_I2C_HW_I2C1)
@@ -492,6 +518,7 @@ if False:
         sleep(1)
 
 if True:
+    # sets LDO voltage and reads current from INA220
     UPYB_I2C_HW_I2C1 = "X"
     i2c = UPYB_I2C(UPYB_I2C_HW_I2C1)
     # success, message = i2c.init(UPYB_I2C_HW_I2C1)
@@ -510,6 +537,7 @@ if True:
         sleep(1)
 
 if False:
+    # checks the entire range of the LDO adjustable output
     UPYB_I2C_HW_I2C1 = "X"
     i2c = UPYB_I2C(UPYB_I2C_HW_I2C1)
     # success, message = i2c.init(UPYB_I2C_HW_I2C1)
