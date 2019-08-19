@@ -55,6 +55,7 @@ def parse_args():
     misc_parser.add_argument('-a', "--all", dest="all", action='store_true', help='run all tests sequentially', default=False, required=False)
     misc_parser.add_argument('--100', dest="t100", action='store_true', help='unique id', default=False, required=False)
     misc_parser.add_argument('--200', dest="t200", action='store_true', help='pyboard server version', default=False, required=False)
+    misc_parser.add_argument('--300', dest="t300", action='store_true', help='reset', default=False, required=False)
 
     supplies_parser = subp.add_parser('supplies')
     supplies_parser.add_argument('-a', "--all", dest="all", action='store_true', help='run all tests sequentially',
@@ -319,6 +320,14 @@ def test_misc(args, pyb):
         did_something = True
         logging.info("T200: Reading version...")
         success, result = pyb.version()
+        logging.info("{} {}".format(success, result))
+
+        if _success and not success: _success = False
+
+    if all or args.t300:
+        did_something = True
+        logging.info("T300: Resetting...")
+        success, result = pyb.reset()
         logging.info("{} {}".format(success, result))
 
         if _success and not success: _success = False

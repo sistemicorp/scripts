@@ -89,6 +89,7 @@ class MicroPyServer(object):
 
         self._debug_flag = debug
 
+
     # ===================================================================================
     # Public API to send commands and get results from the MicroPy Server
     # NOTE: "results" must be print()'ed to be return values on the serial (repl) port
@@ -352,6 +353,11 @@ class MicroPyServer(object):
             self.ctx["gpio"][name].high()
         else:
             self.ctx["gpio"][name].low()
+
+    def reset(self):
+        res = ""
+        self.supplies.reset()
+        self._ret.put({"method": "reset", "value": res, "success": True})
 
     def set_ldo_voltage(self, args):
         """

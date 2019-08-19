@@ -293,6 +293,10 @@ class pyboard2(pyboard.Pyboard):
         c = {'method': 'adc_read_multi', 'args': {'pins': pins, 'samples': samples, 'freq': freq}}
         return self._verify_single_cmd_ret(c)
 
+    def reset(self):
+        c = {'method': 'reset', 'args': {}}
+        return self._verify_single_cmd_ret(c)
+
     def set_ldo_voltage(self, name, voltage_mv):
         """ set LDO voltage
 

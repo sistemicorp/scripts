@@ -103,10 +103,10 @@ class INA220(object):
         self.write_word(self.INA220_CONFIG, val)
         config_mode = self.read_config()
         if config_mode == self.config_register:
-            print(DEBUG, "{}: Successfully Configured".format(self.name))
+            # print(DEBUG, "{}: Successfully Configured".format(self.name))
             return True
 
-        print(DEBUG, "set_config: error failed to set correct config: {}".format(config_mode))
+        # print(DEBUG, "set_config: error failed to set correct config: {}".format(config_mode))
         return False
 
     def write_word(self, reg_addr, val):
@@ -154,13 +154,17 @@ class INA220(object):
         # print("read_config: {:04X}".format(read_config))
         mode = read_config & self.INA220_CONFIG_MODE_MASK
         if mode == self.INA220_CONFIG_MODE_SANDBVOLT_CONTINUOUS:
-            print(DEBUG, "{}: Set to continuous mode shunt and voltage mode".format(self.name))
+            pass
+            # print(DEBUG, "{}: Set to continuous mode shunt and voltage mode".format(self.name))
         elif mode == self.INA220_CONFIG_MODE_SANDBVOLT_TRIGGERED:
-            print(DEBUG, "{}: Set to triggered shunt and voltage mode".format(self.name))
+            pass
+            # print(DEBUG, "{}: Set to triggered shunt and voltage mode".format(self.name))
         elif mode == self.INA220_CONFIG_MODE_SVOLT_TRIGGERED:
-            print(DEBUG, "{}: Set to triggered shunt voltage mode".format(self.name))
+            pass
+            # print(DEBUG, "{}: Set to triggered shunt voltage mode".format(self.name))
         else:
-            print(DEBUG, "{}: unknown mode: {}".format(self.name, mode))
+            pass
+            # print(DEBUG, "{}: unknown mode: {}".format(self.name, mode))
 
     def reset(self):
         """ resets the config register
@@ -242,5 +246,5 @@ class INA220(object):
         success, voltage = self.read_shunt_voltage()
         current = (voltage / self.rsense)
         # print("measure_current: MODE: {:08x}".format(self.read_config()))
-        print(DEBUG, "{} : the current:{:10.6f}".format(self.name, current))
+        # print(DEBUG, "{} : the current:{:10.6f}".format(self.name, current))
         return success, current
