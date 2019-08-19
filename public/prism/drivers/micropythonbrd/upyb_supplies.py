@@ -35,7 +35,7 @@ PG_GOOD = "PG_GOOD"                 # PG good status
 PG_UNSUPPORTED = "PG_UNSUPPORTED"   # PG unknown status
 PG_BAD = "PG_BAD"                   # vPG bad status
 
-DEBUG = True    # Debug for prints
+DEBUG = False    # Debug for prints
 
 
 class SupplyStats(object):
