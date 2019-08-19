@@ -38,7 +38,7 @@ class MicroPyQueue(object):
 
             items = []
             for idx, item in enumerate(self.items):
-                if item["method"] == method:
+                if item["method"] == method or item["method"] == "_debug":
                     items.append(self.items.pop(idx))
                     if not all:
                         break

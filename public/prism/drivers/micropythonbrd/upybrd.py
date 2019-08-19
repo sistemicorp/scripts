@@ -26,7 +26,6 @@ class pyboard2(pyboard.Pyboard):
     to make it more script friendly
 
     """
-
     LED_RED    = 1
     LED_GREEN  = 2
     LED_YELLOW = 3
@@ -100,21 +99,18 @@ class pyboard2(pyboard.Pyboard):
             #print("A: {}".format(ret))
             if ret:
                 pyb_str = ret.decode("utf-8")
-                if pyb_str.startswith("DEBUG"):
-                    self.logger.info(pyb_str)
 
-                else:
-                    # expecting a JSON like dict object in string format, convert this string JSON to python dict
-                    # fix bad characters...
-                    fixed_string = pyb_str.replace("'", '"').replace("True", "true").replace("False", "false").replace("None", "null")
-                    try:
-                        self.logger.info(fixed_string.strip())
-                        items = json.loads(fixed_string)
-                    except Exception as e:
-                        self.logger.error(e)
-                        return False, []
+                # expecting a JSON like dict object in string format, convert this string JSON to python dict
+                # fix bad characters...
+                fixed_string = pyb_str.replace("'", '"').replace("True", "true").replace("False", "false").replace("None", "null")
+                try:
+                    self.logger.debug(fixed_string.strip())
+                    items = json.loads(fixed_string)
+                except Exception as e:
+                    self.logger.error(e)
+                    return False, []
 
-                    return True, items
+                return True, items
 
             return True, []
 
@@ -130,13 +126,13 @@ class pyboard2(pyboard.Pyboard):
 
         cmds = []
         c = str(cmd_dict)
-        cmds.append("upyb_server_01.server.cmd({})".format(c))
+        cmds.append("upyb_server.server.cmd({})".format(c))
         success, result = self.server_cmd(cmds, repl_enter=False, repl_exit=False)
         if not success:
             self.logger.error("{} {}".format(success, result))
             return success, result
 
-        cmds = ["upyb_server_01.server.ret(method='{}')".format(method)]
+        cmds = ["upyb_server.server.ret(method='{}')".format(method)]
 
         # it is assumed the command sent will post a return, with success set
         retry = 5
@@ -144,9 +140,12 @@ class pyboard2(pyboard.Pyboard):
         while retry and not succeeded:
             time.sleep(delay_poll_ms / 1000)
             success, result = self.server_cmd(cmds, repl_enter=False, repl_exit=False)
-            self.logger.info("{} {}".format(success, result))
+            self.logger.debug("{} {}".format(success, result))
             if success:
                 for r in result:
+                    if r.get("method", False) == "_debug":
+                        self.logger.info("PYBOARD DEBUG: {}".format(r["value"]))
+                        retry += 1  # debug lines don't count against retrying
                     if r.get("method", False) == method:
                         succeeded = True
             else:
@@ -168,13 +167,21 @@ class pyboard2(pyboard.Pyboard):
     # these are the important functions
 
     def start_server(self):
-        cmds = ["import upyb_server_01"]
+        cmds = ["import upyb_server"]
         success, result = self.server_cmd(cmds, repl_exit=False)
         self.logger.info("{} {}".format(success, result))
         return success, result
 
     def unique_id(self):
         c = {'method': 'unique_id', 'args': {}}
+        return self._verify_single_cmd_ret(c)
+
+    def version(self):
+        c = {'method': 'version', 'args': {}}
+        return self._verify_single_cmd_ret(c)
+
+    def debug(self, enable=True):
+        c = {'method': 'debug', 'args': {"enable": enable}}
         return self._verify_single_cmd_ret(c)
 
     def get_server_method(self, method, all=False):
@@ -185,7 +192,7 @@ class pyboard2(pyboard.Pyboard):
         :param all: set True for all the return messages
         :return: success, result
         """
-        cmds = ["upyb_server_01.server.ret(method='{}', all='{}')".format(method, all)]
+        cmds = ["upyb_server.server.ret(method='{}', all='{}')".format(method, all)]
         retry = 5
         succeeded = False
         while retry and not succeeded:
@@ -214,7 +221,7 @@ class pyboard2(pyboard.Pyboard):
         :param all: set True for all the return messages
         :return:
         """
-        cmds = ["upyb_server_01.server.peek(method='{}', all='{}')".format(method, all)]
+        cmds = ["upyb_server.server.peek(method='{}', all='{}')".format(method, all)]
         retry = 5
         succeeded = False
         while retry and not succeeded:

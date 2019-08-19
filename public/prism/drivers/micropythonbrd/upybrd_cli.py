@@ -198,6 +198,8 @@ def parse_args():
     Usage examples:
     1) List all MicroPython boards attached to the system,
        python3 upybrd_cli.py --list      
+    2) Copy file to MicroPython boards,
+       python3 upybrd_cli.py -p /dev/ttyACM0 --copy upyb_i2c.py
     """
     parser = argparse.ArgumentParser(description='upybrd',
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
