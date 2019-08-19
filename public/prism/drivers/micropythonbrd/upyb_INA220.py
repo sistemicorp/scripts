@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import upyb_i2c
 from time import sleep
 DEBUG = False   # Debug for prints
 
@@ -16,7 +15,7 @@ class INA220(object):
     INA220_CONFIG_RESET_VALUE = 0x399F          # register value to set INA220 to default settings
     INA220_SHUNT_CONVERSION_FACTOR = 0.000010   # LSB of the INA220 shunt voltage register
 
-    def __init__(self, i2c, i2c_addr, rsense, name, samples):
+    def __init__(self, i2c, i2c_addr, rsense, name, samples,):
 
         self.INA220_ADDRESS = i2c_addr
         self.rsense = rsense

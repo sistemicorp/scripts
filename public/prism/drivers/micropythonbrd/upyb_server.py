@@ -83,7 +83,7 @@ class MicroPyServer(object):
         self.ctx["i2c1"] = upyb_i2c.UPYB_I2C("X", self._debug)
 
         try:
-            self.supplies = upyb_supplies.Supplies(self.ctx["i2c1"])
+            self.supplies = upyb_supplies.Supplies(self.ctx["i2c1"], self._debug)
         except Exception as e:
             self._debug("ERROR: {}".format(e), 88)
 
@@ -201,7 +201,7 @@ class MicroPyServer(object):
         :param args: not used
         :return: self.VERSION
         """
-        self._debug("testing message", 202)
+        self._debug("testing message", 204)
         self._ret.put({"method": "version", "value": self.VERSION, "success": True})
 
     def _toggle_led(self, led, on_ms, off_ms, once=False):
@@ -354,7 +354,12 @@ class MicroPyServer(object):
         else:
             self.ctx["gpio"][name].low()
 
-    def reset(self):
+    def reset(self, args):
+        """ reset the I2C devices to default states
+
+        args: None
+        :return:
+        """
         res = ""
         self.supplies.reset()
         self._ret.put({"method": "reset", "value": res, "success": True})
@@ -370,7 +375,7 @@ class MicroPyServer(object):
         name = args.get("name", None)
         voltage_mv = args.get("voltage_mv", -1)
         success, volt = self.supplies.set_voltage_mv(name, voltage_mv)
-        self._ret.put({"method": "set_ldo_voltage", "value": "{} ".format(volt), "success": success})
+        self._ret.put({"method": "set_ldo_voltage", "value": "{}".format(volt), "success": success})
 
     def power_good(self, args):
         """ Get the power good from the named supply

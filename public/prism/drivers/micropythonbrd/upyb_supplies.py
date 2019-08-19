@@ -37,6 +37,8 @@ PG_BAD = "PG_BAD"                   # vPG bad status
 
 DEBUG = False    # Debug for prints
 
+_DEBUG_FILE = "upyb_supplies"
+
 
 class SupplyStats(object):
     """
@@ -45,6 +47,7 @@ class SupplyStats(object):
     measures on one of the supplies.
 
     """
+
     V1_RELAY_SHIFT = 0  # bit location of supply V1 relay controlled by GPIO expander
     V2_RELAY_SHIFT = 2  # bit location of supply V2 relay controlled by GPIO expander
     V3_RELAY_SHIFT = 4  # bit location of supply V3 relay controlled by GPIO expander
@@ -70,15 +73,17 @@ class SupplyStats(object):
 
     # etc... from your code...
 
-    def __init__(self, i2c):
+    def __init__(self, i2c,):
 
         self._i2c = i2c
         self.led = pyb.LED(2)
         self.INA220_LOW = INA220(self._i2c, self.INA220_LOW_ADDR,  self.INA220_RSENSE_75, "LOW", self.samples)
         self.INA220_HIGH = INA220(self._i2c, self.INA220_HIGH_ADDR, self.INA220_RSENSE_0R6, "HIGH", self.samples)
 
+
     def reset(self):
-        """set INA220 and relatys to known state
+        """set INA220 and relays to known state
+            put the INA220 circuit into the bypass state (toggle the relays)
 
         :return:
         """
@@ -230,9 +235,9 @@ class V3(object):
     OUTPUT_VOLTAGE_MV = 12000
     FEEDBACK_RESISTANCE = 10000
 
-    def __init__(self, i2c, addr, name="V3"):
-        # disable on init
-        pass
+    def __init__(self, i2c, addr, name="V3", debug_print=None):
+        self._debug = debug_print
+        if self._debug: self._debug("init finished", 240, file=_DEBUG_FILE)
 
     def reset(self):
         pass
@@ -261,7 +266,7 @@ class V3(object):
         """
         if voltage_mv == self.OUTPUT_VOLTAGE_MV:
             return True, voltage_mv
-        return False, voltage_mv
+        return False, "cannot set a voltage manually"
 
     def power_good(self):
         """ Return the PG pin status
@@ -293,15 +298,19 @@ class LDO(object):
     LDO_VOLTAGE_1600mv = 1600       # voltage value of the 1600mv pin
     LDO_VOLTAGE_1600mv_SHIFT = 5    # register location of the 16000mv pin
 
-    def __init__(self, i2c, addr, name):
+    def __init__(self, i2c, addr, name, debug_print=None):
         self._name = name
         self._i2c = i2c
         self._addr = addr
         self._voltage_mv = 0
         self.led = pyb.LED(3)
 
+        self._debug = debug_print
+        if self._debug: self._debug("init finished", 309, file=_DEBUG_FILE)
+
     def reset(self):
         """ puts the LDOs into a known state
+            Writes to the GPIO expander which controls the LDOs
 
         :return:
         """
@@ -356,16 +365,13 @@ class LDO(object):
         # set the LDO control pins via the I2C GPIO mux
         # config pins 0-5 to be outputs
         _register = self._GPIO_read(GPIO_COMMAND_CONFIG)
-        # print("starting register: {}".format(_register))
         if enable:
             register = _register | (0x01 << self.LDO_ENABLE_SHIFT)
-            # print("set register: {}".format())
         else:
             register = _register & ~(0x01 << self.LDO_ENABLE_SHIFT)
-            # print("set register: {}".format())
 
+        if self._debug: self._debug("I2C ADDRESS {} : {} enable: register: {} -> {}".format(self._addr, self._name, _register, register))
         self._GPIO_write(GPIO_COMMAND_CONFIG, register)
-        # print(DEBUG, "I2C ADDRESS {} : {} enable: register: {} -> {}".format(self._addr, self._name, _register, register))
         return True, enable
 
     def get_feedback_resistance(self):
@@ -383,7 +389,7 @@ class LDO(object):
         :return: success, voltage_mv
         """
         # validate voltage_mv, check range, and divisible by 50 mV
-        if self.LDO_VOLTAGE_MIN <= voltage_mv <= self.LDO_VOLTAGE_MAX and voltage_mv % self.LDO_VOLTAGE_50mv == 0:
+        if self.LDO_VOLTAGE_MIN <= voltage_mv <= self.LDO_VOLTAGE_MAX and (voltage_mv % self.LDO_VOLTAGE_50mv) == 0:
             self._voltage = voltage_mv
             # set the LDO control pins via the I2C GPIO mux
             set_voltage = 0
@@ -412,10 +418,9 @@ class LDO(object):
                 set_voltage |= (self.LDO_VOLTAGE_SET_BIT << self.LDO_VOLTAGE_50mv_SHIFT) & self.LDO_SET_VOLTAGE_LENGTH
                 voltage_mv -= self.LDO_VOLTAGE_50mv
 
-            set_voltage = ~ set_voltage & self.LDO_SET_VOLTAGE_LENGTH
+            set_voltage = ~set_voltage & self.LDO_SET_VOLTAGE_LENGTH
             _voltage_mv = self._GPIO_read(GPIO_COMMAND_CONFIG)
             _voltage_mv = (_voltage_mv & ~ self.LDO_SET_VOLTAGE_LENGTH) | set_voltage
-            # print(DEBUG, "voltage_mv : set_voltage: {0:8b}".format(set_voltage))
 
             self._GPIO_write(GPIO_COMMAND_CONFIG, _voltage_mv)
             sleep(0.1)
@@ -423,8 +428,11 @@ class LDO(object):
 
             if success:
                 return success, set_voltage
+
             return success, "PG failure"
-        # if DEBUG: print("DEBUG: I2C ADDRESS {} : voltage_mv: selected voltage is not supported, {}".format(self._addr, voltage_mv))
+
+        if self._debug: self._debug("I2C ADDRESS {} : voltage_mv: selected voltage is not supported, {}".format(self._addr, voltage_mv))
+
         return False, "selected voltage is not supported"
 
     def power_good(self):
@@ -447,22 +455,27 @@ class LDO(object):
 
 class Supplies(object):
 
-    def __init__(self, i2c):
+    def __init__(self, i2c, debug_print=None):
         self.i2c = i2c
         self.ctx = {
             "supplies": {},  # supply objects, key'd on name
         }
 
+        self._debug = debug_print
+
         # init LDOs
         for ldo in LDOS:
             name = ldo["name"]
             i2c_addr = ldo["control_addr"]
-            self.ctx["supplies"][name] = LDO(self.i2c, i2c_addr, name)
+            self.ctx["supplies"][name] = LDO(self.i2c, i2c_addr, name, debug_print)
 
         # init special V3 case
-        self.ctx["supplies"]["V3"] = V3(self.i2c, LDOS_V3["name"], LDOS_V3["control_addr"])
+        self.ctx["supplies"]["V3"] = V3(self.i2c, LDOS_V3["name"], LDOS_V3["control_addr"], debug_print)
 
         self.stats = SupplyStats(self.i2c)
+
+        if self._debug: self._debug("init finished", 482, file=_DEBUG_FILE)
+
 
     def reset(self):
         """reset all I2C devices to default/known state

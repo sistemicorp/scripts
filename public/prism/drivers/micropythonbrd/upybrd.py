@@ -294,6 +294,10 @@ class pyboard2(pyboard.Pyboard):
         return self._verify_single_cmd_ret(c)
 
     def reset(self):
+        """ Reset the I2C devices to a known/default state
+
+        :return:
+        """
         c = {'method': 'reset', 'args': {}}
         return self._verify_single_cmd_ret(c)
 
