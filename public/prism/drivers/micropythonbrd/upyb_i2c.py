@@ -5,6 +5,7 @@ from machine import I2C
 
 UPYB_I2C_HW_I2C1 = "X"   # on X9/10
 UPYB_I2C_HW_I2C2 = "Y"   # on Y9/10
+__DEBUG_FILE = "upyb_i2c"
 
 
 class UPYB_I2C(I2C):
@@ -21,7 +22,7 @@ class UPYB_I2C(I2C):
     """
     I2C_HW_IDs = [UPYB_I2C_HW_I2C1, UPYB_I2C_HW_I2C2]
 
-    def __init__(self, freq=400000):
+    def __init__(self, freq=400000, debug_print=None):
         """
         - see http://docs.micropython.org/en/latest/pyboard/quickref.html#i2c-bus
         - note that we want to use HW I2C, not software emulated, so have id=1 for X10/X9, and
@@ -31,6 +32,8 @@ class UPYB_I2C(I2C):
         # this function defaults to "X" this board does not support "Y"
         super().__init__(freq)
         self.lock = _thread.allocate_lock()
+        self._debug = debug_print
+        if self._debug: self._debug("init complete", file=__DEBUG_FILE)
 
     def acquire(self):
         return self.lock.acquire()

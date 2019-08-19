@@ -411,7 +411,7 @@ class LDO(object):
             if success:
                 return success, set_voltage
             return success, "PG failure"
-        # if DEBUG: print("I2C ADDRESS {} : voltage_mv: selected voltage is not supported, {}".format(self._addr, voltage_mv))
+        # if DEBUG: print("DEBUG: I2C ADDRESS {} : voltage_mv: selected voltage is not supported, {}".format(self._addr, voltage_mv))
         return False, "selected voltage is not supported"
 
     def power_good(self):
@@ -515,7 +515,7 @@ if False:
         supplies.ctx["supplies"]["V1"].enable(False)
         sleep(1)
 
-if True:
+if False:
     # sets LDO voltage and reads current from INA220
     UPYB_I2C_HW_I2C1 = "X"
     i2c = UPYB_I2C(UPYB_I2C_HW_I2C1)

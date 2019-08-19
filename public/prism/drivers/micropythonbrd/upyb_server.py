@@ -10,6 +10,7 @@ import upyb_supplies
 import machine
 
 micropython.alloc_emergency_exception_buf(100)
+__DEBUG_FILE = "upyb_server"
 
 
 class MicroPyServer(object):
@@ -29,7 +30,17 @@ class MicroPyServer(object):
 
     ret: Are in this format: {"method": <class_method>, "value": <value>}
 
+    Notes:
+        1) you cannot use print() when using this outside of the REPL.
+           Instead, use the self._debug() API.
+
+        2) debug new code with rshell/REPL.  'import upyb_server'
+           and then execute commands,
+               >>> upyb_server.server.cmd({'method': 'version', 'args': {}})
+               >>> upyb_server.server.ret(method='version')
+
     """
+    VERSION = "0.1"
     SERVER_CMD_SLEEP_MS = 100  # polling time for processing new commands
 
     LED_RED    = 1
@@ -49,10 +60,11 @@ class MicroPyServer(object):
     JIG_CLOSED_TIMER_FREQ = 1  # Hz
     JIG_CLOSED_PIN = "X1"
 
-    def __init__(self):
+    def __init__(self, debug=False):
         self.lock = _thread.allocate_lock()
         self._cmd = upyb_queue.MicroPyQueue()
         self._ret = upyb_queue.MicroPyQueue()
+        self._debug_flag = True  # set True to catch any class init errors
 
         # use dict to store static data
         self.ctx = {'a': 0,                # dummy for testing
@@ -68,10 +80,14 @@ class MicroPyServer(object):
         self._isr_jig_closed_detect_ref = self._jig_closed_detect # used to create memory before ISR
 
         # init I2C (1) on X9/10
-        self.ctx["i2c1"] = upyb_i2c.UPYB_I2C("X")
+        self.ctx["i2c1"] = upyb_i2c.UPYB_I2C("X", self._debug)
 
-        self.supplies = upyb_supplies.Supplies(self.ctx["i2c1"])
+        try:
+            self.supplies = upyb_supplies.Supplies(self.ctx["i2c1"])
+        except Exception as e:
+            self._debug("ERROR: {}".format(e), 88)
 
+        self._debug_flag = debug
 
     # ===================================================================================
     # Public API to send commands and get results from the MicroPy Server
@@ -101,6 +117,12 @@ class MicroPyServer(object):
             return True
 
     def ret(self, method=None, all=False):
+        """ return result(s) of command
+
+        :param method: string, if specified, only results of that command are returned
+        :param all: is set True, will return all commands, otherwise only ONE return result is retrieved
+        :return:
+        """
         with self.lock:
             _ret = self._ret.get(method)
             print(_ret)
@@ -134,13 +156,23 @@ class MicroPyServer(object):
             # allows other threads to run, but generally speaking there should be no other threads(?)
             time.sleep_ms(self.SERVER_CMD_SLEEP_MS)
 
+    def _debug(self, msg, line=0, file=__DEBUG_FILE):
+        """ Add debug statement
+
+        :param msg:
+        :param line:
+        :return:
+        """
+        if self._debug_flag:
+            self._ret.put({"method": "_debug", "value": "{:20}:{:4}: {}".format(file, line, msg), "success": True})
+
     # ===================================================================================
     # Methods
     # NOTES:
     # 1. !! DON'T access public API, ret/peek/update/cmd, functions, access the queue's directly
     #    Else probably get into a lock lockup
 
-    def unique_id(self, _):
+    def unique_id(self, args):
         """ Get the Unique ID of the Micro Pyboard
 
         args: None
@@ -151,6 +183,25 @@ class MicroPyServer(object):
         for b in id_bytes:
             res += "%02x" % b
         self._ret.put({"method": "unique_id", "value": res, "success": True})
+
+    def debug(self, args):
+        """ enable debugging
+
+        args: { 'enable': True/False }
+        :param enable: boolean
+        :return: self.VERSION
+        """
+        self._debug_flag = args.get("enable", False)
+        self._ret.put({"method": "debug", "value": self._debug_flag, "success": True})
+
+    def version(self, args):
+        """ version
+
+        :param args: not used
+        :return: self.VERSION
+        """
+        self._debug("testing message", 202)
+        self._ret.put({"method": "version", "value": self.VERSION, "success": True})
 
     def _toggle_led(self, led, on_ms, off_ms, once=False):
         thread_name = "led{}".format(led)

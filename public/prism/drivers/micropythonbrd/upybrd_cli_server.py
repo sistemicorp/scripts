@@ -32,6 +32,7 @@ def parse_args():
     parser.add_argument("-a", '--all', dest='all_funcs', default=0, action='store_true', help='run all tests')
 
     parser.add_argument("-v", '--verbose', dest='verbose', default=0, action='count', help='Increase verbosity')
+    parser.add_argument("-d", '--debug', dest='debug', default=False, action='store_true', help='Enable debug prints on pyboard')
     parser.add_argument("--version", dest="show_version", action='store_true', help='Show version and exit')
 
     subp = parser.add_subparsers(dest="_cmd", help='commands')
@@ -53,6 +54,7 @@ def parse_args():
     misc_parser = subp.add_parser('misc')
     misc_parser.add_argument('-a', "--all", dest="all", action='store_true', help='run all tests sequentially', default=False, required=False)
     misc_parser.add_argument('--100', dest="t100", action='store_true', help='unique id', default=False, required=False)
+    misc_parser.add_argument('--200', dest="t200", action='store_true', help='pyboard server version', default=False, required=False)
 
     supplies_parser = subp.add_parser('supplies')
     supplies_parser.add_argument('-a', "--all", dest="all", action='store_true', help='run all tests sequentially',
@@ -313,6 +315,14 @@ def test_misc(args, pyb):
 
         if _success and not success: _success = False
 
+    if all or args.t200:
+        did_something = True
+        logging.info("T200: Reading version...")
+        success, result = pyb.version()
+        logging.info("{} {}".format(success, result))
+
+        if _success and not success: _success = False
+
     if did_something: return _success
     else: logging.error("No Tests were specified")
     return False
@@ -324,18 +334,26 @@ if __name__ == '__main__':
 
     pyb = None
     if args.verbose == 0:
-        logging.basicConfig(level=logging.INFO, format='%(levelname)6s %(lineno)4s %(message)s')
-        pyb = pyboard2(args.port)
-
+        logging.basicConfig(level=logging.INFO, format='%(filename)20s %(levelname)6s %(lineno)4s %(message)s')
     else:
-        logging.basicConfig(level=logging.DEBUG, format='%(levelname)6s %(lineno)4s %(message)s')
-        pyb = pyboard2(args.port, loggerIn=logging) # verbose version
+        logging.basicConfig(level=logging.DEBUG, format='%(filename)20s %(levelname)6s %(lineno)4s %(message)s')
+
+    pyb = pyboard2(args.port, loggerIn=logging)
 
     success, result = pyb.start_server()
     if not success:
         logging.error("Unable to start server")
         pyb.close()
         exit(1)
+
+    if args.debug:
+        logging.info("Debug: enabling...")
+        success, result = pyb.debug()
+        logging.info("{} {}".format(success, result))
+        if not success:
+            logging.error("Failed to set debug mode")
+            pyb.close()
+            exit(1)
 
     if args._cmd == 'led_toggle' or all_funcs:
         success = test_led_toggle(args, pyb)
