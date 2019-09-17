@@ -9,8 +9,7 @@ import logging
 import time
 from core.test_item import TestItem
 from public.prism.api import ResultAPI
-from public.prism.drivers.micropythonbrd.upybrd import MicroPyBrd
-
+#import ampy.files as files  # see this for file stuff
 
 # file and class name must match
 class pybrd00xx(TestItem):
@@ -20,7 +19,7 @@ class pybrd00xx(TestItem):
 
     def __init__(self, controller, chan, shared_state):
         super().__init__(controller, chan, shared_state)
-        self.logger = logging.getLogger("SC.{}.{}".format(__name__, self.chan))
+        self.logger = logging.getLogger("SC.pybrd00xx.{}".format(self.chan))
 
         self.pyb = None
         self.pyb_port = None
@@ -50,23 +49,27 @@ class pybrd00xx(TestItem):
         _, _, _bullet = ctx.record.measurement("pyboard_id", id, ResultAPI.UNIT_INT)
         self.log_bullet(_bullet)
 
-        self.pyb = MicroPyBrd(loggerIn=self.logger)
+        self.pyb = driver["obj"]["pyb"]
 
         self.item_end()  # always last line of test
 
     def PYBRD0xxTRDN(self):
         ctx = self.item_start()  # always first line of test
-
+        self.pyb.close()
         self.item_end()  # always last line of test
 
     def PYBRD0010_LedToggle(self):
         """ In this test the user confirms if the LED under test blinked
         (this is also an example of one test item being run multiple times
         with different arguments)
+
+        {"id": "PYBRD0010_LedToggle",     "enable": true, "lednum": 2, "ontime_ms": 300 },
+
+        where,
+           lednum: 1=red, 2=green, 3=yellow, 4=blue
+
         """
         ctx = self.item_start()  # always first line of test
-
-        self.pyb.open(self.pyb_port)
 
         # 1=red, 2=green, 3=yellow, 4=blue
         LED_COLORS = ["Red", "Green", "Yellow", "Blue"]
@@ -76,27 +79,17 @@ class pybrd00xx(TestItem):
 
         self.log_bullet("Watch which color Led blinks...")
 
-        cmds = [ "import time, pyb",
-                 "def led_cycle():",
-                 " try:",
-                 "  while True:",
-                 "   pyb.LED({}).on()".format(lednum),
-                 "   time.sleep_ms({})".format(ontime_ms),
-                 "   pyb.LED({}).off()".format(lednum),
-                 "   time.sleep_ms({})".format(ontime_ms),
-                 " finally:",
-                 "  pyb.LED({}).off()".format(lednum),
-                 "",
-                 "",
-                 "",
-                 "led_cycle()",
-                 "",
-                 ]
-        cmd = "\n".join(cmds)
-        self.pyb.execbuffer(cmd)
+        success, result = self.pyb.led_toggle(lednum, ontime_ms)
+        if not success:
+            self.logger.error(result)
+            _result = ResultAPI.RECORD_RESULT_FAIL
+            self.log_bullet("UNKNOWN PYBOARD ERROR")
+            self.item_end(_result)  # always last line of test
+            return
 
         buttons = ["{}".format(LED_COLORS[lednum-1]), "None", "Other"]
         user_select = self.input_button(buttons)
+
         if user_select["success"]:
             b_idx = user_select["button"]
             self.log_bullet("{} was pressed!".format(buttons[b_idx]))
@@ -107,15 +100,14 @@ class pybrd00xx(TestItem):
             _result = ResultAPI.RECORD_RESULT_FAIL
             self.log_bullet(user_select.get("err", "UNKNOWN ERROR"))
 
-        self.pyb.open(self.pyb_port)  # causes reset to break the infinite loop in cmds
-        self.pyb.close()
-
+        # turn off blinky led
+        self.pyb.led_toggle(lednum, 0)
         self.item_end(_result)  # always last line of test
 
     def PYBRD0020_adc_read(self):
         """ Read ADC channel.
 
-        {"id": "PYBRD0020_adc_read",      "enable": true,  "chan": "temp", "samples": 2, "delay_s": 0, "name": "MyKnob",
+        {"id": "PYBRD0020_adc_read",      "enable": true,  "pin": "TEMP", "samples": 2, "delay_s": 0, "name": "MyKnob",
                                           "min": 18, "max": 26, "gain": 1, "unit": "UNIT_CELCIUS" },
 
         background: https://github.com/micropython/micropython/pull/3656
@@ -124,78 +116,27 @@ class pybrd00xx(TestItem):
         """
         ctx = self.item_start()  # always first line of test
 
-        chan = ctx.item.get("chan", None)
+        pin = ctx.item.get("pin", None)
         samples = ctx.item.get("samples", 1)
         unit = getattr(ResultAPI, ctx.item.get("unit", ResultAPI.UNIT_NONE), ResultAPI.UNIT_NONE)
         min = ctx.item.get("min", None)
         max = ctx.item.get("max", None)
-        delay_s = ctx.item.get("delay_s", 0)
-        name = ctx.item.get("name", chan)  # if no name supplied use channel
+        delay_ms = ctx.item.get("delay_s", 0)
+        name = ctx.item.get("name", pin)  # if no name supplied use channel
         scale = ctx.item.get("scale", 1.0)
 
-        if chan not in [0, 1, 2, 3, "temp", "vbat", "vref", "vcc"]:
-            self.log_bullet("Error: Invalid ADC channel: {}".format(chan))
-            self.item_end(ResultAPI.RECORD_RESULT_FAIL)  # always last line of test
-            return
-
-        self.pyb.open(self.pyb_port)
-
-        cmds = [
-            "import pyb",
-        ]
-        if chan in [0, 1, 2, 3]:
-            pin_map = {0: "X19", 1: "X20", 2: "X21", 3: "X22"}
-            cmds.append("adc = pyb.ADC(pyb.Pin('{}'))".format(pin_map[chan]))
-            cmds.append("val = adc.read()")
-        elif chan == "temp":
-            cmds.append("adc = pyb.ADCAll(12, 0x70000)")
-            cmds.append("val = adc.read_core_temp()")
-        elif chan == "vbat":
-            cmds.append("adc = pyb.ADCAll(12, 0x70000)")
-            cmds.append("val = adc.read_core_vbat()")
-        elif chan == "vref":
-            cmds.append("adc = pyb.ADCAll(12, 0x70000)")
-            cmds.append("val = adc.read_core_vref()")
-        elif chan == "vcc":
-            cmds.append("adc = pyb.ADCAll(12, 0x70000)")
-            cmds.append("val = adc.read_vref()")
-
-        cmds.append("print(val)")
-        cmd = "\n".join(cmds)
-
-        results = []
-        for i in range(samples):
-            success, result = self.pyb.execbuffer(cmd)
-            self.logger.info("{} {} {}".format(i, success, result))
-            if not success:
-                # retry once
-                success, result = self.pyb.execbuffer(cmd)
-                self.logger.info("{} {} {}".format(i, success, result))
-
-            if success:
-                results.append(float(result))
-                time.sleep(delay_s)
+        success, result = self.pyb.adc_read(pin, samples, delay_ms) # adc_read(self, pin, samples=1, samples_ms=1):
+        self.logger.info("{} {}".format(success, result))
 
         if not success:
-            self.log_bullet("ADC chan {}: Failed".format(chan))
+            self.log_bullet("ADC pin {}: Failed".format(pin))
             self.item_end(ResultAPI.RECORD_RESULT_FAIL)  # always last line of test
             return
 
-        self.log_bullet("ADC chan {}: {}".format(chan, result))
+        self.log_bullet("ADC pin {}: {}".format(pin, result["value"]))
 
-        if samples != len(results):
-            self.log_bullet("Warning: samples {} != len(results {}".format(samples, len(results)))
-            # TODO: if there was an error taking samples, how to proceed?
-
-        sum = 0
-        for r in results: sum += r
-        result = float(sum / len(results))
-        result = float(result * scale)
-
-        _, _result, _bullet = ctx.record.measurement("{}".format(name), result, unit, min, max)
+        _, _result, _bullet = ctx.record.measurement("{}".format(name), result["value"], unit, min, max)
         self.log_bullet(_bullet)
-
-        self.pyb.close()
 
         self.item_end(_result)  # always last line of test
 

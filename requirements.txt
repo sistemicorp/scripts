@@ -3,3 +3,4 @@ pyvisa-py
 pyusb
 qrcode
 numpy
+adafruit-ampy

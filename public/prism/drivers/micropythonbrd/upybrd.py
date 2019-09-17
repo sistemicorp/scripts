@@ -5,426 +5,317 @@ Sistemi Corporation, copyright, all rights reserved, 2019
 Martin Guthrie
 
 """
-try:
-    # for when used by Prism
-    import public.prism.drivers.micropythonbrd.pyboard as pyboard
-    from public.prism.drivers.micropythonbrd.list_serial import serial_ports
-except:
-    # for when called by main
-    import pyboard
-    from list_serial import serial_ports
-
-import sys
-import serial
 import time
-import logging
 import json
-import argparse
+import threading
+
+import ampy.pyboard as pyboard
+
+try:
+    from stublogger import StubLogger
+except:
+    from public.prism.drivers.micropythonbrd.stublogger import StubLogger
+
 
 
 VERSION = "0.0.1"
 
 
-class MicroPyBrd(object):
-    """  Driver for the micopython baord
-
-    http://docs.micropython.org/en/v1.9.4/pyboard/pyboard/quickref.html
-
-    How to use
-    1) Sending commands,
-         pyb = MicroPyBrd(logging)
-         pyb.open(port)
-         cmds = ["pyb.LED(1).on()", 'pyb.LED(1).off()']
-         cmd = "\n".join(cmds)
-         pyb.execbuffer(cmd)
-         pyb.close()
-
-    2) Get list of micropython boards,
-         pyb = MicroPyBrd(logging)
-         scan = pyb.scan_ports()
-         # scan is a list of tuples, [(port, id#), (..), ..]
-         pyb.close()
-
-         Note: if id is None, then the board doesn't have an id assigned to it.
-               Expect every pyboard in the system to have a different id (integer)
-
-    3) Set the ID of the pyboard
-        The ID is an identifier for the pyboard, so when you have multiple
-        pyboards they can be identified.  When a pyboard ID has been set, that pyboard
-        should be labelled with that ID number, so the operator can know which one it is.
-
-        Use the Command Line Interface (CLI),
-         python upybrd.py --port COM3 --set-id 1
-
-        or, programitically,
-         pyb = MicroPyBrd(logging)
-         pyb.set_pyb_id(<port>, <id>)
-         pyb.close()
-
-    Design:
-    1) The id of the pyboard is a empty file in form of ID<#>
-
-    LESSONS:
-    1) pyb.enter_raw_repl()  # this does a softreset....!
-    2) sometimes functions won't return a value, for example, pyb.freq(),
-       need to wrap in a print, print(pyb.freq())
-    3) References,
-       http://docs.micropython.org/en/v1.9.4/pyboard/pyboard/tutorial/intro.html
-       http://docs.micropython.org/en/v1.9.4/pyboard/pyboard/quickref.html
-       http://docs.micropython.org/en/v1.9.3/esp8266/esp8266/tutorial/filesystem.html
+class pyboard2(pyboard.Pyboard):
+    """ Extend the base pyboard class with a little exec helper method, exec_cmd
+    to make it more script friendly
 
     """
-
-    class StubLogger(object):
-        """ stubb out logger if none is provided"""
-        # TODO: support print to console.
-        def info(self, *args, **kwargs): pass
-        def error(self, *args, **kwargs): pass
-        def debug(self, *args, **kwargs): pass
-        def warning(self, *args, **kwargs): pass
-        def critical(self, *args, **kwargs): pass
-
-    BAUDRATE = 115200
-
     LED_RED    = 1
     LED_GREEN  = 2
     LED_YELLOW = 3
     LED_BLUE   = 4
-    LED_FLASH_TIME_S = 0.5
 
-    def __init__(self, loggerIn=None):
+    def __init__(self, device, baudrate=115200, user='micro', password='python', wait=0, rawdelay=0, loggerIn=None):
+        super().__init__(device, baudrate, user, password, wait, rawdelay)
+
         if loggerIn: self.logger = loggerIn
-        else: self.logger = self.StubLogger()
-        self.pyb = None
-        self.channel = None
-        self.serial = None
-        self.logger.debug("Done")
+        else: self.logger = StubLogger()
 
-    def version(self):
-        return VERSION
+        self.device = device
 
-    def _enter_raw_repl(self):
-        # A port/hack of pyboard to test a port for micropython
-        self.serial.write(b'\r\x03\x03') # ctrl-C twice: interrupt any running program
-        # flush input (without relying on serial.flushInput())
-        n = self.serial.inWaiting()
-        while n > 0:
-            self.serial.read(n)
-            n = self.serial.inWaiting()
-        self.serial.write(b'\r\x01') # ctrl-A: enter raw REPL
-        data = self.serial.read(50)
-        if not data.endswith(b'raw REPL; CTRL-B to exit\r\n>'):
-            self.logger.debug(data)
-            return False
-        return True
+        self.lock = threading.Lock()
 
-    def led_toggle(self, led, flash_s=LED_FLASH_TIME_S):
-        self.execbuffer('pyb.LED({}).on()'.format(led))
-        time.sleep(flash_s)
-        self.execbuffer('pyb.LED({}).off()'.format(led))
+    def _repl_result(self, result):
+        """ return repl result as a list of strings for client to parse
 
-    def scan_ports(self, port=None):
-        """ Finds/validates all connected pyboards
-        :return: list of pyboards, [(<port>, <ID>), ...]
+        :param result:
+        :return: success (True/False), list (on success) or original repl result of success False
         """
-        ports = []
-        if port: port_candidates = [port]
-        else:    port_candidates = serial_ports()
+        if isinstance(result, bytes):
+            return True, result.decode("utf-8").splitlines()
+        else:
+            self.logger.warn("repl_result: unexpected return from pyboard type: {}".format(type(result)))
+        # the repl return type was odd at this point but maybe the client expects that
+        return False, result
 
-        self.logger.info("Looking for Pyboard in {}".format(port_candidates))
-        for port in port_candidates:
-            try:
-                self.serial = serial.Serial(port, baudrate=self.BAUDRATE, timeout=1, interCharTimeout=1)
-                success = self._enter_raw_repl()
-                if not success:
-                    time.sleep(0.1)
-                    self.serial.close()
-                    self.serial = serial.Serial(port, baudrate=self.BAUDRATE, timeout=1, interCharTimeout=1)
-                    success = self._enter_raw_repl()
-
-            except Exception as e:
-                self.logger.info(e)
-                success = False
-
-            finally:
-                self.serial.close()
-
-            if success:
-                self.logger.info("Found micropython on {}, blink RED, then GREEN if ID present...".format(port))
-                # now open proper way and get stored ID...
-                self.open(port)
-
-                # visual indication we are talking to the pyboard
-                self.led_toggle(self.LED_RED, self.LED_FLASH_TIME_S)
-
-                id = self.get_id()
-                if id is not None:
-                    # visual indication success
-                    self.led_toggle(self.LED_GREEN, self.LED_FLASH_TIME_S)
-
-                self.pyb.close()
-                ports.append({"port": port, "id": id, "version": VERSION})
-            else:
-                self.logger.info("NO micropython on {}".format(port))
-
-        self.logger.info("Found {}".format(ports))
-        return ports
-
-    def open(self, port):
-        self.logger.debug("open {}".format(port))
-        self.pyb = pyboard.Pyboard(port)
-        self.pyb.enter_raw_repl()  # this does a softreset on micropython
-
-    def close(self):
-        self.logger.debug("close")
-        if self.pyb: self.pyb.close()
-        self.pyb = None
-
-    def reset(self):
-        self.logger.info("reset")
-        self.pyb.enter_raw_repl()  # this does a softreset on micropython
-
-    def execbuffer(self, buf):
+    def server_cmd(self, cmds, repl_enter=True, repl_exit=True, blocking=True):
         """ execute a buffer on the open pyboard
 
-        commands should be formed this way,
-            pyb = MicroPyBrd(logging)
-            pyb.open(<port>)
-            cmds = ['import os', 'print(os.listdir())']
-            cmd = "\n".join(cmds)
-            success, result = pyb.execbuffer(cmd)
-            pyb.close()
-
-        NOTE:  !! to get results back you must wrapt them in a print() !!
+        NOTE:  !! to get results back, the pyboard python code must wrap result in a print() !!
 
         :param buf: string of command(s)
         :return: success (True/False), result (if any)
         """
-        # this was copied from pyboard.py
-        try:
-            ret, ret_err = self.pyb.exec_raw(buf + '\n', timeout=1, data_consumer=None)
-        except pyboard.PyboardError as er:
-            self.logger.info(er)
-            self.pyb.close()
-            return False, None
-        except KeyboardInterrupt:
-            return False, None
-        if ret_err:
-            self.pyb.exit_raw_repl()
-            self.pyb.close()
-            pyboard.stdout_write_bytes(ret_err)
-            return False, None
+        if not isinstance(cmds, list):
+            self.logger.error("cmd should be a list of micropython code (strings)")
+            return False, "cmds should be a list"
 
-        if ret:
-            return True, ret.decode("utf-8").strip()
-        return True, ""
-
-    def get_files(self):
-        """ Get the files from an open pyboard
-        :return: [ file, ...]
-        """
-        files = []
-        cmds = ['import os', 'print(os.listdir())']
         cmd = "\n".join(cmds)
-        success, result = self.execbuffer(cmd)
-        if success:
+        self.logger.debug("{} cmd: {}".format(self.device, cmd))
+
+        with self.lock:
+            # this was copied/ported from pyboard.py
+            try:
+                if repl_enter: self.enter_raw_repl()
+
+                if blocking:
+                    ret, ret_err = self.exec_raw(cmd + '\n', timeout=10, data_consumer=None)
+                else:
+                    self.exec_raw_no_follow(cmd)
+                    ret_err = False
+                    ret = None
+
+            except pyboard.PyboardError as er:
+                msg = "{}: {}".format(cmd, er)
+                self.logger.error(msg)
+                return False, msg
+            except KeyboardInterrupt:
+                return False, "KeyboardInterrupt"
+
+            if repl_exit: self.exit_raw_repl()
+
+            if ret_err:
+                pyboard.stdout_write_bytes(ret_err)
+                msg = "{}: {}".format(cmd, ret_err)
+                self.logger.error(msg)
+                return False, msg
+
+            #print("A: {}".format(ret))
+            if ret:
+                pyb_str = ret.decode("utf-8")
+
+                # expecting a JSON like dict object in string format, convert this string JSON to python dict
+                # fix bad characters...
+                fixed_string = pyb_str.replace("'", '"').replace("True", "true").replace("False", "false").replace("None", "null")
+                try:
+                    self.logger.debug(fixed_string.strip())
+                    items = json.loads(fixed_string)
+                except Exception as e:
+                    self.logger.error(e)
+                    return False, []
+
+                return True, items
+
+            return True, []
+
+    def _verify_single_cmd_ret(self, cmd_dict, delay_poll_ms=100):
+        method = cmd_dict.get("method", None)
+        args = cmd_dict.get("args", None)
+
+        if method is None:
+            return False, "method not specified"
+
+        if args is None:
+            return False, "args not specified"
+
+        cmds = []
+        c = str(cmd_dict)
+        cmds.append("upyb_server.server.cmd({})".format(c))
+        success, result = self.server_cmd(cmds, repl_enter=False, repl_exit=False)
+        if not success:
+            self.logger.error("{} {}".format(success, result))
+            return success, result
+
+        cmds = ["upyb_server.server.ret(method='{}')".format(method)]
+
+        # it is assumed the command sent will post a return, with success set
+        retry = 5
+        succeeded = False
+        while retry and not succeeded:
+            time.sleep(delay_poll_ms / 1000)
+            success, result = self.server_cmd(cmds, repl_enter=False, repl_exit=False)
             self.logger.debug("{} {}".format(success, result))
-            # string result => ['main.py', 'pybcdc.inf', 'README.txt', 'ID1', 'boot.py']
-            files = json.loads(result.replace("'", '"'))
-        return files
+            if success:
+                for r in result:
+                    if r.get("method", False) == "_debug":
+                        self.logger.info("PYBOARD DEBUG: {}".format(r["value"]))
+                        retry += 1  # debug lines don't count against retrying
+                    if r.get("method", False) == method:
+                        succeeded = True
+            else:
+                return success, result
 
-    def _pyb_del_file(self, file):
-        cmds = ['import os', 'os.remove("{}")'.format(file)]
-        cmd = "\n".join(cmds)
-        success, result = self.execbuffer(cmd)
-        return success
+            retry -= 1
 
-    def get_id(self):
-        """ Get the id of an open pyboard
-        :return: id, or None if no id on pyboard
+        if not succeeded:
+            return False, "Failed to verify method {} was executed".format(method)
+
+        if len(result) > 1:
+            self.logger.error("More results than expected: {}".format(result))
+            return False, "More results than expected, internal error"
+
+        return result[0]["success"], result[0]
+
+    # -------------------------------------------------------------------------------------------------
+    # API (wrapper functions)
+    # these are the important functions
+
+    def start_server(self):
+        cmds = ["import upyb_server"]
+        success, result = self.server_cmd(cmds, repl_exit=False)
+        self.logger.info("{} {}".format(success, result))
+        return success, result
+
+    def unique_id(self):
+        c = {'method': 'unique_id', 'args': {}}
+        return self._verify_single_cmd_ret(c)
+
+    def version(self):
+        c = {'method': 'version', 'args': {}}
+        return self._verify_single_cmd_ret(c)
+
+    def debug(self, enable=True):
+        c = {'method': 'debug', 'args': {"enable": enable}}
+        return self._verify_single_cmd_ret(c)
+
+    def get_server_method(self, method, all=False):
+        """ Get return value message(s) from the server for a specific method
+        - this function will remove the message(s) from the server queue
+
+        :param method:
+        :param all: set True for all the return messages
+        :return: success, result
         """
-        files = self.get_files()
-        for f in files:
-            if f.startswith("ID"):
-                channel = int(f[2:])
-                return channel
-        return None
+        cmds = ["upyb_server.server.ret(method='{}', all='{}')".format(method, all)]
+        retry = 5
+        succeeded = False
+        while retry and not succeeded:
+            time.sleep(0.1)
+            success, result = self.server_cmd(cmds, repl_enter=False, repl_exit=False)
+            self.logger.debug("{} {}".format(success, result))
+            if success:
+                for r in result:
+                    if r.get("method", False) == method:
+                        succeeded = True
+            else:
+                return success, result
 
-    def set_pyb_id(self, port, id):
-        """ Set (assign) the pyboard ID
-        :param port: port of the pyboard
-        :param id: integer ID of the pyboard
-        :return: True on success, False otherwise
+            retry -= 1
+
+        if not succeeded:
+            return False, "Failed to find method {}".format(method)
+
+        return success, result
+
+    def peek_server_method(self, method=None, all=False):
+        """ Peek return message value(s from the server for a specific method
+        - this function will NOT remove the message(s) from the server queue
+
+        :param method:
+        :param all: set True for all the return messages
+        :return:
         """
-        if self.pyb: self.close()
+        cmds = ["upyb_server.server.peek(method='{}', all='{}')".format(method, all)]
+        retry = 5
+        succeeded = False
+        while retry and not succeeded:
+            time.sleep(0.1)
+            success, result = self.server_cmd(cmds, repl_enter=False, repl_exit=False)
+            self.logger.debug("{} {}".format(success, result))
+            if success:
+                for r in result:
+                    if r.get("method", False) == method:
+                        succeeded = True
+            else:
+                return success, result
 
-        # make sure the port is valid
-        port_candidates = serial_ports()
-        if not port in port_candidates:
-            self.logger.error("{} NOT in available ports {}".format(port, port_candidates))
-            return False
+            retry -= 1
 
-        # scan the port, make sure its a pyboard
-        current_configs = self.scan_ports(port)
-        valid_port = False
-        for cfg in current_configs:
-            if cfg["port"] == port:
-                valid_port = True
-                break
-        if not valid_port:
-            self.logger.error("{} is not a valid micropython port".format(port))
-            return False
+        if not succeeded:
+            return False, "Failed to find method {}".format(method)
 
-        # ok, should be good, open that port
-        self.open(port)
+        return success, result
 
-        # remove the old ID if it exists
-        files = self.get_files()
-        for f in files:
-            if f.startswith("ID"):
-                success = self._pyb_del_file(f)
-                if not success:
-                    return False
+    def led_toggle(self, led, on_ms=500, off_ms=500, once=False):
+        """ toggle and LED ON and then OFF
+        - this is a blocking command
 
-        # write the new ID
-        cmds = ["f = open('ID{}', 'w')".format(id), 'f.close()']
-        cmd = "\n".join(cmds)
-        success, result = self.execbuffer(cmd)
-        self.logger.info("Writting ID {} success: {}".format(id, success))
+        :param led: # of LED, see self.LED_*
+        :param on_ms: # of milliseconds to turn on LED
+        :return:
+        """
+        c = {'method': 'led_toggle', 'args': {'led': led, 'on_ms': on_ms, 'off_ms': off_ms, 'once': once}}
+        return self._verify_single_cmd_ret(c)
 
-        self.close()
-        self.scan_ports(port)
-        return success
+    def enable_jig_closed_detect(self, enable=True):
+        """ Enable Jig Closed feature on pyboard
+        - starts a timer on the pyboard that reads the jig closed GPIO (X1)
+        - posts messages on the state of the jig closed pin
+        - NON-BLOCKING
+        - client must read a result before the next result can be queued
 
+        :param enable: True/False
+        :return: success, result
+        """
+        c = {'method': 'enable_jig_closed_detect', 'args': {'enable': enable}}
+        return self._verify_single_cmd_ret(c)
 
-# Command Line Interface...
+    def adc_read(self, pin, samples=1, samples_ms=1):
+        """ Read an ADC pin
+        - This is a BLOCKING function
+        - result is raw ADC value, client needs to scale to VREF (3.3V)
 
-def parse_args():
-    epilog = """
-    Usage examples:
-    1) List all MicroPython boards attached to the system,
-       python3 upybrd.py --list
-    2) Setting the ID to 1 for the MicroPython board on COM3, 
-       python3 upybrd.py --port COM3 --set-id 1
-       
-    """
-    parser = argparse.ArgumentParser(description='upybrd',
-                                     formatter_class=argparse.RawDescriptionHelpFormatter,
-                                     epilog=epilog)
+        :param pin: pin name, X2, X3, etc
+        :param samples: Number of samples to average over
+        :param samples_ms: Delay between samples
+        :return: success, result
+        """
+        c = {'method': 'adc_read', 'args': {'pin': pin, 'samples': samples, 'samples_ms': samples_ms}}
+        return self._verify_single_cmd_ret(c)
 
-    parser.add_argument("-p", '--port', dest='port', default=None, type=str,
-                        action='store', help='Active serial port')
+    def adc_read_multi(self, pins, samples=100, freq=100):
+        """ Read single or Multiple pins at Freq rate
+        - NON-BLOCKING
+        - the result is a list of samples
+        - results are raw ADC values, client needs to scale to VREF (3.3V)
 
-    parser.add_argument("-s", '--set-id', dest='set_id', default=None, type=int,
-                        action='store', help='Set channel <#> to <port>, ex: -s 0 -p COM3')
+        :param pins: list of pins
+        :param samples: # of samples to take
+        :param freq: rate of taking samples
+        :return: success, result
+        """
+        c = {'method': 'adc_read_multi', 'args': {'pins': pins, 'samples': samples, 'freq': freq}}
+        return self._verify_single_cmd_ret(c)
 
-    parser.add_argument("-l", '--list', dest='list', default=False,
-                        action='store_true', help='list micropython boards')
+    def reset(self):
+        """ Reset the I2C devices to a known/default state
 
-    parser.add_argument("-i", '--identify', dest='identify', default=False,
-                        action='store_true', help='blink red LED on specified port')
+        :return:
+        """
+        c = {'method': 'reset', 'args': {}}
+        return self._verify_single_cmd_ret(c)
 
-    parser.add_argument("-f", '--files', dest='files', default=False,
-                        action='store_true', help='List files on pyboard')
+    def set_ldo_voltage(self, name, voltage_mv):
+        """ set LDO voltage
 
-    parser.add_argument("-g", '--read-gpio', dest='read_gpio',
-                        action='store', help='read gpio (X1, X2, ...)')
+        :param name: "V1", "V2", "V3"
+        :param voltage_mv: 900 to 3500
+        :return: success, result
+        """
+        c = {'method': 'set_ldo_voltage', 'args': {'name': name, 'voltage_mv': voltage_mv}}
+        return self._verify_single_cmd_ret(c)
 
-    parser.add_argument("-v", '--verbose', dest='verbose', default=0, action='count', help='Increase verbosity')
-    parser.add_argument("--version", dest="show_version", action='store_true', help='Show version and exit')
+    def power_good(self, name):
+        """ Check the status of the power good pin
 
-    args = parser.parse_args()
-
-    if args.show_version:
-        logging.info("Version {}".format(VERSION))
-        sys.exit(0)
-
-    if args.set_id is not None:
-        if not args.port:
-            parser.error("port is required for option --set-id")
-
-    if args.identify:
-        if not args.port:
-            parser.error("port is required for option --identify")
-
-    if args.files:
-        if not args.port:
-            parser.error("port is required for option --files")
-
-    if args.read_gpio:
-        if not args.port:
-            parser.error("port is required for option --read-gpio")
-
-    return args
-
-
-if __name__ == '__main__':
-    args = parse_args()
-    did_something = False
-
-    #
-    # see the class MicroPyBrd comments for how to set the ID of a micropython board
-    # Examples,
-    #  python upybrd.py -l
-    #   INFO  129 Looking for Pyboard in ['COM1', 'COM4', 'COM6']
-    #   INFO  158 NO micropython on COM1
-    #   INFO  158 NO micropython on COM4
-    #   INFO  143 Found micropython on COM6
-    #   INFO  164 open COM6
-    #   INFO  160 Found [{'port': 'COM6', 'id': 2, 'version': '0.0.1'}]
-    #
-    # python upybrd.py -p COM5 -f
-    #   INFO  164 open COM5
-    #   INFO  382 ['main.py', 'pybcdc.inf', 'README.txt', 'boot.py', 'System Volume Information', 'ID1']
-
-    if args.verbose == 0:
-        logging.basicConfig(level=logging.INFO, format='%(levelname)6s %(lineno)4s %(message)s')
-    else:
-        logging.basicConfig(level=logging.DEBUG, format='%(levelname)6s %(lineno)4s %(message)s')
-
-    if args.list:
-        pyb = MicroPyBrd(logging)
-        pyb.scan_ports()
-        pyb.close()
-        did_something = True
-
-    if args.set_id is not None:
-        pyb = MicroPyBrd(logging)
-        pyb.set_pyb_id(args.port, args.set_id)
-        pyb.close()
-        did_something = True
-
-    if args.identify:
-        pyb = MicroPyBrd(logging)
-        pyb.open(args.port)
-        logging.info("Flashing RED LED of port {}".format(args.port))
-        for i in range(10):
-            pyb.execbuffer('pyb.LED(1).on()')
-            time.sleep(0.2)
-            pyb.execbuffer('pyb.LED(1).off()')
-            time.sleep(0.2)
-        pyb.close()
-        did_something = True
-
-    if args.files:
-        pyb = MicroPyBrd(logging)
-        pyb.open(args.port)
-        logging.info(pyb.get_files())
-        pyb.close()
-        did_something = True
-
-    if args.read_gpio:
-        pyb = MicroPyBrd(logging)
-        pyb.open(args.port)
-        cmds = ["from pyb import Pin",
-                "p_in = Pin('{}', Pin.IN, Pin.PULL_UP)".format(args.read_gpio),
-                "print(p_in.value())",
-                ]
-        cmd = "\n".join(cmds).strip()
-        success, result = pyb.execbuffer(cmd)
-        logging.info("{}, {}".format(success, result.strip()))
-        pyb.close()
-        did_something = True
-
-    if not did_something:
-        logging.info("Nothing to do... use --help for commands")
+        :param name: "V1", "V2", "V3"
+        :return: success, status
+        """
+        c = {'method': 'power_good', 'args': {'name': name}}
+        return self._verify_single_cmd_ret(c)

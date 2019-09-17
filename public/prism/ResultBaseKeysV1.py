@@ -164,7 +164,11 @@ class ResultBaseKeysV1(ResultBaseClass):
             msg: if not success, this is error message
                  if success, this is human friendly message of the measurment
         """
-        lname = "{}.{}".format(self._item["name"], name)
+        if name is None:
+            lname = "{}".format(self._item["name"])
+        else:
+            lname = "{}.{}".format(self._item["name"], name)
+
         # check for duplicate name
         for m in self._item["measurements"]:
             if m["name"] == lname:
@@ -184,6 +188,11 @@ class ResultBaseKeysV1(ResultBaseClass):
 
         if unit not in ResultAPI.UNIT_ALL:
             msg = "Unknown unit {}, must be one of {}".format(unit, ResultAPI.UNIT_ALL)
+            self.logger.error(msg)
+            return False, ResultAPI.RECORD_RESULT_UNKNOWN, msg
+
+        if not isinstance(value, (int, float, bool, str)):
+            msg = "Unsupported value type {}".format(type(value))
             self.logger.error(msg)
             return False, ResultAPI.RECORD_RESULT_UNKNOWN, msg
 
@@ -230,7 +239,7 @@ class ResultBaseKeysV1(ResultBaseClass):
 
         else:
             _pass = ResultAPI.RECORD_RESULT_INTERNAL_ERROR
-            _bullet = "{}: {} <= {} <= {} {} :: {}".format(name, d["min"], d["value"], d["max"], unit, _pass)
+            _bullet = "{}: {} <= {} <= {} {} ??".format(name, min, value, max, unit)
             self.logger.error(_bullet)
             return False, _pass, _bullet
 

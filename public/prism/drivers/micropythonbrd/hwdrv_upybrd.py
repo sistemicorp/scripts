@@ -10,11 +10,14 @@ import logging
 import threading
 import time
 from public.prism.drivers.micropythonbrd.list_serial import serial_ports
-from public.prism.drivers.micropythonbrd.upybrd import MicroPyBrd
+from public.prism.drivers.micropythonbrd.upybrd import pyboard2
+from public.prism.drivers.micropythonbrd.upybrd_cli import MicroPyBrd
 
 from pubsub import pub
 from app.const import PUB, CHANNEL
 from app.sys_log import pub_notice
+import serial
+
 
 class upybrdPlayPub(threading.Thread):
     """ Creates a thread per channel that will poll the switch
@@ -26,17 +29,18 @@ class upybrdPlayPub(threading.Thread):
     """
     POLL_TIMER_SEC = 1
 
-    def __init__(self, ch, drv):
+    def __init__(self, ch, drv, shared_state):
         super(upybrdPlayPub, self).__init__()
         self._stop_event = threading.Event()
         self.logger = logging.getLogger("SC.{}.{}".format(__class__.__name__, ch))
 
         self.ch = ch
         self.pyb_port = drv["obj"]["port"]
-        self.pyb = MicroPyBrd(loggerIn=self.logger)
+        self.pyb = drv["obj"]["pyb"]
         self.ch_state = CHANNEL.STATE_UNKNOWN
         self.ch_pub = PUB.get_channel_num_play(ch)
         self.open_fixture = False  # assume fixture is closed
+        self.shared_state = shared_state
 
         pub.subscribe(self.onSHUTDOWN, PUB.SHUTDOWN)
         pub.subscribe(self.onCHANNEL_STATE, PUB.CHANNEL_STATE)
@@ -70,39 +74,50 @@ class upybrdPlayPub(threading.Thread):
 
     def run(self):
 
+        self.logger.info("!!! run loop started !!!")
+
+        # start the pyboard jog closed timer, it will always be running
+        # regardless of the state of test... if the jig becomes open during
+        # testing, we detect that case and handle it...
+        success, result = self.pyb.enable_jig_closed_detect()
+        self.logger.info("{}, {}".format(success, result))
+
         pub_play = False
         while not self.stopped():
             time.sleep(self.POLL_TIMER_SEC)
-            if self.ch_state in [CHANNEL.STATE_DONE, CHANNEL.STATE_READY]:
-                self.pyb.open(self.pyb_port)
 
-                cmds = ["from pyb import Pin",
-                        "p_in = Pin('X1', Pin.IN, Pin.PULL_UP)",
-                        "print(p_in.value())",
-                        ]
-                cmd = "\n".join(cmds).strip()
-                success, result = self.pyb.execbuffer(cmd)
+            # this is a hack to deal with shutting down, the serial port
+            # is closed and this process is still running...
+            try:
+                success, result = self.pyb.get_server_method("jig_closed_detect")
+
+            except serial.serialutil.SerialException:
+                continue
+
+            except Exception as e:
+                self.logger.error(e)
+
+            if success and len(result):
                 self.logger.debug("{}, {}".format(success, result))
-                if success:
-                    # only if the fixture was in the previously opened state, then we play
-                    # in other words, once lid is closed, it must be opened again to trigger play
-                    if self.open_fixture and result.strip() == "0":
-                        pub_play = True
-                        self.open_fixture = False
-                        self.logger.info("Channel {} PLAY".format(self.ch))
-                    elif result.strip() == "1":
-                        self.open_fixture = True
+                # only if the fixture was in the previously opened state, then we play
+                # in other words, once lid is closed, it must be opened again to trigger play
+                if self.open_fixture and result[0]["value"] == "CLOSED":
+                    pub_play = True
+                    self.open_fixture = False
+                    self.logger.info("Channel {} PLAY".format(self.ch))
 
-                else:
-                    pub_play = False
+                elif result[0]["value"] == "OPEN":
+                    self.open_fixture = True
 
-                self.pyb.close()
+            else:
+                self.logger.error("self.pyb.server_cmd: {}".format(result))
+                pub_play = False
 
+            if pub_play:
                 self.logger.info("open_fixture: {}, play: {}".format(self.open_fixture, pub_play))
-                if pub_play:
-                    pub_play = False
-                    d = {"channels": [self.ch], "from": "{}.{}".format(__class__.__name__, self.ch)}
-                    pub.sendMessage(self.ch_pub, item_dict=d)
+                pub_play = False
+                d = {"channels": [self.ch], "from": "{}.{}".format(__class__.__name__, self.ch)}
+                pub.sendMessage(self.ch_pub, item_dict=d)
 
         self.logger.info("!!! run loop stopped !!!")
 
@@ -115,6 +130,7 @@ class HWDriver(object):
     SFN = os.path.basename(__file__)
 
     DRIVER_TYPE = "MicroPyBrd"
+    MICROPYTHON_FIRMWARE_RELEASE = "1.11.0"  # from os.uname() on pyboard
 
     def __init__(self, shared_state):
         self.logger = logging.getLogger("SC.{}.{}".format(__class__.__name__, self.SFN))
@@ -164,12 +180,25 @@ class HWDriver(object):
                 continue
 
             if pyb[0].get('id', None) is None:
-                self.logger.info("port {} -> Missing ID".format(port))
+                self.logger.error("port {} -> Missing ID".format(port))
                 continue
+
+            # confirm the release
+            release = pyb[0]["uname"]["release"]
+            if release != self.MICROPYTHON_FIRMWARE_RELEASE:
+                self.logger.error("port {} -> Unsupported release {} (expecting {})".format(port, release, self.MICROPYTHON_FIRMWARE_RELEASE))
+                continue
+            self.logger.info("port {} -> supported release {}".format(port, release))
+
+            # now start the pyboard server
+            port = pyb[0]["port"]
+            pyb[0]["pyb"] = pyboard2(port, loggerIn=logging.getLogger("SC.pyboard2.{}".format(pyb[0].get('id'))))
+            success, result = pyb[0]["pyb"].start_server()
+            self.logger.info("{} {}".format(success, result))
 
             # divers can register a close() method which is called on channel destroy.
             # we don't need to set that there is none, but doing so helps remember we could set one
-            pyb[0]["close"] = False
+            pyb[0]["close"] = pyb[0]["pyb"].close
 
             self.pybs.append(pyb[0])
             msg = "HWDriver:{}: {} -> {}".format(self.SFN, port, pyb[0])
@@ -185,6 +214,9 @@ class HWDriver(object):
         pub_notice("HWDriver:{}: Found {}!".format(self.SFN, self._num_chan), sender=sender)
         self.logger.info("Done: {} channels".format(self._num_chan))
         return self._num_chan
+
+    def close(self):
+        self.logger.info("TBD?")
 
     def num_channels(self):
         return self._num_chan
@@ -208,6 +240,6 @@ class HWDriver(object):
                 continue
 
             self.logger.info("Adding 'play' support on channel {}".format(ch))
-            play_pub = upybrdPlayPub(ch, drivers[0])
+            play_pub = upybrdPlayPub(ch, drivers[0], self.shared_state)
             d = {"id": ch, "obj": play_pub, "close": play_pub.close}
             self.shared_state.add_drivers("upybrdPlayPub", [d])

@@ -316,6 +316,14 @@ def main():
     con = ChanCon(0, script, shared_state, args["script"])
     con.run()
 
+    # close any drivers
+    drivers = shared_state.get_drivers(0)
+    for d in drivers:
+        if d['obj'].get("close", False):
+            d["obj"]["close"]()
+
+    # TODO: publish shutdown
+
     return 0
 
 
