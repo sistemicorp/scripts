@@ -1,5 +1,5 @@
-# Example: Connects to an Agilent DSO7000 DSO via VISA
-# !! NOTE: This example will only load if there is an Agilent DSO7000 Series on USB !!
+// Example: Connects to an Agilent DSO7000 DSO via VISA
+// !! NOTE: This example will only load if there is an Agilent DSO7000 Series on USB !!
 {
   "info": {
     "product": "pybrd_1",

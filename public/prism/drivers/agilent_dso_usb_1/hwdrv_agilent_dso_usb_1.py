@@ -6,8 +6,8 @@ Martin Guthrie, copyright, all rights reserved, 2018-2019
 """
 import os
 import logging
-from app.const import APP
-from app.sys_log import pub_notice
+from core.const import APP
+from core.sys_log import pub_notice
 import visa
 
 class HWDriver(object):
