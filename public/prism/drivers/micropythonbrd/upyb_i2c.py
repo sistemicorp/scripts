@@ -33,7 +33,7 @@ class UPYB_I2C(I2C):
         super().__init__(freq)
         self.lock = _thread.allocate_lock()
         self._debug = debug_print
-        if self._debug: self._debug("init complete", file=__DEBUG_FILE)
+        if self._debug: self._debug("init complete", line=36, file=__DEBUG_FILE)
 
     def acquire(self):
         return self.lock.acquire()

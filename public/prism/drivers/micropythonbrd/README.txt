@@ -6,7 +6,7 @@ How to use these files...
         See https://github.com/micropython/micropython/wiki/Pyboard-Firmware-Update
     B) Update the firmware with this command,
         $ sudo python3 pydfu.py -m -u pybv11-thread-20190730-v1.11-182-g7c15e50eb.dfu
-    C) Copy all the upyb_*.py files to the MicroPython Board, use rshell, see #1.
+    C) Copy all the upyb_*.py files to the MicroPython Board, use rshell, see #2.
 
     The pyboard should now be ready to go.
 
@@ -66,7 +66,8 @@ How to use these files...
 
     Example session,
 
-        $ sudo python3 pydfu.py -u pybv11-thread-20190730-v1.11-182-g7c15e50eb.dfu
+        $ sudo python3 pydfu.py -m -u pybv11-thread-20190730-v1.11-182-g7c15e50eb.dfu
+        Mass erase...
         File: pybv11-thread-20190730-v1.11-182-g7c15e50eb.dfu
             b'DfuSe' v1, image size: 337101, targets: 1
             b'Target' 0, alt setting: 0, name: "ST...", size: 336816, elements: 2
@@ -79,5 +80,14 @@ How to use these files...
         Exiting DFU...
 
 
+6) How to run commands via the "server" on the MicroPython?
 
+    A) steps in #1 must have been done previously.
+    B) Run this command to get latest functions,
+
+        python3 upybrd_cli_server.py --help
+
+       or to get help on sub-commands,
+
+        python3 upybrd_cli_server.py adc --help
 

@@ -89,7 +89,6 @@ class MicroPyServer(object):
 
         self._debug_flag = debug
 
-
     # ===================================================================================
     # Public API to send commands and get results from the MicroPy Server
     # NOTE: "results" must be print()'ed to be return values on the serial (repl) port

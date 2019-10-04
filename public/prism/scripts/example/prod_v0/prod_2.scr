@@ -55,7 +55,7 @@
                               "fail": [ {"fid": "TST100-0", "msg": "Component R1"} ] },
         {"id": "TST100_Meas", "enable": true,  "args": {"min": 0, "max": "%%TST100Max"},
                               "fail": [ {"fid": "TST100-0", "msg": "Component R1"} ] },
-        {"id": "TST001_Skip", "enable": false },
+        {"id": "TST101_Skip", "enable": false },
         {"id": "TST1xxTRDN",  "enable": true }
       ]
     }
