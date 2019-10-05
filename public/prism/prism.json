@@ -19,7 +19,7 @@
 
   // How often to check for Lente connection, when
   // connection available, any results in stage directory are sent
-  "result_server_retry_timer_sec": 10,
+  "result_server_retry_timer_sec": 60,
 
   // set result encryption (defaults to true)
   // - a valid license file is required to encrypt results
