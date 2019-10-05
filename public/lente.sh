@@ -44,7 +44,7 @@ start () {
             --net lentenet \
             --hostname=${HOSTNAME} \
             --restart=${flag_restart} \
-            -p 6600:6600 \
+            -p 6595:6595 \
             -v $(pwd):/app/public \
             --name lente \
             sistemicorp/lente
@@ -52,7 +52,7 @@ start () {
         docker run -d \
             --net lentenet \
             --hostname=${HOSTNAME} \
-            -p 6600:6600 \
+            -p 6595:6595 \
             -v $(pwd):/app/public \
             --name lente \
             --rm \
