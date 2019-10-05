@@ -20,7 +20,7 @@ class tst01xx(TestItem):
 
     def __init__(self, controller, chan, shared_state):
         super().__init__(controller, chan, shared_state)
-        self.logger = logging.getLogger("SC.{}.{}".format(__name__, self.chan))
+        self.logger = logging.getLogger("{}.{}".format(__name__, self.chan))
 
     def TST1xxSETUP(self):
         ctx = self.item_start()  # always first line of test

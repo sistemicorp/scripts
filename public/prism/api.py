@@ -5,7 +5,7 @@ Sistemi Corporation, copyright, all rights reserved, 2019
 Martin Guthrie
 
 """
-from app.const import Const
+from core.const import Const
 
 
 class ResultAPI(Const):

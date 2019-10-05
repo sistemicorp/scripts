@@ -75,7 +75,7 @@ start () {
             --restart=${flag_restart} \
             -e SERVERIP=${SERVERIP} \
             --hostname=${flag_hostname} \
-            -p 6800:6800 \
+            -p 6590:6590 \
             -v $(pwd):/app/public \
             -v /dev:/dev \
             --device=/dev \
@@ -85,7 +85,7 @@ start () {
         docker run -d \
             -e SERVERIP=${SERVERIP} \
             --hostname=${flag_hostname} \
-            -p 6800:6800 \
+            -p 6590:6590 \
             -v $(pwd):/app/public \
             -v /dev:/dev \
             --device=/dev \

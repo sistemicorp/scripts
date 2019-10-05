@@ -8,7 +8,7 @@ Martin Guthrie
 import os
 import sys
 import argparse
-import json
+import jstyleson
 import logging
 import logging.handlers as handlers
 import importlib
@@ -219,27 +219,22 @@ def setup_logging(log_file_name_prefix="log", level=logging.INFO, path="./log"):
 
 
 def read_json_file_to_dict(file):
-    if os.path.isfile(file):
-        content = []
-        with open(file) as json_data:
-            for line in json_data:
-                if line.strip().startswith('#'):
-                    content.append("\n")
-                else:
-                    content.append(line)
-
-        try:
-            _dict = json.loads("".join(content))
-
-        except Exception as e:
-            logger.error(e)
-            return False, e
-
-    else:
+    if not os.path.isfile(file):
         msg = "Unable to find json file %s" % file
         logger.error(msg)
         return False, msg
-    return True, _dict
+
+    with open(file) as f:
+        json_data = f.read()
+
+    try:
+        result_dict = jstyleson.loads(json_data)  # OK
+
+    except Exception as e:
+        logger.error(e)
+        return False, e
+
+    return True, result_dict
 
 
 def parse_args():

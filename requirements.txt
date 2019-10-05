@@ -4,3 +4,4 @@ pyusb
 qrcode
 numpy
 adafruit-ampy
+jstyleson==0.0.2

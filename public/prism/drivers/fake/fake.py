@@ -8,7 +8,7 @@ Martin Guthrie
 import os
 import logging
 import argparse
-from app.sys_log import pub_notice
+from core.sys_log import pub_notice
 
 VERSION = "0.0.1"
 

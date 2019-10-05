@@ -20,7 +20,7 @@ VERSION = "0.0.1"
 def parse_args():
     epilog = """
     Usage examples:
-       python3 upybrd_cli_server.py --port /dev/ttyACM0 adc -1
+       python3 upybrd_cli_server.py --port /dev/ttyACM0 adc --100
        python3 upybrd_cli_server.py --port /dev/ttyACM0 adc --all      
     """
     parser = argparse.ArgumentParser(description='upybrd_cli_server',

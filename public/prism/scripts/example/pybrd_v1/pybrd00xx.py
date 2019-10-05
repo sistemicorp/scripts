@@ -19,7 +19,7 @@ class pybrd00xx(TestItem):
 
     def __init__(self, controller, chan, shared_state):
         super().__init__(controller, chan, shared_state)
-        self.logger = logging.getLogger("SC.pybrd00xx.{}".format(self.chan))
+        self.logger = logging.getLogger("pybrd00xx.{}".format(self.chan))
 
         self.pyb = None
         self.pyb_port = None

@@ -1,4 +1,4 @@
-# Example: Shows substitution being used in more than one place.
+// Example: Shows substitution being used in more than one place.
 {
   "subs": {
     "Lot": {
@@ -21,7 +21,7 @@
   "info": {
     "product": "widget_1",
     "bom": "B00012-003",
-    # list fields present user choice or fill in
+    // list fields present user choice or fill in
     "lot": "%%Lot",
     "location": "%%Loc"
   },
@@ -55,7 +55,7 @@
                               "fail": [ {"fid": "TST100-0", "msg": "Component R1"} ] },
         {"id": "TST100_Meas", "enable": true,  "args": {"min": 0, "max": "%%TST100Max"},
                               "fail": [ {"fid": "TST100-0", "msg": "Component R1"} ] },
-        {"id": "TST001_Skip", "enable": false },
+        {"id": "TST101_Skip", "enable": false },
         {"id": "TST1xxTRDN",  "enable": true }
       ]
     }

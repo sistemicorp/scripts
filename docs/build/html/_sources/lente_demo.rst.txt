@@ -86,12 +86,12 @@ Run Basic
 
 ::
 
-    docker run -d --net lentenet -p 6600:6600 sistemicorp/lente
+    docker run -d --net lentenet -p 6595:6595 sistemicorp/lente
 
 
 * Open Google Chrome to
 
-           http://127.0.0.1:6600
+           http://127.0.0.1:6595
 
   * Note on slower computers, it may take 5-15 seconds for the Lente window to display
   * Lente login user/password is admin/admin
@@ -145,7 +145,7 @@ Run Full
 
 * Open Google Chrome to
 
-        http://127.0.0.1:6600
+        http://127.0.0.1:6595
 
 
 .. [1] This is covered in section TBD

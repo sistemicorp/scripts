@@ -1,17 +1,17 @@
-# Example: Shows how fields can be assigned to variables to be set
-#          in the GUI.
+// Example: Shows how fields can be assigned to variables to be set
+//          in the GUI.
 {
   "subs": {
-    # Each item here is described by,
-    # "key":
-    #   "title": "<title>",
-    #   "type" : "<str|num>", "widget": "<textinput|select>",
-    #   "regex": <"regex"|null|omit>, "default": <default>
-    #
-    # Rules:
-    # 1. key must not have any spaces or special characters
-    # 2. regex can be omitted if not applicable
-    #
+    // Each item here is described by,
+    // "key":
+    //   "title": "<title>",
+    //   "type" : "<str|num>", "widget": "<textinput|select>",
+    //   "regex": <"regex"|null|omit>, "default": <default>
+    //
+    // Rules:
+    // 1. key must not have any spaces or special characters
+    // 2. regex can be omitted if not applicable
+    //
     "Lot": {
       "title": "Lot (format #####)",
       "type" : "str", "widget": "textinput", "regex": "^\\d{5}$", "default": "95035"
@@ -28,7 +28,7 @@
   "info": {
     "product": "widget_1",
     "bom": "B00012-002",
-    # list fields present user choice or fill in
+    // list fields present user choice or fill in
     "lot": "%%Lot",
     "location": "%%Loc"
   },
@@ -41,7 +41,7 @@
       "module": "public.prism.scripts.example.prod_v0.tst00xx",
       "options": {
         "fail_fast": false
-        # add more key/value as required
+        // add more key/value as required
       },
       "items": [
         {"id": "TST0xxSETUP",           "enable": true },
