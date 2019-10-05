@@ -64,11 +64,11 @@ to worry about python packages, versions of modules, etc
 
 ::
 
-    docker run -d -e SERVERIP=192.168.1.10 -p 6800:6800 sistemicorp/prism
+    docker run -d -e SERVERIP=192.168.1.10 -p 6590:6590 sistemicorp/prism
 
 * Open Google Chrome to
 
-    http://127.0.0.1:6800
+    http://127.0.0.1:6590
 
     * Note on slower computers, it may take 5-15 seconds for the Prism window to display
 
@@ -145,7 +145,7 @@ Run Full
 
 * Open Google Chrome to
 
-        http://127.0.0.1:6800
+        http://127.0.0.1:6590
 
 
 .. [1] This is covered in section TBD
