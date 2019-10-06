@@ -6,7 +6,7 @@
   // if upstream_lente_url is null, upstream_stage/quarantine will not be used
   "upstream_lente_url": null,
   "upstream_stage_dir": "./public/upstream/stage",
-  "upstream_quarantine_dir": "./public/upstream/quarantine"
+  "upstream_quarantine_dir": "./public/upstream/quarantine",
   "postgres": {
     "ResultBaseKeysV1": {
       "user": "postgres",

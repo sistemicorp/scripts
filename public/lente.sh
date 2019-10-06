@@ -28,7 +28,7 @@ fi
 flag_restart=no
 
 start () {
-    echo start Lente: $flag_restart
+    echo restart Lente: $flag_restart
     #
     # docker run --rm and --restart commands are exclusive of each other
     #
