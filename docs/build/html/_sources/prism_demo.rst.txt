@@ -90,7 +90,7 @@ Full
 The Full Demo assume you have followed the instructions for the basic_ demo.
 
 The Full Demo works by creating a local file structure and telling the ``Prism`` Docker container to use that
-local file system.  This requires a more advanced `docker run` command.
+local file system.
 
 `Git <https://git-scm.com/>`_ and `Github <http://www.github.com>`_ are used.
 
@@ -149,6 +149,4 @@ Run Full
 
 
 .. [1] This is covered in section TBD
-
-
 
