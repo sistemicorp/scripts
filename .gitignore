@@ -8,3 +8,5 @@ create_manifest
 public/postgdata/
 
 public/result/
+
+public/users.sqlite

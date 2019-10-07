@@ -5,18 +5,18 @@ Lente screenshots.
 
 Dashboard
 *********
-The dashboard shows an overall realtime view into the production results.
+Lente provides two dashboards.  The first shown here shows a historical summary of units tested, pass/fail and yield, over
+the previous week.  The table below shows the currently active test stations, and their status.
 
-A row of pulldown selectors allow you to filter the view of data to a particular subset. All
-widgets are updated with data only from these filter settings.
+.. image:: static/Screenshot_lente_dashboard_02.png
 
-A date range is also available.
+The second dashboard is for detailed results analysis.  The important thing about this dashboard is that the results shown
+graphically or in the table are filtered by the current state of the "Select/Date" filters across the top of the dashboard.
 
-The upper right corner shows current yield status.
+The graph is a view of the previous week's history of Pass/Fail/Yield numbers.
 
-The left (green) table provides a list of all passing results, and the right (red) table all the failing results.
+The right table is each result.  By selecting a result in this table, a new tab is opened with the result details.
 
-The lower row graphs show test durations, test pass/fail rates per hour.  The bottom right red table
-is a summarized table of the top failure items.
+The table on the bottom left counts the various types of Fail tests.
 
 .. image:: static/Screenshot_lente_dashboard_01.png

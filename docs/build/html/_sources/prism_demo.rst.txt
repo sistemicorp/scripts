@@ -3,6 +3,10 @@ Prism Demo
 
 **Prism**
 
+Sistemi Lente/Prism programs are deployed as Docker containers, which allows the programs to run in a virtual
+environment, and be independent of your host operating system.  This means, for example, that you don't have
+to worry about python packages, versions of modules, etc..
+
 This is the program that production operators would use, interfaces with test equipment and the Device Under Test (DUT)
 
 The instructions are split into two catagories,
@@ -36,35 +40,26 @@ Basic
 *****
 
 The Basic Demo is the easiest and fastest way to try out Prism.  However you will not be able to
-edit or create new scripts.
+edit or create new scripts, or send results to the Lente server.
 
-
-Run Basic
-=========
-
-Sistemi Lente/Prism programs are deployed as Docker containers, which allows the programs to run in a virtual
-environment, and be independent of your host operating system.  This means, for example, that you don't have
-to worry about python packages, versions of modules, etc
 
 * First the **Prism** Docker container must be `pulled` from docker hub
+
+  * run this pull command to check for updates to **Prism**
 
 ::
 
     docker pull sistemicorp/prism
 
 
-* run this pull command to check for updates to **Prism**
-
 * Run **Prism** container
 
   * it doesn't matter which directory you are in
-  * replace '192.168.1.10' with the IP address of computer you are running this on
 
-    * do not use '127.0.0.1' or 'localhost'
 
 ::
 
-    docker run -d -e SERVERIP=192.168.1.10 -p 6590:6590 sistemicorp/prism
+    docker run -d -p 6590:6590 sistemicorp/prism
 
 * Open Google Chrome to
 
@@ -72,16 +67,17 @@ to worry about python packages, versions of modules, etc
 
     * Note on slower computers, it may take 5-15 seconds for the Prism window to display
 
-  * Prism login user/password is admin/admin
-  * Other users passwords are `qwerty`
+  * Prism login user/password is admin@here.com/password
+  * Other users passwords are `password`
 
 
-* Run your first script
+* Run your first script after logging in,
 
-  * Select pulldown menu item `Test Config`
-  * Select script `prod_0.scr`
-  * Press button `Submit`
-  * If everything checked out, the `Test` button will turn Green, press it, and you should be on the test screen, press Play to test
+  * Select button `Test Configuration`
+  * Select script `prod_0.scr` from the pulldown
+  * Press button `Validate`
+  * If everything checked out, the `Start Testing` button will turn Green, press it, and
+    you should be on the test screen, press Start to test
   * **Note:** The tests have delays in them for demo effect.  The delays are not needed.
 
 Full
@@ -90,7 +86,7 @@ Full
 The Full Demo assume you have followed the instructions for the basic_ demo.
 
 The Full Demo works by creating a local file structure and telling the ``Prism`` Docker container to use that
-local file system.  This requires a more advanced `docker run` command.
+local file system.
 
 `Git <https://git-scm.com/>`_ and `Github <http://www.github.com>`_ are used.
 
@@ -149,6 +145,4 @@ Run Full
 
 
 .. [1] This is covered in section TBD
-
-
 
