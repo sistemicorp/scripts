@@ -25,6 +25,8 @@ To enable manifest checking, the `prism.json` file must have this setting,
 If `manifest_locked` is `false`, which it is in demo and development scenarios, ONLY the `prism.json` itself is
 in the manifest.  Therefore, `prism.json` file can never be changed without updating the manifest file.
 
+**Lente is required to update the manifest file.**
+
 
 Exclusions
 **********
@@ -47,4 +49,4 @@ Update Manifest
 Lente can update the manifest.  See main drop down menu, Station Management.
 
 In a deployed production environment, Lente deploys scripts/programs to the attached Prisms. This
-process includes a update of the Manifest.
+process includes an automatic update of the Manifest.
