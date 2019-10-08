@@ -32,7 +32,7 @@ class upybrdPlayPub(threading.Thread):
     def __init__(self, ch, drv, shared_state):
         super(upybrdPlayPub, self).__init__()
         self._stop_event = threading.Event()
-        self.logger = logging.getLogger("SC.{}.{}".format(__class__.__name__, ch))
+        self.logger = logging.getLogger("{}.{}".format(__class__.__name__, ch))
 
         self.ch = ch
         self.pyb_port = drv["obj"]["port"]
@@ -133,7 +133,7 @@ class HWDriver(object):
     MICROPYTHON_FIRMWARE_RELEASE = "1.11.0"  # from os.uname() on pyboard
 
     def __init__(self, shared_state):
-        self.logger = logging.getLogger("SC.{}.{}".format(__class__.__name__, self.SFN))
+        self.logger = logging.getLogger("{}.{}".format(__class__.__name__, self.SFN))
         self.logger.info("Start")
         self.shared_state = shared_state
         self.pybs = []
@@ -168,6 +168,8 @@ class HWDriver(object):
         self.pybs.clear()
         pyboard = MicroPyBrd(self.logger)
         for port in ports:
+            if "USB" in port: continue
+
             pyb = pyboard.scan_ports(port)
 
             # pyb will be a list of dicts, since we sent in the port to scan,

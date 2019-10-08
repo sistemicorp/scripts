@@ -92,7 +92,7 @@ class attrdict(dict):
 class ChanCon(object):
 
     def __init__(self, num=0, script=None, shared_state=None, script_filename="UNKNOWN", operator="UNKNOWN"):
-        self.logger = logging.getLogger("SC.{}.{}".format(__class__.__name__, num))
+        self.logger = logging.getLogger("{}.{}".format(__class__.__name__, num))
         self.ch = num
         self.script = script
         self.shared_state = shared_state
@@ -195,7 +195,7 @@ class ChanCon(object):
 
 def setup_logging(log_file_name_prefix="log", level=logging.INFO, path="./log"):
     global logger
-    logger = logging.getLogger("SC")
+    logger = logging.getLogger()
     logger.setLevel(level)
 
     log_file_name_prefix = os.path.basename(log_file_name_prefix)
@@ -287,7 +287,7 @@ def script_validated(script):
 
 
 def main():
-    setup_logging(log_file_name_prefix="scdev", path="log")
+    setup_logging(log_file_name_prefix="dev", path="log")
 
     args = parse_args()
     logger.info("args: {}".format(args))

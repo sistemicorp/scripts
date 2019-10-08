@@ -11,15 +11,12 @@ upybrd_cli.py:
 """
 try:
     # for when used by Prism
-    from public.prism.drivers.micropythonbrd.list_serial import serial_ports
+    from public.prism.drivers.iba01.list_serial import serial_ports
 except:
     # for when called by main
     from list_serial import serial_ports
 
-import sys
 import time
-import logging
-import argparse
 
 import ampy.files as files
 import ampy.pyboard as pyboard
@@ -27,7 +24,7 @@ import ampy.pyboard as pyboard
 try:
     from stublogger import StubLogger
 except:
-    from public.prism.drivers.micropythonbrd.stublogger import StubLogger
+    from public.prism.drivers.iba01.stublogger import StubLogger
 
 VERSION = "0.2.0"
 

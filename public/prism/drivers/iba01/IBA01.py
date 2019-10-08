@@ -14,11 +14,11 @@ import ampy.pyboard as pyboard
 try:
     from stublogger import StubLogger
 except:
-    from public.prism.drivers.micropythonbrd.stublogger import StubLogger
+    from public.prism.drivers.iba01.stublogger import StubLogger
 
 
 
-VERSION = "0.0.1"
+VERSION = "0.2.0"
 
 
 class IBA01(pyboard.Pyboard):
