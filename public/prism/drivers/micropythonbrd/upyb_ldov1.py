@@ -9,7 +9,7 @@ Notes:
 import pyb
 import machine
 from time import sleep
-
+from upyb_control import IBA01Control
 
 PG_GOOD = "PG_GOOD"                 # PG good status
 PG_UNSUPPORTED = "PG_UNSUPPORTED"   # PG unknown status
@@ -55,16 +55,18 @@ class LDOV1(object):
 
     Notes:
         1) For Open-Drain to be in the Hi-Z state, the pin must be set to an input.
-        2) This driver does not cache the PCA9555 registers, instead, they are read
+        2) This driver does not cache the PCA9535 registers, instead, they are read
            before setting them.
         3) The calibration loads are handled like a bit-mask, each bit turns on
            a load, with special case of P14/15 which are turned on together
 
     """
+    LDO_TYPE = ["TPS7A2501", "TPS7A7200"]
+    ADC_CHANNEL = [0, 1]
 
     LDO_ENABLE_SHIFT = 6    # bit location of the LDOs enable pin
 
-    LDO_VOLTAGE_MIN = 1650          # LDO output minimum
+    LDO_VOLTAGE_MIN = [1650, 500]   # LDO output minimum, based on type index
     LDO_VOLTAGE_MAX = 3500          # LDO output maximum
     LDO_SET_VOLTAGE_MASK = 0x3f     # mask of the voltage set pins
     LDO_VOLTAGE_50mv = 50           # LSB of the LDO volt range
@@ -80,14 +82,15 @@ class LDOV1(object):
     LDO_VOLTAGE_1600mv = 1600       # voltage value of the 1600mv pin
     LDO_VOLTAGE_1600mv_SHIFT = 5    # register location of the 16000mv pin
 
+    # the resistance at each GPIO pin for calibration
     CAL_P11_R = 15000
     CAL_P12_R = 4000
     CAL_P13_R = 1000
-    CAL_P14_R = 100
+    CAL_P14_R = 100   # TODO: 100 is too large, HW needs to change to ~50
 
-    ADC_IN = 0
+    ADC_SAMPLES = 4
 
-    def __init__(self, i2c, addr, name, adc, debug_print=None):
+    def __init__(self, i2c, addr, name, adc, debug_print=None, type=0):
         self._name = name
         self._i2c = i2c
         self._addr = addr          # this is address if GIO expander than controls this LDO
@@ -96,10 +99,11 @@ class LDOV1(object):
         self._cal_mask = 0x0
         self._adc = adc
         self._cal_matrix = {}  # cals, voltage: [currents] # starting at zero
+        self._type = type
 
         self.reset()
 
-        if self._debug: self._debug("init finished", 102, _DEBUG_FILE, self._name)
+        if self._debug: self._debug("init {}".format(self.LDO_TYPE[type]), 102, _DEBUG_FILE, self._name)
 
     def reset(self):
         """ puts the LDOs into a known state
@@ -194,11 +198,11 @@ class LDOV1(object):
         :return: success, voltage_mv
         """
         # validate voltage_mv, check range, and divisible by 50 mV
-        if self.LDO_VOLTAGE_MIN <= voltage_mv <= self.LDO_VOLTAGE_MAX and (voltage_mv % self.LDO_VOLTAGE_50mv) == 0:
+        if self.LDO_VOLTAGE_MIN[self._type] <= voltage_mv <= self.LDO_VOLTAGE_MAX and (voltage_mv % self.LDO_VOLTAGE_50mv) == 0:
             self._voltage = voltage_mv
             # set the LDO control pins via the I2C GPIO mux
             set_voltage = 0
-            voltage_mv = voltage_mv - self.LDO_VOLTAGE_MIN
+            voltage_mv -= self.LDO_VOLTAGE_MIN[self._type]
             if voltage_mv and voltage_mv - self.LDO_VOLTAGE_1600mv >= 0:
                 set_voltage |= (0x1 << self.LDO_VOLTAGE_1600mv_SHIFT) & self.LDO_SET_VOLTAGE_MASK
                 voltage_mv -= self.LDO_VOLTAGE_1600mv
@@ -322,8 +326,17 @@ class LDOV1(object):
         if calibrating: offset_current = 0
         else: offset_current = self._cal_matrix[self._voltage_mv][0]
 
-        adc_value = self._adc.read(rate=4, channel1=0)
+        ch = self.ADC_CHANNEL[self._type]
+        adc_value = 0
+        for i in range(self.ADC_SAMPLES):
+            adc_value += self._adc.read(rate=4, channel1=ch)
+        adc_value /= self.ADC_SAMPLES
         current_ma = int(adc_value / 0x7fff / 12.5 * 1000000.0) - offset_current
+
+        if self._debug:
+            msg = "current_ua: adc_value {} ".format(adc_value)
+            self._debug(msg, 315, _DEBUG_FILE, self._name)
+
         return True, current_ma
 
 
@@ -334,20 +347,27 @@ if True:
     def _print(msg, line=0, file="unknown", name=''):
         print("{:15s}:{:10s}:{:4d}: {}".format(file, name, line, msg))
 
-    V1_I2C_ADDR = 0x20
+    V1_I2C_ADDR = 0x20  # addr of GPIO expander controlling the LDO
+    V2_I2C_ADDR = 0x21
+    CON_I2C_ADDR = 0x23
 
     # i2c = machine.I2C("X")
     i2c = UPYB_I2C(UPYB_I2C_HW_I2C1, debug_print=_print)
 
-    ads = upyb_ads1115.ADS1115(i2c, 0x48, 1)
+    ads = upyb_ads1115.ADS1115(i2c, 0x48, gain=1)
 
-    ldo = LDOV1(i2c, V1_I2C_ADDR, "V1", ads, debug_print=_print)
+    con = IBA01Control(i2c, CON_I2C_ADDR, "CON", debug_print=_print)
 
+    #ldo = LDOV1(i2c, V1_I2C_ADDR, "V1", ads, debug_print=_print)
+    ldo = LDOV1(i2c, V2_I2C_ADDR, "V2", ads, debug_print=_print, type=1)
+
+    # basic enable/disable (after reset)
     ldo.enable()
     sleep(2)
     ldo.enable(False)
     sleep(1)
 
+    # output some voltages, hold for a few sec and each one to measure
     test_voltages = [1700, 1800, 1900, 2000, 2100]
     ldo.enable()
     for v in test_voltages:
@@ -355,6 +375,7 @@ if True:
         sleep(1)
     ldo.enable(False)
 
+    # calibrate and apply loads, measure error
     TEST_VOLTAGE = 2000
     test_cals = [1, 2, 4, 8, 6]
     ldo.enable()
@@ -366,7 +387,7 @@ if True:
         _, current_ua = ldo.current_ua()
         expected_ua = TEST_VOLTAGE * 1000 / resistance
         err = (expected_ua - current_ua) * 100 / expected_ua
-        _print("current: {} uA, expected {} uA, {}% error".format(current_ua, expected_ua, err))
+        _print("current: {} uA, expected {} uA, {:.1f}% error".format(current_ua, expected_ua, err))
         sleep(1)
     ldo.enable(False)
     ldo.cal_load(0)
