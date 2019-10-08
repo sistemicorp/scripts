@@ -8,7 +8,7 @@ Notes:
 """
 import pyb
 import machine
-from time import sleep
+from time import sleep_ms
 
 from iba01_const import *
 
@@ -85,6 +85,8 @@ class Supply12(object):
     CAL_P14_R = 100   # TODO: 100 is too large, HW needs to change to ~50
 
     ADC_SAMPLES = 4  # number of samples to take an average over
+    DELAY_CAL_LOAD_SETTLE_MS = 20
+    DELAY_PG_LOAD_SETTLE_MS = 100
 
     def __init__(self, perph, addr, name, debug_print=None, type=0):
         self._name = name
@@ -94,7 +96,7 @@ class Supply12(object):
         self._voltage_mv = 0       # cached output voltage
         self._debug = debug_print
         self._cal_mask = 0x0
-        self._cal_matrix = {}  # cals, voltage: [currents] # starting at zero
+        self._cal_matrix = {}  # { voltage: [(resistance, current_ua)], ...} # starting at zero
         self._type = type
 
         self.reset()
@@ -169,7 +171,7 @@ class Supply12(object):
         """
         # validate voltage_mv, check range, and divisible by 50 mV
         if self.LDO_VOLTAGE_MIN[self._type] <= voltage_mv <= self.LDO_VOLTAGE_MAX and (voltage_mv % self.LDO_VOLTAGE_50mv) == 0:
-            self._voltage = voltage_mv
+            self._voltage_mv = voltage_mv
             # set the LDO control pins via the I2C GPIO mux
             set_voltage = 0
             voltage_mv -= self.LDO_VOLTAGE_MIN[self._type]
@@ -202,23 +204,18 @@ class Supply12(object):
             register = (_register & ~self.LDO_SET_VOLTAGE_MASK) | set_voltage
 
             if self._debug:
-                msg = "voltage_mv {}, 0x{:02x} -> 0x{:02x}".format(self._voltage, _register, register)
-                self._debug(msg, 231, _DEBUG_FILE, self._name)
+                msg = "voltage_mv {}, 0x{:02x} -> 0x{:02x}".format(self._voltage_mv, _register, register)
+                self._debug(msg, 208, _DEBUG_FILE, self._name)
 
             self._perph.PCA95535_write(self._addr, PCA9555_CMD_CONFIG_P0, register)
-            sleep(0.1)
-            success, pg_status = self.power_good()
-
-            if success:
-                return success, set_voltage
-
-            return success, "PG failure"
+            sleep_ms(self.DELAY_PG_LOAD_SETTLE_MS)
+            return self.power_good()
 
         if self._debug:
             msg = "voltage_mv {} not supported".format(self._voltage)
-            self._debug(msg, 233, _DEBUG_FILE, self._name)
+            self._debug(msg, 216, _DEBUG_FILE, self._name)
 
-        return False, "selected voltage is not supported"
+        return False, "{} mV voltage is not supported".format(voltage_mv)
 
     def power_good(self):
         """ Return the PG pin status
@@ -227,14 +224,12 @@ class Supply12(object):
         """
         # check the pin via the I2C GPIO mux
         pg_cache = self._perph.PCA95535_read(self._addr, PCA9555_CMD_INPUT_P0)
-        pg_cache = (pg_cache & ~0x7F) & 0xff
         pg_ret = PG_BAD
-        if pg_cache & 0x80:
-            pg_ret = PG_GOOD
+        if pg_cache & 0x80: pg_ret = PG_GOOD
 
         if self._debug:
             msg = "power_good: {}".format(pg_ret)
-            self._debug(msg, 259, _DEBUG_FILE, self._name)
+            self._debug(msg, 231, _DEBUG_FILE, self._name)
 
         return True, pg_ret
 
@@ -269,11 +264,11 @@ class Supply12(object):
 
         if self._debug:
             msg = "cal_load 0x{:02x} {:.1f}, 0x{:02x} -> 0x{:02x}".format(value, _res, p1_config_cache, p1_config)
-            self._debug(msg, 298, _DEBUG_FILE, self._name)
+            self._debug(msg, 267, _DEBUG_FILE, self._name)
 
         return True, _res
 
-    def calibrate(self, resistance=0.0):
+    def calibrate(self, auto=True, resistance=0.0):
         """ Add calibration data
 
         Initially we look only for the zero load bias current offset
@@ -283,19 +278,35 @@ class Supply12(object):
         :return:
         """
         self._cal_matrix[self._voltage_mv] = []
-        _, offset_current = self.current_ua(calibrating=True)
-        self._cal_matrix[self._voltage_mv].append(offset_current)
+
+        if auto:
+            test_cals = [0, 1, 2, 4, 8]  # sets the cal loads
+            for c in test_cals:
+                _, resistance = self.cal_load(c)
+                sleep_ms(self.DELAY_CAL_LOAD_SETTLE_MS)
+                _, current_ua = self.current_ua(calibrating=True)
+                self._cal_matrix[self._voltage_mv].append((resistance, current_ua))
+
+        else:
+            _, current_ua = self.current_ua(calibrating=True)
+            self._cal_matrix[self._voltage_mv].append((resistance, current_ua))
+
         if self._debug:
             msg = "calibrate: {} ".format(self._cal_matrix)
-            self._debug(msg, 315, _DEBUG_FILE, self._name)
+            self._debug(msg, 296, _DEBUG_FILE, self._name)
+
+        return True, None
+
+    def _get_calibration_offset(self, adc_value):
+        if self._voltage_mv not in self._cal_matrix:
+            # TODO: pick closest calibrated voltage
+            pass
+
+        # TODO: make this better, calibrate based on the current adc value.
+
+        return True, self._cal_matrix[self._voltage_mv][0][1]
 
     def current_ua(self, calibrating=False):
-        if self._voltage_mv not in self._cal_matrix:
-            return False, "Uncalibrated current for this voltage"
-
-        if calibrating: offset_current = 0
-        else: offset_current = self._cal_matrix[self._voltage_mv][0]
-
         ch = self.ADC_CHANNEL[self._type]
         adc_value = 0
         self._perph.adc_acquire()
@@ -304,6 +315,16 @@ class Supply12(object):
 
         self._perph.adc_release()
         adc_value /= self.ADC_SAMPLES
+
+        if calibrating:
+            offset_current = 0
+        else:
+            success, offset_current = self._get_calibration_offset(adc_value)
+            if not success:
+                if self._debug:
+                    msg = "current_ua: _get_calibration_offset({}) failed at {} mv".format(adc_value, self._voltage_mv)
+                    self._debug(msg, 329, _DEBUG_FILE, self._name)
+
         current_ma = int(adc_value / 0x7fff / 12.5 * 1000000.0) - offset_current
 
         if self._debug:
@@ -312,9 +333,36 @@ class Supply12(object):
 
         return True, current_ma
 
+    def get_voltage_mv(self):
+        return self._voltage_mv
+
 
 if False:
+    # Self Tests, example session, (set to True),
+    # martin@martin-Lenovo-YOGA-900-13ISK2:~/sistemi/git/scripts/public/prism/drivers/iba01$ rshell
+    # Connecting to /dev/ttyACM0 (buffer-size 512)...
+    # Trying to connect to REPL  connected
+    # Testing if sys.stdin.buffer exists ... Y
+    # Retrieving root directories ... /flash/
+    # Setting time ... Oct 08, 2019 12:14:00
+    # Evaluating board_name ... pyboard
+    # Retrieving time epoch ... Jan 01, 2000
+    # Welcome to rshell. Use Control-D (or the exit command) to exit rshell.
+    # /home/martin/sistemi/git/scripts/public/prism/drivers/iba01> cp iba01_supply12.py /flash
+    # /home/martin/sistemi/git/scripts/public/prism/drivers/iba01> repl
+    # Entering REPL. Use Control-X to exit.
+    # >
+    # MicroPython v1.11-182-g7c15e50eb on 2019-07-30; PYBv1.1 with STM32F405RG
+    # Type "help()" for more information.
+    # >>>
+    # >>> import iba01_supply12
+    # iba01_perphs   :periphs   :  63: i2c scan: [32, 33, 34, 35, 64, 72]
+    # iba01_perphs   :periphs   :  70: init complete, iba01 True
+    # iba01_supply12 :V2        : 115: reset CONFIG_P0 0xbf
+    # ...
+
     from iba01_perphs import Peripherals
+    from time import sleep
 
     def _print(msg, line=0, file="unknown", name=''):
         print("{:15s}:{:10s}:{:4d}: {}".format(file, name, line, msg))
@@ -343,7 +391,6 @@ if False:
     test_cals = [1, 2, 4, 8, 6]
     ldo.enable()
     ldo.voltage_mv(TEST_VOLTAGE)
-    ldo.cal_load(0)
     ldo.calibrate()
     for c in test_cals:
         _, resistance = ldo.cal_load(c)
@@ -354,6 +401,4 @@ if False:
         sleep(1)
     ldo.enable(False)
     ldo.cal_load(0)
-
-
 

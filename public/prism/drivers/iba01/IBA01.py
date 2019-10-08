@@ -144,7 +144,7 @@ class IBA01(pyboard.Pyboard):
             if success:
                 for r in result:
                     if r.get("method", False) == "_debug":
-                        self.logger.info("PYBOARD DEBUG: {}".format(r["value"]))
+                        self.logger.debug("PYBOARD DEBUG: {}".format(r["value"]))
                         retry += 1  # debug lines don't count against retrying
                     if r.get("method", False) == method:
                         succeeded = True
@@ -301,21 +301,20 @@ class IBA01(pyboard.Pyboard):
         c = {'method': 'reset', 'args': {}}
         return self._verify_single_cmd_ret(c)
 
-    def set_ldo_voltage(self, name, voltage_mv):
-        """ set LDO voltage
+    def supply_enable(self, name, enable=True, voltage_mv=None, cal=True):
+        """ set Supply
 
-        :param name: "V1", "V2", "V3"
-        :param voltage_mv: 900 to 3500
+        - If changing voltage while connected to the DUT, 'cal' should be set False.
+          Note that reading current outside of calibrated voltages, may result in increased error.
+          Calibrate all intended voltages before applying Supply to the DUT.
+
+        :param name: <"V1"|"V2">
+        :param enable: <True|False>,      # default: True
+        :param voltage_mv: <voltage_mv>,  # if not specified, current setting and PG is returned
+        :param cal: <True|False>}         # default: True
         :return: success, result
         """
-        c = {'method': 'set_ldo_voltage', 'args': {'name': name, 'voltage_mv': voltage_mv}}
+        c = {'method': 'supply_enable', 'args': {'name': name, 'voltage_mv': voltage_mv, "enable": enable, "cal": cal}}
         return self._verify_single_cmd_ret(c)
 
-    def power_good(self, name):
-        """ Check the status of the power good pin
 
-        :param name: "V1", "V2", "V3"
-        :return: success, status
-        """
-        c = {'method': 'power_good', 'args': {'name': name}}
-        return self._verify_single_cmd_ret(c)

@@ -85,7 +85,7 @@ How to use these files...
     A) steps in #1 must have been done previously.
     B) Run this command to get latest functions,
 
-        python3 upybrd_cli_server.py --help
+        python3 IBA01_cli.py --help
 
        or to get help on sub-commands,
 

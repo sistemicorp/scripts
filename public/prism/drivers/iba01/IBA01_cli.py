@@ -4,6 +4,13 @@
 Sistemi Corporation, copyright, all rights reserved, 2019
 Martin Guthrie
 
+This CLI provides a linux CLI interface to the MicroPyBoard "server".
+
+In order for this to work, all ther iba01_*.py files must be copied onto the
+MicroPyBoard.
+
+Originally this was/is intended to be Unit Tests for the IBA01 APIs.
+
 """
 import sys
 import time
@@ -60,12 +67,8 @@ def parse_args():
     supplies_parser = subp.add_parser('supplies')
     supplies_parser.add_argument('-a', "--all", dest="all", action='store_true', help='run all tests sequentially',
                              default=False, required=False)
-    supplies_parser.add_argument('--100', dest="t100", action='store_true', help='set V1 supply, 1800 to 3300', default=False, required=False)
-    supplies_parser.add_argument('--101', dest="t101", action='store_true', help='set V2 supply, 1800 to 3300', default=False, required=False)
-    supplies_parser.add_argument('--102', dest="t102", action='store_true', help='set V3 supply, 1800 to 3300', default=False, required=False)
-    supplies_parser.add_argument('--200', dest="t200", action='store_true', help='Check Power Good status for V1', default=False, required=False)
-    supplies_parser.add_argument('--201', dest="t201", action='store_true', help='Check Power Good status for V2', default=False, required=False)
-    supplies_parser.add_argument('--202', dest="t202", action='store_true', help='Check Power Good status for V3', default=False, required=False)
+    supplies_parser.add_argument('--100', dest="t100", action='store_true', help='set V1 supply, 1800 to 2700', default=False, required=False)
+    supplies_parser.add_argument('--200', dest="t200", action='store_true', help='set V2 supply, 1800 to 2700', default=False, required=False)
 
     args = parser.parse_args()
 
@@ -239,60 +242,39 @@ def test_supplies(args, pyb):
     if all or args.t100:
         did_something = True
         logging.info("T100: Setting V1 to 1800")
-        success, result = pyb.set_ldo_voltage("V1", 1800)
+        success, result = pyb.supply_enable("V1", enable=True, voltage_mv=1800, cal=True)
+        logging.info("{} {}".format(success, result))
         if _success and not success:
             _success = False
             logging.error("failed to set voltage")
 
-        logging.info("T100: Setting V1 to 500")
+        logging.info("T100: Setting V1 to 2700")
         # this test should fail
-        success, result = pyb.set_ldo_voltage("V1", 500)
+        success, result = pyb.supply_enable("V1", voltage_mv=2700)
         logging.info("{} {}".format(success, result))
-        if not success:
-            success = True
-        else:
-            logging.error("setting invaild voltage should have failed")
-            success = False
+        if _success and not success:
+            _success = False
+            logging.error("failed to set voltage")
 
-        if _success and not success: _success = False
-
-    if all or args.t101:
-        did_something = True
-        logging.info("T101: Setting V2 to 900")
-        success, result = pyb.set_ldo_voltage("V2", 900)
-        logging.info("T101: Setting V2 to 3500")
-        success, result = pyb.set_ldo_voltage("V2", 3500)
-        logging.info("{} {}".format(success, result))
-        if _success and not success: _success = False
-
-    if all or args.t102:
-        did_something = True
-        logging.info("T102: Setting V3 to 3300")
-        success, result = pyb.set_ldo_voltage("V3", 3300)
-        logging.info("T102: Setting V3 to 3366")
-        success, result = pyb.set_ldo_voltage("V3", 3366)
-        logging.info("{} {}".format(success, result))
         if _success and not success: _success = False
 
     if all or args.t200:
         did_something = True
-        logging.info("T200: Checking V1 PG status")
-        success, result = pyb.power_good("V1")
+        logging.info("T200: Setting V2 to 1800")
+        success, result = pyb.supply_enable("V2", enable=True, voltage_mv=1800, cal=True)
         logging.info("{} {}".format(success, result))
-        if _success and not success: _success = False
+        if _success and not success:
+            _success = False
+            logging.error("failed to set voltage")
 
-    if all or args.t201:
-        did_something = True
-        logging.info("T201: Checking V2 PG status")
-        success, result = pyb.power_good("V2")
+        logging.info("2100: Setting V2 to 2700")
+        # this test should fail
+        success, result = pyb.supply_enable("V2", voltage_mv=2700)
         logging.info("{} {}".format(success, result))
-        if _success and not success: _success = False
+        if _success and not success:
+            _success = False
+            logging.error("failed to set voltage")
 
-    if all or args.t202:
-        did_something = True
-        logging.info("T202: Checking V3 PG status")
-        success, result = pyb.power_good("V3")
-        logging.info("{} {}".format(success, result))
         if _success and not success: _success = False
 
     if did_something: return _success

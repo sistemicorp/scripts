@@ -10,8 +10,8 @@ import logging
 import threading
 import time
 from public.prism.drivers.iba01.list_serial import serial_ports
-from public.prism.drivers.iba01.upybrd import pyboard2
-from public.prism.drivers.iba01.upybrd_cli import MicroPyBrd
+from public.prism.drivers.iba01.IBA01 import IBA01
+from public.prism.drivers.iba01.MicroPyBoard import MicroPyBrd
 
 from pubsub import pub
 from core.const import PUB, CHANNEL
@@ -192,7 +192,7 @@ class HWDriver(object):
 
             # now start the pyboard server
             port = pyb[0]["port"]
-            pyb[0]["pyb"] = pyboard2(port, loggerIn=logging.getLogger("SC.pyboard2.{}".format(pyb[0].get('id'))))
+            pyb[0]["pyb"] = IBA01(port, loggerIn=logging.getLogger("IBA01.{}".format(pyb[0].get('id'))))
             success, result = pyb[0]["pyb"].start_server()
             self.logger.info("{} {}".format(success, result))
 

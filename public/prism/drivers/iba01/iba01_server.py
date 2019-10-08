@@ -1,3 +1,8 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Sistemi Corp, copyright, all rights reserved, 2019
+"""
 import _thread
 import time
 import pyb
@@ -60,6 +65,8 @@ class MicroPyServer(object):
     JIG_CLOSED_TIMER_FREQ = 1  # Hz
     JIG_CLOSED_PIN = "X1"
 
+    SUPPLY_NAMES = ["V1", "V2"]
+
     def __init__(self, debug=False):
         self.lock = _thread.allocate_lock()
         self._cmd = MicroPyQueue()
@@ -74,9 +81,9 @@ class MicroPyServer(object):
                     "adc_read_multi": {},  # cache args
                     "perphs": None,
                     "threads": {},
-                    "v1": None,
-                    "v2": None,
-                    "vbat": None,
+                    "V1": None,
+                    "V2": None,
+                    "VBAT": None,
                     }
 
         # Jig closed
@@ -87,8 +94,8 @@ class MicroPyServer(object):
         self.is_ina01 = self.ctx["perphs"].is_iba01()
 
         if self.is_ina01:
-            self.ctx['v1'] = Supply12(self.ctx["perphs"], V1_I2C_ADDR, "V1", debug_print=self._debug, type=0)
-            self.ctx['v2'] = Supply12(self.ctx["perphs"], V2_I2C_ADDR, "V2", debug_print=self._debug, type=1)
+            self.ctx['V1'] = Supply12(self.ctx["perphs"], V1_I2C_ADDR, "V1", debug_print=self._debug, type=0)
+            self.ctx['V2'] = Supply12(self.ctx["perphs"], V2_I2C_ADDR, "V2", debug_print=self._debug, type=1)
 
         self._debug_flag = debug
 
@@ -155,6 +162,7 @@ class MicroPyServer(object):
                     method = getattr(self, method, None)
                     if method is not None:
                         method(args)
+                        # methods should always be found because they are checked before being queued
 
             # allows other threads to run, but generally speaking there should be no other threads(?)
             time.sleep_ms(self.SERVER_CMD_SLEEP_MS)
@@ -167,7 +175,7 @@ class MicroPyServer(object):
         :return:
         """
         if self._debug_flag:
-            self._ret.put({"method": "_debug", "value": "{:20}:{:4}: {}".format(file, line, msg), "success": True})
+            self._ret.put({"method": "_debug", "value": "{:15s}:{:10s}:{:4d}: {}".format(file, name, line, msg), "success": True})
 
     # ===================================================================================
     # Methods
@@ -203,7 +211,7 @@ class MicroPyServer(object):
         :param args: not used
         :return: self.VERSION
         """
-        self._debug("testing message", 204)
+        self._debug("testing message", 217)
         self._ret.put({"method": "version", "value": self.VERSION, "success": True})
 
     def _toggle_led(self, led, on_ms, off_ms, once=False):
@@ -515,19 +523,60 @@ class MicroPyServer(object):
     # ===============================================================================================
     # IBA01 - Interface Board A01 APIs
 
-    def v1_enable(self, args):
+    def supply_enable(self, args):
+        """ Enable V1 and set Voltage
+        - voltage is set first
+
+        :param args: {"name": <"V1"|"V2">,
+                      'enable': <True|False>,      # default: True
+                      "voltage_mv": <voltage_mv>,  # if not specified, current setting and PG is returned
+                      "cal": <True|False>}         # default: True
+        return: {...}
+        """
         if not self.is_ina01:
-            self._ret.put({"method": "v1_enable", "value": "IBA01 not present", "success": False})
+            self._ret.put({"method": "supply_enable", "value": "IBA01 not present", "success": False})
+            return
+
+        name = args.get('name', False)
+        if name not in self.SUPPLY_NAMES:
+            value = "supply name {} not in {}".format(name, self.SUPPLY_NAMES)
+            self._ret.put({"method": "supply_enable", "value": value, "success": False})
             return
 
         enable = args.get('enable', True)
-        success, en = self.ctx['v1'].enable(enable=enable)
+        voltage_mv = args.get('voltage_mv', False)
+        calibrate = args.get('cal', True)
+
+        if voltage_mv:
+            success, pg_or_err = self.ctx[name].voltage_mv(voltage_mv=voltage_mv)
+            if not success:
+                value = "{} enable={}, voltage_mv={}, err {}".format(name, enable, voltage_mv, pg_or_err)
+                self._ret.put({"method": "supply_enable", "value": value, "success": False})
+                return
+
+        else:
+            voltage_mv = self.ctx[name].get_voltage_mv()
+            _, pg_or_err = self.ctx[name].power_good()
+
+        success, en = self.ctx[name].enable(enable=enable)
         if not success:
-            self._ret.put({"method": "v1_enable", "value": "enable failed", "success": False})
+            self._ret.put({"method": "supply_enable", "value": "{} enable failed".format(name), "success": False})
             return
 
-        self._ret.put({"method": "v1_enable", "value": "enable={}".format(en), "success": True})
+        if en and calibrate:
+            success, _ = self.ctx[name].calibrate()
+            if not success:
+                value = "{} failed self calibration".format(name)
+                self._ret.put({"method": "supply_enable", "value": value, "success": False})
+                return
 
+        value = {
+            'name': name,
+            'enable': en,
+            'voltage_mv': voltage_mv,
+            'pg': pg_or_err,
+        }
+        self._ret.put({"method": "supply_enable", "value": value, "success": True})
 
 
 server = MicroPyServer(debug=True)
