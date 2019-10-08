@@ -302,8 +302,10 @@ class IBA01(pyboard.Pyboard):
         return self._verify_single_cmd_ret(c)
 
     def supply_enable(self, name, enable=True, voltage_mv=None, cal=True):
-        """ set Supply
+        """ set Supply (enable, voltage, calibrate)
 
+        - voltage is set first
+        - calibration only occurs if supply is enabled
         - If changing voltage while connected to the DUT, 'cal' should be set False.
           Note that reading current outside of calibrated voltages, may result in increased error.
           Calibrate all intended voltages before applying Supply to the DUT.
@@ -312,9 +314,29 @@ class IBA01(pyboard.Pyboard):
         :param enable: <True|False>,      # default: True
         :param voltage_mv: <voltage_mv>,  # if not specified, current setting and PG is returned
         :param cal: <True|False>}         # default: True
-        :return: success, result
+        :return: success, result {'name': name,
+                                  'enable': <True|False>,
+                                  'voltage_mv': <voltage_mv>,
+                                  'pg': "PG_GOOD/BAD"  }
         """
         c = {'method': 'supply_enable', 'args': {'name': name, 'voltage_mv': voltage_mv, "enable": enable, "cal": cal}}
         return self._verify_single_cmd_ret(c)
 
+    def supply_current(self, name):
+        """ set Supply (enable, voltage, calibrate)
 
+        - voltage is set first
+        - calibration only occurs if supply is enabled
+        - If changing voltage while connected to the DUT, 'cal' should be set False.
+          Note that reading current outside of calibrated voltages, may result in increased error.
+          Calibrate all intended voltages before applying Supply to the DUT.
+
+        :param name: <"V1"|"V2">
+        :return: success, result {'name': name,
+                                  'enable': enable,
+                                  'voltage_mv': voltage_mv,
+                                  'current_ua': current_ua,
+                                  'pg': pg_or_err, }
+        """
+        c = {'method': 'supply_current', 'args': {'name': name}}
+        return self._verify_single_cmd_ret(c)

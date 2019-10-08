@@ -100,6 +100,7 @@ class Supply12(object):
         self._type = type
 
         self.reset()
+        self._enable = False
 
         if self._debug: self._debug("init {}".format(self.LDO_TYPE[type]), 102, _DEBUG_FILE, self._name)
 
@@ -148,6 +149,8 @@ class Supply12(object):
             register = _register | (0x01 << self.LDO_ENABLE_SHIFT)
         else:
             register = _register & ~(0x01 << self.LDO_ENABLE_SHIFT)
+
+        self._enable = enable
 
         if self._debug:
             msg = "enable {}, 0x{:02x} -> 0x{:02x}".format(enable, _register, register)
@@ -287,6 +290,8 @@ class Supply12(object):
                 _, current_ua = self.current_ua(calibrating=True)
                 self._cal_matrix[self._voltage_mv].append((resistance, current_ua))
 
+            _, _ = self.cal_load(0)  # remove cal load(s)
+
         else:
             _, current_ua = self.current_ua(calibrating=True)
             self._cal_matrix[self._voltage_mv].append((resistance, current_ua))
@@ -333,8 +338,8 @@ class Supply12(object):
 
         return True, current_ma
 
-    def get_voltage_mv(self):
-        return self._voltage_mv
+    def get_enable_voltage_mv(self):
+        return self._enable, self._voltage_mv
 
 
 if False:

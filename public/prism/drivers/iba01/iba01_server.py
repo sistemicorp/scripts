@@ -60,6 +60,8 @@ class MicroPyServer(object):
                       "X11", "X12", "X19", "X20", "X21", "X22", "Y11", "Y8"]
     ADC_VALID_INTERNALS = ["VBAT", "TEMP", "VREF", "VDD"]
     ADC_READ_MULTI_TIMER = 8
+    ADC_MAX_FREQ = 10000
+    ADC_MAX_SAMPLES = 1000
 
     JIG_CLOSED_TIMER = 4
     JIG_CLOSED_TIMER_FREQ = 1  # Hz
@@ -193,7 +195,7 @@ class MicroPyServer(object):
         res = ""
         for b in id_bytes:
             res += "%02x" % b
-        self._ret.put({"method": "unique_id", "value": res, "success": True})
+        self._ret.put({"method": "unique_id", "value": {'value':res}, "success": True})
 
     def debug(self, args):
         """ enable debugging
@@ -203,7 +205,7 @@ class MicroPyServer(object):
         :return: self.VERSION
         """
         self._debug_flag = args.get("enable", False)
-        self._ret.put({"method": "debug", "value": self._debug_flag, "success": True})
+        self._ret.put({"method": "debug", "value": {'value': self._debug_flag}, "success": True})
 
     def version(self, args):
         """ version
@@ -212,7 +214,7 @@ class MicroPyServer(object):
         :return: self.VERSION
         """
         self._debug("testing message", 217)
-        self._ret.put({"method": "version", "value": self.VERSION, "success": True})
+        self._ret.put({"method": "version", "value": {'value': self.VERSION}, "success": True})
 
     def _toggle_led(self, led, on_ms, off_ms, once=False):
         thread_name = "led{}".format(led)
@@ -243,7 +245,8 @@ class MicroPyServer(object):
         off_ms = args.get("off_ms", 500)
         once = args.get("once", False)
         if not led in [self.LED_BLUE, self.LED_GREEN, self.LED_RED, self.LED_YELLOW]:
-            self._ret.put({"method": "led_toggle", "value": "unknown led {}".format(led), "success": False})
+            value = {'err': "unknown led {}".format(led)}
+            self._ret.put({"method": "led_toggle", "value": value, "success": False})
             return
 
         thread_name = "led{}".format(led)
@@ -260,7 +263,7 @@ class MicroPyServer(object):
             if thread_name in self.ctx["threads"]:
                 self.ctx["threads"][thread_name] = False
 
-        self._ret.put({"method": "led_toggle", "value": True, "success": True})
+        self._ret.put({"method": "led_toggle", "value": {'value': True}, "success": True})
 
     def _isr_jig_closed_detect(self, _):
         """ ISR function (in ISR context)
@@ -290,10 +293,9 @@ class MicroPyServer(object):
         # if the pin is HIGH, the jig is open
         jig_pin_state = self.ctx["gpio"]["jig_closed"].value()
 
-        if jig_pin_state:
-            self._ret.put({"method": "jig_closed_detect", "value": "OPEN", "success": True})
-        else:
-            self._ret.put({"method": "jig_closed_detect", "value": "CLOSED", "success": True})
+        if jig_pin_state: value = {'value': "OPEN"}
+        else: value = {'value': "CLOSED"}
+        self._ret.put({"method": "jig_closed_detect", "value": value, "success": True})
 
     def enable_jig_closed_detect(self, args):
         """ Enable/Disable Jig Closed Timer/Detect
@@ -364,41 +366,6 @@ class MicroPyServer(object):
         else:
             self.ctx["gpio"][name].low()
 
-    def reset(self, args):
-        """ reset the I2C devices to default states
-
-        args: None
-        :return:
-        """
-        res = ""
-        self.supplies.reset()
-        self._ret.put({"method": "reset", "value": res, "success": True})
-
-    def set_ldo_voltage(self, args):
-        """
-
-        args:
-        :param name: name of the supply
-        :param voltage: set voltage value between 900 to 3500
-        :return:
-        """
-        name = args.get("name", None)
-        voltage_mv = args.get("voltage_mv", -1)
-        success, volt = self.supplies.set_voltage_mv(name, voltage_mv)
-        self._ret.put({"method": "set_ldo_voltage", "value": "{}".format(volt), "success": success})
-
-    def power_good(self, args):
-        """ Get the power good from the named supply
-        - this is a blocking call
-
-        args:
-        :param name: name of the supply
-        :return:
-        """
-        name = args.get("name", None)
-        success, status = self.supplies.power_good(name)
-        self._ret.put({"method": "power_good", "value": "{} ".format(status), "success": success})
-
     def adc_read(self, args):
         """ (simple) read ADC on a pin
         - this is a blocking call
@@ -411,7 +378,8 @@ class MicroPyServer(object):
         """
         pin = args.get("pin", None)
         if pin not in self.ADC_VALID_PINS and pin not in self.ADC_VALID_INTERNALS:
-            self._ret.put({"method": "adc_read", "value": "{} pin is not valid".format(pin), "success": False})
+            value = {'err': "{} pin is not valid".format(pin)}
+            self._ret.put({"method": "adc_read", "value": value, "success": False})
             return
 
         samples = args.get("samples", 1)
@@ -438,7 +406,8 @@ class MicroPyServer(object):
                 adc_read = adc.read_vref
 
         if adc is None or adc_read is None:
-            self._ret.put({"method": "adc_read", "value": "{} pin is not valid (internal error)".format(pin), "success": False})
+            value = {'err': "{} pin is not valid (internal error)".format(pin)}
+            self._ret.put({"method": "adc_read", "value": value, "success": False})
             return
 
         results = []
@@ -451,8 +420,8 @@ class MicroPyServer(object):
         for r in results: sum += r
         result = float(sum / len(results))
 
-        #self._ret.put({"method": "adc_read", "value": "{:.4f}".format(result), "success": True})
-        self._ret.put({"method": "adc_read", "value": result, "success": True})
+        value = {'value': result}
+        self._ret.put({"method": "adc_read", "value": value, "success": True})
 
     def _adc_read_multi(self, _):
         """ async callback for adc_read_multi
@@ -481,7 +450,8 @@ class MicroPyServer(object):
         for result in results:
             r.append([r for r in result])
 
-        self._ret.put({"method": "adc_read_multi_results", "value": r, "success": True})
+        value = {'value': r}
+        self._ret.put({"method": "adc_read_multi_results", "value": value, "success": True})
 
     def adc_read_multi(self, args):
         """ ADC read multiple pins, multiple times, at a given frequency
@@ -494,22 +464,26 @@ class MicroPyServer(object):
         :return:
         """
         freq = args.get("freq", 100)
-        if not (0 < freq < 10001):
-            self._ret.put({"method": "adc_read_multi", "value": "freq not within range supported", "success": False})
+        if not (0 < freq <= self.ADC_MAX_FREQ):
+            value = {'err': "freq not within range supported, 0 < f <= {}".format(self.ADC_MAX_FREQ)}
+            self._ret.put({"method": "adc_read_multi", "value": value, "success": False})
             return
 
         samples = args.get("samples", 100)
-        if not (0 < samples < 1001):
-            self._ret.put({"method": "adc_read_multi", "value": "samples not within range supported", "success": False})
+        if not (0 < samples <= self.ADC_MAX_SAMPLES):
+            value = {'err': "samples not within range supported, 0 < s <= {}".format(self.ADC_MAX_SAMPLES)}
+            self._ret.put({"method": "adc_read_multi", "value": value, "success": False})
             return
 
         pins = args.get("pins", None)
         if not isinstance(pins, list):
-            self._ret.put({"method": "adc_read_multi", "value": "pins must be a list", "success": False})
+            value = {'err': "pins must be a list"}
+            self._ret.put({"method": "adc_read_multi", "value": value, "success": False})
             return
         for pin in pins:
             if pin not in self.ADC_VALID_PINS:
-                self._ret.put({"method": "adc_read_multi", "value": "{} pin is not valid".format(pin), "success": False})
+                value = {'err': "{} pin is not valid".format(pin)}
+                self._ret.put({"method": "adc_read_multi", "value": value, "success": False})
                 return
 
         # everything is good, store the params
@@ -517,15 +491,15 @@ class MicroPyServer(object):
 
         # schedule adc multi to run later
         micropython.schedule(self._adc_read_multi, 0)
-
-        self._ret.put({"method": "adc_read_multi", "value": "scheduled", "success": True})
+        self._ret.put({"method": "adc_read_multi", "value": {'value': 'scheduled'}, "success": True})
 
     # ===============================================================================================
     # IBA01 - Interface Board A01 APIs
 
     def supply_enable(self, args):
-        """ Enable V1 and set Voltage
+        """ Enable Supply,set Voltage, calibrate
         - voltage is set first
+        - calibration only occurs if supply is enabled
 
         :param args: {"name": <"V1"|"V2">,
                       'enable': <True|False>,      # default: True
@@ -534,13 +508,14 @@ class MicroPyServer(object):
         return: {...}
         """
         if not self.is_ina01:
-            self._ret.put({"method": "supply_enable", "value": "IBA01 not present", "success": False})
+            value = {'err': "IBA01 not present"}
+            self._ret.put({"method": "supply_current", "value": value, "success": False})
             return
 
         name = args.get('name', False)
         if name not in self.SUPPLY_NAMES:
-            value = "supply name {} not in {}".format(name, self.SUPPLY_NAMES)
-            self._ret.put({"method": "supply_enable", "value": value, "success": False})
+            value = {'err': "supply name {} not in {}".format(name, self.SUPPLY_NAMES)}
+            self._ret.put({"method": "supply_current", "value": value, "success": False})
             return
 
         enable = args.get('enable', True)
@@ -555,7 +530,7 @@ class MicroPyServer(object):
                 return
 
         else:
-            voltage_mv = self.ctx[name].get_voltage_mv()
+            _, voltage_mv = self.ctx[name].get_enable_voltage_mv()
             _, pg_or_err = self.ctx[name].power_good()
 
         success, en = self.ctx[name].enable(enable=enable)
@@ -577,6 +552,41 @@ class MicroPyServer(object):
             'pg': pg_or_err,
         }
         self._ret.put({"method": "supply_enable", "value": value, "success": True})
+
+    def supply_current(self, args):
+        """ Measure Supply Current
+
+        :param args: {"name": <"V1"|"V2">, }
+        return: {...}
+        """
+        if not self.is_ina01:
+            value = {'err': "IBA01 not present"}
+            self._ret.put({"method": "supply_current", "value": value, "success": False})
+            return
+
+        name = args.get('name', False)
+        if name not in self.SUPPLY_NAMES:
+            value = {'err': "supply name {} not in {}".format(name, self.SUPPLY_NAMES)}
+            self._ret.put({"method": "supply_current", "value": value, "success": False})
+            return
+
+        success, current_ua = self.ctx[name].current_ua()
+        if not success:
+            value = {'err': "{} failed current_ua".format(name)}
+            self._ret.put({"method": "supply_current", "value": value, "success": False})
+            return
+
+        enable, voltage_mv = self.ctx[name].get_enable_voltage_mv()
+        _, pg_or_err = self.ctx[name].power_good()
+
+        value = {
+            'name': name,
+            'enable': enable,
+            'voltage_mv': voltage_mv,
+            'current_ua': current_ua,
+            'pg': pg_or_err,
+        }
+        self._ret.put({"method": "supply_current", "value": value, "success": True})
 
 
 server = MicroPyServer(debug=True)

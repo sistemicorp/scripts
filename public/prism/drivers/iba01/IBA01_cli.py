@@ -29,6 +29,7 @@ def parse_args():
     Usage examples:
        python3 IBA01_cli.py --port /dev/ttyACM0 adc --100
        python3 IBA01_cli.py --port /dev/ttyACM0 adc --all      
+       python3 IBA01_cli.py --port /dev/ttyACM0 supplies --all      
     """
     parser = argparse.ArgumentParser(description='IBA01_cli',
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -67,8 +68,10 @@ def parse_args():
     supplies_parser = subp.add_parser('supplies')
     supplies_parser.add_argument('-a', "--all", dest="all", action='store_true', help='run all tests sequentially',
                              default=False, required=False)
-    supplies_parser.add_argument('--100', dest="t100", action='store_true', help='set V1 supply, 1800 to 2700', default=False, required=False)
-    supplies_parser.add_argument('--200', dest="t200", action='store_true', help='set V2 supply, 1800 to 2700', default=False, required=False)
+    supplies_parser.add_argument('--100', dest="t100", action='store_true', help='set V1 supply, 1800, 2700 mV', default=False, required=False)
+    supplies_parser.add_argument('--101', dest="t101", action='store_true', help='Get V1 supply current @1800mV (no load)', default=False, required=False)
+    supplies_parser.add_argument('--200', dest="t200", action='store_true', help='set V2 supply, 1800, 2700 mV', default=False, required=False)
+    supplies_parser.add_argument('--201', dest="t201", action='store_true', help='Get V2 supply current @1800mV (no load)', default=False, required=False)
 
     args = parser.parse_args()
 
@@ -256,6 +259,25 @@ def test_supplies(args, pyb):
             _success = False
             logging.error("failed to set voltage")
 
+        _, _ = pyb.supply_enable("V1", enable=False)
+        if _success and not success: _success = False
+
+    if all or args.t101:
+        did_something = True
+        logging.info("T101: Setting V1 to 1800")
+        success, result = pyb.supply_enable("V1", enable=True, voltage_mv=1800, cal=True)
+        logging.info("{} {}".format(success, result))
+        if _success and not success:
+            _success = False
+            logging.error("failed to set voltage")
+
+        success, result = pyb.supply_current("V1")
+        logging.info("{} {}".format(success, result))
+        if _success and not success:
+            _success = False
+            logging.error("failed to measure current")
+
+        _, _ = pyb.supply_enable("V1", enable=False)
         if _success and not success: _success = False
 
     if all or args.t200:
@@ -275,6 +297,25 @@ def test_supplies(args, pyb):
             _success = False
             logging.error("failed to set voltage")
 
+        _, _ = pyb.supply_enable("V2", enable=False)
+        if _success and not success: _success = False
+
+    if all or args.t201:
+        did_something = True
+        logging.info("T101: Setting V2 to 1800")
+        success, result = pyb.supply_enable("V2", enable=True, voltage_mv=1800, cal=True)
+        logging.info("{} {}".format(success, result))
+        if _success and not success:
+            _success = False
+            logging.error("failed to set voltage")
+
+        success, result = pyb.supply_current("V2")
+        logging.info("{} {}".format(success, result))
+        if _success and not success:
+            _success = False
+            logging.error("failed to measure current")
+
+        _, _ = pyb.supply_enable("V2", enable=False)
         if _success and not success: _success = False
 
     if did_something: return _success
