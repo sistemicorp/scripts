@@ -9,13 +9,13 @@ import os
 import logging
 import threading
 import time
-from public.prism.drivers.micropythonbrd.list_serial import serial_ports
-from public.prism.drivers.micropythonbrd.upybrd import pyboard2
-from public.prism.drivers.micropythonbrd.upybrd_cli import MicroPyBrd
+from public.prism.drivers.iba01.list_serial import serial_ports
+from public.prism.drivers.iba01.upybrd import pyboard2
+from public.prism.drivers.iba01.upybrd_cli import MicroPyBrd
 
 from pubsub import pub
-from app.const import PUB, CHANNEL
-from app.sys_log import pub_notice
+from core.const import PUB, CHANNEL
+from core.sys_log import pub_notice
 import serial
 
 

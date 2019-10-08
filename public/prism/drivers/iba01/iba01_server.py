@@ -7,6 +7,8 @@ import machine
 
 from iba01_perphs import Peripherals
 from iba01_queue import MicroPyQueue
+from iba01_supply12 import Supply12
+from iba01_const import *
 
 micropython.alloc_emergency_exception_buf(100)
 __DEBUG_FILE = "iba01_server"
@@ -18,25 +20,24 @@ class MicroPyServer(object):
 
     How to use this:
         - copy this file over to micropython
-        - import it, import async_01, this will cause it to "run"
+        - import it, import iba01_server, this will cause it to "run"
         - send in a command via the q,
-            upybrd_server_01.server.cmd({"method":"toggle_led", "args":1})
-            upybrd_server_01.server.cmd({"method":"enable_jig_closed_detect", "args":True})
+            iba01_server.server.cmd({"method":"toggle_led", "args":1})
+            iba01_server.server.cmd({"method":"enable_jig_closed_detect", "args":True})
         - to get a result,
-            upybrd_server_01.server.get()
+            iba01_server.server.ret()
 
     cmds: Are in this format: {"method": <class_method>, "args": <args>}
 
     ret: Are in this format: {"method": <class_method>, "value": <value>}
 
     Notes:
-        1) you cannot use print() when using this outside of the REPL.
-           Instead, use the self._debug() API.
+        1) you cannot use print(), Instead, use the self._debug() API.
 
         2) debug new code with rshell/REPL.  'import upyb_server'
            and then execute commands,
-               >>> upyb_server.server.cmd({'method': 'version', 'args': {}})
-               >>> upyb_server.server.ret(method='version')
+               >>> iba01_server.server.cmd({'method': 'version', 'args': {}})
+               >>> iba01_server.server.ret()
 
     """
     VERSION = "0.2"
@@ -73,6 +74,9 @@ class MicroPyServer(object):
                     "adc_read_multi": {},  # cache args
                     "perphs": None,
                     "threads": {},
+                    "v1": None,
+                    "v2": None,
+                    "vbat": None,
                     }
 
         # Jig closed
@@ -81,6 +85,10 @@ class MicroPyServer(object):
 
         self.ctx["perphs"] = Peripherals(debug_print=self._debug)
         self.is_ina01 = self.ctx["perphs"].is_iba01()
+
+        if self.is_ina01:
+            self.ctx['v1'] = Supply12(self.ctx["perphs"], V1_I2C_ADDR, "V1", debug_print=self._debug, type=0)
+            self.ctx['v2'] = Supply12(self.ctx["perphs"], V2_I2C_ADDR, "V2", debug_print=self._debug, type=1)
 
         self._debug_flag = debug
 
@@ -503,6 +511,23 @@ class MicroPyServer(object):
         micropython.schedule(self._adc_read_multi, 0)
 
         self._ret.put({"method": "adc_read_multi", "value": "scheduled", "success": True})
+
+    # ===============================================================================================
+    # IBA01 - Interface Board A01 APIs
+
+    def v1_enable(self, args):
+        if not self.is_ina01:
+            self._ret.put({"method": "v1_enable", "value": "IBA01 not present", "success": False})
+            return
+
+        enable = args.get('enable', True)
+        success, en = self.ctx['v1'].enable(enable=enable)
+        if not success:
+            self._ret.put({"method": "v1_enable", "value": "enable failed", "success": False})
+            return
+
+        self._ret.put({"method": "v1_enable", "value": "enable={}".format(en), "success": True})
+
 
 
 server = MicroPyServer(debug=True)

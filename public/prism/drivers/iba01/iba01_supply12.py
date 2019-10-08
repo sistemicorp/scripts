@@ -149,7 +149,7 @@ class Supply12(object):
 
         if self._debug:
             msg = "enable {}, 0x{:02x} -> 0x{:02x}".format(enable, _register, register)
-            self._debug(msg, 169, _DEBUG_FILE, self._name)
+            self._debug(msg, 152, _DEBUG_FILE, self._name)
         self._perph.PCA95535_write(self._addr, PCA9555_CMD_CONFIG_P0, register)
         return True, enable
 
