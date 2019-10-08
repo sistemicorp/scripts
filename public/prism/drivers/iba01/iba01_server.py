@@ -445,12 +445,11 @@ class MicroPyServer(object):
         pyb.ADC.read_timed_multi(adcs, results, tim)
         tim.deinit()
 
-        # reformat results to be a simple list  TODO: is there a better way to do this?
-        r = []
-        for result in results:
-            r.append([r for r in result])
+        # reformat results to be a simple list
+        value = {}
+        for idx, result in enumerate(results):
+            value[pins[idx]] = [r for r in result]
 
-        value = {'value': r}
         self._ret.put({"method": "adc_read_multi_results", "value": value, "success": True})
 
     def adc_read_multi(self, args):
