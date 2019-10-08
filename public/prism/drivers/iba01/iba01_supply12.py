@@ -313,7 +313,7 @@ class Supply12(object):
         return True, current_ma
 
 
-if True:
+if False:
     from iba01_perphs import Peripherals
 
     def _print(msg, line=0, file="unknown", name=''):

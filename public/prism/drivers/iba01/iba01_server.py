@@ -79,14 +79,8 @@ class MicroPyServer(object):
         self.timer_jig_closed = pyb.Timer(self.JIG_CLOSED_TIMER)  # create a timer object using timer
         self._isr_jig_closed_detect_ref = self._jig_closed_detect # used to create memory before ISR
 
-        self.ctx["perphs"] = Peripherals(debug_print=debug)
-        i2c_scan = self.ctx["perphs"]._i2c.scan()
-        self._debug("I2C scan: {}".format(i2c_scan), 84)
-        # TODO: check if scan is right
-        self._ina01 = True
-
-        if self._ina01:
-
+        self.ctx["perphs"] = Peripherals(debug_print=self._debug)
+        self.is_ina01 = self.ctx["perphs"].is_iba01()
 
         self._debug_flag = debug
 
@@ -157,7 +151,7 @@ class MicroPyServer(object):
             # allows other threads to run, but generally speaking there should be no other threads(?)
             time.sleep_ms(self.SERVER_CMD_SLEEP_MS)
 
-    def _debug(self, msg, line=0, file=__DEBUG_FILE):
+    def _debug(self, msg, line=0, file=__DEBUG_FILE, name="unknown"):
         """ Add debug statement
 
         :param msg:

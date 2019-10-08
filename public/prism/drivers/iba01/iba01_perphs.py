@@ -40,6 +40,8 @@ class Peripherals(object):
     """
     I2C_HW_IDs = [UPYB_I2C_HW_I2C1, UPYB_I2C_HW_I2C2]
 
+    IBA01_SCAN = [32, 33, 34, 35, 64, 72]  # 4 GPIO expanders, ADS1115, INA220
+
     def __init__(self, i2c=0, freq=400000, adc_addr=0x48, adc_gain=1, debug_print=None):
         """
         - see http://docs.micropython.org/en/latest/pyboard/quickref.html#i2c-bus
@@ -52,13 +54,24 @@ class Peripherals(object):
         self._adc = ADS1115(self._i2c, address=adc_addr, gain=adc_gain)
         self._i2c_lock = _thread.allocate_lock()
         self._adc_lock = _thread.allocate_lock()
-        self._name = "peripherals"
+        self._name = "periphs"
         self._debug = debug_print
+        self._iba01 = False
 
-        self.reset()
+        scan = self._i2c.scan()
+        if self._debug:
+            self._debug("i2c scan: {}".format(scan), line=63, file=__DEBUG_FILE, name=self._name)
+
+        if self.IBA01_SCAN == scan:
+            self._iba01 = True
+            self.reset()
 
         if self._debug:
-            self._debug("init complete", line=36, file=__DEBUG_FILE, name=self._name)
+            self._debug("init complete, iba01 {}".format(self._iba01),
+                        line=70, file=__DEBUG_FILE, name=self._name)
+
+    def is_iba01(self):
+        return self._iba01
 
     def i2c_acquire(self):
         return self._i2c_lock.acquire()
@@ -125,4 +138,12 @@ class Peripherals(object):
         # no polarity inversion
         self.PCA95535_write(CON_I2C_ADDR, PCA9555_CMD_POL_P0, 0x00)  # no inversion
         self.PCA95535_write(CON_I2C_ADDR, PCA9555_CMD_POL_P1, 0x00)  # no inversion
+
+
+if False:
+
+    def _print(msg, line=0, file="unknown", name=''):
+        print("{:15s}:{:10s}:{:4d}: {}".format(file, name, line, msg))
+
+    perphs = Peripherals(debug_print=_print)
 
