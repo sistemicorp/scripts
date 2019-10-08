@@ -166,9 +166,9 @@ class HWDriver(object):
         pub_notice("HWDriver: Scanning for MicroPyBoards on {}".format(ports), sender=sender)
 
         self.pybs.clear()
-        pyboard = MicroPyBrd(self.logger)
+        pyboard = MicroPyBrd(self.logger)   # TODO: try and do this WITHOUT MicroPyBrd, only IBA01
         for port in ports:
-            if "USB" in port: continue
+            if "USB" in port: continue  # pyboard ports are ttyACM#
 
             pyb = pyboard.scan_ports(port)
 
