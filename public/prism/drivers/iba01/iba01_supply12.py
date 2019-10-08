@@ -9,7 +9,8 @@ Notes:
 import pyb
 import machine
 from time import sleep
-from upyb_control import IBA01Control
+
+from iba01_const import *
 
 PG_GOOD = "PG_GOOD"                 # PG good status
 PG_UNSUPPORTED = "PG_UNSUPPORTED"   # PG unknown status
@@ -17,20 +18,15 @@ PG_BAD = "PG_BAD"                   # vPG bad status
 
 DEBUG = False    # Debug for prints
 
-_DEBUG_FILE = "upyb_ldov1"
-
-PCA9555_CMD_INPUT_P0 = 0x0
-PCA9555_CMD_INPUT_P1 = 0x1
-PCA9555_CMD_OUTPUT_P0 = 0x2
-PCA9555_CMD_OUTPUT_P1 = 0x3
-PCA9555_CMD_POL_P0 = 0x4
-PCA9555_CMD_POL_P1 = 0x5
-PCA9555_CMD_CONFIG_P0 = 0x6
-PCA9555_CMD_CONFIG_P1 = 0x7
+_DEBUG_FILE = "iba01_supply12"
 
 
-class LDOV1(object):
-    """
+class Supply12(object):
+    """ IBA01 Supply V1 and V2 class
+
+    V1 uses TPS7A2501, V2 uses TPS7A7200
+
+    V2 has a wider range than V1.  V2 is a fast transient response LDO.
 
     The PCA9555 setup, refer to the schematic:
         P00 = output, ~50mV,   Open-Drain
@@ -88,16 +84,16 @@ class LDOV1(object):
     CAL_P13_R = 1000
     CAL_P14_R = 100   # TODO: 100 is too large, HW needs to change to ~50
 
-    ADC_SAMPLES = 4
+    ADC_SAMPLES = 4  # number of samples to take an average over
 
-    def __init__(self, i2c, addr, name, adc, debug_print=None, type=0):
+    def __init__(self, perph, addr, name, debug_print=None, type=0):
         self._name = name
-        self._i2c = i2c
+        self._perph = perph
+        self._adc = perph.adc()
         self._addr = addr          # this is address if GIO expander than controls this LDO
         self._voltage_mv = 0       # cached output voltage
         self._debug = debug_print
         self._cal_mask = 0x0
-        self._adc = adc
         self._cal_matrix = {}  # cals, voltage: [currents] # starting at zero
         self._type = type
 
@@ -113,50 +109,24 @@ class LDOV1(object):
         """
         # set the config, All pins are 'input' except for the enable, which is output,
         # ands LDO is disabled, LOW
-        self._GPIO_write(PCA9555_CMD_CONFIG_P0, 0xFF)  # all inputs
-        self._GPIO_write(PCA9555_CMD_CONFIG_P1, 0xFE)  # all inputs, except P10 (LoadBias) is always active
+        self._perph.PCA95535_write(self._addr, PCA9555_CMD_CONFIG_P0, 0xFF)  # all inputs
+        self._perph.PCA95535_write(self._addr, PCA9555_CMD_CONFIG_P1, 0xFE)  # all inputs, except P10 (LoadBias) is always active
 
         # because all the outputs are open-drain, and we only want the
         # LOW value, all the output states will be set to LOW, thus
         # to "activate" a pin, just the CONFIG register needs to be changed.
-        self._GPIO_write(PCA9555_CMD_OUTPUT_P0, 0x00)  # all low
-        self._GPIO_write(PCA9555_CMD_OUTPUT_P1, 0x00)  # all low
+        self._perph.PCA95535_write(self._addr, PCA9555_CMD_OUTPUT_P0, 0x00)  # all low
+        self._perph.PCA95535_write(self._addr, PCA9555_CMD_OUTPUT_P1, 0x00)  # all low
 
         # no polarity inversion
-        self._GPIO_write(PCA9555_CMD_POL_P0, 0x00)  # no inversion
-        self._GPIO_write(PCA9555_CMD_POL_P1, 0x00)  # no inversion
+        self._perph.PCA95535_write(self._addr, PCA9555_CMD_POL_P0, 0x00)  # no inversion
+        self._perph.PCA95535_write(self._addr, PCA9555_CMD_POL_P1, 0x00)  # no inversion
 
         # disable the LDO
         val = (0xFF & ~(0x1 << self.LDO_ENABLE_SHIFT)) & 0xff  # set P06 LOW
-        if self._debug: self._debug("reset disable 0x{:02x}".format(val), 115, _DEBUG_FILE, self._name)
-        self._GPIO_write(PCA9555_CMD_CONFIG_P0, val)
-
-    def _GPIO_write(self, command, value):
-        """ writes to the GPIO expander that controls the two LDOs
-            intakes the command bits and the value, creates one byte and writes to GPIO
-
-        :param command: which command register is being accessed
-        :param value: the data being writen
-        :return:
-        """
-        bytes_write = [command & 0xFF, value & 0xFF]
-        bytes_write = bytes(bytearray(bytes_write))
-        self._i2c.acquire()
-        self._i2c.writeto(self._addr, bytes_write)
-        self._i2c.release()
-
-    def _GPIO_read(self, command):
-        """ reads from the GPIO expander that conrols the two LDOs
-
-        :param command: which command register is being accessed
-        :return: read (int)
-        """
-        self._i2c.acquire()
-        self._i2c.writeto(self._addr, bytes(bytearray([command & 0xff])))
-        read = self._i2c.readfrom(self._addr, 1)
-        self._i2c.release()
-        # print("register: {}".format(read))
-        return ord(read)
+        self._perph.PCA95535_write(self._addr, PCA9555_CMD_CONFIG_P0, val)
+        if self._debug:
+            self._debug("reset CONFIG_P0 0x{:02x}".format(val), 115, _DEBUG_FILE, self._name)
 
     def _state(self):
         # for debugging, print everything
@@ -171,7 +141,7 @@ class LDOV1(object):
         :param enable: True/False
         :return: success, enable
         """
-        _register = self._GPIO_read(PCA9555_CMD_CONFIG_P0)
+        _register = self._perph.PCA95535_read(self._addr, PCA9555_CMD_CONFIG_P0)
         if enable:
             register = _register | (0x01 << self.LDO_ENABLE_SHIFT)
         else:
@@ -180,7 +150,7 @@ class LDOV1(object):
         if self._debug:
             msg = "enable {}, 0x{:02x} -> 0x{:02x}".format(enable, _register, register)
             self._debug(msg, 169, _DEBUG_FILE, self._name)
-        self._GPIO_write(PCA9555_CMD_CONFIG_P0, register)
+        self._perph.PCA95535_write(self._addr, PCA9555_CMD_CONFIG_P0, register)
         return True, enable
 
     def get_feedback_resistance(self):
@@ -228,14 +198,14 @@ class LDOV1(object):
                 voltage_mv -= self.LDO_VOLTAGE_50mv
 
             set_voltage = ~set_voltage & self.LDO_SET_VOLTAGE_MASK
-            _register = self._GPIO_read(PCA9555_CMD_CONFIG_P0)
+            _register = self._perph.PCA95535_read(self._addr, PCA9555_CMD_CONFIG_P0)
             register = (_register & ~self.LDO_SET_VOLTAGE_MASK) | set_voltage
 
             if self._debug:
                 msg = "voltage_mv {}, 0x{:02x} -> 0x{:02x}".format(self._voltage, _register, register)
                 self._debug(msg, 231, _DEBUG_FILE, self._name)
 
-            self._GPIO_write(PCA9555_CMD_CONFIG_P0, register)
+            self._perph.PCA95535_write(self._addr, PCA9555_CMD_CONFIG_P0, register)
             sleep(0.1)
             success, pg_status = self.power_good()
 
@@ -256,7 +226,7 @@ class LDOV1(object):
         :return: success, PG pin value (True = good)
         """
         # check the pin via the I2C GPIO mux
-        pg_cache = self._GPIO_read(PCA9555_CMD_INPUT_P0)
+        pg_cache = self._perph.PCA95535_read(self._addr, PCA9555_CMD_INPUT_P0)
         pg_cache = (pg_cache & ~0x7F) & 0xff
         pg_ret = PG_BAD
         if pg_cache & 0x80:
@@ -280,14 +250,14 @@ class LDOV1(object):
         if value & ~0xf:
             return False, "value out of range"
 
-        p1_config_cache = self._GPIO_read(PCA9555_CMD_CONFIG_P1)
+        p1_config_cache = self._perph.PCA95535_read(self._addr, PCA9555_CMD_CONFIG_P1)
         cal_value = (~value & 0xf) << 1
         # P14/P15 are set the same
         if cal_value & (0x1 << 4): cal_value = cal_value | (0x1 << 5)
         else: cal_value = cal_value & ~(0x1 << 5)
 
         p1_config = p1_config_cache & (~(0x1f << 1) & 0xff) | (cal_value & 0xff)
-        self._GPIO_write(PCA9555_CMD_CONFIG_P1, p1_config)
+        self._perph.PCA95535_write(self._addr, PCA9555_CMD_CONFIG_P1, p1_config)
 
         _res = 0.0
         if value & 0x1: _res += 1 / self.CAL_P11_R
@@ -328,8 +298,11 @@ class LDOV1(object):
 
         ch = self.ADC_CHANNEL[self._type]
         adc_value = 0
+        self._perph.adc_acquire()
         for i in range(self.ADC_SAMPLES):
             adc_value += self._adc.read(rate=4, channel1=ch)
+
+        self._perph.adc_release()
         adc_value /= self.ADC_SAMPLES
         current_ma = int(adc_value / 0x7fff / 12.5 * 1000000.0) - offset_current
 
@@ -341,25 +314,15 @@ class LDOV1(object):
 
 
 if True:
-    from upyb_i2c import UPYB_I2C, UPYB_I2C_HW_I2C1
-    import upyb_ads1115
+    from iba01_perphs import Peripherals
 
     def _print(msg, line=0, file="unknown", name=''):
         print("{:15s}:{:10s}:{:4d}: {}".format(file, name, line, msg))
 
-    V1_I2C_ADDR = 0x20  # addr of GPIO expander controlling the LDO
-    V2_I2C_ADDR = 0x21
-    CON_I2C_ADDR = 0x23
+    perphs = Peripherals(debug_print=_print)
 
-    # i2c = machine.I2C("X")
-    i2c = UPYB_I2C(UPYB_I2C_HW_I2C1, debug_print=_print)
-
-    ads = upyb_ads1115.ADS1115(i2c, 0x48, gain=1)
-
-    con = IBA01Control(i2c, CON_I2C_ADDR, "CON", debug_print=_print)
-
-    #ldo = LDOV1(i2c, V1_I2C_ADDR, "V1", ads, debug_print=_print)
-    ldo = LDOV1(i2c, V2_I2C_ADDR, "V2", ads, debug_print=_print, type=1)
+    #ldo = Supply12(perphs, V1_I2C_ADDR, "V1", debug_print=_print)
+    ldo = Supply12(perphs, V2_I2C_ADDR, "V2", debug_print=_print, type=1)
 
     # basic enable/disable (after reset)
     ldo.enable()

@@ -10,7 +10,7 @@ How to use these files...
 
     The pyboard should now be ready to go.
 
-2) All files names upyb_*.py need to be copied to the MicroPyboard.
+2) All files names iba01_*.py need to be copied to the MicroPyboard.
    Use rshell (put link to install rshell here) or ampy.
 
    example rshell session:
@@ -23,14 +23,14 @@ How to use these files...
         Evaluating board_name ... pyboard
         Retrieving time epoch ... Jan 01, 2000
         Welcome to rshell. Use Control-D (or the exit command) to exit rshell.
-        /home/martin/sistemi/git/scripts/public/prism/drivers/micropythonbrd> cp upyb_*.py /flash
+        /home/martin/sistemi/git/scripts/public/prism/drivers/micropythonbrd> cp iba01_*.py /flash
         /home/martin/sistemi/git/scripts/public/prism/drivers/micropythonbrd>
 
 
 3) The upybrd_cli.py can be used for other things, like testing code.  See '--help' for all its functions.
    For example, instead of using rshell to copy files over, one can use upybrd_cly.py,
 
-    martin@martin-Lenovo:~/sistemi/git/scripts/public/prism/drivers/micropythonbrd$ python3 upybrd_cli.py --port /dev/ttyACM0 --copy upyb_INA220.py -v
+    martin@martin-Lenovo:~/sistemi/git/scripts/public/prism/drivers/micropythonbrd$ python3 upybrd_cli.py --port /dev/ttyACM0 --copy iba01_supply12.py -v
      DEBUG   95 Done
      DEBUG  137 open /dev/ttyACM0
      DEBUG  142 close
