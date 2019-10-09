@@ -28,7 +28,7 @@ class pybrd00xx(TestItem):
         ctx = self.item_start()  # always first line of test
 
         # drivers are stored in the shared_state and are retrieved as,
-        drivers = self.shared_state.get_drivers(self.chan, type="MicroPyBrd")
+        drivers = self.shared_state.get_drivers(self.chan, type="IBA01")
         if len(drivers) > 1:
             self.logger.error("Unexpected number of drivers: {}".format(drivers))
             self.log_bullet("Unexpected number of drivers")
@@ -46,7 +46,7 @@ class pybrd00xx(TestItem):
             return
 
         # save the id of the pyboard for the record
-        _, _, _bullet = ctx.record.measurement("pyboard_id", id, ResultAPI.UNIT_INT)
+        _, _, _bullet = ctx.record.measurement("pyboard_id", id, ResultAPI.UNIT_STRING)
         self.log_bullet(_bullet)
 
         self.pyb = driver["obj"]["pyb"]
@@ -55,7 +55,6 @@ class pybrd00xx(TestItem):
 
     def PYBRD0xxTRDN(self):
         ctx = self.item_start()  # always first line of test
-        self.pyb.close()
         self.item_end()  # always last line of test
 
     def PYBRD0010_LedToggle(self):
@@ -133,9 +132,10 @@ class pybrd00xx(TestItem):
             self.item_end(ResultAPI.RECORD_RESULT_FAIL)  # always last line of test
             return
 
-        self.log_bullet("ADC pin {}: {}".format(pin, result["value"]))
+        value = result["value"]["value"]
+        self.log_bullet("ADC pin {}: {}".format(pin, value))
 
-        _, _result, _bullet = ctx.record.measurement("{}".format(name), result["value"], unit, min, max)
+        _, _result, _bullet = ctx.record.measurement("{}".format(name), value, unit, min, max)
         self.log_bullet(_bullet)
 
         self.item_end(_result)  # always last line of test

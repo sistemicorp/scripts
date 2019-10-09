@@ -1,6 +1,6 @@
 // Example: MicroPython board test script
 // !! NOTE: Only works if there is a provisioned Micro Python board on USB !!
-// !!       See public/prism/drivers/micropythonbrd/upybrd.py for provision instructions
+// !!       See public/prism/drivers/iba01/upybrd.py for provision instructions
 {
   "info": {
     "product": "pybrd_1",
@@ -10,11 +10,11 @@
   },
   "config": {
     "fail_fast": false,
-    "drivers": ["public.prism.drivers.micropythonbrd.hwdrv_upybrd"]
+    "drivers": ["public.prism.drivers.iba01.hwdrv_upybrd"]
   },
   "tests": [
     {
-      "module": "public.prism.scripts.example.pybrd_v1.pybrd00xx",
+      "module": "public.prism.scripts.example.pybrd_v0.pybrd00xx",
       "options": {
       },
       "items": [

@@ -196,18 +196,31 @@ class ResultBaseKeysV1(ResultBaseClass):
             self.logger.error(msg)
             return False, ResultAPI.RECORD_RESULT_UNKNOWN, msg
 
+        if isinstance(value, float):
+            if min is not None: min = float(min)
+            if max is not None: max = float(max)
+
         self.logger.info("{}: {} <= {} <= {} {} ??".format(name, min, value, max, unit))
 
         _pass = ResultAPI.RECORD_RESULT_UNKNOWN
 
         d = {"name": lname, "unit": unit}
 
-        if isinstance(min, (int, float)) and isinstance(max, (int, float)) and isinstance(value, (int, float)):
+        if isinstance(min, float) and isinstance(max, float) and isinstance(value, float):
             if min <= value <= max: _pass = ResultAPI.RECORD_RESULT_PASS
             else: _pass = ResultAPI.RECORD_RESULT_FAIL
-            d["min"] = "{:32.16}".format(str(float(min))).rstrip()
-            d["max"] = "{:32.16}".format(str(float(max))).rstrip()
-            d["value"] = "{:64.16}".format(str(float(value))).rstrip()
+            d["min"] = "{:32.16}".format(str(min)).rstrip()
+            d["max"] = "{:32.16}".format(str(max)).rstrip()
+            d["value"] = "{:64.16}".format(str(value)).rstrip()
+            _bullet = "{}: {} <= {} <= {} {} :: {}".format(name, d["min"], d["value"], d["max"], unit, _pass)
+            self.logger.info(_bullet)
+
+        elif isinstance(min, int) and isinstance(max, int) and isinstance(value, int):
+            if min <= value <= max: _pass = ResultAPI.RECORD_RESULT_PASS
+            else: _pass = ResultAPI.RECORD_RESULT_FAIL
+            d["min"] = "{}".format(str(min)).rstrip()
+            d["max"] = "{}".format(str(max)).rstrip()
+            d["value"] = "{}".format(str(value)).rstrip()
             _bullet = "{}: {} <= {} <= {} {} :: {}".format(name, d["min"], d["value"], d["max"], unit, _pass)
             self.logger.info(_bullet)
 

@@ -34,7 +34,7 @@ class TestItem(object):
         :return {'success': True/False, 'button': <#>, ['err': <msg>]}
                 where # is the index of the button selected by user
         """
-        self.logger.debug(buttons)
+        self.logger.info(buttons)
         button_idx = int(input("Press Button (0-{}):".format(len(buttons) - 1)))
         if not (0 <= button_idx < len(buttons)):
             # fake a timeout if the range is wrong... a wrong index is not possible in the GUI

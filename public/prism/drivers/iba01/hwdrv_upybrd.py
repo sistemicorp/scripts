@@ -9,13 +9,13 @@ import os
 import logging
 import threading
 import time
-from public.prism.drivers.micropythonbrd.list_serial import serial_ports
-from public.prism.drivers.micropythonbrd.upybrd import pyboard2
-from public.prism.drivers.micropythonbrd.upybrd_cli import MicroPyBrd
+from public.prism.drivers.iba01.list_serial import serial_ports
+from public.prism.drivers.iba01.IBA01 import IBA01
+from public.prism.drivers.iba01.MicroPyBoard import MicroPyBrd
 
 from pubsub import pub
-from app.const import PUB, CHANNEL
-from app.sys_log import pub_notice
+from core.const import PUB, CHANNEL
+from core.sys_log import pub_notice
 import serial
 
 
@@ -32,7 +32,7 @@ class upybrdPlayPub(threading.Thread):
     def __init__(self, ch, drv, shared_state):
         super(upybrdPlayPub, self).__init__()
         self._stop_event = threading.Event()
-        self.logger = logging.getLogger("SC.{}.{}".format(__class__.__name__, ch))
+        self.logger = logging.getLogger("{}.{}".format(__class__.__name__, ch))
 
         self.ch = ch
         self.pyb_port = drv["obj"]["port"]
@@ -133,7 +133,7 @@ class HWDriver(object):
     MICROPYTHON_FIRMWARE_RELEASE = "1.11.0"  # from os.uname() on pyboard
 
     def __init__(self, shared_state):
-        self.logger = logging.getLogger("SC.{}.{}".format(__class__.__name__, self.SFN))
+        self.logger = logging.getLogger("{}.{}".format(__class__.__name__, self.SFN))
         self.logger.info("Start")
         self.shared_state = shared_state
         self.pybs = []
@@ -166,8 +166,10 @@ class HWDriver(object):
         pub_notice("HWDriver: Scanning for MicroPyBoards on {}".format(ports), sender=sender)
 
         self.pybs.clear()
-        pyboard = MicroPyBrd(self.logger)
+        pyboard = MicroPyBrd(self.logger)   # TODO: try and do this WITHOUT MicroPyBrd, only IBA01
         for port in ports:
+            if "USB" in port: continue  # pyboard ports are ttyACM#
+
             pyb = pyboard.scan_ports(port)
 
             # pyb will be a list of dicts, since we sent in the port to scan,
@@ -192,7 +194,7 @@ class HWDriver(object):
 
             # now start the pyboard server
             port = pyb[0]["port"]
-            pyb[0]["pyb"] = pyboard2(port, loggerIn=logging.getLogger("SC.pyboard2.{}".format(pyb[0].get('id'))))
+            pyb[0]["pyb"] = IBA01(port, loggerIn=logging.getLogger("IBA01.{}".format(pyb[0].get('id'))))
             success, result = pyb[0]["pyb"].start_server()
             self.logger.info("{} {}".format(success, result))
 
