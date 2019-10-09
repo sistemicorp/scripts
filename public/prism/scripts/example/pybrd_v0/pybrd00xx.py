@@ -28,7 +28,7 @@ class pybrd00xx(TestItem):
         ctx = self.item_start()  # always first line of test
 
         # drivers are stored in the shared_state and are retrieved as,
-        drivers = self.shared_state.get_drivers(self.chan, type="MicroPyBrd")
+        drivers = self.shared_state.get_drivers(self.chan, type="IBA01")
         if len(drivers) > 1:
             self.logger.error("Unexpected number of drivers: {}".format(drivers))
             self.log_bullet("Unexpected number of drivers")
@@ -55,7 +55,6 @@ class pybrd00xx(TestItem):
 
     def PYBRD0xxTRDN(self):
         ctx = self.item_start()  # always first line of test
-        self.pyb.close()
         self.item_end()  # always last line of test
 
     def PYBRD0010_LedToggle(self):
