@@ -46,7 +46,7 @@ class pybrd00xx(TestItem):
             return
 
         # save the id of the pyboard for the record
-        _, _, _bullet = ctx.record.measurement("pyboard_id", id, ResultAPI.UNIT_INT)
+        _, _, _bullet = ctx.record.measurement("pyboard_id", id, ResultAPI.UNIT_STRING)
         self.log_bullet(_bullet)
 
         self.pyb = driver["obj"]["pyb"]
@@ -133,9 +133,10 @@ class pybrd00xx(TestItem):
             self.item_end(ResultAPI.RECORD_RESULT_FAIL)  # always last line of test
             return
 
-        self.log_bullet("ADC pin {}: {}".format(pin, result["value"]))
+        value = result["value"]["value"]
+        self.log_bullet("ADC pin {}: {}".format(pin, value))
 
-        _, _result, _bullet = ctx.record.measurement("{}".format(name), result["value"], unit, min, max)
+        _, _result, _bullet = ctx.record.measurement("{}".format(name), value, unit, min, max)
         self.log_bullet(_bullet)
 
         self.item_end(_result)  # always last line of test

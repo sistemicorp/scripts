@@ -14,7 +14,7 @@
   },
   "tests": [
     {
-      "module": "public.prism.scripts.example.pybrd_v1.pybrd00xx",
+      "module": "public.prism.scripts.example.pybrd_v0.pybrd00xx",
       "options": {
       },
       "items": [
