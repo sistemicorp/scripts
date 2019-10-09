@@ -4,9 +4,9 @@
 Sistemi Corporation, copyright, all rights reserved, 2019
 Martin Guthrie
 
-upybrd_cli.py:
+MicroPyBoard_cli.py:
 - provides command line functions to setup a pyboard.
-- does NOT use the upyboard server
+- does NOT use the iba01_server
 
 """
 try:

@@ -10,7 +10,7 @@
   },
   "config": {
     "fail_fast": false,
-    "drivers": ["public.prism.drivers.iba01.hwdrv_upybrd"]
+    "drivers": ["public.prism.drivers.iba01.hwdrv_iba01"]
   },
   "tests": [
     {

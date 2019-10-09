@@ -129,7 +129,7 @@ class HWDriver(object):
     """
     SFN = os.path.basename(__file__)
 
-    DRIVER_TYPE = "MicroPyBrd"
+    DRIVER_TYPE = "IBA01"
     MICROPYTHON_FIRMWARE_RELEASE = "1.11.0"  # from os.uname() on pyboard
 
     def __init__(self, shared_state):
