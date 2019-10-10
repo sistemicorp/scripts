@@ -136,7 +136,7 @@ class MicroPyServer(object):
         :return:
         """
         #with self.lock:
-        _ret = self._ret.get(method)
+        _ret = self._ret.get(method, all)
         print(_ret)
         return True
 
@@ -178,6 +178,9 @@ class MicroPyServer(object):
         """
         if self._debug_flag:
             self._ret.put({"method": "_debug", "value": "{:15s}:{:10s}:{:4d}: {}".format(file, name, line, msg), "success": True})
+
+    def _is_timer_running(self, timer_name):
+        return timer_name in self.ctx["timer"]
 
     # ===================================================================================
     # Methods
@@ -307,21 +310,23 @@ class MicroPyServer(object):
         enable = args.get("enable", True)
         freq = args.get("freq", self.JIG_CLOSED_TIMER_FREQ)
 
-        if enable and "timer_jig_closed" in self.ctx["timer"]:
+        if enable and self._is_timer_running("timer_jig_closed"):
             self._ret.put({"method": "enable_jig_closed_detect", "value": "ALREADY_RUNNING", "success": True})
             return
 
-        self._ret.put({"method": "enable_jig_closed_detect", "value": enable, "success": True})
         if enable:
-            self.timer_jig_closed.callback(self._isr_jig_closed_detect)
-            self.timer_jig_closed.init(freq=freq)  # trigger at Hz
             pin = args.get("pin", self.JIG_CLOSED_PIN)
             self._init_gpio("jig_closed", pin, pyb.Pin.IN, pyb.Pin.PULL_UP)
+
+            self.timer_jig_closed.init(freq=freq)  # trigger at Hz
+            self.timer_jig_closed.callback(self._isr_jig_closed_detect)
             self.ctx["timer"]["timer_jig_closed"] = True
 
         else:
             self.timer_jig_closed.deinit()
             self.ctx["timer"].pop("timer_jig_closed", None)
+
+        self._ret.put({"method": "enable_jig_closed_detect", "value": enable, "success": True})
 
     def _init_gpio(self, name, pin, mode, pull=pyb.Pin.PULL_NONE):
         self.ctx["gpio"][name] = pyb.Pin(pin, mode, pull)

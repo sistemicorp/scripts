@@ -17,7 +17,6 @@ except:
     from public.prism.drivers.iba01.stublogger import StubLogger
 
 
-
 VERSION = "0.2.0"
 
 
@@ -40,19 +39,6 @@ class IBA01(pyboard.Pyboard):
         self.device = device
 
         self.lock = threading.Lock()
-
-    def _repl_result(self, result):
-        """ return repl result as a list of strings for client to parse
-
-        :param result:
-        :return: success (True/False), list (on success) or original repl result of success False
-        """
-        if isinstance(result, bytes):
-            return True, result.decode("utf-8").splitlines()
-        else:
-            self.logger.warn("repl_result: unexpected return from pyboard type: {}".format(type(result)))
-        # the repl return type was odd at this point but maybe the client expects that
-        return False, result
 
     def server_cmd(self, cmds, repl_enter=True, repl_exit=True, blocking=True):
         """ execute a buffer on the open pyboard

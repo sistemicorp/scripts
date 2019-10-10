@@ -11,8 +11,8 @@ class Foo():
         self.lock = _thread.allocate_lock()
         self.bar_ref = self.bar  # Allocation occurs here
         tim = pyb.Timer(4)
-        tim.callback(self.cb)
         tim.init(freq=1)
+        tim.callback(self.cb)
 
     def _add(self, item):
         # accessed by 'REPL' and via Timer callback thru micropython.schedule()
