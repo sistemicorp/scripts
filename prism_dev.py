@@ -4,6 +4,7 @@
 Sistemi Corporation, copyright, all rights reserved, 2019
 Martin Guthrie
 
+bump master version
 """
 import os
 import sys
