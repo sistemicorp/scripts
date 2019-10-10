@@ -313,8 +313,8 @@ class MicroPyServer(object):
 
         self._ret.put({"method": "enable_jig_closed_detect", "value": enable, "success": True})
         if enable:
-            self.timer_jig_closed.init(freq=freq)  # trigger at Hz
             self.timer_jig_closed.callback(self._isr_jig_closed_detect)
+            self.timer_jig_closed.init(freq=freq)  # trigger at Hz
             pin = args.get("pin", self.JIG_CLOSED_PIN)
             self._init_gpio("jig_closed", pin, pyb.Pin.IN, pyb.Pin.PULL_UP)
             self.ctx["timer"]["timer_jig_closed"] = True

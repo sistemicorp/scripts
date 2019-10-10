@@ -102,7 +102,6 @@ class Foo():
         self.x = 0.1
         self.q = MicroPyQueue()
         self.q1 = MicroPyQueue()
-        self.led = pyb.LED(1)
         self.pin = pyb.Pin("X1", pyb.Pin.IN, pyb.Pin.PULL_UP)
         tim = pyb.Timer(4)
         tim.init(freq=1)
@@ -111,24 +110,21 @@ class Foo():
     def bar(self, _):
         #with self.lock:
         self.x *= 1.2
-        #self.led.toggle()
-        #print(self.x)
-        msgs = self.q.peek("bar")
-        if msgs: return
+        #msgs = self.q.peek("bar")
+        #if msgs: return
 
         pin_state = self.pin.value()
-        self.q.put({"method": "bar", "state": pin_state})
+        self.q.put({"method": "bar", "state": pin_state})  # !!THIS!! causes crash...
 
     def cb(self, t):
         # Passing self.bar would cause allocation.
         micropython.schedule(self.bar_ref, 0)
 
     def ret(self, method=None, all=False):
-        #with self.lock:
-        thing = self.q.get(method)
-        print(thing)
-        print("something {} {}".format(self.x, thing))
-        return True
+        with self.lock:
+            thing = self.q.get(method)
+            print("something {} {}".format(self.x, thing))
+            return True
 
     def put(self, thing):
         self.q1.put(thing)
