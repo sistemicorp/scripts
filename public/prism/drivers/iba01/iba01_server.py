@@ -385,7 +385,7 @@ class MicroPyServer(object):
         for r in results: sum += r
         result = float(sum / len(results))
 
-        value = {'value': result}
+        value = {'value': result, "samples": samples}
         self._ret.put({"method": "adc_read", "value": value, "success": True})
 
     def _adc_read_multi(self, _):
@@ -411,7 +411,7 @@ class MicroPyServer(object):
         tim.deinit()
 
         # reformat results to be a simple list
-        value = {}
+        value = {"samples": samples, "freq": freq}
         for idx, result in enumerate(results):
             value[pins[idx]] = [r for r in result]
 

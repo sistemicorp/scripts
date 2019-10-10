@@ -102,7 +102,7 @@ class IBA01(pyboard.Pyboard):
 
             return True, []
 
-    def _verify_single_cmd_ret(self, cmd_dict, delay_poll_ms=100):
+    def _verify_single_cmd_ret(self, cmd_dict, delay_poll_s=0.1):
         method = cmd_dict.get("method", None)
         args = cmd_dict.get("args", None)
 
@@ -126,7 +126,7 @@ class IBA01(pyboard.Pyboard):
         retry = 5
         succeeded = False
         while retry and not succeeded:
-            time.sleep(delay_poll_ms / 1000)
+            time.sleep(delay_poll_s)
             success, result = self.server_cmd(cmds, repl_enter=False, repl_exit=False)
             self.logger.debug("{} {}".format(success, result))
             if success:
