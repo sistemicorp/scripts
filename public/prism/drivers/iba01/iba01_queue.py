@@ -1,5 +1,3 @@
-#import _thread
-
 
 class MicroPyQueue(object):
     """ Special Queue for sending commands and getting return items from a MicroPython Process
@@ -8,7 +6,6 @@ class MicroPyQueue(object):
     MAX_ITEMS = 10
 
     def __init__(self, max_items=MAX_ITEMS):
-        #self.lock = _thread.allocate_lock()
         self.items = []
         self.max_items = max_items
 
@@ -19,7 +16,6 @@ class MicroPyQueue(object):
         :return: True on queue, False on error or too many items
         """
         ret = True
-        #with self.lock:
         if len(self.items) >= self.max_items:
             self.items.pop()
             ret = False
@@ -33,7 +29,6 @@ class MicroPyQueue(object):
         :param all: when set return all
         :return: return item(s) in list
         """
-        #with self.lock:
         if method is None:
             if all:
                 ret = self.items
@@ -59,7 +54,6 @@ class MicroPyQueue(object):
         :param all: if set returns all items, if method is set, then all items with method returned
         :return: None for no item, or [item(s)]
         """
-        #with self.lock:
         if method is None:
             if all:
                 return self.items
@@ -82,7 +76,6 @@ class MicroPyQueue(object):
         :param item_update: new item, of format, {"method": <class_method>, "args": <args>}
         :return:
         """
-        #with self.lock:
         if self.items:
             for idx, item in enumerate(self.items):
                 if item["method"] == item_update["method"]:

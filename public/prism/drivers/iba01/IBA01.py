@@ -24,6 +24,8 @@ class IBA01(pyboard.Pyboard):
     """ Extend the base pyboard class with a little exec helper method, exec_cmd
     to make it more script friendly
 
+    There is a lock on self.server_cmd() to sequence clients
+
     """
     LED_RED    = 1
     LED_GREEN  = 2
@@ -100,7 +102,7 @@ class IBA01(pyboard.Pyboard):
 
             return True, []
 
-    def _verify_single_cmd_ret(self, cmd_dict, delay_poll_ms=100):
+    def _verify_single_cmd_ret(self, cmd_dict, delay_poll_s=0.1):
         method = cmd_dict.get("method", None)
         args = cmd_dict.get("args", None)
 
@@ -124,7 +126,7 @@ class IBA01(pyboard.Pyboard):
         retry = 5
         succeeded = False
         while retry and not succeeded:
-            time.sleep(delay_poll_ms / 1000)
+            time.sleep(delay_poll_s)
             success, result = self.server_cmd(cmds, repl_enter=False, repl_exit=False)
             self.logger.debug("{} {}".format(success, result))
             if success:
@@ -239,17 +241,12 @@ class IBA01(pyboard.Pyboard):
         c = {'method': 'led_toggle', 'args': {'led': led, 'on_ms': on_ms, 'off_ms': off_ms, 'once': once}}
         return self._verify_single_cmd_ret(c)
 
-    def enable_jig_closed_detect(self, enable=True):
-        """ Enable Jig Closed feature on pyboard
-        - starts a timer on the pyboard that reads the jig closed GPIO (X1)
-        - posts messages on the state of the jig closed pin
-        - NON-BLOCKING
-        - client must read a result before the next result can be queued
+    def jig_closed_detect(self):
+        """ Read Jig Closed feature on pyboard
 
-        :param enable: True/False
         :return: success, result
         """
-        c = {'method': 'enable_jig_closed_detect', 'args': {'enable': enable}}
+        c = {'method': 'jig_closed_detect', 'args': {}}
         return self._verify_single_cmd_ret(c)
 
     def adc_read(self, pin, samples=1, samples_ms=1):

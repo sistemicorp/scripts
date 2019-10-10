@@ -19,10 +19,6 @@
       },
       "items": [
         {"id": "PYBRD0xxSETUP",           "enable": true },
-        {"id": "PYBRD0010_LedToggle",     "enable": true, "lednum": 1, "ontime_ms": 300 },
-        {"id": "PYBRD0010_LedToggle",     "enable": true, "lednum": 2, "ontime_ms": 300 },
-        {"id": "PYBRD0010_LedToggle",     "enable": true, "lednum": 3, "ontime_ms": 300 },
-        {"id": "PYBRD0010_LedToggle",     "enable": true, "lednum": 4, "ontime_ms": 300 },
 
         {"id": "PYBRD0020_adc_read",      "enable": false,  "chan": 0, "samples": 2, "delay_ms": 0, "name": "MyKnob",
                                           "min": 1,  "max": 2.3,  "scale": 0.0008057, "unit": "UNIT_VOLTS" },

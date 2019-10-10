@@ -77,20 +77,16 @@ class MicroPyServer(object):
         self._ina01 = False
 
         # use dict to store static data
-        self.ctx = {'a': 0,                # dummy for testing
-                    "gpio": {},            # gpios used are named here
-                    "timer": {},           # timers running are listed here
-                    "adc_read_multi": {},  # cache args
-                    "perphs": None,
-                    "threads": {},
-                    "V1": None,
-                    "V2": None,
-                    "VBAT": None,
-                    }
-
-        # Jig closed
-        self.timer_jig_closed = pyb.Timer(self.JIG_CLOSED_TIMER)  # create a timer object using timer
-        self._isr_jig_closed_detect_ref = self._jig_closed_detect # used to create memory before ISR
+        self.ctx = {
+            "threads": {},
+            "gpio": {},            # gpios used are named here
+            "timers": {},          # timers running are listed here
+            "adc_read_multi": {},  # cache args
+            "perphs": None,
+            "V1": None,
+            "V2": None,
+            "VBAT": None,
+        }
 
         self.ctx["perphs"] = Peripherals(debug_print=self._debug)
         self.is_ina01 = self.ctx["perphs"].is_iba01()
@@ -112,7 +108,6 @@ class MicroPyServer(object):
         :param cmd: dict format {"method": <class_method>, "args": <args>}
         :return: success (True/False)
         """
-        #with self.lock:
         if not isinstance(cmd, dict):
             self._ret.put({"method": "cmd", "value": "cmd must be a dict", "success": False})
             return False
@@ -135,20 +130,17 @@ class MicroPyServer(object):
         :param all: is set True, will return all commands, otherwise only ONE return result is retrieved
         :return:
         """
-        #with self.lock:
         _ret = self._ret.get(method, all)
         print(_ret)
         return True
 
     def peek(self, method=None, all=False):
-        with self.lock:
-            ret = self._ret.peek(method, all)
-            print(ret)
-            return True
+        ret = self._ret.peek(method, all)
+        print(ret)
+        return True
 
     def update(self, item_update):
-        with self.lock:
-            return self._ret.update(item_update)
+        return self._ret.update(item_update)
 
     # ===================================================================================
     # private
@@ -156,7 +148,6 @@ class MicroPyServer(object):
     def _run(self):
         # run on thread
         while True:
-            #with self.lock:
             item = self._cmd.get()
             if item:
                 method = item[0]["method"]
@@ -181,6 +172,9 @@ class MicroPyServer(object):
 
     def _is_timer_running(self, timer_name):
         return timer_name in self.ctx["timer"]
+
+    def _init_gpio(self, name, pin, mode, pull=pyb.Pin.PULL_NONE):
+        self.ctx["gpio"][name] = pyb.Pin(pin, mode, pull)
 
     # ===================================================================================
     # Methods
@@ -268,18 +262,7 @@ class MicroPyServer(object):
 
         self._ret.put({"method": "led_toggle", "value": {'value': True}, "success": True})
 
-    def _isr_jig_closed_detect(self, _):
-        """ ISR function (in ISR context)
-        - this method is !NOT ALLOWED! to create memory or items in list
-        - see http://docs.micropython.org/en/latest/reference/isr_rules.html
-        - exit as quickly as possible, just schedule a normal context function
-
-        :param _: not used
-        :return: none
-        """
-        micropython.schedule(self._isr_jig_closed_detect_ref, 0)
-
-    def _jig_closed_detect(self, _):
+    def jig_closed_detect(self, args):
         """ Normal context ISR handler
         - scheduled by _isr_jig_closed_detect()
         - if there is a jig msg in the queue, then it hasn't been read yet,
@@ -289,9 +272,12 @@ class MicroPyServer(object):
         :return:
         """
         msgs = self._ret.peek("jig_closed_detect")
-        if msgs:
-            # msg in queue still waiting to be processed
-            return
+        # msg in queue still waiting to be processed
+        if msgs: return
+
+        if "jig_closed" not in self.ctx['gpio']:
+            pin = args.get("pin", self.JIG_CLOSED_PIN)
+            self._init_gpio("jig_closed", pin, pyb.Pin.IN, pyb.Pin.PULL_UP)
 
         # if the pin is HIGH, the jig is open
         jig_pin_state = self.ctx["gpio"]["jig_closed"].value()
@@ -299,37 +285,6 @@ class MicroPyServer(object):
         if jig_pin_state: value = {'value': "OPEN"}
         else: value = {'value': "CLOSED"}
         self._ret.put({"method": "jig_closed_detect", "value": value, "success": True})
-
-    def enable_jig_closed_detect(self, args):
-        """ Enable/Disable Jig Closed Timer/Detect
-        - runs on a timer to measure state of jig closed GPIO, and puts that in msg queue
-
-        :param args: { 'enable': True/False, 'freq' : 1 }
-        :return:
-        """
-        enable = args.get("enable", True)
-        freq = args.get("freq", self.JIG_CLOSED_TIMER_FREQ)
-
-        if enable and self._is_timer_running("timer_jig_closed"):
-            self._ret.put({"method": "enable_jig_closed_detect", "value": "ALREADY_RUNNING", "success": True})
-            return
-
-        if enable:
-            pin = args.get("pin", self.JIG_CLOSED_PIN)
-            self._init_gpio("jig_closed", pin, pyb.Pin.IN, pyb.Pin.PULL_UP)
-
-            self.timer_jig_closed.init(freq=freq)  # trigger at Hz
-            self.timer_jig_closed.callback(self._isr_jig_closed_detect)
-            self.ctx["timer"]["timer_jig_closed"] = True
-
-        else:
-            self.timer_jig_closed.deinit()
-            self.ctx["timer"].pop("timer_jig_closed", None)
-
-        self._ret.put({"method": "enable_jig_closed_detect", "value": enable, "success": True})
-
-    def _init_gpio(self, name, pin, mode, pull=pyb.Pin.PULL_NONE):
-        self.ctx["gpio"][name] = pyb.Pin(pin, mode, pull)
 
     def init_gpio(self, args):
         """ init gpio
@@ -351,7 +306,12 @@ class MicroPyServer(object):
             self._ret.put({"method": "init_gpio", "value": "missing or None parameter", "success": False})
             return
 
+        value = {}
+        if name in self.ctx['gpio']: value["action"] = "updating previously created"
+        else:  value["action"] = "creating"
+
         self._init_gpio(name, pin, mode, pull)
+        self._ret.put({"method": "init_gpio", "value": value, "success": False})
 
     def get_gpio(self, name):
         if name not in self.ctx["gpio"]:
@@ -425,7 +385,7 @@ class MicroPyServer(object):
         for r in results: sum += r
         result = float(sum / len(results))
 
-        value = {'value': result}
+        value = {'value': result, "samples": samples}
         self._ret.put({"method": "adc_read", "value": value, "success": True})
 
     def _adc_read_multi(self, _):
@@ -451,7 +411,7 @@ class MicroPyServer(object):
         tim.deinit()
 
         # reformat results to be a simple list
-        value = {}
+        value = {"samples": samples, "freq": freq}
         for idx, result in enumerate(results):
             value[pins[idx]] = [r for r in result]
 
