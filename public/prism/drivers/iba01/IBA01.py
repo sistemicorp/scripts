@@ -24,6 +24,8 @@ class IBA01(pyboard.Pyboard):
     """ Extend the base pyboard class with a little exec helper method, exec_cmd
     to make it more script friendly
 
+    There is a lock on self.server_cmd() to sequence clients
+
     """
     LED_RED    = 1
     LED_GREEN  = 2

@@ -76,12 +76,6 @@ class upybrdPlayPub(threading.Thread):
 
         self.logger.info("!!! run loop started !!!")
 
-        # start the pyboard jog closed timer, it will always be running
-        # regardless of the state of test... if the jig becomes open during
-        # testing, we detect that case and handle it...
-        success, result = self.pyb.enable_jig_closed_detect()
-        self.logger.info("{}, {}".format(success, result))
-
         pub_play = False
         while not self.stopped():
             time.sleep(self.POLL_TIMER_SEC)
@@ -89,7 +83,7 @@ class upybrdPlayPub(threading.Thread):
             # this is a hack to deal with shutting down, the serial port
             # is closed and this process is still running...
             try:
-                success, result = self.pyb.get_server_method("jig_closed_detect")
+                success, result = self.pyb.jig_closed_detect()
 
             except serial.serialutil.SerialException:
                 continue
@@ -101,12 +95,12 @@ class upybrdPlayPub(threading.Thread):
                 self.logger.debug("{}, {}".format(success, result))
                 # only if the fixture was in the previously opened state, then we play
                 # in other words, once lid is closed, it must be opened again to trigger play
-                if self.open_fixture and result[0]["value"] == "CLOSED":
+                if self.open_fixture and result[0]["value"]["value"] == "CLOSED":
                     pub_play = True
                     self.open_fixture = False
                     self.logger.info("Channel {} PLAY".format(self.ch))
 
-                elif result[0]["value"] == "OPEN":
+                elif result[0]["value"]["value"] == "OPEN":
                     self.open_fixture = True
 
             else:
