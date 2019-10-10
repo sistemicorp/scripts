@@ -239,17 +239,12 @@ class IBA01(pyboard.Pyboard):
         c = {'method': 'led_toggle', 'args': {'led': led, 'on_ms': on_ms, 'off_ms': off_ms, 'once': once}}
         return self._verify_single_cmd_ret(c)
 
-    def enable_jig_closed_detect(self, enable=True):
-        """ Enable Jig Closed feature on pyboard
-        - starts a timer on the pyboard that reads the jig closed GPIO (X1)
-        - posts messages on the state of the jig closed pin
-        - NON-BLOCKING
-        - client must read a result before the next result can be queued
+    def jig_closed_detect(self):
+        """ Read Jig Closed feature on pyboard
 
-        :param enable: True/False
         :return: success, result
         """
-        c = {'method': 'enable_jig_closed_detect', 'args': {'enable': enable}}
+        c = {'method': 'jig_closed_detect', 'args': {}}
         return self._verify_single_cmd_ret(c)
 
     def adc_read(self, pin, samples=1, samples_ms=1):

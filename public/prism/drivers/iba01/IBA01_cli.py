@@ -52,7 +52,7 @@ def parse_args():
 
     jig_closed_parser = subp.add_parser('jig_closed')
     jig_closed_parser.add_argument('-a', "--all", dest="all", action='store_true', help='run all tests sequentially', default=False, required=False)
-    jig_closed_parser.add_argument('--100', dest="t100", action='store_true', help='start jig closed, and poll', default=False, required=False)
+    jig_closed_parser.add_argument('--100', dest="t100", action='store_true', help='get jig closed status', default=False, required=False)
 
     adc_parser = subp.add_parser('adc')
     adc_parser.add_argument('-a', "--all", dest="all", action='store_true', help='run all tests sequentially', default=False, required=False)
@@ -163,37 +163,9 @@ def test_jig_closed(args, pyb):
     if all or args.t100:
         did_something = True
 
-        logging.info("T100: Turning on Jig Closed Detect...")
-        success, result = pyb.enable_jig_closed_detect()
+        logging.info("T100: Get Jig Closed Detect...")
+        success, result = pyb.jig_closed_detect()
         logging.info("{} {}".format(success, result))
-
-        logging.info("Turning it on again...")
-        success, result = pyb.enable_jig_closed_detect()
-        logging.info("{} {}".format(success, result))
-
-        # for fun, try and ask for more results, while the jig closed timer is running
-        cmds = ["upyb_server_01.server.ret(all=True)"]
-        retry = 20
-        succeeded = False
-        while retry and not succeeded:
-            success, result = pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
-            logging.info("{} {}".format(success, result))
-            retry -= 1
-            time.sleep(0.5)
-
-        # turn off the jig closed
-        logging.info("Turn OFF jig closed timer...")
-        success, result = pyb.enable_jig_closed_detect(False)
-        logging.info("{} {}".format(success, result))
-
-        # read the server queue a few times to confirm there are no new events...
-        retry = 5
-        succeeded = False
-        while retry and not succeeded:
-            success, result = pyb.server_cmd(cmds, repl_enter=False, repl_exit=False)
-            logging.info("{} {}".format(success, result))
-            retry -= 1
-            time.sleep(0.5)
 
         if _success and not success: _success = False
 
@@ -421,12 +393,6 @@ if __name__ == '__main__':
             logging.error("Failed testing supplies")
             pyb.close()
             exit(1)
-
-    success, result = pyb.enable_jig_closed_detect()
-    logging.info("{}, {}".format(success, result))
-    for i in range(500):
-        success, result = pyb.get_server_method("jig_closed_detect")
-        logging.info(result)
 
     logging.info("all tests passed")
     pyb.close()
