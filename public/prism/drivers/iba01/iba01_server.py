@@ -112,21 +112,21 @@ class MicroPyServer(object):
         :param cmd: dict format {"method": <class_method>, "args": <args>}
         :return: success (True/False)
         """
-        with self.lock:
-            if not isinstance(cmd, dict):
-                self._ret.put({"method": "cmd", "value": "cmd must be a dict", "success": False})
-                return False
+        #with self.lock:
+        if not isinstance(cmd, dict):
+            self._ret.put({"method": "cmd", "value": "cmd must be a dict", "success": False})
+            return False
 
-            if not cmd.get("method", False):
-                self._ret.put({"method": "cmd", "value": "cmd dict must have method key", "success": False})
-                return False
+        if not cmd.get("method", False):
+            self._ret.put({"method": "cmd", "value": "cmd dict must have method key", "success": False})
+            return False
 
-            if not getattr(self, cmd["method"], False):
-                self._ret.put({"method": "cmd", "value": "cmd['{}'] invalid".format(cmd["method"]), "success": False})
-                return False
+        if not getattr(self, cmd["method"], False):
+            self._ret.put({"method": "cmd", "value": "'{}' invalid method".format(cmd["method"]), "success": False})
+            return False
 
-            self._cmd.put(cmd)
-            return True
+        self._cmd.put(cmd)
+        return True
 
     def ret(self, method=None, all=False):
         """ return result(s) of command
@@ -135,10 +135,10 @@ class MicroPyServer(object):
         :param all: is set True, will return all commands, otherwise only ONE return result is retrieved
         :return:
         """
-        with self.lock:
-            _ret = self._ret.get(method)
-            print(_ret)
-            return True
+        #with self.lock:
+        _ret = self._ret.get(method)
+        print(_ret)
+        return True
 
     def peek(self, method=None, all=False):
         with self.lock:
@@ -156,15 +156,15 @@ class MicroPyServer(object):
     def _run(self):
         # run on thread
         while True:
-            with self.lock:
-                item = self._cmd.get()
-                if item:
-                    method = item[0]["method"]
-                    args = item[0]["args"]
-                    method = getattr(self, method, None)
-                    if method is not None:
-                        method(args)
-                        # methods should always be found because they are checked before being queued
+            #with self.lock:
+            item = self._cmd.get()
+            if item:
+                method = item[0]["method"]
+                args = item[0]["args"]
+                method = getattr(self, method, None)
+                if method is not None:
+                    method(args)
+                    # methods should always be found because they are checked before being queued
 
             # allows other threads to run, but generally speaking there should be no other threads(?)
             time.sleep_ms(self.SERVER_CMD_SLEEP_MS)
@@ -193,7 +193,7 @@ class MicroPyServer(object):
         """
         id_bytes = machine.unique_id()
         res = ""
-        for b in id_bytes:
+        for b in id_bytes[::-1]:
             res += "%02x" % b
         self._ret.put({"method": "unique_id", "value": {'value':res}, "success": True})
 

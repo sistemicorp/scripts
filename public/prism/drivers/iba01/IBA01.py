@@ -192,7 +192,7 @@ class IBA01(pyboard.Pyboard):
         :param all: set True for all the return messages
         :return: success, result
         """
-        cmds = ["iba01_server.server.ret(method='{}', all='{}')".format(method, all)]
+        cmds = ["iba01_server.server.ret(method='{}', all={})".format(method, all)]
         retry = 5
         succeeded = False
         while retry and not succeeded:

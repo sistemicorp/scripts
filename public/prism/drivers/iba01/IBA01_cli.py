@@ -422,6 +422,12 @@ if __name__ == '__main__':
             pyb.close()
             exit(1)
 
+    success, result = pyb.enable_jig_closed_detect()
+    logging.info("{}, {}".format(success, result))
+    for i in range(500):
+        success, result = pyb.get_server_method("jig_closed_detect")
+        logging.info(result)
+
     logging.info("all tests passed")
     pyb.close()
 
