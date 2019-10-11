@@ -56,8 +56,8 @@ Considerations
 * Bed of Nails (probes) can wear out over time, you may want to consider a design that
   allows the Bed Of Nails to be replaced.  This ultimately depends on the cost of replacement.
 
-MicroPython Interface Board
-===========================
+MicroPython Interface Board IBA01
+=================================
 
 NOTE: This is a work in progress and incomplete.
 
@@ -74,12 +74,12 @@ The idea is that when you design your PCB, you place test points on the grid pat
 without concern for the function (measurement or stimulous) type of the probe point.
 **Although you must take care that all the functions you do need can be addressed by the MicroPython Interface board.**
 
-During the test jig development cycle you use the MicroPython Interface board and manually wire connections from the probe
-points to the function on the MicroPython board.  The MicroPython Interface board design also includes a prototyping area so
+During the test jig development cycle you can use the IBA01 and manually wire connections from the probe
+points to the function on the MicroPython board.  The IBA01 design also includes a prototyping area so
 that you could also manually assemble extra functions.
 
-Finally once the development is done, you fork this MicroPython Interface design and make the PCB connections.  You may also use
-the MicroPython Interface design in production if that works for you.
+Finally once the development is done, you fork this MicroPython Interface design and make the PCB connections.
+You may also use the IBA01 design in production if that works for you.
 
 If the test point grid for V1 doesn't meet your needs, or the pin mux capability of the MicroPython board
 doesn't have all the features you need, then you will have to design your own interface board.
@@ -104,17 +104,6 @@ Full information is here https://docs.micropython.org/en/latest/pyboard/quickref
 
 * The two DIP headers connect signals between the two boards
 
-Beyond the MicroPython functions, the Interface board has,
-
-* Two Texas Instruments LP3886, linear step down adjustable DC/DC converters, 1 Amp, 0.8-4V
-* Two Texas Instruments INA220 current measurement ICs (to monitor current on any one of three supplies)
-* One Virtual Serial Port via USB
-* Prototyping area
-* Digital Resistor IC, TPL0102
-* Level translator, TXS0104
-* 2 SMA connectors
-* One 12V buffer Amplifier, LTC6090
-
 
 Probe Board Grid Pattern
 ------------------------
@@ -131,46 +120,63 @@ Schematic
 ---------
 
 The complete schematic is available to be forked on CircuitMaker.
-The Schematic and PCB layout are in PDF form in ./public/prism/drivers/micropythonbrd
+The Schematic and PCB layout are in PDF form in ./public/prism/drivers/iba01
 
 
-Configuring MicroPythgon Board
-------------------------------
+Ubuntu Install
+--------------
 
-Initially the MicroPython board must be configured with an ID, so that it is unique from other MicroPython boards
-in the test system.
+Make sure the Python requirements have been loaded::
 
-The `~/git/scripts/public/prism/drivers/micropythonbrd/upybrd.py` script file provides various functions for setting up
-a MicroPython Board.
+    pip3 install -r requirements.txt
+
+
+Disable modemmanager as it interferes with MicroPython PyBoard::
+
+    sudo apt-get purge modemmanager
+
+
+
+Configuring MicroPython Board
+-----------------------------
+
+1) How to setup a "fresh" MicroPython Pyboard ver 1.1 for use with Sistemi Prism:
+
+* Change to directory,
 
 ::
 
-    computer:~/git/scripts/public/prism/drivers/micropythonbrd$ python3 upybrd.py --help
-    usage: upybrd.py [-h] [-p PORT] [-s SET_ID] [-l] [-i] [-f] [-g READ_GPIO] [-v]
-                     [--version]
+        cd ~/git/scripts/public/prism/drivers/iba01
 
-    upybrd
 
-    optional arguments:
-      -h, --help            show this help message and exit
-      -p PORT, --port PORT  Active serial port
-      -s SET_ID, --set-id SET_ID
-                            Set channel <#> to <port>, ex: -s 0 -p COM3
-      -l, --list            list micropython boards
-      -i, --identify        blink red LED on specified port
-      -f, --files           List files on pyboard
-      -g READ_GPIO, --read-gpio READ_GPIO
-                            read gpio (X1, X2, ...)
-      -v, --verbose         Increase verbosity
-      --version             Show version and exit
+* Boot the Pyboard into DFU mode, by shorting the 3V3 pin to the BOOT0 pin and resetting (button) the board.
+        See https://github.com/micropython/micropython/wiki/Pyboard-Firmware-Update
 
-        Usage examples:
-        1) List all MicroPython boards attached to the system,
-           python3 upybrd.py --list
-        2) Setting the ID to 1 for the MicroPython board on COM3,
-           python3 upybrd.py --port COM3 --set-id 1
+* Update the firmware with this command,
 
-Notes
+::
 
-* The ID of the MicroPython board is represented as an empty file on the MicroPython filesystem with the name of format `ID<#>`
+        $ sudo python3 pydfu.py -m -u pybv11-thread-20190730-v1.11-182-g7c15e50eb.dfu
+
+
+2) All files names iba01_*.py need to be copied to the MicroPyboard.
+   Use rshell.
+
+   example rshell session::
+
+        martin@martin-Lenovo:~/sistemi/git/scripts/public/prism/drivers/micropythonbrd$ rshell
+        Connecting to /dev/ttyACM0 (buffer-size 512)...
+        Trying to connect to REPL . connected
+        Testing if sys.stdin.buffer exists ... Y
+        Retrieving root directories ... /flash/
+        Setting time ... Jul 23, 2019 22:04:02
+        Evaluating board_name ... pyboard
+        Retrieving time epoch ... Jan 01, 2000
+        Welcome to rshell. Use Control-D (or the exit command) to exit rshell.
+        /home/martin/sistemi/git/scripts/public/prism/drivers/micropythonbrd> cp iba01_*.py /flash
+        /home/martin/sistemi/git/scripts/public/prism/drivers/micropythonbrd> exit
+
+
+3) The PyBoard internal filesystem can get corrupted when power is removed.  To avoid this, press
+and hold the reset button when removing power.  The IBA01 design does this by design.
 
