@@ -36,6 +36,10 @@ Requirements
   * Google Chrome browser (other browsers are not tested)
   * install Docker CE (https://docs.docker.com/install/linux/docker-ce/ubuntu/)
 
+    * Don't miss the step of adding the current user (its well hidden)::
+
+        sudo usermod -aG docker your-user
+
 Basic
 *****
 
@@ -143,6 +147,8 @@ Run Full
 
         http://127.0.0.1:6590
 
+
+* See additional :ref:`_jigs:Ubuntu Install` instructions if the MicroPython PyBoard will be used
 
 .. [1] This is covered in section TBD
 

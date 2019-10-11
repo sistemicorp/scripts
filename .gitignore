@@ -3,10 +3,11 @@ log/
 record/
 core/__pycache__/
 *.pyc
-create_manifest
 
 public/postgdata/
 
 public/result/
 
 public/users.sqlite
+
+create_manifest.py
