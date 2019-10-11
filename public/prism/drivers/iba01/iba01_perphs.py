@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import _thread
 from machine import I2C
+from time import sleep_ms
 
 from iba01_ads1115 import ADS1115
 from iba01_const import *
@@ -25,8 +26,8 @@ class Peripherals(object):
         P06 = spare, not used
         P07 = spare, not used
 
-        P10 = output, 9VEN(able), push-pull
-        P11 = output, 9VMODE, push-pull
+        P10 = output, 9VEN(able), push-pull, output HIGH, TLV61048
+        P11 = output, 9VMODE, pulled LOW (1MHz mode), TLV61048
         P12 = spare, not used
         P13 = spare, not used
         P14 = spare, not used
@@ -41,6 +42,14 @@ class Peripherals(object):
     I2C_HW_IDs = [UPYB_I2C_HW_I2C1, UPYB_I2C_HW_I2C2]
 
     IBA01_SCAN = [32, 33, 34, 35, 64, 72]  # 4 GPIO expanders, ADS1115, INA220
+
+    RELAYV12_CON  = 0x1 << 0
+    RELAYV12_DIS  = 0x1 << 1
+    RELAYVSYS_CON = 0x1 << 2
+    RELAYVSYS_DIS = 0x1 << 3
+    RELAYVBAT_CON = 0x1 << 4
+    RELAYVBAT_DIS = 0x1 << 5
+
 
     def __init__(self, i2c=0, freq=400000, adc_addr=0x48, adc_gain=1, debug_print=None):
         """
@@ -118,6 +127,25 @@ class Peripherals(object):
         # print("register: {}".format(read))
         return ord(read)
 
+    def _relay(self, connect, con, dis):
+        _reg = self.PCA95535_read(CON_I2C_ADDR, PCA9555_CMD_CONFIG_P0)
+        if connect: reg = _reg & (~(con)) & 0xff  # set bit low to pull down
+        else: reg = _reg & (~(dis)) & 0xff  # set bit low to pull down
+        self.PCA95535_write(CON_I2C_ADDR, PCA9555_CMD_CONFIG_P0, reg)
+        sleep_ms(50)
+        reg = _reg | con | dis  # set bit high to go back to input mode
+        self.PCA95535_write(CON_I2C_ADDR, PCA9555_CMD_CONFIG_P0, reg)
+        return True
+
+    def relay_v12(self, connect=True):
+        return self._relay(connect, self.RELAYV12_CON, self.RELAYV12_DIS)
+
+    def relay_vsys(self, connect=True):
+        return self._relay(connect, self.RELAYVSYS_CON, self.RELAYVSYS_DIS)
+
+    def relay_vbat(self, connect=True):
+        return self._relay(connect, self.RELAYVBAT_CON, self.RELAYVBAT_DIS)
+
     def reset(self):
         """ puts the LDOs into a known state
             Writes to the GPIO expander which controls the LDOs
@@ -127,23 +155,26 @@ class Peripherals(object):
         # set the config, All pins are 'input' except for the enable, which is output,
         # ands LDO is disabled, LOW
         self.PCA95535_write(CON_I2C_ADDR, PCA9555_CMD_CONFIG_P0, 0xFF)  # all inputs
-        self.PCA95535_write(CON_I2C_ADDR, PCA9555_CMD_CONFIG_P1, 0xFC)  # all inputs, except P10/P11, always enabled
+        self.PCA95535_write(CON_I2C_ADDR, PCA9555_CMD_CONFIG_P1, 0xFC)  # all inputs, except P10/P11 always output
 
         # because all the outputs are open-drain, and we only want the
         # LOW value, all the output states will be set to LOW, thus
         # to "activate" a pin, just the CONFIG register needs to be changed.
         self.PCA95535_write(CON_I2C_ADDR, PCA9555_CMD_OUTPUT_P0, 0x00)  # all low
-        self.PCA95535_write(CON_I2C_ADDR, PCA9555_CMD_OUTPUT_P1, 0x03)  # all low, except P10/P11, always enabled
+        self.PCA95535_write(CON_I2C_ADDR, PCA9555_CMD_OUTPUT_P1, 0x02)  # all low, except P10 (HIGH), P11 (LOW)
 
         # no polarity inversion
         self.PCA95535_write(CON_I2C_ADDR, PCA9555_CMD_POL_P0, 0x00)  # no inversion
         self.PCA95535_write(CON_I2C_ADDR, PCA9555_CMD_POL_P1, 0x00)  # no inversion
 
+        self.relay_v12(False)
+        self.relay_vbat(False)
+        self.relay_vsys(False)
 
 if False:
 
     def _print(msg, line=0, file="unknown", name=''):
         print("{:15s}:{:10s}:{:4d}: {}".format(file, name, line, msg))
 
-    perphs = Peripherals(debug_print=_print)
+    p = Peripherals(debug_print=_print)
 

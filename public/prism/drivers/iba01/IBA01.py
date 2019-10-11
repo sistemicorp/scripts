@@ -284,6 +284,24 @@ class IBA01(pyboard.Pyboard):
         c = {'method': 'reset', 'args': {}}
         return self._verify_single_cmd_ret(c)
 
+    def relay_v12(self, connect=True):
+        """ Relay V12 control
+        """
+        c = {'method': 'relay_v12', 'args': {'connect': connect}}
+        return self._verify_single_cmd_ret(c)
+
+    def relay_vsys(self, connect=True):
+        """ Relay V12 control
+        """
+        c = {'method': 'relay_vsys', 'args': {'connect': connect}}
+        return self._verify_single_cmd_ret(c)
+
+    def relay_vbat(self, connect=True):
+        """ Relay V12 control
+        """
+        c = {'method': 'relay_vbat', 'args': {'connect': connect}}
+        return self._verify_single_cmd_ret(c)
+
     def supply_enable(self, name, enable=True, voltage_mv=None, cal=True):
         """ set Supply (enable, voltage, calibrate)
 
