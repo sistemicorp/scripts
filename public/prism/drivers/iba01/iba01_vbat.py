@@ -106,7 +106,7 @@ class SupplyVBAT(object):
         # set the config, All pins are 'input' except for the enable, which is output,
         # ands LDO is disabled, LOW
         self._perph.PCA95535_write(self._addr, PCA9555_CMD_CONFIG_P0, 0xFF)  # all inputs
-        self._perph.PCA95535_write(self._addr, PCA9555_CMD_CONFIG_P1, 0xFE)  # all inputs, except P10 (LoadBias) is always active
+        self._perph.PCA95535_write(self._addr, PCA9555_CMD_CONFIG_P1, 0xFF)  # all inputs
 
         # because all the outputs are open-drain, and we only want the
         # LOW value, all the output states will be set to LOW, thus
@@ -230,14 +230,18 @@ class SupplyVBAT(object):
             msg = "power_good: vbus {}, voltage_mv {}".format(vbus, self._voltage_mv)
             self._debug(msg, 231, _DEBUG_FILE, self._name)
 
-        if abs(self._voltage_mv - (vbus * 1000.0)) > 200: return True, PG_BAD
+        if abs(self._voltage_mv - vbus) > 200: return True, PG_BAD
 
         return True, PG_GOOD
 
     def cal_load(self, value):
         """ Enable calibration load(s)
 
-        There are four bits of load. P11 is LSB, P14/15 is MSB.
+        There are four bits of load.
+            P07 is LSB
+            P10/11
+            P12/13
+            P14/15/16/17 is MSB
         To turn on the bits, the CONFIG register needs each bit to be zero (active low)
 
         : param value: 0x0 to 0xf
@@ -246,13 +250,29 @@ class SupplyVBAT(object):
         if value & ~0xf:
             return False, "value out of range"
 
-        p1_config_cache = self._perph.PCA95535_read(self._addr, PCA9555_CMD_CONFIG_P1)
-        cal_value = (~value & 0xf) << 1
-        # P14/P15 are set the same
-        if cal_value & (0x1 << 4): cal_value = cal_value | (0x1 << 5)
-        else: cal_value = cal_value & ~(0x1 << 5)
+        p0_config_cache = self._perph.PCA95535_read(self._addr, PCA9555_CMD_CONFIG_P0)
+        if value & 0x1:  # turn on P07
+            p0_config = p0_config_cache & 0x7F & 0xff
+        else:
+            p0_config = p0_config_cache | 0x80 & 0xff
+        self._perph.PCA95535_write(self._addr, PCA9555_CMD_CONFIG_P0, p0_config)
 
-        p1_config = p1_config_cache & (~(0x1f << 1) & 0xff) | (cal_value & 0xff)
+        p1_config = self._perph.PCA95535_read(self._addr, PCA9555_CMD_CONFIG_P1)
+        if value & 0x2:  # turn on P10/11
+            p1_config = p1_config & 0xFC & 0xff
+        else:
+            p1_config = p1_config | 0x03 & 0xff
+
+        if value & 0x4:  # turn on P12/13
+            p1_config = p1_config & 0xF3 & 0xff
+        else:
+            p1_config = p1_config | 0x0C & 0xff
+
+        if value & 0x8:  # turn on P14/15/16/17
+            p1_config = p1_config & 0x0F & 0xff
+        else:
+            p1_config = p1_config | 0xF0 & 0xff
+
         self._perph.PCA95535_write(self._addr, PCA9555_CMD_CONFIG_P1, p1_config)
 
         _res = 0.0
@@ -264,8 +284,8 @@ class SupplyVBAT(object):
         else: _res = 1 / _res
 
         if self._debug:
-            msg = "cal_load 0x{:02x} {:.1f}, 0x{:02x} -> 0x{:02x}".format(value, _res, p1_config_cache, p1_config)
-            self._debug(msg, 267, _DEBUG_FILE, self._name)
+            msg = "cal_load 0x{:02x} {:.1f}, P0 0x{:02x} P1 0x{:02x}".format(value, _res, p0_config, p1_config)
+            self._debug(msg, 288, _DEBUG_FILE, self._name)
 
         return True, _res
 
@@ -310,8 +330,7 @@ class SupplyVBAT(object):
         return True, self._cal_matrix[self._voltage_mv][0][1]
 
     def current_ua(self, calibrating=False):
-        current_ma = 0
-        return True, current_ma
+        return self.ina220.measure_current()
 
     def get_enable_voltage_mv(self):
         return self._enable, self._voltage_mv
@@ -335,10 +354,16 @@ if True:
     # MicroPython v1.11-182-g7c15e50eb on 2019-07-30; PYBv1.1 with STM32F405RG
     # Type "help()" for more information.
     # >>>
-    # >>> import iba01_supplyvbat
+    # >>> import iba01_vbat
     # iba01_perphs   :periphs   :  63: i2c scan: [32, 33, 34, 35, 64, 72]
     # iba01_perphs   :periphs   :  70: init complete, iba01 True
-    # iba01_supply12 :V2        : 115: reset CONFIG_P0 0xbf
+    # iba01_INA220   :ina220    : 109: set_config: Successfully Configured 0x3C23
+    # iba01_INA220   :ina220    : 166: config_explain: read_config 0x3C23
+    # iba01_INA220   :ina220    : 173: config_explain: Set to triggered shunt and voltage mode
+    # iba01_vbat     :VBAT      : 115: reset CONFIG_P0 0xbf
+    # iba01_vbat     :VBAT      : 208: voltage_mv 1650, 0xbf -> 0xbf
+    # iba01_vbat     :VBAT      : 231: power_good: vbus 1.676, voltage_mv 1650
+    # iba01_vbat     :VBAT      :  95: init
     # ...
 
     from iba01_perphs import Peripherals
@@ -356,5 +381,7 @@ if True:
     for v in vs:
         vbat.voltage_mv(v)
         sleep_ms(2000)
-    vbat.enable(False)
+
+    vbat.voltage_mv(3000)
+    vbat.calibrate()
 

@@ -13,7 +13,7 @@ class INA220(object):
 
     # self.INA220_LOW = INA220(self.i2c, self.INA220_LOW_ADDR, self.INA220_RSENSE_75, "LOW", self.samples)
     INA220_CONFIG_RESET_VALUE = 0x399F          # register value to set INA220 to default settings
-    INA220_SHUNT_CONVERSION_FACTOR = 0.000010   # LSB of the INA220 shunt voltage register
+    INA220_SHUNT_CONVERSION_FACTOR = 10    # LSB of the INA220 shunt voltage register, 10uV
 
     def __init__(self, perph, i2c_addr, rsense, name, samples, debug_print=None):
 
@@ -41,7 +41,7 @@ class INA220(object):
         self.INA220_CONFIG_BVOLTAGERANGE_MASK = 0x2000  # Bus Voltage Range Mask
         self.INA220_CONFIG_BVOLTAGERANGE_16V = 0x0000   # 0-16V Range
         self.INA220_CONFIG_BVOLTAGERANGE_32V = 0x2000   # 0-32V Range
-        self.INA220_VBUS_CONVERSION_FACTOR = 0.004      # LSB = 4mV
+        self.INA220_VBUS_CONVERSION_FACTOR = 4      # LSB = 4mV
 
         self.INA220_CONFIG_GAIN_MASK = 0x1800       # Gain Mask
         self.INA220_CONFIG_GAIN_1_40MV = 0x0000     # Gain 1, 40mV Range
@@ -205,7 +205,7 @@ class INA220(object):
     def _conversion_ready(self):
         """ checks the conversion ready bit to determine if measurements have finished
 
-        :return: success (True/False)
+        :return: success (True/False), voltage_mv (Bus)
         """
         for count in range(10):
             sleep(0.1)
@@ -230,7 +230,7 @@ class INA220(object):
         return False, 0
 
     def read_shunt_voltage(self):
-        """ reads the shunt voltage
+        """ reads the shunt voltage in uV
 
         :return: success, vshunt
         """
@@ -242,23 +242,27 @@ class INA220(object):
             if _vshunt & self.INA220_SVOLT_SIGN:
                 vshunt = (self.INA220_SVOLT_SIGN_2BYTES - _vshunt) + 1
 
+            vshunt = (vshunt * self.INA220_SHUNT_CONVERSION_FACTOR)
             if self._debug:
                 self._debug("read_shunt_voltage: vshunt {}".format(vshunt),
                             line=250, file=__DEBUG_FILE, name=self._name)
-            vshunt = (vshunt * self.INA220_SHUNT_CONVERSION_FACTOR)
+
             return True, vshunt
 
         return False, 0
 
     def measure_current(self):
-        """ calculates the current
+        """ calculates the current (uA)
 
         :return: success, current
         """
         success, voltage = self.read_shunt_voltage()
-        current = (voltage / self.rsense)
-        # print("measure_current: MODE: {:08x}".format(self.read_config()))
-        # print(DEBUG, "{} : the current:{:10.6f}".format(self.name, current))
+        current = int((voltage / self.rsense))
+
+        if self._debug:
+            self._debug("measure_current: current {} uA".format(current),
+                        line=250, file=__DEBUG_FILE, name=self._name)
+
         return success, current
 
 
