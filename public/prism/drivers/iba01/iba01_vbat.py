@@ -8,6 +8,7 @@ Notes:
 """
 from time import sleep_ms
 
+from iba01_INA220 import INA220
 from iba01_const import *
 
 PG_GOOD = "PG_GOOD"                 # PG good status
@@ -88,6 +89,8 @@ class SupplyVBAT(object):
         self._debug = debug_print
         self._cal_mask = 0x0
         self._cal_matrix = {}  # { voltage: [(resistance, current_ua)], ...} # starting at zero
+
+        self.ina220 = INA220(perph, INA220_I2C_ADDR, VBAT_INA220_RSENSE, "ina220", 4, debug_print)
 
         self.reset()
         self._enable = False
@@ -220,7 +223,15 @@ class SupplyVBAT(object):
 
         :return: success, PG pin value (True = good)
         """
-        # TODO: check INA220 voltage reading and compare to expected...
+        success, vbus = self.ina220.read_bus_voltage()
+        if not success: return False, PG_BAD
+
+        if self._debug:
+            msg = "power_good: vbus {}, voltage_mv {}".format(vbus, self._voltage_mv)
+            self._debug(msg, 231, _DEBUG_FILE, self._name)
+
+        if abs(self._voltage_mv - (vbus * 1000.0)) > 200: return True, PG_BAD
+
         return True, PG_GOOD
 
     def cal_load(self, value):

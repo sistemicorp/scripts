@@ -177,6 +177,19 @@ Configuring MicroPython Board
         /home/martin/sistemi/git/scripts/public/prism/drivers/micropythonbrd> exit
 
 
+   Sometimes, rshell fails to copy files over, you get **timed out or error in transfer to remote**.
+   Switch to ampy to copy the files in this case,::
+
+        .../iba01$ ampy --port /dev/ttyACM0 put iba01_supply12.py
+        .../iba01$ ampy --port /dev/ttyACM0 put iba01_const.py
+        .../iba01$ ampy --port /dev/ttyACM0 put iba01_INA220.py
+        .../iba01$ ampy --port /dev/ttyACM0 put iba01_perphs.py
+        .../iba01$ ampy --port /dev/ttyACM0 put iba01_queue.py
+        .../iba01$ ampy --port /dev/ttyACM0 put iba01_server.py
+        .../iba01$ ampy --port /dev/ttyACM0 put iba01_supply12.py
+        .../iba01$ ampy --port /dev/ttyACM0 put iba01_vbat.py
+
+
 3) The PyBoard internal filesystem can get corrupted when power is removed.  To avoid this, press
 and hold the reset button when removing power.  The IBA01 design does this by design.
 
