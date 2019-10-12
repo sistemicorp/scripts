@@ -9,7 +9,6 @@ import logging
 import time
 from core.test_item import TestItem
 from public.prism.api import ResultAPI
-#import ampy.files as files  # see this for file stuff
 
 # file and class name must match
 class pybrd00xx(TestItem):
@@ -51,10 +50,23 @@ class pybrd00xx(TestItem):
 
         self.pyb = driver["obj"]["pyb"]
 
+        success, result = self.pyb.reset()
+        if not success:
+            self.logger.error("failed to reset IBA01")
+            self.item_end(ResultAPI.RECORD_RESULT_FAIL)
+            return
+
         self.item_end()  # always last line of test
 
     def PYBRD0xxTRDN(self):
         ctx = self.item_start()  # always first line of test
+
+        success, result = self.pyb.reset()
+        if not success:
+            self.logger.error("failed to reset IBA01")
+            self.item_end(ResultAPI.RECORD_RESULT_FAIL)
+            return
+
         self.item_end()  # always last line of test
 
     def PYBRD0010_LedToggle(self):
@@ -140,3 +152,65 @@ class pybrd00xx(TestItem):
 
         self.item_end(_result)  # always last line of test
 
+    def PYBRD0030_supply(self):
+        """ Set Supply
+        {"id": "PYBRD0030_supply",        "enable": true,  "name": "V1", "voltage_mv": 2000, "en": true, },
+        name: <"V1"|"V2"|"VBAT">
+        en: <true|false>
+        """
+        ctx = self.item_start()  # always first line of test
+        name = ctx.item.get("name", None)
+        voltage_mv = ctx.item.get("voltage_mv", None)
+        en = ctx.item.get("en", True)
+
+        success, result = self.pyb.supply_enable(name, enable=en, voltage_mv=voltage_mv, cal=True)
+
+        if not success: _result = ResultAPI.RECORD_RESULT_INTERNAL_ERROR
+        else: _result = ResultAPI.RECORD_RESULT_PASS
+
+        self.item_end(_result)  # always last line of test
+
+    def PYBRD0040_relay_v12(self):
+        """ Set Supply
+        {"id": "PYBRD0040_relay_v12",     "enable": true,  "connect": true },
+        connect: <true|false>
+        """
+        ctx = self.item_start()  # always first line of test
+        connect = ctx.item.get("connect", True)
+
+        success, result = self.pyb.relay_v12(connect=connect)
+
+        if not success: _result = ResultAPI.RECORD_RESULT_INTERNAL_ERROR
+        else: _result = ResultAPI.RECORD_RESULT_PASS
+
+        self.item_end(_result)  # always last line of test
+
+    def PYBRD0050_relay_vsys(self):
+        """ Set Supply
+        {"id": "PYBRD0040_relay_vsys",     "enable": true,  "connect": true },
+        connect: <true|false>
+        """
+        ctx = self.item_start()  # always first line of test
+        connect = ctx.item.get("connect", True)
+
+        success, result = self.pyb.relay_vsys(connect=connect)
+
+        if not success: _result = ResultAPI.RECORD_RESULT_INTERNAL_ERROR
+        else: _result = ResultAPI.RECORD_RESULT_PASS
+
+        self.item_end(_result)  # always last line of test
+
+    def PYBRD0060_relay_vbat(self):
+        """ Set Supply
+        {"id": "PYBRD0040_relay_vbat",     "enable": true,  "connect": true },
+        connect: <true|false>
+        """
+        ctx = self.item_start()  # always first line of test
+        connect = ctx.item.get("connect", True)
+
+        success, result = self.pyb.relay_vbat(connect=connect)
+
+        if not success: _result = ResultAPI.RECORD_RESULT_INTERNAL_ERROR
+        else: _result = ResultAPI.RECORD_RESULT_PASS
+
+        self.item_end(_result)  # always last line of test

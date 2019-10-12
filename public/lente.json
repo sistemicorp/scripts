@@ -1,0 +1,22 @@
+{
+  // Result JSON files be stored as encrypted, true (default) or false,
+  // If the results were not encrypted by Prism, they won't be ecrypted by Lente
+  "results_bkup_encrypted": false,
+
+  // enter IP Address:port for upstream server, example "http://35.123.432.190:6595"
+  // else use null to disable upstream sending
+  "result_server_url": null,
+
+  "postgres": {
+    "ResultBaseKeysV1": {
+      "user": "postgres",
+      // !! Change "pw" to a real password for a real deployment
+      // !! This pw must match your postgres deployment too
+      "pw": "qwerty",
+
+      // ip address of the postgres database, if using postg.sh
+      // this should be set to "lentedb", the name of the docker postgres
+      "ip": "lentedb"
+    }
+  }
+}

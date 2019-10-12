@@ -35,6 +35,14 @@
         {"id": "PYBRD0020_adc_read",      "enable": true,  "pin": "VDD", "samples": 2,
                                           "min": 3.2, "max": 3.4, "unit": "UNIT_VOLTS" },
 
+        // this is not a test, but a 'command' to set up
+        {"id": "PYBRD0030_supply",        "enable": true,  "name": "V1", "voltage_mv": 2000, "en": true, },
+        {"id": "PYBRD0030_supply",        "enable": true,  "name": "V2", "voltage_mv": 3000, },
+
+        {"id": "PYBRD0040_relay_v12",     "enable": true,  "connect": true },
+        {"id": "PYBRD0050_relay_vsys",    "enable": true,  "connect": true },
+        {"id": "PYBRD0060_relay_vbat",    "enable": true,  "connect": true },
+
         {"id": "PYBRD0xxTRDN",            "enable": true }
       ]
     }

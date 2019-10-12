@@ -78,7 +78,7 @@ class MicroPyServer(object):
 
         # use dict to store static data
         self.ctx = {
-            "threads": {},
+            "threads": {},         # threads
             "gpio": {},            # gpios used are named here
             "timers": {},          # timers running are listed here
             "adc_read_multi": {},  # cache args
@@ -96,6 +96,7 @@ class MicroPyServer(object):
             self.ctx['V2'] = Supply12(self.ctx["perphs"], V2_I2C_ADDR, "V2", debug_print=self._debug, type=1)
 
         self._debug_flag = debug
+        self.reset({})
 
     # ===================================================================================
     # Public API to send commands and get results from the MicroPy Server
@@ -182,6 +183,44 @@ class MicroPyServer(object):
     # 1. !! DON'T access public API, ret/peek/update/cmd, functions, access the queue's directly
     #    Else probably get into a lock lockup
 
+    def reset(self, args):
+        """ Reset the board to known state
+        - gets called on init
+
+        :return:
+        """
+        pyb.LED(1).on()
+        pyb.LED(2).on()
+        pyb.LED(3).on()
+        pyb.LED(4).on()
+
+        # turn off threads, all threads should be in a while loop, looking at the state
+        # of self.ctx["threads"][<name>], and exit if this is False.  Set all names to False...
+        for t in self.ctx["threads"]:
+            self.ctx["threads"][t] = False
+
+        # to de-init a pin, turn it back to an input, disabled PULL-UP/DN
+        # remove it from the gpio dict
+        for p in self.ctx["gpio"]:
+            name = self.ctx["gpio"][p].names()[1]
+            temp = pyb.Pin(name, pyb.Pin.IN, pyb.Pin.PULL_NONE)
+            self.ctx["gpio"].pop(p)
+
+        # turn off timers
+        for t in self.ctx["timers"]:
+            pass  # TODO: cancel
+
+        if self.is_ina01:
+            self.ctx["perphs"].reset()
+            self.ctx['V1'].reset()
+            self.ctx['V2'].reset()
+
+        pyb.LED(1).off()
+        pyb.LED(2).off()
+        pyb.LED(3).off()
+        pyb.LED(4).off()
+        self._ret.put({"method": "reset", "value": {}, "success": True})
+
     def unique_id(self, args):
         """ Get the Unique ID of the Micro Pyboard
 
@@ -214,6 +253,15 @@ class MicroPyServer(object):
         self._ret.put({"method": "version", "value": {'value': self.VERSION}, "success": True})
 
     def _toggle_led(self, led, on_ms, off_ms, once=False):
+        """ Toggle LED function - this is run on a thread
+        - to exit the thread, just exit this function
+
+        :param led:
+        :param on_ms:
+        :param off_ms:
+        :param once:
+        :return:
+        """
         thread_name = "led{}".format(led)
         while self.ctx["threads"][thread_name]:
             pyb.LED(led).on()
@@ -251,10 +299,6 @@ class MicroPyServer(object):
             if thread_name not in self.ctx["threads"] or not self.ctx["threads"][thread_name]:
                 self.ctx["threads"][thread_name] = True
                 _thread.start_new_thread(self._toggle_led, (led, on_ms, off_ms, once))
-
-            else:
-                # thread appears to already be running... do nothing...
-                pass
 
         else:
             if thread_name in self.ctx["threads"]:
@@ -460,6 +504,45 @@ class MicroPyServer(object):
     # ===============================================================================================
     # IBA01 - Interface Board A01 APIs
 
+    def relay_v12(self, args):
+        """ Relay V12 Control
+        :param args: {'connect': <True|False>, }     # default: True
+        return: {...}
+        """
+        if not self.is_ina01:
+            self._ret.put({"method": "relay_v12", "value": {'err': "IBA01 not present"}, "success": False})
+            return
+
+        connect = args.get('connect', True)
+        success = self.ctx["perphs"].relay_v12(connect)
+        self._ret.put({"method": "relay_v12", "value": {}, "success": success})
+
+    def relay_vsys(self, args):
+        """ Relay VSYS Control
+        :param args: {'connect': <True|False>, }     # default: True
+        return: {...}
+        """
+        if not self.is_ina01:
+            self._ret.put({"method": "relay_vsys", "value": {'err': "IBA01 not present"}, "success": False})
+            return
+
+        connect = args.get('connect', True)
+        success = self.ctx["perphs"].relay_vsys(connect)
+        self._ret.put({"method": "relay_vsys", "value": {}, "success": success})
+
+    def relay_vbat(self, args):
+        """ Relay VBAT Control
+        :param args: {'connect': <True|False>, }     # default: True
+        return: {...}
+        """
+        if not self.is_ina01:
+            self._ret.put({"method": "relay_vbat", "value": {'err': "IBA01 not present"}, "success": False})
+            return
+
+        connect = args.get('connect', True)
+        success = self.ctx["perphs"].relay_vbat(connect)
+        self._ret.put({"method": "relay_vbat", "value": {}, "success": success})
+
     def supply_enable(self, args):
         """ Enable Supply,set Voltage, calibrate
         - voltage is set first
@@ -472,8 +555,7 @@ class MicroPyServer(object):
         return: {...}
         """
         if not self.is_ina01:
-            value = {'err': "IBA01 not present"}
-            self._ret.put({"method": "supply_current", "value": value, "success": False})
+            self._ret.put({"method": "supply_enable", "value": {'err': "IBA01 not present"}, "success": False})
             return
 
         name = args.get('name', False)
@@ -524,8 +606,7 @@ class MicroPyServer(object):
         return: {...}
         """
         if not self.is_ina01:
-            value = {'err': "IBA01 not present"}
-            self._ret.put({"method": "supply_current", "value": value, "success": False})
+            self._ret.put({"method": "supply_current", "value": {'err': "IBA01 not present"}, "success": False})
             return
 
         name = args.get('name', False)

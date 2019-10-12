@@ -12,6 +12,9 @@ V2_I2C_ADDR   = 0x21   # addr of GPIO expander controlling the LDO V2
 VBAT_I2C_ADDR = 0x22   # addr of GPIO expander controlling the LDO VBAT
 CON_I2C_ADDR  = 0x23   # addr of GPIO expander controlling the 9V, Relays
 
+INA220_I2C_ADDR = 0x40
+VBAT_INA220_RSENSE = 0.5
+
 # PCA9535 GPIO Expander registers
 PCA9555_CMD_INPUT_P0 = 0x0
 PCA9555_CMD_INPUT_P1 = 0x1

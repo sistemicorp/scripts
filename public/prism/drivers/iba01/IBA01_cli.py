@@ -64,6 +64,9 @@ def parse_args():
     misc_parser.add_argument('--100', dest="t100", action='store_true', help='unique id', default=False, required=False)
     misc_parser.add_argument('--200', dest="t200", action='store_true', help='pyboard server version', default=False, required=False)
     misc_parser.add_argument('--300', dest="t300", action='store_true', help='reset', default=False, required=False)
+    misc_parser.add_argument('--400', dest="t400", action='store_true', help='Relay V12 Toggle', default=False, required=False)
+    misc_parser.add_argument('--401', dest="t401", action='store_true', help='Relay VSYS Toggle', default=False, required=False)
+    misc_parser.add_argument('--402', dest="t402", action='store_true', help='Relay VBAT Toggle', default=False, required=False)
 
     supplies_parser = subp.add_parser('supplies')
     supplies_parser.add_argument('-a', "--all", dest="all", action='store_true', help='run all tests sequentially',
@@ -323,6 +326,36 @@ def test_misc(args, pyb):
         did_something = True
         logging.info("T300: Resetting...")
         success, result = pyb.reset()
+        logging.info("{} {}".format(success, result))
+
+        if _success and not success: _success = False
+
+    if all or args.t400:
+        did_something = True
+        logging.info("T400: Toggle Relay V12...")
+        success, result = pyb.relay_v12()
+        logging.info("{} {}".format(success, result))
+        success, result = pyb.relay_v12(connect=False)
+        logging.info("{} {}".format(success, result))
+
+        if _success and not success: _success = False
+
+    if all or args.t401:
+        did_something = True
+        logging.info("T401: Toggle Relay VSYS...")
+        success, result = pyb.relay_vsys()
+        logging.info("{} {}".format(success, result))
+        success, result = pyb.relay_vsys(connect=False)
+        logging.info("{} {}".format(success, result))
+
+        if _success and not success: _success = False
+
+    if all or args.t402:
+        did_something = True
+        logging.info("T402: Toggle Relay VBAT...")
+        success, result = pyb.relay_vbat()
+        logging.info("{} {}".format(success, result))
+        success, result = pyb.relay_vbat(connect=False)
         logging.info("{} {}".format(success, result))
 
         if _success and not success: _success = False
