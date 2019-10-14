@@ -161,7 +161,7 @@ class Peripherals(object):
         # LOW value, all the output states will be set to LOW, thus
         # to "activate" a pin, just the CONFIG register needs to be changed.
         self.PCA95535_write(CON_I2C_ADDR, PCA9555_CMD_OUTPUT_P0, 0x00)  # all low
-        self.PCA95535_write(CON_I2C_ADDR, PCA9555_CMD_OUTPUT_P1, 0x01)  # all low, except P10 (HIGH), P11 (LOW)
+        self.PCA95535_write(CON_I2C_ADDR, PCA9555_CMD_OUTPUT_P1, 0x02)  # all low, except P10 (HIGH), P11 (LOW)
 
         # no polarity inversion
         self.PCA95535_write(CON_I2C_ADDR, PCA9555_CMD_POL_P0, 0x00)  # no inversion

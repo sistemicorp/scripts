@@ -230,6 +230,16 @@ class IBA01(pyboard.Pyboard):
 
         return success, result
 
+    def led(self, set):
+        """ LED on/off
+        :param set: [(#, True/False), ...], where #: 1=Red, 2=Yellow, 3=Green, 4=Blue
+        :return:
+        """
+        if not isinstance(set, list):
+            return False, "argument must be a list of tuples"
+        c = {'method': 'led', 'args': {'set': set}}
+        return self._verify_single_cmd_ret(c)
+
     def led_toggle(self, led, on_ms=500, off_ms=500, once=False):
         """ toggle and LED ON and then OFF
         - this is a blocking command

@@ -289,7 +289,7 @@ class MicroPyServer(object):
         on_ms = args.get("on_ms", 500)
         off_ms = args.get("off_ms", 500)
         once = args.get("once", False)
-        if not led in [self.LED_BLUE, self.LED_GREEN, self.LED_RED, self.LED_YELLOW]:
+        if led not in [self.LED_BLUE, self.LED_GREEN, self.LED_RED, self.LED_YELLOW]:
             value = {'err': "unknown led {}".format(led)}
             self._ret.put({"method": "led_toggle", "value": value, "success": False})
             return
@@ -306,14 +306,32 @@ class MicroPyServer(object):
 
         self._ret.put({"method": "led_toggle", "value": {'value': True}, "success": True})
 
+    def led(self, args):
+        """ LED on/off
+        :param args: "enable": [True|False, ...]
+                     "led": [1|2|3|4, ...]
+        :return:  {'led': led, 'enable': enable}
+        """
+        set = args.get("set", [])
+
+        for led, enable in set:
+            if led not in [self.LED_BLUE, self.LED_GREEN, self.LED_RED, self.LED_YELLOW]:
+                value = {'err': "unknown led {}".format(led)}
+                self._ret.put({"method": "led", "value": value, "success": False})
+
+            if enable: pyb.LED(led).on()
+            else: pyb.LED(led).off()
+
+        self._ret.put({"method": "led", "value": {}, "success": True})
+
     def jig_closed_detect(self, args):
         """ Normal context ISR handler
         - scheduled by _isr_jig_closed_detect()
         - if there is a jig msg in the queue, then it hasn't been read yet,
           and we don't put in a new state unless the previous state has been read
 
-        :param _:
-        :return:
+        :param args: "pin": "X1|X2|..." (valid pyb pin), default self.JIG_CLOSED_PIN
+        :return: {'value': "OPEN|CLOSED"}
         """
         msgs = self._ret.peek("jig_closed_detect")
         # msg in queue still waiting to be processed

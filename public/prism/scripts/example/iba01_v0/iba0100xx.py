@@ -11,7 +11,13 @@ from core.test_item import TestItem
 from public.prism.api import ResultAPI
 
 # file and class name must match
-class pybrd00xx(TestItem):
+class iba0100xx(TestItem):
+    """ Python Methods for both PyBoard and IBA01
+
+    - PYBRDxxxx methods are for PyBoard AND IBA01 only
+    - IBA01xxxx methods are for IBA01 ONLY
+
+    """
 
     DEMO_TIME_DELAY = 1.0
     DEMO_TIME_RND_ENABLE = 1
@@ -152,7 +158,11 @@ class pybrd00xx(TestItem):
 
         self.item_end(_result)  # always last line of test
 
-    def PYBRD0030_supply(self):
+    # PyBoard tests
+    # --------------------------------------------------------------------------------
+    # IBA01 tests
+
+    def IBA010010_supply(self):
         """ Set Supply
         {"id": "PYBRD0030_supply",        "enable": true,  "name": "V1", "voltage_mv": 2000, "en": true, },
         name: <"V1"|"V2"|"VBAT">
@@ -170,7 +180,7 @@ class pybrd00xx(TestItem):
 
         self.item_end(_result)  # always last line of test
 
-    def PYBRD0040_relay_v12(self):
+    def IBA010020_relay_v12(self):
         """ Set Supply
         {"id": "PYBRD0040_relay_v12",     "enable": true,  "connect": true },
         connect: <true|false>
@@ -185,7 +195,7 @@ class pybrd00xx(TestItem):
 
         self.item_end(_result)  # always last line of test
 
-    def PYBRD0050_relay_vsys(self):
+    def IBA010030_relay_vsys(self):
         """ Set Supply
         {"id": "PYBRD0040_relay_vsys",     "enable": true,  "connect": true },
         connect: <true|false>
@@ -200,7 +210,7 @@ class pybrd00xx(TestItem):
 
         self.item_end(_result)  # always last line of test
 
-    def PYBRD0060_relay_vbat(self):
+    def IBA010040_relay_vbat(self):
         """ Set Supply
         {"id": "PYBRD0040_relay_vbat",     "enable": true,  "connect": true },
         connect: <true|false>
