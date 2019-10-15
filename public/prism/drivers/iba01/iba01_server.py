@@ -63,6 +63,8 @@ class MicroPyServer(object):
     ADC_MAX_FREQ = 10000
     ADC_MAX_SAMPLES = 1000
 
+    PWM_MAX_FREQ = 10000
+
     JIG_CLOSED_TIMER = 4
     JIG_CLOSED_TIMER_FREQ = 1  # Hz
     JIG_CLOSED_PIN = "X1"
@@ -81,6 +83,7 @@ class MicroPyServer(object):
             "threads": {},         # threads
             "gpio": {},            # gpios used are named here
             "timers": {},          # timers running are listed here
+            "pwm": {},             # pwms
             "adc_read_multi": {},  # cache args
             "perphs": None,
             "V1": None,
@@ -364,8 +367,19 @@ class MicroPyServer(object):
         pin = args.get("pin", None)
         mode = args.get("mode")
         pull = args.get("pull", pyb.Pin.PULL_NONE)
-        if None in [name, pin, mode]:
-            self._ret.put({"method": "init_gpio", "value": "missing or None parameter", "success": False})
+
+        if mode == PYB_PIN_IN: mode = pyb.Pin.IN
+        elif mode == PYB_PIN_OUT_PP: mode = pyb.Pin.OUT_PP
+        elif mode == PYB_PIN_OUT_OD: mode = pyb.Pin.OUT_OD
+        else:
+            self._ret.put({"method": "init_gpio", "value": {'err': 'invalid mode'}, "success": False})
+            return
+
+        if pull == PYB_PIN_PULLNONE: pull = pyb.Pin.PULL_NONE
+        elif pull == PYB_PIN_PULLDN: pull = pyb.Pin.PULL_UP
+        elif pull == PYB_PIN_PULLUP: pull = pyb.Pin.PULL_DOWN
+        else:
+            self._ret.put({"method": "init_gpio", "value": {'err': 'invalid pull'}, "success": False})
             return
 
         value = {}
@@ -373,25 +387,26 @@ class MicroPyServer(object):
         else:  value["action"] = "creating"
 
         self._init_gpio(name, pin, mode, pull)
-        self._ret.put({"method": "init_gpio", "value": value, "success": False})
+        self._ret.put({"method": "init_gpio", "value": value, "success": True})
 
     def get_gpio(self, name):
         if name not in self.ctx["gpio"]:
-            self._ret.put({"method": "get_gpio", "value": "{} has not been init_gpio".format(name), "success": False})
+            value = {'err': "{} has not been initialized".format(name)}
+            self._ret.put({"method": "get_gpio", "value": value, "success": False})
             return
 
         value = self.ctx["gpio"][name].value()
-        self._ret.put({"method": "get_gpio", "value": "{}".format(value), "success": True})
+        self._ret.put({"method": "get_gpio", "value": {'value': value}, "success": True})
 
     def set_gpio(self, name, value):
         if name not in self.ctx["gpio"]:
-            self._ret.put({"method": "set_gpio", "value": "{} has not been init_gpio".format(name), "success": False})
+            value = {'err': "{} has not been initialized".format(name)}
+            self._ret.put({"method": "set_gpio", "value": value, "success": False})
             return
 
-        if value:
-            self.ctx["gpio"][name].high()
-        else:
-            self.ctx["gpio"][name].low()
+        if value: self.ctx["gpio"][name].high()
+        else: self.ctx["gpio"][name].low()
+        self._ret.put({"method": "set_gpio", "value": {}, "success": True})
 
     def adc_read(self, args):
         """ (simple) read ADC on a pin
@@ -519,6 +534,47 @@ class MicroPyServer(object):
         micropython.schedule(self._adc_read_multi, 0)
         self._ret.put({"method": "adc_read_multi", "value": {'value': 'scheduled'}, "success": True})
 
+    def pwm(self, args):
+        """ PWM
+        - a pin must be set up first
+
+        :param args: 'freq': <value>
+        :return:
+        """
+        name = args.get("name", None)
+        pin = args.get("pin", None)
+        freq = args.get("freq", 0)
+        timer = args.get("timer", 0)
+        duty_cycle = args.get("duty_cycle", 50)
+        channel = args.get("channel", 1)
+        enable = args.get("enable", True)
+
+        if not enable:
+            if name not in self.ctx["timers"]:
+                value = {'err': "{} timer is not valid".format(name)}
+                self._ret.put({"method": "pwm", "value": value, "success": False})
+                return
+            self.ctx["timers"][name].deinit()
+            self._ret.put({"method": "pwm", "value": {'value': '{} disabled'.format(name)}, "success": True})
+            return
+
+        if pin not in self.ctx["gpio"]:
+            value = {'err': "{} pin is not valid".format(pin)}
+            self._ret.put({"method": "pwm", "value": value, "success": False})
+            return
+        if not (0 < freq <= self.PWM_MAX_FREQ):
+            value = {'err': "freq not within range supported, 0 < f <= {}".format(self.PWM_MAX_FREQ)}
+            self._ret.put({"method": "pwm", "value": value, "success": False})
+            return
+
+        p = self.ctx["gpio"][pin]
+
+        self.ctx["timers"][name] = pyb.Timer(timer, freq=freq)
+        self.ctx["pwm"][name] = self.ctx["timers"][name].channel(channel, pyb.Timer.PWM, pin=p)
+        self.ctx["pwm"][name].pulse_width_percent(duty_cycle)
+        self._ret.put({"method": "pwm", "value": {'value': 'scheduled'}, "success": True})
+
+    # PyBoard
     # ===============================================================================================
     # IBA01 - Interface Board A01 APIs
 

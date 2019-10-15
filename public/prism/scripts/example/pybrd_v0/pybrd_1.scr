@@ -35,6 +35,10 @@
         {"id": "PYBRD0020_adc_read",      "enable": true,  "pin": "VDD", "samples": 2,
                                           "min": 3.2, "max": 3.4, "unit": "UNIT_VOLTS" },
 
+        // turn on PWM on pin Y1 for a short time
+        {"id": "PYBRD0030_pwm",           "enable": true,  "pin": "Y1", "en": true},
+        {"id": "PYBRD0030_pwm",           "enable": true,  "pin": "Y1", "en": false},
+
         {"id": "PYBRD0xxTRDN",            "enable": true }
       ]
     }

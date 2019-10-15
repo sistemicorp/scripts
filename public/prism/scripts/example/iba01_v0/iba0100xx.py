@@ -9,6 +9,7 @@ import logging
 import time
 from core.test_item import TestItem
 from public.prism.api import ResultAPI
+from public.prism.drivers.iba01.iba01_const import *
 
 # file and class name must match
 class iba0100xx(TestItem):
@@ -157,6 +158,42 @@ class iba0100xx(TestItem):
         self.log_bullet(_bullet)
 
         self.item_end(_result)  # always last line of test
+
+    def PYBRD0030_pwm(self):
+        """ Turn on PWM
+
+        {"id": "PYBRD0030_pwm",           "enable": true,  "pin": "Y1", "en": true},
+
+        :return:
+        """
+        ctx = self.item_start()  # always first line of test
+
+        en = ctx.item.get("en", True)
+        pin = ctx.item.get("pin", None)
+        name = "pwm_{}".format(pin)
+        channel = 1
+        freq = 1000
+        duty_cycle = 25
+
+        if pin in ["Y1", "Y7", "Y8", "Y11", "Y12", "X6", "X8"]: timer = 8
+        # TODO: complete this list
+
+        if en: success, result = self.pyb.init_gpio(name, "Y1", PYB_PIN_OUT_PP, PYB_PIN_PULLNONE)
+        else:  success, result = self.pyb.init_gpio(name, "Y1", PYB_PIN_IN, PYB_PIN_PULLNONE)
+        if not success:
+            self.logger.error(result)
+            self.log_bullet("pwm {}: Failed".format(name))
+            self.item_end(ResultAPI.RECORD_RESULT_FAIL)  # always last line of test
+            return
+
+        success, result = self.pyb.pwm(name, name, timer, channel, freq, duty_cycle, en)
+        if not success:
+            self.logger.error(result)
+            self.log_bullet("pwm {}: Failed".format(name))
+            self.item_end(ResultAPI.RECORD_RESULT_FAIL)  # always last line of test
+            return
+
+        self.item_end()  # always last line of test
 
     # PyBoard tests
     # --------------------------------------------------------------------------------

@@ -18,6 +18,7 @@ import logging
 import argparse
 
 from IBA01 import IBA01
+from iba01_const import *
 
 VERSION = "0.2.0"
 
@@ -59,6 +60,10 @@ def parse_args():
     adc_parser.add_argument('--100', dest="t100", action='store_true', help='adc_read', default=False, required=False)
     adc_parser.add_argument('--200', dest="t200", action='store_true', help='adc_read_multi', default=False, required=False)
 
+    pwm_parser = subp.add_parser('pwm')
+    pwm_parser.add_argument('-a', "--all", dest="all", action='store_true', help='run all tests sequentially', default=False, required=False)
+    pwm_parser.add_argument('--100', dest="t100", action='store_true', help='PWM on Y1', default=False, required=False)
+
     misc_parser = subp.add_parser('misc')
     misc_parser.add_argument('-a', "--all", dest="all", action='store_true', help='run all tests sequentially', default=False, required=False)
     misc_parser.add_argument('--100', dest="t100", action='store_true', help='unique id', default=False, required=False)
@@ -67,6 +72,7 @@ def parse_args():
     misc_parser.add_argument('--400', dest="t400", action='store_true', help='Relay V12 Toggle', default=False, required=False)
     misc_parser.add_argument('--401', dest="t401", action='store_true', help='Relay VSYS Toggle', default=False, required=False)
     misc_parser.add_argument('--402', dest="t402", action='store_true', help='Relay VBAT Toggle', default=False, required=False)
+    misc_parser.add_argument('--500', dest="t500", action='store_true', help='Init GPIO Y1 PP', default=False, required=False)
 
     supplies_parser = subp.add_parser('supplies')
     supplies_parser.add_argument('-a', "--all", dest="all", action='store_true', help='run all tests sequentially',
@@ -203,6 +209,34 @@ def test_adc(args, pyb):
         logging.info("{} {}".format(success, result))
 
         if _success and not success: _success = False
+
+    if did_something: return _success
+    else: logging.error("No Tests were specified")
+    return False
+
+
+def test_pwm(args, pyb):
+    did_something = False
+    _all = False
+    if args._cmd == "pwm": _all = args.all
+    all = args.all_funcs or _all
+    _success = True
+    logging.info("test_pwm:")
+
+    if all or args.t100:
+        did_something = True
+        logging.info("T100: PWM on Y1")
+        success, result = pyb.init_gpio("foo", "Y1", PYB_PIN_OUT_PP, PYB_PIN_PULLNONE)
+        logging.info("{} {}".format(success, result))
+        if _success and not success:
+            _success = False
+            logging.error("failed")
+
+        success, result = pyb.pwm("foo", "foo", 8, 1, 1000, 50)
+        logging.info("{} {}".format(success, result))
+
+        if _success and not success: _success = False
+
 
     if did_something: return _success
     else: logging.error("No Tests were specified")
@@ -360,6 +394,14 @@ def test_misc(args, pyb):
 
         if _success and not success: _success = False
 
+    if all or args.t500:
+        did_something = True
+        logging.info("T500: init GPIO Y1...")
+        success, result = pyb.init_gpio("foo", "Y1", PYB_PIN_OUT_PP, PYB_PIN_PULLNONE)
+        logging.info("{} {}".format(success, result))
+
+        if _success and not success: _success = False
+
     if did_something: return _success
     else: logging.error("No Tests were specified")
     return False
@@ -408,6 +450,13 @@ if __name__ == '__main__':
 
     if args._cmd == "adc" or all_funcs:
         success = test_adc(args, pyb)
+        if not success:
+            logging.error("Failed testing adc")
+            pyb.close()
+            exit(1)
+
+    if args._cmd == "pwm" or all_funcs:
+        success = test_pwm(args, pyb)
         if not success:
             logging.error("Failed testing adc")
             pyb.close()

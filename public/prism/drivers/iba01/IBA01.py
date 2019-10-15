@@ -12,9 +12,13 @@ import threading
 import ampy.pyboard as pyboard
 
 try:
+    # run locally
     from stublogger import StubLogger
+    from iba01_const import *
 except:
+    # run from prism
     from public.prism.drivers.iba01.stublogger import StubLogger
+    from public.prism.drivers.iba01.iba01_const import *
 
 
 VERSION = "0.2.0"
@@ -27,11 +31,6 @@ class IBA01(pyboard.Pyboard):
     There is a lock on self.server_cmd() to sequence clients
 
     """
-    LED_RED    = 1
-    LED_GREEN  = 2
-    LED_YELLOW = 3
-    LED_BLUE   = 4
-
     def __init__(self, device, baudrate=115200, user='micro', password='python', wait=0, rawdelay=0, loggerIn=None):
         super().__init__(device, baudrate, user, password, wait, rawdelay)
 
@@ -286,6 +285,18 @@ class IBA01(pyboard.Pyboard):
         c = {'method': 'adc_read_multi', 'args': {'pins': pins, 'samples': samples, 'freq': freq}}
         return self._verify_single_cmd_ret(c)
 
+    def init_gpio(self, name, pin, mode, pull):
+        """ Init GPIO
+
+        :param name:
+        :param pin:
+        :param mode: one of pyb.Pin.IN, Pin.OUT_PP, Pin.OUT_OD, ..
+        :param pull: one of pyb.Pin.PULL_NONE, pyb.Pin.PULL_UP, pyb.Pin.PULL_DN
+        :return:
+        """
+        c = {'method': 'init_gpio', 'args': {'name': name, 'pin': pin, 'mode': mode, 'pull': pull}}
+        return self._verify_single_cmd_ret(c)
+
     def reset(self):
         """ Reset the I2C devices to a known/default state
 
@@ -350,4 +361,20 @@ class IBA01(pyboard.Pyboard):
                                   'pg': pg_or_err, }
         """
         c = {'method': 'supply_current', 'args': {'name': name}}
+        return self._verify_single_cmd_ret(c)
+
+    def pwm(self, name, pin, timer, channel, freq, duty_cycle, enable=True):
+        """ Setup PWM
+
+        :param name:
+        :param pin: name of the pin, can be the same as name
+        :param timer: timer number, see http://micropython.org/resources/pybv11-pinout.jpg
+        :param channel: timer channel number
+        :param freq:
+        :param duty_cycle: default 50%
+        :return:
+        """
+        c = {'method': 'pwm', 'args': {'name': name, 'pin': pin, 'timer': timer, "channel": channel,
+                                       'freq': freq, 'duty_cycle': duty_cycle,
+                                       "enable": enable}}
         return self._verify_single_cmd_ret(c)
