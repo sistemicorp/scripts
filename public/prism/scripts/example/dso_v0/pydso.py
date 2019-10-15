@@ -13,7 +13,10 @@ from public.prism.api import ResultAPI
 
 # file and class name must match
 class pydso(TestItem):
+    """
 
+    see: https://www.keysight.com/upload/cmc_upload/All/7000A_series_prog_guide.pdf
+    """
     DEMO_TIME_DELAY = 1.0
     DEMO_TIME_RND_ENABLE = 1
     DSO = "AGILENT_DSO_USB_1"
@@ -80,6 +83,50 @@ class pydso(TestItem):
 
         self.log_bullet("Switched to channel {}".format(chan))
         self.log_bullet(_bullet)
+        time.sleep(0.1) # give it some time to sit here, else its too fast
+        self.shared_lock(self.DSO).release()
+        self.item_end()  # always last line of test
+
+    def PYDSO020AUTO(self):
+        """ Autoscale
+
+        {"id": "PYDSO020AUTO",   "enable": true },
+        """
+        ctx = self.item_start()  # always first line of test
+
+        self.shared_lock(self.DSO).acquire()
+
+        # reset the scope to a known state
+        self.dso.write('*RST')
+        if self.chan != 1:  # after reset, chan 1 is already on
+            self.dso.write(':CHANnel1:DISPlay OFF')  # turn off channel 1
+            self.dso.write(':CHANnel{}:DISPlay ON'.format(self.chan))  # turn off channel 1
+
+        self.dso.write(':AUToscale:CHANnels DISPlayed')
+
+        time.sleep(0.1) # give it some time to sit here, else its too fast
+        self.shared_lock(self.DSO).release()
+        self.item_end()  # always last line of test
+
+    def PYDSO030MEAS(self):
+        """ Measure Stuff... no pass/fail
+
+        {"id": "PYDSO030MEAS",   "enable": true },
+        """
+        ctx = self.item_start()  # always first line of test
+
+        self.shared_lock(self.DSO).acquire()
+
+        vpp = self.dso.query(':MEASure:VPP? CHANnel{}'.format(self.chan))
+        value = float(vpp)
+        _result, _bullet = ctx.record.measurement("VPP{}".format(self.chan), value, ResultAPI.UNIT_VOLTS)
+
+        dc = self.dso.query(':MEASure:DUTYcycle? CHANnel{}'.format(self.chan))
+        value = float(vpp)
+        _result, _bullet = ctx.record.measurement("DUTYCYCLE{}".format(self.chan), dc, ResultAPI.UNIT_VOLTS)
+
+        # TODO: add more measurement examples...
+
         time.sleep(0.1) # give it some time to sit here, else its too fast
         self.shared_lock(self.DSO).release()
         self.item_end()  # always last line of test

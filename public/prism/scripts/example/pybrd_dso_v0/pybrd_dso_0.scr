@@ -10,13 +10,15 @@
   },
   "config": {
     "fail_fast": false,
-    "drivers": ["public.prism.drivers.iba01.hwdrv_iba01"]
+    "drivers": [
+      "public.prism.drivers.iba01.hwdrv_iba01",
+      "public.prism.drivers.agilent_dso_usb_1.hwdrv_agilent_dso_usb_1"
+    ]
   },
   "tests": [
     {
       "module": "public.prism.scripts.example.iba01_v0.iba0100xx",
-      "options": {
-      },
+      "options": {},
       "items": [
         {"id": "PYBRD0xxSETUP",           "enable": true },
 
@@ -35,11 +37,17 @@
         {"id": "PYBRD0020_adc_read",      "enable": true,  "pin": "VDD", "samples": 2,
                                           "min": 3.2, "max": 3.4, "unit": "UNIT_VOLTS" },
 
-        // turn on PWM on pin Y1 for a short time
-        {"id": "PYBRD0030_pwm",           "enable": true,  "pin": "Y1", "freq": 1000, "duty_cycle": 25, "en": true},
-        {"id": "PYBRD0030_pwm",           "enable": true,  "pin": "Y1", "en": false},
+        {"id": "PYBRD0030_pwm",           "enable": true,  "pin": "Y1", "en": true},
 
-        {"id": "PYBRD0xxTRDN",            "enable": true }
+      ]
+    },
+    {
+      "module": "public.prism.scripts.example.iba01_v0.iba0100xx",
+      "options": {},
+      "items": [
+        {"id": "PYDSO000SETUP",     "enable": true },
+        {"id": "PYDSO020AUTO",      "enable": true },
+        {"id": "PYDSO030MEAS",      "enable": true },
       ]
     }
   ]

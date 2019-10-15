@@ -162,7 +162,7 @@ class iba0100xx(TestItem):
     def PYBRD0030_pwm(self):
         """ Turn on PWM
 
-        {"id": "PYBRD0030_pwm",           "enable": true,  "pin": "Y1", "en": true},
+        {"id": "PYBRD0030_pwm",           "enable": true,  "pin": "Y1", "freq": 1000, "duty_cycle": 25, "en": true},
 
         :return:
         """
@@ -172,11 +172,11 @@ class iba0100xx(TestItem):
         pin = ctx.item.get("pin", None)
         name = "pwm_{}".format(pin)
         channel = 1
-        freq = 1000
-        duty_cycle = 25
+        freq = ctx.item.get("freq", 1000)
+        duty_cycle = ctx.item.get("duty_cycle", 50)
 
         if pin in ["Y1", "Y7", "Y8", "Y11", "Y12", "X6", "X8"]: timer = 8
-        # TODO: complete this list
+        # TODO: complete this list for other pins
 
         if en: success, result = self.pyb.init_gpio(name, "Y1", PYB_PIN_OUT_PP, PYB_PIN_PULLNONE)
         else:  success, result = self.pyb.init_gpio(name, "Y1", PYB_PIN_IN, PYB_PIN_PULLNONE)

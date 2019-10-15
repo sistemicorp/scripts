@@ -17,8 +17,7 @@
   "tests": [
     {
       "module": "public.prism.scripts.example.dso_v0.pydso",
-      "options": {
-      },
+      "options": {},
       "items": [
         {"id": "PYDSO000SETUP",     "enable": true },
         {"id": "PYDSO010SETCHAN",   "enable": true, "chan": 1 },
