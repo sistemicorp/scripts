@@ -9,14 +9,16 @@ import os
 import logging
 import threading
 import time
+import serial
+
+from pubsub import pub
 from public.prism.drivers.iba01.list_serial import serial_ports
 from public.prism.drivers.iba01.IBA01 import IBA01
 from public.prism.drivers.iba01.MicroPyBoard import MicroPyBrd
+from public.prism.api import ResultAPI
 
-from pubsub import pub
 from core.const import PUB, CHANNEL
 from core.sys_log import pub_notice
-import serial
 
 
 class upybrdPlayPub(threading.Thread):
@@ -28,6 +30,10 @@ class upybrdPlayPub(threading.Thread):
 
     """
     POLL_TIMER_SEC = 1
+    LED_RED    = 1
+    LED_GREEN  = 2
+    LED_YELLOW = 3
+    LED_BLUE   = 4
 
     def __init__(self, ch, drv, shared_state):
         super(upybrdPlayPub, self).__init__()
@@ -38,23 +44,26 @@ class upybrdPlayPub(threading.Thread):
         self.pyb_port = drv["obj"]["port"]
         self.pyb = drv["obj"]["pyb"]
         self.ch_state = CHANNEL.STATE_UNKNOWN
+        self.ch_result = ResultAPI.RECORD_RESULT_UNKNOWN
         self.ch_pub = PUB.get_channel_num_play(ch)
         self.open_fixture = False  # assume fixture is closed
         self.shared_state = shared_state
 
-        pub.subscribe(self.onSHUTDOWN, PUB.SHUTDOWN)
-        pub.subscribe(self.onCHANNEL_STATE, PUB.CHANNEL_STATE)
+        pub.subscribe(self.onSHUTDOWN,            PUB.SHUTDOWN)
+        pub.subscribe(self.onCHANNEL_STATE,       PUB.CHANNEL_STATE)
+        pub.subscribe(self.onCHANNEL_VIEW_RESULT, PUB.CHANNEL_VIEW_RESULT)
 
         self.start()
 
     def _unsubscribe(self):
-        pub.unsubscribe(self.onSHUTDOWN, PUB.SHUTDOWN)
-        pub.subscribe(self.onCHANNEL_STATE, PUB.CHANNEL_STATE)
+        pub.unsubscribe(self.onSHUTDOWN,            PUB.SHUTDOWN)
+        pub.unsubscribe(self.onCHANNEL_STATE,       PUB.CHANNEL_STATE)
+        pub.unsubscribe(self.onCHANNEL_VIEW_RESULT, PUB.CHANNEL_VIEW_RESULT)
 
     def shutdown(self):
+        self._unsubscribe()
         self._stop_event.set()
         self.join()
-        self._unsubscribe()
 
     def close(self):
         self.shutdown()
@@ -68,6 +77,27 @@ class upybrdPlayPub(threading.Thread):
         if item_dict["ch"] != self.ch: return
         self.logger.info("%r - %r" % (topic.getName(), item_dict))
         self.ch_state = item_dict["state"]
+
+        # TODO: Note that public does NOT include the channel state, from const.CHANNEL.
+        #       But, based on channel state, might be good to add LED indication...
+        #       Either a copy of, or the STATE_* assignments would need to move to ResultAPI.
+        #       (and copy is never a good idea)
+
+    def onCHANNEL_VIEW_RESULT(self, item_dict, topic=pub.AUTO_TOPIC):
+        if item_dict["ch"] != self.ch: return
+        self.logger.info("%r - %r" % (topic.getName(), item_dict))
+        # item_dict -> {'ch': 0, 'result': 'PASS', 'from': 'ChanCon._script_fini.ch0'}
+        self.ch_result = item_dict['result']
+
+        if self.ch_result == ResultAPI.RECORD_RESULT_PASS:
+            set = [(self.LED_GREEN, True), (self.LED_RED, False), (self.LED_YELLOW, False)]
+        elif self.ch_result == ResultAPI.RECORD_RESULT_FAIL:
+            set = [(self.LED_GREEN, False), (self.LED_RED, True), (self.LED_YELLOW, False)]
+        else:
+            set = [(self.LED_GREEN, False), (self.LED_RED, False), (self.LED_YELLOW, True)]
+
+        success, result = self.pyb.led(set)
+        if not success: self.logger.error("failed to set LED")
 
     def stopped(self):
         return self._stop_event.is_set()

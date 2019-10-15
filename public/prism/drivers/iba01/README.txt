@@ -11,8 +11,11 @@ How to use these files...
     The pyboard should now be ready to go.
 
 2) All files names iba01_*.py need to be copied to the MicroPyboard.
-   Use rshell (put link to install rshell here) or ampy.
 
+   Use the script: ampy_put_all
+
+   Or, use rshell (put link to install rshell here) or ampy to copy just one file.
+   ampy (see script) is more reliable than rshell.
    example rshell session:
         martin@martin-Lenovo:~/sistemi/git/scripts/public/prism/drivers/micropythonbrd$ rshell
         Connecting to /dev/ttyACM0 (buffer-size 512)...

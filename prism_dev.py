@@ -187,6 +187,11 @@ class ChanCon(object):
                 logger.info("ITEM: {}".format(item))
                 if item.get("enable", True):
                     self._item = item
+                    if not getattr(test_klass, item["id"], False):
+                        msg = "method {} is not in module {}".format(item["id"], test_klass)
+                        logger.error(msg)
+                        raise ValueError(msg)
+
                     func = getattr(test_klass, item["id"])
                     func()
 
@@ -245,6 +250,7 @@ def parse_args():
     epilog = """
 Usage examples:
     python3 prism_dev.py --script ./public/prism/scripts/example/prod_v0/prod_0.scr 
+    python3 prism_dev.py --script ./public/prism/scripts/example/pybrd_v0/pybrd_0.scr 
     
 Sistemi Corporation, copyright, all rights reserved, 2019
     """

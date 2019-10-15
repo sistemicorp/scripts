@@ -4,7 +4,7 @@
 {
   "info": {
     "product": "pybrd_1",
-    "bom": "B00100-001",
+    "bom": "B00101-001",
     "lot": "95135",
     "location": "canada/ontario/milton"
   },
@@ -19,10 +19,6 @@
       },
       "items": [
         {"id": "PYBRD0xxSETUP",           "enable": true },
-        {"id": "PYBRD0010_LedToggle",     "enable": true, "lednum": 1, "ontime_ms": 300 },
-        {"id": "PYBRD0010_LedToggle",     "enable": true, "lednum": 2, "ontime_ms": 300 },
-        {"id": "PYBRD0010_LedToggle",     "enable": true, "lednum": 3, "ontime_ms": 300 },
-        {"id": "PYBRD0010_LedToggle",     "enable": true, "lednum": 4, "ontime_ms": 300 },
 
         {"id": "PYBRD0020_adc_read",      "enable": false,  "chan": 0, "samples": 2, "delay_ms": 0, "name": "MyKnob",
                                           "min": 1,  "max": 2.3,  "scale": 0.0008057, "unit": "UNIT_VOLTS" },
@@ -38,6 +34,14 @@
 
         {"id": "PYBRD0020_adc_read",      "enable": true,  "pin": "VDD", "samples": 2,
                                           "min": 3.2, "max": 3.4, "unit": "UNIT_VOLTS" },
+
+        // this is not a test, but a 'command' to set up
+        {"id": "IBA010010_supply",        "enable": true,  "name": "V1", "voltage_mv": 2000, "en": true, },
+        {"id": "IBA010010_supply",        "enable": true,  "name": "V2", "voltage_mv": 3000, },
+
+        {"id": "IBA010020_relay_v12",     "enable": true,  "connect": true },
+        {"id": "IBA010030_relay_vsys",    "enable": true,  "connect": true },
+        {"id": "IBA010040_relay_vbat",    "enable": true,  "connect": true },
 
         {"id": "PYBRD0xxTRDN",            "enable": true }
       ]

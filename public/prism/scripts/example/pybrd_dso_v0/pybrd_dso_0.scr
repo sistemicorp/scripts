@@ -4,25 +4,23 @@
 {
   "info": {
     "product": "pybrd_1",
-    "bom": "B00100-001",
+    "bom": "B00101-001",
     "lot": "95135",
     "location": "canada/ontario/milton"
   },
   "config": {
     "fail_fast": false,
-    "drivers": ["public.prism.drivers.iba01.hwdrv_iba01"]
+    "drivers": [
+      "public.prism.drivers.iba01.hwdrv_iba01",
+      "public.prism.drivers.agilent_dso_usb_1.hwdrv_agilent_dso_usb_1"
+    ]
   },
   "tests": [
     {
       "module": "public.prism.scripts.example.iba01_v0.iba0100xx",
-      "options": {
-      },
+      "options": {},
       "items": [
         {"id": "PYBRD0xxSETUP",           "enable": true },
-        {"id": "PYBRD0010_LedToggle",     "enable": true, "lednum": 1, "ontime_ms": 300 },
-        {"id": "PYBRD0010_LedToggle",     "enable": true, "lednum": 2, "ontime_ms": 300 },
-        {"id": "PYBRD0010_LedToggle",     "enable": true, "lednum": 3, "ontime_ms": 300 },
-        {"id": "PYBRD0010_LedToggle",     "enable": true, "lednum": 4, "ontime_ms": 300 },
 
         {"id": "PYBRD0020_adc_read",      "enable": false,  "chan": 0, "samples": 2, "delay_ms": 0, "name": "MyKnob",
                                           "min": 1,  "max": 2.3,  "scale": 0.0008057, "unit": "UNIT_VOLTS" },
@@ -39,7 +37,23 @@
         {"id": "PYBRD0020_adc_read",      "enable": true,  "pin": "VDD", "samples": 2,
                                           "min": 3.2, "max": 3.4, "unit": "UNIT_VOLTS" },
 
-        {"id": "PYBRD0xxTRDN",            "enable": true }
+        {"id": "PYBRD0020_adc_read",      "enable": true,  "pin": "X19", "samples": 2, "scale": 3.3,
+                                          "min": 1.5, "max": 3.3, "unit": "UNIT_VOLTS" },
+
+        {"id": "PYBRD0040_init_gpio",     "enable": true,  "pin": "X12", "mode": "PYB_PIN_IN", "pull": "PYB_PIN_PULLUP"},
+
+        {"id": "PYBRD0050_get_gpio",      "enable": true,  "pin": "X12", "test": false, "unit": "UNIT_BOOLEAN"},
+
+        {"id": "PYBRD0030_pwm",           "enable": true,  "pin": "Y1", "en": true},
+
+      ]
+    },
+    {
+      "module": "public.prism.scripts.example.dso_v0.pydso",
+      "options": {},
+      "items": [
+        {"id": "PYDSO000SETUP",     "enable": true },
+        {"id": "PYDSO020AUTOMEAS",  "enable": true },
       ]
     }
   ]

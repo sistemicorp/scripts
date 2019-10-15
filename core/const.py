@@ -23,13 +23,6 @@ class Const(object, metaclass=MetaConst):
         raise TypeError
 
 
-class APP(Const):
-
-    NOTICE_NRM = "NORMAL"
-    NOTICE_ERR = "ERROR"
-    NOTICE_WRN = "WARN"
-
-
 class CHANNEL(Const):
 
     STATE_UNKNOWN = "STATE_UNKNOWN"
@@ -65,6 +58,11 @@ class PUB(Const):
     CHANNELS         = "ch_root"
 
     CHANNELS_SCRIPT  = CHANNELS + ".script"  # a new script is loaded
+
+    NOTICES = "sys_log"
+    NOTICES_NORMAL = NOTICES + ".normal"
+    NOTICES_WARN = NOTICES + ".warn"
+    NOTICES_ERROR = NOTICES + ".error"
 
     FRAME            = "Frame"
     FRAME_STATUSLINE_RESULT_SERVER = FRAME + ".result_server"
