@@ -199,6 +199,8 @@ class ResultBaseKeysV1(ResultBaseClass):
         if isinstance(value, float):
             if min is not None: min = float(min)
             if max is not None: max = float(max)
+        elif isinstance(value, str):
+            value = value.rstrip()
 
         self.logger.info("{}: {} <= {} <= {} {} ??".format(name, min, value, max, unit))
 

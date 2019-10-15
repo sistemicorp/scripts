@@ -25,6 +25,9 @@ class HWDriver(object):
 
     - see http://ridl.cfd.rit.edu/products/manuals/Agilent/oscilloscopes/InfiniiVision7000/InfiniiVision7000_series_prog_guide.pdf
 
+    USB permissions: (for the error, "Found a device whose serial number cannot be read")
+    - https://stackoverflow.com/questions/52256123/unable-to-get-full-visa-address-that-includes-the-serial-number
+
     NOTE: This driver assumes only one scope is attached to the PC via USB
           and this scope is shared among the channels
     """
@@ -37,7 +40,7 @@ class HWDriver(object):
     WHITE_LIST = ["DSO7104B"]
 
     def __init__(self, shared_state):
-        self.logger = logging.getLogger("SC.{}.{}".format(__class__.__name__, self.SFN))
+        self.logger = logging.getLogger("{}.{}".format(__class__.__name__, self.SFN))
         self.logger.info("Start")
         self.shared_state = shared_state
         self.pybs = []
@@ -63,6 +66,7 @@ class HWDriver(object):
         pub_notice("HWDriver:{}: Scanning for {}".format(self.SFN, self.DRIVER_TYPE), sender=sender)
 
         rm = visa.ResourceManager()
+        self.logger.info(rm.list_resources())
         dso_agilent_usb_list = rm.list_resources(query=self.QUERY_STRING)
 
         # find the first scope

@@ -135,7 +135,6 @@ class SharedState(object):
                     dd = {"channel": idx, "type": type, "obj": d}
                     self._shared["drivers"].append(dd)
             elif shared:
-                print(drivers)
                 for idx, d in enumerate(drivers):
                     dd = {"channel": None, "type": type, "obj": d}
                     self._shared["drivers"].append(dd)

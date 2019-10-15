@@ -51,7 +51,7 @@ class tst00xx(TestItem):
         #        - add_key(key, value, slot=None)
         #        - get_keys()
         #
-        # self.chan  # this channel
+        # self.chan  # this channel (0,1,2,3)
         #
         # self.item_end([result[s]]) # always last line of test
         #  - result is one of ResultAPI.RECORD_* constants

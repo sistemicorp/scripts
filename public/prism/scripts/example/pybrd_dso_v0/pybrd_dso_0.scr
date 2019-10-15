@@ -42,12 +42,11 @@
       ]
     },
     {
-      "module": "public.prism.scripts.example.iba01_v0.iba0100xx",
+      "module": "public.prism.scripts.example.dso_v0.pydso",
       "options": {},
       "items": [
         {"id": "PYDSO000SETUP",     "enable": true },
-        {"id": "PYDSO020AUTO",      "enable": true },
-        {"id": "PYDSO030MEAS",      "enable": true },
+        {"id": "PYDSO020AUTOMEAS",  "enable": true },
       ]
     }
   ]

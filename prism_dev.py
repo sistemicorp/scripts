@@ -187,6 +187,11 @@ class ChanCon(object):
                 logger.info("ITEM: {}".format(item))
                 if item.get("enable", True):
                     self._item = item
+                    if not getattr(test_klass, item["id"], False):
+                        msg = "method {} is not in module {}".format(item["id"], test_klass)
+                        logger.error(msg)
+                        raise ValueError(msg)
+
                     func = getattr(test_klass, item["id"])
                     func()
 
