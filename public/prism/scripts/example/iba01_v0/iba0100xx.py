@@ -171,9 +171,9 @@ class iba0100xx(TestItem):
         en = ctx.item.get("en", True)
         pin = ctx.item.get("pin", None)
         name = "pwm_{}".format(pin)
-        channel = 1
-        freq = ctx.item.get("freq", 1000)
-        duty_cycle = ctx.item.get("duty_cycle", 50)
+        channel = 1  # this is the timer channel, TODO: make this depend on pin(?)
+        freq = ctx.item.get("freq", 1000) + 100 * self.chan
+        duty_cycle = ctx.item.get("duty_cycle", 50) + 10 * self.chan
 
         if pin in ["Y1", "Y7", "Y8", "Y11", "Y12", "X6", "X8"]: timer = 8
         # TODO: complete this list for other pins
