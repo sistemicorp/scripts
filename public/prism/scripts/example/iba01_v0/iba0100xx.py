@@ -141,7 +141,7 @@ class iba0100xx(TestItem):
         max = ctx.item.get("max", None)
         delay_ms = ctx.item.get("delay_s", 0)
         name = ctx.item.get("name", pin)  # if no name supplied use channel
-        scale = ctx.item.get("scale", 1.0)
+        scale = ctx.item.get("scale", 4096)  # scale the result to the ADC range
 
         success, result = self.pyb.adc_read(pin, samples, delay_ms) # adc_read(self, pin, samples=1, samples_ms=1):
         self.logger.info("{} {}".format(success, result))
@@ -151,7 +151,7 @@ class iba0100xx(TestItem):
             self.item_end(ResultAPI.RECORD_RESULT_FAIL)  # always last line of test
             return
 
-        value = result["value"]["value"]
+        value = result["value"]["value"] * scale / 4096
         self.log_bullet("ADC pin {}: {}".format(pin, value))
 
         _, _result, _bullet = ctx.record.measurement("{}".format(name), value, unit, min, max)
@@ -160,7 +160,8 @@ class iba0100xx(TestItem):
         self.item_end(_result)  # always last line of test
 
     def PYBRD0030_pwm(self):
-        """ Turn on PWM
+        """ Turn on/off PWM
+        - this function inits the GPIO (no need to call PYBRD0040_init_gpio)
 
         {"id": "PYBRD0030_pwm",           "enable": true,  "pin": "Y1", "freq": 1000, "duty_cycle": 25, "en": true},
 
@@ -194,6 +195,78 @@ class iba0100xx(TestItem):
             return
 
         self.item_end()  # always last line of test
+
+    def PYBRD0040_init_gpio(self):
+        """ Init GPIO
+
+        {"id": "PYBRD0040_init_gpio", "enable": true,  "pin": "X12", "mode": "PYB_PIN_IN", "pull": "PYB_PIN_PULLNONE"},
+
+        :return:
+        """
+        ctx = self.item_start()  # always first line of test
+        pin = ctx.item.get("pin", None)
+        mode = ctx.item.get("mode", "PYB_PIN_IN")
+        pull = ctx.item.get("pull", "PYB_PIN_PULLNONE")
+
+        if mode == "PYB_PIN_IN": mode = PYB_PIN_IN
+        elif mode == "PYB_PIN_OUT_PP": mode = PYB_PIN_OUT_PP
+        elif mode == "PYB_PIN_OUT_OD": mode = PYB_PIN_OUT_OD
+        else:
+            self.logger.error("mode {} not supported".format(mode))
+            self.log_bullet("mode {}: Failed".format(mode))
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
+            return
+
+        if pull == "PYB_PIN_PULLNONE": pull = PYB_PIN_PULLNONE
+        elif pull == "PYB_PIN_PULLDN": pull = PYB_PIN_PULLDN
+        elif pull == "PYB_PIN_PULLUP": pull = PYB_PIN_PULLUP
+        else:
+            self.logger.error("pull {} not supported".format(pull))
+            self.log_bullet("pull {}: Failed".format(pull))
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
+            return
+
+        success, result = self.pyb.init_gpio(pin, pin, mode, pull)
+        if not success:
+            self.logger.error(result)
+            self.log_bullet("init_gpio {}: Failed".format(pin))
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
+            return
+
+        self.item_end()  # always last line of test
+
+    def PYBRD0050_get_gpio(self):
+        """ Init GPIO
+
+        {"id": "PYBRD0050_get_gpio",  "enable": true,  "pin": "X12", "test": true, "unit": "UNIT_BOOL"},
+
+        :return:
+        """
+        ctx = self.item_start()  # always first line of test
+        pin = ctx.item.get("pin", None)
+        test = ctx.item.get("test", True)
+        unit = getattr(ResultAPI, ctx.item.get("unit", ResultAPI.UNIT_NONE), ResultAPI.UNIT_NONE)
+
+        success, result = self.pyb.get_gpio(pin)
+        self.logger.info(result)
+        if not success:
+            self.logger.error(result)
+            self.log_bullet("get_gpio {}: Failed".format(pin))
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
+            return
+
+        value = result["value"]["value"]
+        if value: value = True
+        else: value = False
+
+        # measurement tests boleans for True, invert if necessary
+        if not test: value = not value
+
+        print(type(value))
+        success, _result, _bullet = ctx.record.measurement("{}".format(pin), value, unit, None, None)
+        self.log_bullet(_bullet)
+
+        self.item_end(_result)  # always last line of test
 
     # PyBoard tests
     # --------------------------------------------------------------------------------

@@ -226,6 +226,14 @@ class ResultBaseKeysV1(ResultBaseClass):
             _bullet = "{}: {} <= {} <= {} {} :: {}".format(name, d["min"], d["value"], d["max"], unit, _pass)
             self.logger.info(_bullet)
 
+        # this needs to be before 'isinstance(value, (int, float, str))', because boolean is an int
+        elif min is None and max is None and isinstance(value, bool):
+            _pass = ResultAPI.RECORD_RESULT_PASS
+            if not value: _pass = ResultAPI.RECORD_RESULT_FAIL
+            d["value"] = value
+            _bullet = "{}: {} {} :: {}".format(name, d["value"], unit, _pass)
+            self.logger.info(_bullet)
+
         elif min is None and max is None and isinstance(value, (int, float, str)):
             _pass = ResultAPI.RECORD_RESULT_PASS
             d["min"] = None
@@ -242,13 +250,6 @@ class ResultBaseKeysV1(ResultBaseClass):
                 d["value"] = "{:64.16}".format(str(float(value))).rstrip()
             elif isinstance(value, str):
                 d["value"] = "{:64}".format(value).rstrip()
-            _bullet = "{}: {} {} :: {}".format(name, d["value"], unit, _pass)
-            self.logger.info(_bullet)
-
-        elif min is None and max is None and isinstance(value, bool):
-            _pass = ResultAPI.RECORD_RESULT_PASS
-            if not value: _pass = ResultAPI.RECORD_RESULT_FAIL
-            d["value"] = value
             _bullet = "{}: {} {} :: {}".format(name, d["value"], unit, _pass)
             self.logger.info(_bullet)
 

@@ -73,6 +73,7 @@ def parse_args():
     misc_parser.add_argument('--401', dest="t401", action='store_true', help='Relay VSYS Toggle', default=False, required=False)
     misc_parser.add_argument('--402', dest="t402", action='store_true', help='Relay VBAT Toggle', default=False, required=False)
     misc_parser.add_argument('--500', dest="t500", action='store_true', help='Init GPIO Y1 PP', default=False, required=False)
+    misc_parser.add_argument('--501', dest="t501", action='store_true', help='Init GPIO X12 Input Pull-UP', default=False, required=False)
 
     supplies_parser = subp.add_parser('supplies')
     supplies_parser.add_argument('-a', "--all", dest="all", action='store_true', help='run all tests sequentially',
@@ -398,6 +399,14 @@ def test_misc(args, pyb):
         did_something = True
         logging.info("T500: init GPIO Y1...")
         success, result = pyb.init_gpio("foo", "Y1", PYB_PIN_OUT_PP, PYB_PIN_PULLNONE)
+        logging.info("{} {}".format(success, result))
+
+        if _success and not success: _success = False
+
+    if all or args.t501:
+        did_something = True
+        logging.info("T501: init GPIO X12...")
+        success, result = pyb.init_gpio("X12", "X12", PYB_PIN_IN, PYB_PIN_PULLUP)
         logging.info("{} {}".format(success, result))
 
         if _success and not success: _success = False

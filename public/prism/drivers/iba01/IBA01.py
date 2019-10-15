@@ -297,6 +297,23 @@ class IBA01(pyboard.Pyboard):
         c = {'method': 'init_gpio', 'args': {'name': name, 'pin': pin, 'mode': mode, 'pull': pull}}
         return self._verify_single_cmd_ret(c)
 
+    def get_gpio(self, pin):
+        """ Get GPIO
+        :param pin:
+        :return:
+        """
+        c = {'method': 'get_gpio', 'args': {'pin': pin}}
+        return self._verify_single_cmd_ret(c)
+
+    def set_gpio(self, name, value):
+        """ Set GPIO
+        :param name:
+        :param value: True|False
+        :return:
+        """
+        c = {'method': 'set_gpio', 'args': {'name': name, 'value': value}}
+        return self._verify_single_cmd_ret(c)
+
     def reset(self):
         """ Reset the I2C devices to a known/default state
 

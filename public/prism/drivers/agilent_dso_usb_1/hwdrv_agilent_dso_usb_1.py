@@ -6,7 +6,7 @@ Martin Guthrie, copyright, all rights reserved, 2018-2019
 """
 import os
 import logging
-from core.const import APP
+from core.const import PUB
 from core.sys_log import pub_notice
 import visa
 
@@ -87,7 +87,7 @@ class HWDriver(object):
 
         if not found:
             self.logger.error("No matching {} VISA instrument found".format(self.QUERY_STRING))
-            pub_notice("HWDriver:{}: Error none found".format(self.SFN), sender=sender, type=APP.NOTICE_ERR)
+            pub_notice("HWDriver:{}: Error none found".format(self.SFN), sender=sender, type=PUB.NOTICES_ERROR)
 
             # if no scope is found, the test fixture cannot operate, returning
             # an error here will indicate a system fail and won't proceed to testing

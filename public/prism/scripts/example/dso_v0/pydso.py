@@ -113,13 +113,19 @@ class pydso(TestItem):
         value = float(vpp)
         self.logger.info("VPP: {}".format(value))
         success, _result, _bullet = ctx.record.measurement("VPP{}".format(self.dso_ch), value, ResultAPI.UNIT_VOLTS)
-        time.sleep(0.1) # give it some time to sit here, else its too fast
+        self.log_bullet(_bullet)
 
         dc = self.dso.query(':MEASure:DUTYcycle? CHANnel{}'.format(self.dso_ch))
         dc = float(dc)
         self.logger.info("DC: {}".format(dc))
         success, _result, _bullet = ctx.record.measurement("DUTYCYCLE{}".format(self.dso_ch), dc, ResultAPI.UNIT_FLOAT)
-        time.sleep(0.1) # give it some time to sit here, else its too fast
+        self.log_bullet(_bullet)
+
+        freq = self.dso.query(':MEASure:FREQ? CHANnel{}'.format(self.dso_ch))
+        freq = float(freq)
+        self.logger.info("FREQ: {}".format(dc))
+        success, _result, _bullet = ctx.record.measurement("FREQ{}".format(self.dso_ch), freq, ResultAPI.UNIT_FLOAT)
+        self.log_bullet(_bullet)
 
         self.shared_lock(self.DSO).release()
         self.item_end()  # always last line of test

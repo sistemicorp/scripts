@@ -37,6 +37,13 @@
         {"id": "PYBRD0020_adc_read",      "enable": true,  "pin": "VDD", "samples": 2,
                                           "min": 3.2, "max": 3.4, "unit": "UNIT_VOLTS" },
 
+        {"id": "PYBRD0020_adc_read",      "enable": true,  "pin": "X19", "samples": 2, "scale": 3.3,
+                                          "min": 1.5, "max": 3.3, "unit": "UNIT_VOLTS" },
+
+        {"id": "PYBRD0040_init_gpio",     "enable": true,  "pin": "X12", "mode": "PYB_PIN_IN", "pull": "PYB_PIN_PULLUP"},
+
+        {"id": "PYBRD0050_get_gpio",      "enable": true,  "pin": "X12", "test": false, "unit": "UNIT_BOOLEAN"},
+
         {"id": "PYBRD0030_pwm",           "enable": true,  "pin": "Y1", "en": true},
 
       ]

@@ -376,8 +376,8 @@ class MicroPyServer(object):
             return
 
         if pull == PYB_PIN_PULLNONE: pull = pyb.Pin.PULL_NONE
-        elif pull == PYB_PIN_PULLDN: pull = pyb.Pin.PULL_UP
-        elif pull == PYB_PIN_PULLUP: pull = pyb.Pin.PULL_DOWN
+        elif pull == PYB_PIN_PULLDN: pull = pyb.Pin.PULL_DOWN
+        elif pull == PYB_PIN_PULLUP: pull = pyb.Pin.PULL_UP
         else:
             self._ret.put({"method": "init_gpio", "value": {'err': 'invalid pull'}, "success": False})
             return
@@ -389,16 +389,20 @@ class MicroPyServer(object):
         self._init_gpio(name, pin, mode, pull)
         self._ret.put({"method": "init_gpio", "value": value, "success": True})
 
-    def get_gpio(self, name):
-        if name not in self.ctx["gpio"]:
-            value = {'err': "{} has not been initialized".format(name)}
+    def get_gpio(self, args):
+        pin = args.get("pin", None)
+        if pin not in self.ctx["gpio"]:
+            value = {'err': "{} has not been initialized".format(pin)}
             self._ret.put({"method": "get_gpio", "value": value, "success": False})
             return
 
-        value = self.ctx["gpio"][name].value()
+        value = self.ctx["gpio"][pin].value()
         self._ret.put({"method": "get_gpio", "value": {'value': value}, "success": True})
 
-    def set_gpio(self, name, value):
+    def set_gpio(self, args):
+        name = args.get("name", None)
+        value = args.get("value", True)
+
         if name not in self.ctx["gpio"]:
             value = {'err': "{} has not been initialized".format(name)}
             self._ret.put({"method": "set_gpio", "value": value, "success": False})
