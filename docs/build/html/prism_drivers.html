@@ -45,10 +45,47 @@
             
   <div class="section" id="drivers">
 <h1>Drivers<a class="headerlink" href="#drivers" title="Permalink to this headline">¶</a></h1>
+<p>Drivers are listed in the <cite>config</cite> section of scripts.  For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span>
+  <span class="o">//</span> <span class="n">fail_fast</span><span class="p">:</span> <span class="k">if</span> <span class="n">true</span> <span class="p">(</span><span class="n">default</span><span class="p">),</span> <span class="n">testing</span> <span class="n">will</span> <span class="n">stop</span> <span class="n">on</span> <span class="n">first</span> <span class="n">failed</span> <span class="n">test</span>
+  <span class="s2">&quot;fail_fast&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+  <span class="o">//</span> <span class="n">channel_hw_driver</span><span class="p">:</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">code</span> <span class="n">to</span> <span class="n">initialize</span> <span class="n">the</span> <span class="n">test</span> <span class="n">environment</span><span class="p">,</span> <span class="n">must</span> <span class="n">be</span> <span class="n">specified</span>
+  <span class="s2">&quot;drivers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;public.prism.drivers.fake.fake&quot;</span><span class="p">]</span>
+<span class="p">},</span>
+</pre></div>
+</div>
+<p>The python file specified MUST have a class called <cite>HWDriver</cite>.  See the <cite>fake</cite> example for
+implementation details.</p>
+<p>The purpose of this file/class is to instantiate your hardware into Prism.</p>
 <div class="section" id="visa">
 <h2>VISA<a class="headerlink" href="#visa" title="Permalink to this headline">¶</a></h2>
 <p>Error: Found a device whose serial number cannot be read
 See: <a class="reference external" href="https://stackoverflow.com/questions/52256123/unable-to-get-full-visa-address-that-includes-the-serial-number">https://stackoverflow.com/questions/52256123/unable-to-get-full-visa-address-that-includes-the-serial-number</a></p>
+</div>
+<div class="section" id="slot-number">
+<h2>Slot Number<a class="headerlink" href="#slot-number" title="Permalink to this headline">¶</a></h2>
+<p>When implementing python code to implement tests, there is a <cite>channel (self.chan)</cite> number and a <cite>slot</cite> number.
+The channel is how Prism indexes the running threads, usually from 0 to a max of 3.  The slot number
+is a number used to setup configuration of the physical system.  This distinction makes more sense with
+an example.</p>
+<p>Consider the case of a 4 channel scope connected to 4 test stations, like 4 IBA01s.  Each channel of the
+scope is connected to a specific test station.  In development you may find that the 4 test stations always
+assigned to the same USB tty port and thus, you figure out what channel of the scope goes
+with which test station.  But in production, or even another developer, this will not be the case.  Or even
+consider that a test station itself breaks, and can no longer used.  How will that affect the channel
+assignments of the scope (the physical connections)?</p>
+<p>The python code implementing the tests, won’t know which scope channel is assigned to it.  This is where
+the concept of the slot number comes in.</p>
+<p>Consider again the IBA01, where the slot number is defined with a file that exists on the PyBoard on the
+micro SD slot.  Thus the slot number is “pysically portable”, it can be removed from one IBA01 to another.  The
+slot number is assigned to a scope channel, with SLOT0 assigned to CH1, and SLOT1 assigned to CH2, and so on.</p>
+<p>The slot number is determined by the <cite>HWDriver</cite> class for the IBA01, and is sent to the python code
+implementing the tests as part of the shared state of that hardware.</p>
+<p>Although one (possibly) could write software to configure the test station slots to test equipment channels,
+and cover the cases of test stations being moved around, replaced, etc, that requires effort,
+documentation and training.  If you develop your own test interface board, consider how you will identify
+it, and consider a physical “thing” to assign the slot number.  For example, a dip switch could be used
+to set the slot number.  Or a USB flash drive.</p>
 </div>
 </div>
 
