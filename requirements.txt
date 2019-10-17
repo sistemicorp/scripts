@@ -1,5 +1,6 @@
 pyserial
-pyvisa-py
+pyvisa
+PyVISA-py
 pyusb
 qrcode
 numpy

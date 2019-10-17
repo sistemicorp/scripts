@@ -111,10 +111,13 @@ class SharedState(object):
     def add_drivers(self, type, drivers, shared=False):
         """ Add a driver
 
-        The hw driver objects are expected to have an 'id' field, the lowest
+        The hw driver objects are expected to have an 'id' field, and
+        possibly a 'slot' field.  The slot field is used to assign the slot
+        of the HW.  IF slot is not present, then the lowest
         id is assigned to channel 0, the next highest to channel 1, etc
 
-        [ {'id': i,               # id of the channel
+        [ {'id': <str>,           # id of the channel, like serial number of something
+           'slot': <int>,         " 0,1,2,3, .... slot number
            "version": <VERSION>,  # version of the driver
            "close": False},       # register a callback on closing the channel
            "<foo>": <bar>,        # something that makes your HW work...
@@ -128,9 +131,14 @@ class SharedState(object):
             self.logger.error("list required")
             return False
 
+        has_slot = False
+        if drivers[0].get("slot", False): has_slot = True
+
         with self.lock:
             if not shared:
-                drivers_sorted = sorted(drivers, key=itemgetter('id'))
+                if has_slot: drivers_sorted = sorted(drivers, key=itemgetter('slot'))
+                else: drivers_sorted = sorted(drivers, key=itemgetter('id'))
+
                 for idx, d in enumerate(drivers_sorted):
                     dd = {"channel": idx, "type": type, "obj": d}
                     self._shared["drivers"].append(dd)

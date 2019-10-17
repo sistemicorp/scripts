@@ -143,7 +143,7 @@ class iba0100xx(TestItem):
         name = ctx.item.get("name", pin)  # if no name supplied use channel
         scale = ctx.item.get("scale", 4096)  # scale the result to the ADC range
 
-        success, result = self.pyb.adc_read(pin, samples, delay_ms) # adc_read(self, pin, samples=1, samples_ms=1):
+        success, result = self.pyb.adc_read(pin, samples, delay_ms)
         self.logger.info("{} {}".format(success, result))
 
         if not success:

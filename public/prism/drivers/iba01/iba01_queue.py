@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
 
 class MicroPyQueue(object):
     """ Special Queue for sending commands and getting return items from a MicroPython Process
@@ -27,7 +29,7 @@ class MicroPyQueue(object):
 
         :param method: set to class_method to return a specific result
         :param all: when set return all
-        :return: return item(s) in list
+        :return: [item, ...]
         """
         if method is None:
             if all:

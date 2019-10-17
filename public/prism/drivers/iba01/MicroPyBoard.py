@@ -16,6 +16,7 @@ except:
     # for when called by main
     from list_serial import serial_ports
 
+import re
 import time
 
 import ampy.files as files
@@ -120,18 +121,28 @@ class MicroPyBrd(object):
 
         self.logger.info("Looking for Pyboard in {}".format(port_candidates))
         for port in port_candidates:
+            if "ttyACM" not in port:
+                self.logger.info("NO micropython on {}".format(port))
+                continue
+
             try:
                 self.pyb = pyboard.Pyboard(port)
                 # visual indication we are talking to the pyboard
-                self.led_toggle(self.LED_RED, self.LED_FLASH_TIME_S)
+                self.led_toggle(self.LED_BLUE, self.LED_FLASH_TIME_S)
+                # get pyboard deets
                 id = self.get_id()
-                if id is not None:
-                    # visual indication success
-                    self.led_toggle(self.LED_GREEN, self.LED_FLASH_TIME_S)
+                slot = self.get_slot()
                 uname = self.uname()
+
+                # TODO: detect if board is configured for IBA01, if not, should we
+                #       configure it?
+
+                self.led_toggle(self.LED_GREEN, self.LED_FLASH_TIME_S)
+
                 self.pyb.close()
                 self.pyb = None
-                ports.append({"port": port, "id": id, "version": VERSION, "uname": uname})
+                ports.append({"port": port, "id": id, 'slot': slot, "version": VERSION, "uname": uname})
+                self.logger.info("Found micropython on {}".format(port))
 
             except Exception as e:
                 self.logger.info(e)
@@ -158,15 +169,21 @@ class MicroPyBrd(object):
         """ Get the files from an open pyboard
         :return: [ file, ...]
         """
-        board_files = files.Files(self.pyb)
-        files_list = [f for f in board_files.ls(directory, long_format=long_format, recursive=recursive)]
-        self.logger.debug(files_list)
+        try:
+            board_files = files.Files(self.pyb)
+            files_list = [f for f in board_files.ls(directory, long_format=long_format, recursive=recursive)]
+            self.logger.debug(files_list)
+
+        except pyboard.PyboardError:
+            self.logger.warning("unable to reach path: {}, micro sd card probably not available".format(directory))
+            files_list = []
+
         return files_list
 
-    def copy_file(self, local):
+    def copy_file(self, local, directory='/flash'):
         with open(local, "rb") as infile:
             board_files = files.Files(self.pyb)
-            board_files.put('/flash/{}'.format(local), infile.read())
+            board_files.put('{}/{}'.format(directory, local), infile.read())
 
     def del_file(self, file):
         board_files = files.Files(self.pyb)
@@ -191,4 +208,62 @@ class MicroPyBrd(object):
         self.logger.info("{}".format(ret))
         self.pyb.exit_raw_repl()
         return ret
+
+    def get_slot(self):
+        """ Get the slot of an open pyboard
+
+        The slot number is stored on the filesystem.  If the file is not on the internal
+        filesystem, then check the microsd card.
+
+        :return: slot #, 0,1,2,3, ..., -1 on no slot
+        """
+        self.pyb.enter_raw_repl()
+
+        found_slot = False
+        for path in ["/sd", "/flash"]:
+            self.logger.info("Searching for SLOT# file on directory {}...".format(path))
+            files = self.get_files(directory=path, long_format=False)
+
+            for f in files:
+                if "SLOT" in f:
+                    found_slot = True
+                    break
+
+        if not found_slot:
+            self.logger.warning("No SLOT# file found (required for Prism)")
+            return -1
+
+        m = re.match(r'^.*SLOT(?P<slot>\d)', f)
+        slot = int(m.group('slot'))
+        self.logger.info("{} -> {}".format(f, slot))
+        return slot
+
+    def set_slot(self, slot, directory='/flash'):
+        """ Set pyboard slot number in Prism
+        :param port: port of the pyboard
+        :param slot: integer slot of the pyboard
+        :return: -1 on fail, >=0 on success (slot number)
+        """
+        # remove the old ID if it exists
+        self.logger.info("Removing any previous SLOT# files on directory {}".format(directory))
+        files = self.get_files(directory=directory, long_format=False)
+        for f in files:
+            if "SLOT" in f:
+                success = self.del_file(f)
+                if not success:
+                    self.logger.error("failed to delete file: {}".format(f))
+                    return False
+
+        self.pyb.enter_raw_repl()
+
+        # write the new SLOT
+        filename = "{}/SLOT{}".format(directory, slot)
+        self.logger.info("Writing {}".format(filename))
+        cmds = ["f = open('{}', 'w')".format(filename), 'f.close()']
+        cmd = "\n".join(cmds) + "\n"
+        ret = self.pyb.exec(cmd)
+        ret = ret.decode('utf-8').strip()
+        self.pyb.exit_raw_repl()
+        slot = self.get_slot()
+        return slot
 
