@@ -13,7 +13,12 @@ from public.prism.api import ResultAPI
 
 # file and class name must match
 class pydso(TestItem):
-    """
+    """ DSO Functions
+
+    Notes:
+        1) if "slot" number is defined, then channel number is slot+1, and its
+           assumed that the scope channels are connected to the corresponding slot.
+        2) if "slot" is not defined, then channel 1 only is to be assumed.
 
     see: https://www.keysight.com/upload/cmc_upload/All/7000A_series_prog_guide.pdf
     """
@@ -25,7 +30,7 @@ class pydso(TestItem):
         super().__init__(controller, chan, shared_state)
         self.logger = logging.getLogger("{}.{}".format(__name__, self.chan))
         self.dso = None
-        self.dso_ch = self.chan + 1
+        self.dso_ch = 1  # this will be replaced by slot # (+1)
 
     def PYDSO000SETUP(self):
         """ Get driver from SharedState Open DSO and get DSO name, serial number, and save it to the record
@@ -49,10 +54,23 @@ class pydso(TestItem):
         deets = self.dso.query('*IDN?')
         self.shared_lock(self.DSO).release()
 
-        # save scope info
-        success, result, _bullet = ctx.record.measurement("dso", deets, ResultAPI.UNIT_NONE)
+        # save scope info, traceability
+        success, result, _bullet = ctx.record.measurement("dso", deets, ResultAPI.UNIT_STRING)
         self.log_bullet(_bullet)
 
+        # determine the slot number, which can come from any driver that defines it, search...
+        drivers = self.shared_state.get_drivers(self.chan)
+        for driver in drivers:
+            if driver.get("obj", {}).get("slot", False):
+                slot = driver["obj"]["slot"]
+                self.dso_ch = slot + 1  # assume slots are indexed from 0
+                self.logger.info("{}: slot {}".format(driver["type"], self.dso_ch))
+                break
+        # save for traceability
+        success, result, _bullet = ctx.record.measurement("chan", self.dso_ch, ResultAPI.UNIT_NONE)
+        self.log_bullet(_bullet)
+
+        self.logger.info("DSO channel {} assigned".format(self.dso_ch))
         self.item_end()  # always last line of test
 
     def PYDSO010SETCHAN(self):
@@ -62,9 +80,10 @@ class pydso(TestItem):
         {"id": "PYDSO010SETCHAN",   "enable": true, "chan": 1 },
         """
         ctx = self.item_start()  # always first line of test
+        chan = ctx.item.get("chan", 1)
 
-        if not (0 < self.dso_ch < 5):
-            self.logger.error("Invalid channel number: {} (1-4 accepted)".format(self.dso_ch))
+        if not (0 < chan < 5):
+            self.logger.error("Invalid channel number: {} (1-4 accepted)".format(chan))
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
@@ -72,17 +91,17 @@ class pydso(TestItem):
 
         # reset the scope to a known state
         self.dso.write('*RST')
-        if self.dso_ch != 1:  # after reset, chan 1 is already on
+        if chan != 1:  # after reset, chan 1 is already on
             self.dso.write(':CHANnel1:DISPlay OFF')  # turn off channel 1
-            self.dso.write(':CHANnel{}:DISPlay ON'.format(self.dso_ch))  # turn off channel 1
+            self.dso.write(':CHANnel{}:DISPlay ON'.format(chan))  # turn off channel 1
 
-        self.dso.write(':CHANnel{}:SCALe 100mV'.format(self.dso_ch))
+        self.dso.write(':CHANnel{}:SCALe 100mV'.format(chan))
 
-        vpp = self.dso.query(':MEASure:VPP? CHANnel{}'.format(self.dso_ch))
+        vpp = self.dso.query(':MEASure:VPP? CHANnel{}'.format(chan))
         value = float(vpp)
-        success, _result, _bullet = ctx.record.measurement("VPP{}".format(self.dso_ch), value, ResultAPI.UNIT_VOLTS)
+        success, _result, _bullet = ctx.record.measurement("VPP{}".format(chan), value, ResultAPI.UNIT_VOLTS)
 
-        self.log_bullet("Switched to channel {}".format(self.dso_ch))
+        self.log_bullet("Switched to channel {}".format(chan))
         self.log_bullet(_bullet)
         time.sleep(0.1) # give it some time to sit here, else its too fast
         self.shared_lock(self.DSO).release()

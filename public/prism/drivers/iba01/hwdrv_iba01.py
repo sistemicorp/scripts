@@ -204,6 +204,10 @@ class HWDriver(object):
                 self.logger.error("pyboard {} -> Missing uname".format(_pyb))
                 continue
 
+            if _pyb.get('slot', None) is None:
+                self.logger.error("pyboard {} -> Missing slot".format(_pyb))
+                continue
+
             if _pyb['uname'].get('release', None) is None:
                 self.logger.error("pyboard {} -> Missing uname.release".format(_pyb))
                 continue
@@ -211,12 +215,13 @@ class HWDriver(object):
             port = _pyb["port"]
             id = _pyb["id"]
             release = _pyb["uname"]["release"]
+            slot = _pyb["slot"]
 
             # confirm the release
             if release != self.MICROPYTHON_FIRMWARE_RELEASE:
-                self.logger.error("pybolard {} -> Unsupported release {} (expecting {})".format(
-                        _pyb, release, self.MICROPYTHON_FIRMWARE_RELEASE))
-                msg = "HWDriver ERR: PyBoard {} FW release not supported".format(port)
+                self.logger.error("pybolard {}, slot {} -> Unsupported release {} (expecting {})".format(
+                        _pyb, slot, release, self.MICROPYTHON_FIRMWARE_RELEASE))
+                msg = "HWDriver ERR: PyBoard slot {} FW release not supported".format(slot)
                 pub_notice(msg, type=PUB.NOTICES_ERROR, sender=sender)
                 continue
             self.logger.info("port {} -> supported FW release {}".format(port, release))
@@ -225,20 +230,24 @@ class HWDriver(object):
             _pyb['pyb'] = IBA01(port, loggerIn=logging.getLogger("IBA01.{}".format(id)))
             success, result = _pyb['pyb'].start_server()
             self.logger.info("{} {}".format(success, result))
+            if not success:
+                self.logger.error("pybolard {}, slot {}, Failed to start server)".format(id, slot))
+                continue
 
             # check server version
             success, result = _pyb['pyb'].version()
-            version = result["value"].get("version", None)
-            if version != self.IBA01_SERVER_VERSION:
-                self.logger.error("pybolard {} -> Unsupported Server version {} (expecting {})".format(
-                        id, version, self.IBA01_SERVER_VERSION))
-                msg = "HWDriver ERR: PyBoard {} Server version not supported".format(port)
+            self.logger.info("{} {}".format(success, result))
+            version = result["value"].get("value", "")
+            if not success or not version.startswith(self.IBA01_SERVER_VERSION):
+                self.logger.error("pybolard {}, slot {} -> Unsupported Server version {} (expecting {})".format(
+                        id, slot, version, self.IBA01_SERVER_VERSION))
+                msg = "HWDriver ERR: PyBoard slot {} Server version not supported".format(slot)
                 pub_notice(msg, type=PUB.NOTICES_ERROR, sender=sender)
                 continue
 
             # divers can register a close() method which is called on channel destroy.
             # we don't need to set that there is none, but doing so helps remember we could set one
-            _pyb['pyb']["close"] = _pyb["pyb"].close
+            _pyb["close"] = _pyb["pyb"].close
 
             self.pybs.append(_pyb)
             msg = "HWDriver:{}: {}".format(self.SFN, _pyb)

@@ -1,7 +1,19 @@
 #!/usr/bin/env bash
 
+usage () {
+  echo "Usage: ampy_put_all.sh <port>"
+  echo ""
+  echo "Copy all iba01 files to PyBoard on port "
+  echo ""
+}
+
+if [[ $1 == "--help" ]] || [[ $1 == "" ]] ; then
+  usage
+  exit 0
+fi
+
 for f in iba01_*.py
 do
 	echo "Copying file - $f"
-	ampy --port /dev/ttyACM0 put $f
+	ampy --port /dev/ttyACM$1 put $f
 done

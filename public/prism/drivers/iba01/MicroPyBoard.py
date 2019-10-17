@@ -204,7 +204,7 @@ class MicroPyBrd(object):
                 'print(res)']
         cmd = "\n".join(cmds) + "\n"
         ret = self.pyb.exec(cmd)
-        ret = ret.decode('utf-8').strip()
+        ret = ret.decode('utf-8').strip()[::-1]  # reverse it
         self.logger.info("{}".format(ret))
         self.pyb.exit_raw_repl()
         return ret

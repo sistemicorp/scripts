@@ -113,13 +113,13 @@ class IBA01(pyboard.Pyboard):
 
         cmds = []
         c = str(cmd_dict)
-        cmds.append("iba01_server.server.cmd({})".format(c))
+        cmds.append("iba01_main.iba01.cmd({})".format(c))
         success, result = self.server_cmd(cmds, repl_enter=False, repl_exit=False)
         if not success:
             self.logger.error("{} {}".format(success, result))
             return success, result
 
-        cmds = ["iba01_server.server.ret(method='{}')".format(method)]
+        cmds = ["iba01_main.iba01.ret(method='{}')".format(method)]
 
         # it is assumed the command sent will post a return, with success set
         retry = 5
@@ -154,7 +154,7 @@ class IBA01(pyboard.Pyboard):
     # these are the important functions
 
     def start_server(self):
-        cmds = ["import iba01_server"]
+        cmds = ["import iba01_main"]
         success, result = self.server_cmd(cmds, repl_exit=False)
         self.logger.info("{} {}".format(success, result))
         return success, result
@@ -179,7 +179,7 @@ class IBA01(pyboard.Pyboard):
         :param all: set True for all the return messages
         :return: success, result
         """
-        cmds = ["iba01_server.server.ret(method='{}', all={})".format(method, all)]
+        cmds = ["iba01_main.iba01.ret(method='{}', all={})".format(method, all)]
         retry = 5
         succeeded = False
         while retry and not succeeded:
@@ -208,7 +208,7 @@ class IBA01(pyboard.Pyboard):
         :param all: set True for all the return messages
         :return:
         """
-        cmds = ["iba01_server.server.peek(method='{}', all='{}')".format(method, all)]
+        cmds = ["iba01_main.iba01.peek(method='{}', all='{}')".format(method, all)]
         retry = 5
         succeeded = False
         while retry and not succeeded:

@@ -29,6 +29,7 @@ class iba0100xx(TestItem):
 
         self.pyb = None
         self.pyb_port = None
+        self.slot = None
 
     def PYBRD0xxSETUP(self):
         ctx = self.item_start()  # always first line of test
@@ -44,16 +45,17 @@ class iba0100xx(TestItem):
 
         self.logger.info("Found pybrd: {}".format(driver))
         self.pyb_port = driver["obj"]["port"]
-        id = driver["obj"]["id"]
 
         if self.pyb_port is None:
             self.logger.error("Could not find pyboard driver")
             self.item_end(ResultAPI.RECORD_RESULT_FAIL)
             return
 
-        # save the id of the pyboard for the record
+        id = driver["obj"]["id"]  # save the id of the pyboard for the record
         _, _, _bullet = ctx.record.measurement("pyboard_id", id, ResultAPI.UNIT_STRING)
         self.log_bullet(_bullet)
+
+        self.slot = driver["obj"].get("slot", None)
 
         self.pyb = driver["obj"]["pyb"]
 

@@ -157,8 +157,8 @@ class IBA01(MicroPyServer):
         """
         id_bytes = machine.unique_id()
         res = ""
-        for b in id_bytes[::-1]:
-            res += "%02x" % b
+        for b in id_bytes:
+            res = ("%02x" % b) + res
         self._ret.put({"method": "unique_id", "value": {'value':res}, "success": True})
 
     def debug(self, args):

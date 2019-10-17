@@ -45,6 +45,7 @@ class HWDriver(object):
         self.shared_state = shared_state
         self.pybs = []
         self._num_chan = 0  # not used in this driver
+        self.instr = None
 
     def discover_channels(self):
         """ determine the number of channels, and populate hw drivers into shared state
@@ -71,10 +72,9 @@ class HWDriver(object):
 
         # find the first scope
         found = False
-        instr = None
         for dso in dso_agilent_usb_list:
-            instr = rm.open_resource(dso)
-            deets = instr.query('*IDN?').strip()
+            self.instr = rm.open_resource(dso)
+            deets = self.instr.query('*IDN?').strip()
             for scope in self.WHITE_LIST:
                 # deets looks like: AGILENT TECHNOLOGIES,DSO7104B,MY49520121,06.00.0003
                 if scope in deets:
@@ -94,19 +94,19 @@ class HWDriver(object):
             return -1
 
         # reset scope to a known state
-        instr.write('*RST')
+        self.instr.write('*RST')
 
         # this is the data required by shared_state to register the driver
         d = {
             "id": 0,
             "version": self.VERSION,
-            "close": None,
-            "visa": instr,
+            "close": self.close,
+            "visa": self.instr,
         }
 
         self.shared_state.add_drivers(self.DRIVER_TYPE, [d], shared=True)
 
-        pub_notice("HWDriver:{}: Found {}!".format(self.SFN, instr), sender=sender)
+        pub_notice("HWDriver:{}: Found {}!".format(self.SFN, self.instr), sender=sender)
         self.logger.info("Done")
 
         # by returning 0, it means this return values DOES not represent number of channels
@@ -120,3 +120,6 @@ class HWDriver(object):
         - this is called right after discover_channels
         """
         self.logger.info("HWDriver:{}: does not support 'play' messaging".format(self.SFN))
+
+    def close(self):
+        self.instr.close()
