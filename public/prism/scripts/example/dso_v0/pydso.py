@@ -67,7 +67,7 @@ class pydso(TestItem):
                 self.logger.info("{}: slot {}".format(driver["type"], self.dso_ch))
                 break
         # save for traceability
-        success, result, _bullet = ctx.record.measurement("chan", self.dso_ch, ResultAPI.UNIT_NONE)
+        success, result, _bullet = ctx.record.measurement("chan", self.dso_ch, ResultAPI.UNIT_INT)
         self.log_bullet(_bullet)
 
         self.logger.info("DSO channel {} assigned".format(self.dso_ch))

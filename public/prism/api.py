@@ -33,10 +33,9 @@ class ResultAPI(Const):
     UNIT_FLOAT = "Float"
     UNIT_CELCIUS = "Celcius"
     UNIT_BOOLEAN = "Boolean"
-    UNIT_NONE = None
+    UNIT_NONE = "None"
     UNIT_ALL = [UNIT_OHMS, UNIT_BOOLEAN, UNIT_NONE, UNIT_STRING, UNIT_VOLTS, UNIT_CELCIUS, UNIT_CURRENT,
                 UNIT_DB, UNIT_FLOAT, UNIT_INT]
-
 
     # ===================================================================================
     # BLOB data types

@@ -5,6 +5,7 @@ usage () {
   echo ""
   echo "Copy all iba01 files to PyBoard on port "
   echo ""
+  echo "Where: port = 0,1,2,3, ... (the # in /drv/ttyACM#)"
 }
 
 if [[ $1 == "--help" ]] || [[ $1 == "" ]] ; then
