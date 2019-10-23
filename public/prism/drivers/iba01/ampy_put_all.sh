@@ -3,7 +3,7 @@
 usage () {
   echo "Usage: ampy_put_all.sh <port>"
   echo ""
-  echo "Copy all iba01 files to PyBoard on port "
+  echo "Copy all iba01 files to PyBoard on port <port>"
   echo ""
   echo "Where: port = 0,1,2,3, ... (the # in /drv/ttyACM#)"
 }

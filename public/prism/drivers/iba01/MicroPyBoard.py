@@ -80,6 +80,17 @@ class MicroPyBrd(object):
         self.pyb = None       # handle to the pyboard
         self.serial = None    # serial port to the pyboard
         self.logger.debug("Done")
+        self.in_repl = False
+
+    def _enter_repl(self, enter=True):
+        if enter:
+            if not self.in_repl:
+                self.pyb.enter_raw_repl()
+                self.in_repl = True
+        else:
+            if self.in_repl:
+                self.pyb.exit_raw_repl()
+                self.in_repl = False
 
     def version(self):
         return VERSION
@@ -93,7 +104,7 @@ class MicroPyBrd(object):
 
     def uname(self):
         # get pyboard version info
-        self.pyb.enter_raw_repl()
+        self._enter_repl()
         cmds = ['import os',
                 'print(os.uname())']
         cmd = "\n".join(cmds) + "\n"
@@ -108,7 +119,6 @@ class MicroPyBrd(object):
             value = item.split("=")[1].strip()
             uname[key] = value
         self.logger.info(uname)
-        self.pyb.exit_raw_repl()
         return uname
 
     def scan_ports(self, port=None):
@@ -139,7 +149,7 @@ class MicroPyBrd(object):
 
                 self.led_toggle(self.LED_GREEN, self.LED_FLASH_TIME_S)
 
-                self.pyb.close()
+                self.pyb.close()  # exit REPL
                 self.pyb = None
                 ports.append({"port": port, "id": id, 'slot': slot, "version": VERSION, "uname": uname})
                 self.logger.info("Found micropython on {}".format(port))
@@ -158,12 +168,13 @@ class MicroPyBrd(object):
 
     def close(self):
         self.logger.debug("close")
+        self._enter_repl(False)
         if self.pyb: self.pyb.close()
         self.pyb = None
 
     def reset(self):
         self.logger.info("reset")
-        self.pyb.enter_raw_repl()  # this does a softreset on micropython
+        self._enter_repl()  # this does a softreset on micropython
 
     def get_files(self, directory='/flash', long_format=True, recursive=True):
         """ Get the files from an open pyboard
@@ -195,7 +206,7 @@ class MicroPyBrd(object):
         :return: id, or None if no id on pyboard
         """
         # get pyboard version info
-        self.pyb.enter_raw_repl()
+        self._enter_repl()
         cmds = ['import machine',
                 'id_bytes = machine.unique_id()',
                 'res = ""',
@@ -206,7 +217,6 @@ class MicroPyBrd(object):
         ret = self.pyb.exec(cmd)
         ret = ret.decode('utf-8').strip()[::-1]  # reverse it
         self.logger.info("{}".format(ret))
-        self.pyb.exit_raw_repl()
         return ret
 
     def get_slot(self):
@@ -254,7 +264,7 @@ class MicroPyBrd(object):
                     self.logger.error("failed to delete file: {}".format(f))
                     return False
 
-        self.pyb.enter_raw_repl()
+        self._enter_repl()
 
         # write the new SLOT
         filename = "{}/SLOT{}".format(directory, slot)
@@ -263,7 +273,5 @@ class MicroPyBrd(object):
         cmd = "\n".join(cmds) + "\n"
         ret = self.pyb.exec(cmd)
         ret = ret.decode('utf-8').strip()
-        self.pyb.exit_raw_repl()
         slot = self.get_slot()
         return slot
-

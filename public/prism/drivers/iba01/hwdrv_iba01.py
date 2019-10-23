@@ -249,7 +249,8 @@ class HWDriver(object):
             # we don't need to set that there is none, but doing so helps remember we could set one
             _pyb["close"] = _pyb["pyb"].close
 
-            self.pybs.append(_pyb)
+            # the pyboards need top be added in SLOT# order, 0, 1, 2, 3
+            self.pybs.insert(slot, _pyb)
             msg = "HWDriver:{}: {}".format(self.SFN, _pyb)
 
             self.logger.info(msg)
