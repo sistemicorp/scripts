@@ -4,6 +4,9 @@
 Sistemi Corporation, copyright, all rights reserved, 2019
 Martin Guthrie
 
+This driver can be used for PyBoard only, OR can be used for IBA01,
+OR can be used as a template for any design that embeds a PyBoard.
+
 """
 import os
 import logging
@@ -24,8 +27,6 @@ class upybrdPlayPub(threading.Thread):
     """ Creates a thread per channel that will poll the switch
     on the upybrd, and if it is pressed, will pub the PLAY msg to
     start testing on that port.
-
-    TODO: handle Pass/Fail LED indication at the end of the test...
 
     """
     POLL_TIMER_SEC = 1
@@ -189,7 +190,13 @@ class HWDriver(object):
         sender = "{}.{}".format(self.SFN, __class__.__name__)
 
         port_candidates = serial_ports()
+        self.logger.info("Serial Ports to look for PyBoard {}".format(port_candidates))
+
         for port in port_candidates:
+            if "ttyACM" not in port:
+                self.logger.info("skipping port {}...".format(port))
+                continue
+
             _pyb = { "port": port}
             self.logger.info("Trying pyboard at {}...".format(port))
 
