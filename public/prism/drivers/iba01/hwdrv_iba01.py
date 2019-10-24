@@ -14,7 +14,6 @@ import serial
 from pubsub import pub
 from public.prism.drivers.iba01.list_serial import serial_ports
 from public.prism.drivers.iba01.IBA01 import IBA01
-from public.prism.drivers.iba01.MicroPyBoard import MicroPyBrd
 from public.prism.api import ResultAPI
 
 from core.const import PUB, CHANNEL
@@ -169,10 +168,12 @@ class HWDriver(object):
         shared_state: a list,
             self.shared_state.add_drivers(DRV_TYPE, [ {}, {}, ... ], shared=True/False)
 
-        [ {'id': i,               # id of the channel (see Note 1)
-           "version": <VERSION>,  # version of the driver
-           "close": False},       # register a callback on closing the channel
-           "<foo>": <bar>,        # something that makes your HW work...
+        [ {'id': i,                 # id of the channel (see Note 1)
+           "version": <VERSION>,    # version of the driver
+           "close": PyBoard.close}, # register a callback on closing the channel
+           "pyb": IBA01(),          # something that makes your HW work...
+           "port": serial port
+           "slot": 0,1,2,3
         ]
 
         Note:
@@ -183,83 +184,73 @@ class HWDriver(object):
                   0 does not indicate num channels, like a shared hardware driver
                  <0 error
         """
+        self.pybs.clear()
+
         sender = "{}.{}".format(self.SFN, __class__.__name__)
 
-        pyboard = MicroPyBrd(self.logger)
-        pyboards = pyboard.scan_ports()
-        # pyboards = [{"port": port, "id": id, "slot": slot, "version": VERSION}, ...]
+        port_candidates = serial_ports()
+        for port in port_candidates:
+            _pyb = { "port": port}
+            self.logger.info("Trying pyboard at {}...".format(port))
 
-        self.pybs.clear()
-        for _pyb in pyboards:
-
-            if _pyb.get('id', None) is None:
-                self.logger.error("pyboard {} -> Missing ID".format(_pyb))
+            _pyb['pyb'] = pyb = IBA01(port, loggerIn=logging.getLogger("IBA01.try"))
+            success, result = pyb.start_server()
+            self.logger.info("{}, {}".format(success, result))
+            if not success:
+                self.logger.warning("No pyboard at {}".format(port))
                 continue
 
-            if _pyb.get('port', None) is None:
-                self.logger.error("pyboard {} -> Missing port".format(_pyb))
+            success, result = pyb.unique_id()
+            self.logger.info("{}, {}".format(success, result))
+            if not success:
+                self.logger.warning("pyboard {} unique_id -> {}".format(port, result))
                 continue
+            _pyb["id"] = result["value"]["value"]
 
-            if _pyb.get('uname', None) is None:
-                self.logger.error("pyboard {} -> Missing uname".format(_pyb))
+            success, result = pyb.slot()
+            self.logger.info("{}, {}".format(success, result))
+            if not success:
+                self.logger.warning("pyboard {} slot -> {}".format(port, result))
                 continue
+            _pyb["slot"] = result["value"]["value"]
 
-            if _pyb.get('slot', None) is None:
-                self.logger.error("pyboard {} -> Missing slot".format(_pyb))
+            success, result = pyb.version()
+            self.logger.info("{}, {}".format(success, result))
+            if not success:
+                self.logger.warning("pyboard {} uname -> {}".format(port, result))
                 continue
-
-            if _pyb['uname'].get('release', None) is None:
-                self.logger.error("pyboard {} -> Missing uname.release".format(_pyb))
-                continue
-
-            port = _pyb["port"]
-            id = _pyb["id"]
-            release = _pyb["uname"]["release"]
-            slot = _pyb["slot"]
+            _pyb["uname"] = result["value"]["uname"]
+            release = result["value"]["uname"].get("release", None)
+            version = result["value"]["version"]
 
             # confirm the release
             if release != self.MICROPYTHON_FIRMWARE_RELEASE:
-                self.logger.error("pybolard {}, slot {} -> Unsupported release {} (expecting {})".format(
-                        _pyb, slot, release, self.MICROPYTHON_FIRMWARE_RELEASE))
-                msg = "HWDriver ERR: PyBoard slot {} FW release not supported".format(slot)
-                pub_notice(msg, type=PUB.NOTICES_ERROR, sender=sender)
-                continue
-            self.logger.info("port {} -> supported FW release {}".format(port, release))
-
-            # now start the pyboard server, add the instance to the dict which will be shared
-            _pyb['pyb'] = IBA01(port, loggerIn=logging.getLogger("IBA01.{}".format(id)))
-            success, result = _pyb['pyb'].start_server()
-            self.logger.info("{} {}".format(success, result))
-            if not success:
-                self.logger.error("pybolard {}, slot {}, Failed to start server)".format(id, slot))
-                continue
-
-            # check server version
-            success, result = _pyb['pyb'].version()
-            self.logger.info("{} {}".format(success, result))
-            version = result["value"].get("value", "")
-            if not success or not version.startswith(self.IBA01_SERVER_VERSION):
-                self.logger.error("pybolard {}, slot {} -> Unsupported Server version {} (expecting {})".format(
-                        id, slot, version, self.IBA01_SERVER_VERSION))
-                msg = "HWDriver ERR: PyBoard slot {} Server version not supported".format(slot)
+                self.logger.error("pyboard {}, slot {} -> Unsupported release {} (expecting {})".format(
+                        _pyb["id"], _pyb["slot"], release, self.MICROPYTHON_FIRMWARE_RELEASE))
+                msg = "HWDriver ERR: PyBoard slot {} FW release not supported".format(_pyb["slot"])
                 pub_notice(msg, type=PUB.NOTICES_ERROR, sender=sender)
                 continue
 
-            # divers can register a close() method which is called on channel destroy.
-            # we don't need to set that there is none, but doing so helps remember we could set one
-            _pyb["close"] = _pyb["pyb"].close
+            # confirm the server version
+            if version != self.IBA01_SERVER_VERSION:
+                self.logger.error("pyboard {}, slot {} -> Unsupported version {} (expecting {})".format(
+                        _pyb["id"], _pyb["slot"], version, self.IBA01_SERVER_VERSION))
+                msg = "HWDriver ERR: PyBoard slot {} IBA01_SERVER_VERSION not supported".format(_pyb["slot"])
+                pub_notice(msg, type=PUB.NOTICES_ERROR, sender=sender)
+                continue
+            _pyb["version"] = version
+
+            # close, or else problems trying to re-open
+            _pyb["close"] = pyb.close
 
             # the pyboards need top be added in SLOT# order, 0, 1, 2, 3
-            self.pybs.insert(slot, _pyb)
+            self.pybs.insert(_pyb["slot"], _pyb)
             msg = "HWDriver:{}: {}".format(self.SFN, _pyb)
-
             self.logger.info(msg)
             pub_notice(msg, sender=sender)
 
-        pyboard.close()
-
         self._num_chan = len(self.pybs)
-        self.shared_state.add_drivers(self.DRIVER_TYPE, self.pybs)
+        self.shared_state.add_drivers(self.DRIVER_TYPE, self.pybs, shared=False)
 
         pub_notice("HWDriver:{}: Found {}!".format(self.SFN, self._num_chan), sender=sender)
         self.logger.info("Done: {} channels".format(self._num_chan))

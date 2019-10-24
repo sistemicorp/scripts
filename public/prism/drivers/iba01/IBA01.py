@@ -163,6 +163,10 @@ class IBA01(pyboard.Pyboard):
         c = {'method': 'unique_id', 'args': {}}
         return self._verify_single_cmd_ret(c)
 
+    def slot(self):
+        c = {'method': 'slot', 'args': {}}
+        return self._verify_single_cmd_ret(c)
+
     def version(self):
         c = {'method': 'version', 'args': {}}
         return self._verify_single_cmd_ret(c)

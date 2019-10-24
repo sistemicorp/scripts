@@ -9,6 +9,7 @@ import pyb
 import micropython
 import array
 import machine
+import os
 
 from iba01_perphs import Peripherals
 from iba01_supply12 import Supply12
@@ -149,6 +150,34 @@ class IBA01(MicroPyServer):
         pyb.LED(4).off()
         self._ret.put({"method": "reset", "value": {}, "success": True})
 
+    def slot(self, args):
+        """ Get SLOT#
+
+        :return:
+        """
+        sd_files = True
+        try:
+            files = os.listdir("/sd")
+        except OSError:
+            sd_files = False
+
+        if not sd_files:
+            files = os.listdir("/flash")
+
+        found_slot = False
+        for f in files:
+            if "SLOT" in f:
+                found_slot = True
+                break
+
+        if not found_slot:
+            self._ret.put({"method": "slot", "value": {'value': -1, "sd": sd_files}, "success": True})
+            return
+
+        slot = int(f.split("SLOT")[1])
+        self._ret.put({"method": "slot", "value": {'value': slot, "sd": sd_files}, "success": True})
+        return
+
     def unique_id(self, args):
         """ Get the Unique ID of the Micro Pyboard
 
@@ -178,7 +207,16 @@ class IBA01(MicroPyServer):
         :return: self.VERSION
         """
         self._debug("testing message", 180, __DEBUG_FILE, "version")
-        self._ret.put({"method": "version", "value": {'value': self.VERSION}, "success": True})
+        uname = str(os.uname())
+        # uname looks like: "(sysname='pyboard', nodename='pyboard', release='1.11.0', version='v1.11 on 2019-05-29', machine='PYBv1.1 with STM32F405RG')"
+        # turn this into a dict
+        items = list(uname.replace("(", "").replace(")", "").replace("'", "").split(","))
+        uname = {}
+        for item in items:
+            key = item.split("=")[0].strip()
+            value = item.split("=")[1].strip()
+            uname[key] = value
+        self._ret.put({"method": "version", "value": {'version': self.VERSION, "uname": uname}, "success": True})
 
     def _toggle_led(self, led, on_ms, off_ms, once=False):
         """ Toggle LED function - this is run on a thread

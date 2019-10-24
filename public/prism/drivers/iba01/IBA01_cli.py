@@ -67,7 +67,8 @@ def parse_args():
     misc_parser = subp.add_parser('misc')
     misc_parser.add_argument('-a', "--all", dest="all", action='store_true', help='run all tests sequentially', default=False, required=False)
     misc_parser.add_argument('--100', dest="t100", action='store_true', help='unique id', default=False, required=False)
-    misc_parser.add_argument('--200', dest="t200", action='store_true', help='pyboard server version', default=False, required=False)
+    misc_parser.add_argument('--101', dest="t101", action='store_true', help='slot number', default=False, required=False)
+    misc_parser.add_argument('--200', dest="t200", action='store_true', help='pyboard server version and uname', default=False, required=False)
     misc_parser.add_argument('--300', dest="t300", action='store_true', help='reset', default=False, required=False)
     misc_parser.add_argument('--400', dest="t400", action='store_true', help='Relay V12 Toggle', default=False, required=False)
     misc_parser.add_argument('--401', dest="t401", action='store_true', help='Relay VSYS Toggle', default=False, required=False)
@@ -349,9 +350,17 @@ def test_misc(args, pyb):
 
         if _success and not success: _success = False
 
+    if all or args.t101:
+        did_something = True
+        logging.info("T101: Reading slot number...")
+        success, result = pyb.slot()
+        logging.info("{} {}".format(success, result))
+
+        if _success and not success: _success = False
+
     if all or args.t200:
         did_something = True
-        logging.info("T200: Reading version...")
+        logging.info("T200: Reading version and uname...")
         success, result = pyb.version()
         logging.info("{} {}".format(success, result))
 

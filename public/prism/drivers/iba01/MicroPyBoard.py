@@ -149,6 +149,7 @@ class MicroPyBrd(object):
 
                 self.led_toggle(self.LED_GREEN, self.LED_FLASH_TIME_S)
 
+                self._enter_repl(False)  # must be done or next pyboard hangs
                 self.pyb.close()  # exit REPL
                 self.pyb = None
                 ports.append({"port": port, "id": id, 'slot': slot, "version": VERSION, "uname": uname})
