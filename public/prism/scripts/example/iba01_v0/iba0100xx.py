@@ -26,10 +26,7 @@ class iba0100xx(TestItem):
     def __init__(self, controller, chan, shared_state):
         super().__init__(controller, chan, shared_state)
         self.logger = logging.getLogger("pybrd00xx.{}".format(self.chan))
-
         self.pyb = None
-        self.pyb_port = None
-        self.slot = None
 
     def PYBRD0xxSETUP(self):
         ctx = self.item_start()  # always first line of test
@@ -44,25 +41,17 @@ class iba0100xx(TestItem):
         driver = drivers[0]
 
         self.logger.info("Found pybrd: {}".format(driver))
-        self.pyb_port = driver["obj"]["port"]
 
-        if self.pyb_port is None:
-            self.logger.error("Could not find pyboard driver")
-            self.item_end(ResultAPI.RECORD_RESULT_FAIL)
-            return
-
-        id = driver["obj"]["id"]  # save the id of the pyboard for the record
+        id = driver["obj"]["unique_id"]  # save the id of the pyboard for the record
         _, _, _bullet = ctx.record.measurement("pyboard_id", id, ResultAPI.UNIT_STRING)
         self.log_bullet(_bullet)
-
-        self.slot = driver["obj"].get("slot", None)
 
         self.pyb = driver["obj"]["pyb"]
 
         success, result = self.pyb.reset()
         if not success:
             self.logger.error("failed to reset IBA01")
-            self.item_end(ResultAPI.RECORD_RESULT_FAIL)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
         self.item_end()  # always last line of test
