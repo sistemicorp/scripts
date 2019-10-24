@@ -168,12 +168,12 @@ class HWDriver(object):
         shared_state: a list,
             self.shared_state.add_drivers(DRV_TYPE, [ {}, {}, ... ], shared=True/False)
 
-        [ {'id': i,                 # id of the channel (see Note 1)
+        [ {'id': i,                 # slot id of the channel (see Note 1)
            "version": <VERSION>,    # version of the driver
            "close": PyBoard.close}, # register a callback on closing the channel
            "pyb": IBA01(),          # something that makes your HW work...
            "port": serial port
-           "slot": 0,1,2,3
+           "unique_id": unique_id   # cache this here so that it doesn't need to be retrieved for every test
         ]
 
         Note:
@@ -205,14 +205,14 @@ class HWDriver(object):
             if not success:
                 self.logger.warning("pyboard {} unique_id -> {}".format(port, result))
                 continue
-            _pyb["id"] = result["value"]["value"]
+            _pyb["unique_id"] = result["value"]["value"]
 
             success, result = pyb.slot()
             self.logger.info("{}, {}".format(success, result))
             if not success:
                 self.logger.warning("pyboard {} slot -> {}".format(port, result))
                 continue
-            _pyb["slot"] = result["value"]["value"]
+            _pyb["id"] = result["value"]["value"]
 
             success, result = pyb.version()
             self.logger.info("{}, {}".format(success, result))
@@ -243,8 +243,7 @@ class HWDriver(object):
             # close, or else problems trying to re-open
             _pyb["close"] = pyb.close
 
-            # the pyboards need top be added in SLOT# order, 0, 1, 2, 3
-            self.pybs.insert(_pyb["slot"], _pyb)
+            self.pybs.append(_pyb)
             msg = "HWDriver:{}: {}".format(self.SFN, _pyb)
             self.logger.info(msg)
             pub_notice(msg, sender=sender)
