@@ -14,11 +14,11 @@ import ampy.pyboard as pyboard
 try:
     # run locally
     from stublogger import StubLogger
-    from iba01_const import *
+    from sd_image.iba01_const import *
 except:
     # run from prism
     from public.prism.drivers.iba01.stublogger import StubLogger
-    from public.prism.drivers.iba01.iba01_const import *
+    from public.prism.drivers.iba01.sd_image.iba01_const import *
 
 
 VERSION = "0.2.0"

@@ -18,7 +18,7 @@ import logging
 import argparse
 
 from IBA01 import IBA01
-from iba01_const import *
+from sd_image.iba01_const import *
 
 VERSION = "0.2.0"
 
