@@ -16,9 +16,10 @@ class pydso(TestItem):
     """ DSO Functions
 
     Notes:
-        1) if "slot" number is defined, then channel number is slot+1, and its
-           assumed that the scope channels are connected to the corresponding slot.
-        2) if "slot" is not defined, then channel 1 only is to be assumed.
+        1) This is a shared resource driver, implying that it is shared across all the
+           active channels, and its assumed that up to 4 channels can exist, and therefor
+           each DSO channel is available to each self.chan.  Therefore, self.dso_ch = self.chan
+           and the DSO is expected to have a physical connection of Ch1 -> self.chan.
 
     see: https://www.keysight.com/upload/cmc_upload/All/7000A_series_prog_guide.pdf
     """
@@ -30,7 +31,7 @@ class pydso(TestItem):
         super().__init__(controller, chan, shared_state)
         self.logger = logging.getLogger("{}.{}".format(__name__, self.chan))
         self.dso = None
-        self.dso_ch = 1  # this will be replaced by slot # (+1)
+        self.dso_ch = self.chan + 1
 
     def PYDSO000SETUP(self):
         """ Get driver from SharedState Open DSO and get DSO name, serial number, and save it to the record
@@ -41,7 +42,7 @@ class pydso(TestItem):
         ctx = self.item_start()  # always first line of test
 
         # drivers are stored in the shared_state and are retrieved as,
-        drivers = self.shared_state.get_drivers(self.chan, type=self.DSO)
+        drivers = self.shared_state.get_drivers(None, type=self.DSO)
         if len(drivers) > 1 or len(drivers) == 0:
             self.logger.error("Unexpected number of drivers: {}".format(drivers))
             self.log_bullet("Unexpected number of drivers")
@@ -58,15 +59,7 @@ class pydso(TestItem):
         success, result, _bullet = ctx.record.measurement("dso", deets, ResultAPI.UNIT_STRING)
         self.log_bullet(_bullet)
 
-        # determine the slot number, which can come from any driver that defines it, search...
-        drivers = self.shared_state.get_drivers(self.chan)
-        for driver in drivers:
-            if driver.get("obj", {}).get("slot", False):
-                slot = driver["obj"]["slot"]
-                self.dso_ch = slot + 1  # assume slots are indexed from 0
-                self.logger.info("{}: slot {}".format(driver["type"], self.dso_ch))
-                break
-        # save for traceability
+        # save dso channel for traceability, for example, a systematic error found on channel X
         success, result, _bullet = ctx.record.measurement("chan", self.dso_ch, ResultAPI.UNIT_INT)
         self.log_bullet(_bullet)
 
