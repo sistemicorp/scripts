@@ -110,9 +110,10 @@ class pydso(TestItem):
     def PYDSO020AUTOMEAS(self):
         """ Autoscale and then measure stuff
 
-        {"id": "PYDSO020AUTOMEAS",   "enable": true },
+        {"id": "PYDSO020AUTOMEAS",   "enable": true, "50Ohm": true },
         """
         ctx = self.item_start()  # always first line of test
+        chan50Ohm = ctx.item.get("50Ohm", False)
 
         self.shared_lock(self.DSO).acquire()
 
@@ -123,6 +124,9 @@ class pydso(TestItem):
             self.dso.write(':CHANnel1:DISPlay OFF')  # turn off channel 1
             self.dso.write(':CHANnel{}:DISPlay ON'.format(self.dso_ch))  # turn off channel 1
         time.sleep(0.5) # give it some time to sit here, else its too fast
+
+        if chan50Ohm:
+            self.dso.write(':CHANnel{}:IMPedance FIFTy'.format(self.dso_ch))
 
         self.logger.info("autoscale")
         self.dso.write(':AUT CHAN{}'.format(self.dso_ch))

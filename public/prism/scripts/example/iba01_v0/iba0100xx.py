@@ -24,7 +24,7 @@ class iba0100xx(TestItem):
 
     def __init__(self, controller, chan, shared_state):
         super().__init__(controller, chan, shared_state)
-        self.logger = logging.getLogger("pybrd00xx.{}".format(self.chan))
+        self.logger = logging.getLogger("iba0100xx.{}".format(self.chan))
         self.pyb = None
 
     def PYBRD0xxSETUP(self):
@@ -39,11 +39,10 @@ class iba0100xx(TestItem):
             return
         driver = drivers[0]
 
-        self.logger.info("Found pybrd: {}".format(driver))
-
         id = driver["obj"]["unique_id"]  # save the id of the pyboard for the record
         _, _, _bullet = ctx.record.measurement("pyboard_id", id, ResultAPI.UNIT_STRING)
         self.log_bullet(_bullet)
+        self.logger.info("Found pybrd: {} {}, chan {}".format(driver, id, self.chan))
 
         self.pyb = driver["obj"]["pyb"]
 
@@ -167,10 +166,21 @@ class iba0100xx(TestItem):
         duty_cycle = ctx.item.get("duty_cycle", 50) + 10 * self.chan
 
         if pin in ["Y1", "Y7", "Y8", "Y11", "Y12", "X6", "X8"]: timer = 8
-        # TODO: complete this list for other pins
+        else:
+            # TODO: complete this list for other pins
+            self.item_end(ResultAPI.RECORD_RESULT_FAIL)  # always last line of test
+            return
 
-        if en: success, result = self.pyb.init_gpio(name, "Y1", PYB_PIN_OUT_PP, PYB_PIN_PULLNONE)
-        else:  success, result = self.pyb.init_gpio(name, "Y1", PYB_PIN_IN, PYB_PIN_PULLNONE)
+        self.logger.info("name {}, pin {}, timer {}, channel {}, freq {}, duty {}, en {}".format(name,
+                                                                                                 pin,
+                                                                                                 timer,
+                                                                                                 channel,
+                                                                                                 freq,
+                                                                                                 duty_cycle,
+                                                                                                 en))
+
+        if en: success, result = self.pyb.init_gpio(name, pin, PYB_PIN_OUT_PP, PYB_PIN_PULLNONE)
+        else:  success, result = self.pyb.init_gpio(name, pin, PYB_PIN_IN, PYB_PIN_PULLNONE)
         if not success:
             self.logger.error(result)
             self.log_bullet("pwm {}: Failed".format(name))
