@@ -13,6 +13,11 @@ Production Infrastructure Cycle
 
 .. image:: static/Screenshot_prodplan_02.png
 
+The above diagram presents a flow for developing and deploying scripts.
+
+Git is used as a repository for development and releases.
+
+Lente script sync is used to deploy scripts to Prism stations.
 
 Stages
 ******

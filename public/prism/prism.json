@@ -1,6 +1,10 @@
 // NOTE: ANY changes made to this file requires the manifest to be regenerated.
 // Lente regenerates the manifest from the Tasks menu, and then sync scripts.
 {
+  // turn on demo mode.  Creates test user accounts, ...
+  // remove line to disable demo mode
+  "demo": true,
+
   // manifest, locked or unlocked, when locked (true) Prism will only
   // operate if all files in public/station pass a hash check (are unchanged),
   // if unlocked (false) ONLY this file is checked against the manifest

@@ -1,4 +1,7 @@
 {
+  // turn on demo mode.  Creates test user accounts, ...
+  "demo": true,
+
   // Result JSON files be stored as encrypted, true (default) or false,
   // If the results were not encrypted by Prism, they won't be ecrypted by Lente
   "results_bkup_encrypted": false,
