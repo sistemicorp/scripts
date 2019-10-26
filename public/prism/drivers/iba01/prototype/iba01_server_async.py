@@ -2,6 +2,16 @@
 # -*- coding: utf-8 -*-
 """
 Sistemi Corp, copyright, all rights reserved, 2019
+
+!!! PROTOTYPE - THIS DOES NOT WORK !!!
+Question posted on MicroPython Forum (private message)
+Where I get "stuck" is starting this loop. Because the loop.run_forever() statement does just that, and although the coro is running, nothing else is running, so the PC can't send anything over the REPL.
+One solution I thought of was to create a thread as before, and run the coro from that thread, but that doesn't seem like the right solution.
+All the examples in the tutorials (unless I missed it) basically show a run_forever() and this will block the repl.
+So after all that, my root question is, Is there an example of starting a coro that keeps the REPL working? (but its quite possible I misunderstand the problem)
+A: I don't know how to do this. However the webrepl does something similar and some people have experimented with the REPL running concurrently with other code.
+I haven't studied this so I suggest you do a forum search and ask there. This is an issue which has cropped up in the past.
+Normally, as you've discovered, uasyncio takes over the machine until the event loop terminates.
 """
 import micropython
 import uasyncio as asyncio

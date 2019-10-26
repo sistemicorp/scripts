@@ -1,4 +1,4 @@
-How to use these files...
+How to use these files... Read all of this, lots of info...
 
 1) How to setup a "fresh" MicroPython Pyboard ver 1.1 for use with Sistemi Prism:
 
@@ -12,10 +12,10 @@ How to use these files...
 
 2) All files names iba01_*.py need to be copied to the MicroPyboard.
 
-   Use the script: ampy_put_all
+   Use the script: ampy_put_all.sh
 
    Or, use rshell (put link to install rshell here) or ampy to copy just one file.
-   ampy (see script) is more reliable than rshell.
+   ampy (see script) is more reliable than rshell (v0.26).
    example rshell session:
         martin@martin-Lenovo:~/sistemi/git/scripts/public/prism/drivers/micropythonbrd$ rshell
         Connecting to /dev/ttyACM0 (buffer-size 512)...
@@ -30,10 +30,10 @@ How to use these files...
         /home/martin/sistemi/git/scripts/public/prism/drivers/micropythonbrd>
 
 
-3) The upybrd_cli.py can be used for other things, like testing code.  See '--help' for all its functions.
+3) The MicroPyBoard_cli.py can be used for other things, like testing code.  See '--help' for all its functions.
    For example, instead of using rshell to copy files over, one can use upybrd_cly.py,
 
-    martin@martin-Lenovo:~/sistemi/git/scripts/public/prism/drivers/micropythonbrd$ python3 upybrd_cli.py --port /dev/ttyACM0 --copy iba01_supply12.py -v
+    martin@martin-Lenovo:~/sistemi/git/scripts/public/prism/drivers/micropythonbrd$ python3 MicroPyBoard_cli.py --port /dev/ttyACM0 --copy iba01_supply12.py -v
      DEBUG   95 Done
      DEBUG  137 open /dev/ttyACM0
      DEBUG  142 close
@@ -41,22 +41,41 @@ How to use these files...
 
 4) How to debug problems with code on the MicroPython?
 
-   A) Run the code directly via rshell.  Here is an example session, starting after entering the rshell,
+   A) Run the code directly via rshell.  This is generally the ONLY way to find out if new code is syntax
+      correct on the target.  If the MicroPython code has an error, the server hides the error message, so you
+      don't see it.  Using the interactive REPL is the BEST way to see the issue.
+      Here is an example session, starting after entering the rshell,
 
-        /home/martin/sistemi/git/scripts/public/prism/drivers/micropythonbrd> repl
+        $ rshell
+        Connecting to /dev/ttyACM0 (buffer-size 512)...
+        Trying to connect to REPL  connected
+        Testing if sys.stdin.buffer exists ... Y
+        Retrieving root directories ... /flash/
+        Setting time ... Oct 25, 2019 15:39:48
+        Evaluating board_name ... pyboard
+        Retrieving time epoch ... Jan 01, 2000
+        Welcome to rshell. Use Control-D (or the exit command) to exit rshell.
+        /home/martin/sistemi/git/p01-upyrpc> repl
         Entering REPL. Use Control-X to exit.
         >
-        MicroPython v1.11 on 2019-05-29; PYBv1.1 with STM32F405RG
+        MicroPython v1.11-182-g7c15e50eb on 2019-07-30; PYBv1.1 with STM32F405RG
         Type "help()" for more information.
         >>>
-        >>> import upyb_server_01
-        >>> upyb_server_01.server.adc_read_multi({"pins": ['X19']})
-        >>> upyb_server_01.server.peek(all=True)
-        [{'success': True, 'value': 'scheduled', 'method': 'adc_read_multi'}, {'success': True, 'value': [array('H', [329, 353, 388, 365, 393, 374, 381, 412, 374, 398, 388, 364, 400, 367, 400, 382, 384, 387, 361, 391, 384, 361, 398, 372, 398, 390, 367, 408, 374, 403, 382, 389, 395, 365, 393, 382, 391, 394, 368, 398, 390, 369, 398, 376, 395, 384, 364, 404, 374, 403, 389, 367, 405, 376, 400, 382, 388, 388, 365, 393, 379, 386, 387, 362, 398, 387, 364, 404, 375, 405, 388, 369, 403, 371, 394, 386, 364, 402, 373, 404, 387, 364, 406, 377, 400, 384, 365, 404, 374, 409, 387, 361, 403, 375, 406, 391, 372, 410, 375, 408])], 'method': 'adc_read_multi_results'}]
+        >>> import upyrpc_main
+        >>> upyrpc_main.upyrpc.cmd({'method': 'version', 'args': {}})
+        True
+        >>> upyrpc_main.upyrpc.ret(method='version')
+        [{'success': True, 'value': 'upyrpc_main    :version   : 180: testing message', 'method': '_debug'}]
+        True
+        >>> upyrpc_main.upyrpc.ret(method='version')
+        [{'success': True, 'value': {'uname': {'machine': 'PYBv1.1 with STM32F405RG', 'nodename': 'pyboard', 'version': 'v1.11-182-g7c15e50eb on 2019-07-30', 'release': '1.11.0', 'sysname': 'pyboard'}, 'version': '0.2'}, 'method': 'version'}]
+        True
+        >>> upyrpc_main.upyrpc.ret(method='version')
+        []
         True
         >>>
 
-   B) Use the cli, upybrd_cli_server.py to write test code in a simple environment.
+   B) Use the cli, IBA01_cli.py to write test code in a simple environment.
 
    C) Error "could not exec command" is often an issue with arguments, make sure new functions match argument patterns.
 
@@ -92,5 +111,15 @@ How to use these files...
 
        or to get help on sub-commands,
 
-        python3 upybrd_cli_server.py adc --help
+        python3 IBA01_cli.py adc --help
+
+7) Use SD card or flash filesystem?  The choice is predicated on a few factors,
+
+    a) The PyBoard v1.1 filesystem has a capacity of ~110k.  If the files fit, you can use this.
+    b) The notion of the SLOT# file determines the position of the IBA01 in the list of fixtures
+       in Prism test view.  If, for example, SLOT0 IBA01 test fixture becomes broken and must be removed, then
+       the order of fixtures becomes, SLOT1, SLOT2, SLOT3, and these will be mapped to channel 0, 1, 2
+       in Prism.  This might be confusing.  If you use the SD card for the filesystem, then
+       you can move the cards so that SLOT0 SD card is physically in a logical fixture.  The SD cards
+       should be labelled with the SLOT#.
 
