@@ -53,7 +53,7 @@
       "options": {},
       "items": [
         {"id": "PYDSO000SETUP",     "enable": true },
-        {"id": "PYDSO020AUTOMEAS",  "enable": true, "50Ohm": true },
+        {"id": "PYDSO020AUTOMEAS",  "enable": true },
       ]
     }
   ]
