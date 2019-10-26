@@ -6,10 +6,9 @@ Martin Guthrie
 
 """
 import logging
-import time
 from core.test_item import TestItem
 from public.prism.api import ResultAPI
-from public.prism.drivers.iba01.iba01_const import *
+from public.prism.drivers.iba01.sd_image.iba01_const import *
 
 # file and class name must match
 class iba0100xx(TestItem):
