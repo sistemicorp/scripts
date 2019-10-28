@@ -17,6 +17,8 @@ usage () {
   echo "  update                    Update the docker image, requires internet connection."
   echo "                            You will need to restart Prism with the start command."
   echo ""
+  echo "  stop                      Stop Prism"
+  echo ""
 }
 
 if [[ $1 == "--help" ]] || [[ $1 == "" ]] ; then
@@ -59,7 +61,7 @@ start () {
         if valid_ip $flag_server_ip; then
             SERVERIP=${flag_server_ip}
         else
-            echo "IP address is valid, please check"
+            echo "IP address is invalid, please check"
             exit 1
         fi
     fi
@@ -96,8 +98,9 @@ start () {
 }
 
 docker_pull () {
-    echo docker pull
-    docker pull sistemicorp/prism
+    echo docker pull latest...
+    docker pull sistemicorp/prism:latest
+    echo Stopping Prism... (if its running)
     docker update --restart=no prism
     docker stop prism
     docker container rm prism
@@ -106,6 +109,7 @@ docker_pull () {
 }
 
 stop () {
+    echo Stopping Prism... (if its running)
     docker update --restart=no prism
     docker stop prism
     docker container rm prism

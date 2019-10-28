@@ -61,9 +61,10 @@ start () {
 }
 
 docker_pull () {
-    echo docker pull
-    docker pull sistemicorp/lente
+    echo docker pull latest
+    docker pull sistemicorp/lente:latest
     docker update --restart=no lente
+    echo Stopping Lente...
     docker stop lente
     docker container rm lente
     echo
@@ -71,6 +72,7 @@ docker_pull () {
 }
 
 stop () {
+    echo Stopping Lente...
     docker update --restart=no lente
     docker stop lente
     docker container rm lente

@@ -28,13 +28,13 @@ class ResultBaseClass(object):
                   # !! only increase in future versions
 
     def __init__(self, chan_num, operator="UNKNOWN", script_filename=None):
-        self.logger = logging.getLogger("SC.{}.{}".format(__class__.__name__, chan_num))
+        self.logger = logging.getLogger("{}.{}".format(__class__.__name__, chan_num))
 
         self._record = {    ## The result json record for the suite
             "meta": { # stuff that framework populates
                       "channel": chan_num,
                       "result": ResultAPI.RECORD_RESULT_UNKNOWN,
-                      "processor": __class__.__name__,
+                      "processor": __class__.__name__.lower(),  #  processor is tied to db name, which must be lower case
                       "operator": operator,
                       "ip": "127.0.0.1",
                       "script": os.path.normpath(script_filename).replace("\\", "/"),

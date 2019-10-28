@@ -62,7 +62,7 @@ class ResultBaseKeysV1(ResultBaseClass):
     def __init__(self, chan_num, operator="UNKNOWN", script_filename="UNKNOWN"):
         super().__init__(chan_num, operator, script_filename)
         self.logger = logging.getLogger("{}.{}".format(__class__.__name__, chan_num))
-        self._record["meta"]["processor"] = __class__.__name__
+        self._record["meta"]["processor"] = __class__.__name__.lower()  # processor is tied to db name, which must be lowercase
         self._record["keys"] = {}
         self.logger.info("DONE")
 
