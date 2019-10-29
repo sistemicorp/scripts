@@ -1,8 +1,9 @@
 // NOTE: ANY changes made to this file requires the manifest to be regenerated.
-// Lente regenerates the manifest from the Tasks menu, and then sync scripts.
+// Lente regenerates the manifest from the Station Management menu, and then sync scripts
+// to deploy to Prism stations.
 {
   // turn on demo mode.  Creates test user accounts, ...
-  // remove line to disable demo mode
+  // remove line, or set to false to disable demo mode
   "demo": true,
 
   // manifest, locked or unlocked, when locked (true) Prism will only
@@ -12,14 +13,14 @@
 
   // path to results waiting to be sent to Lente
   // must be named 'stage', must be under parent 'public'
-  // DEFAULT: "public/result/stage",
-  "result_stage_dir": "public/result/stage",
+  // DEFAULT: "public/result/prism/stage",
+  //"result_stage_dir": "public/result/prism/stage",
 
   // path to results for when they have been sent to Lente
   // (results are moved from stage to bkup after successfully sent to Lente)
   // (set to null for no backups)
-  // DEFAULT: "public/result/bkup",
-  "result_bkup_dir": "public/result/bkup",
+  // DEFAULT: "public/result/prism/bkup",
+  //"result_bkup_dir": "public/result/prism/bkup",
 
   // How often to check for Lente connection, when
   // connection available, any results in stage directory are sent
