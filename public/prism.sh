@@ -100,7 +100,7 @@ start () {
 docker_pull () {
     echo docker pull latest...
     docker pull sistemicorp/prism:latest
-    echo Stopping Prism... (if its running)
+    echo "Stopping Prism... (if its running)"
     docker update --restart=no prism
     docker stop prism
     docker container rm prism
@@ -109,7 +109,7 @@ docker_pull () {
 }
 
 stop () {
-    echo Stopping Prism... (if its running)
+    echo "Stopping Prism... (if its running)"
     docker update --restart=no prism
     docker stop prism
     docker container rm prism
