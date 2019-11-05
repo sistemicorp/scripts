@@ -7,8 +7,8 @@ Sistemi Corp, copyright, all rights reserved, 2019
 UPYB_I2C_HW_I2C1 = "X"   # on X9/10 <<-- only this one used on iba01
 UPYB_I2C_HW_I2C2 = "Y"   # on Y9/10
 
-V1_I2C_ADDR   = 0x20   # addr of GPIO expander controlling the LDO V1
-V2_I2C_ADDR   = 0x21   # addr of GPIO expander controlling the LDO V2
+V1_I2C_ADDR   = 0x20   # addr of GPIO expander controlling the LDO V1 (port 0)
+V2_I2C_ADDR   = 0x20   # addr of GPIO expander controlling the LDO V2 (port 1)
 VBAT_I2C_ADDR = 0x22   # addr of GPIO expander controlling the LDO VBAT
 CON_I2C_ADDR  = 0x23   # addr of GPIO expander controlling the 9V, Relays
 

@@ -36,12 +36,12 @@ class Peripherals(object):
         P17 = spare, not used
 
     How to use:
-    ...
+    1) Based on SCH A0109, A0110, ...
 
     """
     I2C_HW_IDs = [UPYB_I2C_HW_I2C1, UPYB_I2C_HW_I2C2]
 
-    IBA01_SCAN = [32, 33, 34, 35, 64, 72]  # 4 GPIO expanders, ADS1115, INA220
+    IBA01_SCAN = [32, 34, 35, 64, 72]  # 3 GPIO expanders, ADS1115, INA220
 
     RELAYV12_CON  = 0x1 << 0
     RELAYV12_DIS  = 0x1 << 1
@@ -50,6 +50,9 @@ class Peripherals(object):
     RELAYVBAT_CON = 0x1 << 4
     RELAYVBAT_DIS = 0x1 << 5
 
+    CAL_P10_R = 5000
+    CAL_P11_R = 500
+    CAL_P12_R = 50
 
     def __init__(self, i2c=0, freq=400000, adc_addr=0x48, adc_gain=1, debug_print=None):
         """
@@ -146,22 +149,52 @@ class Peripherals(object):
     def relay_vbat(self, connect=True):
         return self._relay(connect, self.RELAYVBAT_CON, self.RELAYVBAT_DIS)
 
+    def cal_load(self, value):
+        """ Enable calibration load(s)
+
+        There are three bits of load. P10 is LSB, P12 is MSB.
+        To turn on the bits, the CONFIG register needs each bit to be zero (active low)
+
+        : param value: 0x0 to 0x7
+        :return: success, load resistance in ohms
+        """
+        if value & ~0x7:
+            return False, "value out of range"
+
+        p1_output_cache = self.PCA95535_read(CON_I2C_ADDR, PCA9555_CMD_OUTPUT_P1)
+        p1_output = (p1_output_cache & 0xf8) | (value & 0x7)
+        self.PCA95535_write(CON_I2C_ADDR, PCA9555_CMD_OUTPUT_P1, p1_output)
+
+        _res = 0.0
+        if value & 0x1: _res += 1 / self.CAL_P10_R
+        if value & 0x2: _res += 1 / self.CAL_P11_R
+        if value & 0x4: _res += 1 / self.CAL_P12_R
+        if _res == 0.0: _res = 0
+        else: _res = 1 / _res
+
+        if self._debug:
+            msg = "cal_load 0x{:02x} {:.1f}, 0x{:02x} -> 0x{:02x}, {} Ohms".format(value, _res, p1_output_cache, p1_output, _res)
+            self._debug(msg, 267, __DEBUG_FILE, self._name)
+
+        return True, _res
+
     def reset(self):
         """ puts the LDOs into a known state
             Writes to the GPIO expander which controls the LDOs
+
+            Set P10, P11, P12 to output active LOW to turn off CAL loads
 
         :return:
         """
         # set the config, All pins are 'input' except for the enable, which is output,
         # ands LDO is disabled, LOW
         self.PCA95535_write(CON_I2C_ADDR, PCA9555_CMD_CONFIG_P0, 0xFF)  # all inputs
-        self.PCA95535_write(CON_I2C_ADDR, PCA9555_CMD_CONFIG_P1, 0xFC)  # all inputs, except P10/P11 always output
+        self.PCA95535_write(CON_I2C_ADDR, PCA9555_CMD_CONFIG_P1, 0xF8)  # all inputs, except P10/P11/P12 always output
 
-        # because all the outputs are open-drain, and we only want the
         # LOW value, all the output states will be set to LOW, thus
         # to "activate" a pin, just the CONFIG register needs to be changed.
         self.PCA95535_write(CON_I2C_ADDR, PCA9555_CMD_OUTPUT_P0, 0x00)  # all low
-        self.PCA95535_write(CON_I2C_ADDR, PCA9555_CMD_OUTPUT_P1, 0x02)  # all low, except P10 (HIGH), P11 (LOW)
+        self.PCA95535_write(CON_I2C_ADDR, PCA9555_CMD_OUTPUT_P1, 0x00)  # all low
 
         # no polarity inversion
         self.PCA95535_write(CON_I2C_ADDR, PCA9555_CMD_POL_P0, 0x00)  # no inversion
@@ -177,4 +210,5 @@ if False:
         print("{:15s}:{:10s}:{:4d}: {}".format(file, name, line, msg))
 
     p = Peripherals(debug_print=_print)
+
 

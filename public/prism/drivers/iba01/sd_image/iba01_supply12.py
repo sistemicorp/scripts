@@ -55,50 +55,61 @@ class Supply12(object):
            a load, with special case of P14/15 which are turned on together
 
     """
-    LDO_TYPE = ["TPS7A2501", "TPS7A7200"]
+    LDO_TYPE = ["TPS7A7200", "TPS7A7200"]
     ADC_CHANNEL = [0, 1]
+    GPIO_PORT = [
+        {"PCA9555_CMD_INPUT": 0, "PCA9555_CMD_OUTPUT": 2, "PCA9555_CMD_POL": 4, "PCA9555_CMD_CONFIG": 6},
+        {"PCA9555_CMD_INPUT": 1, "PCA9555_CMD_OUTPUT": 3, "PCA9555_CMD_POL": 5, "PCA9555_CMD_CONFIG": 7},
+    ]
 
     LDO_ENABLE_SHIFT = 6    # bit location of the LDOs enable pin
 
-    LDO_VOLTAGE_MIN = [1650,  500]  # LDO output minimum, based on type index
-    LDO_VOLTAGE_MAX = [4500, 3500]  # LDO output maximum, based on type index
+    LDO_VOLTAGE_MIN = [500,   500]  # LDO output minimum, based on type index
+    LDO_VOLTAGE_MAX = [3500, 3500]  # LDO output maximum, based on type index
     LDO_SET_VOLTAGE_MASK = 0x3f     # mask of the voltage set pins
     LDO_VOLTAGE_50mv = 50           # LSB of the LDO volt range
-    LDO_VOLTAGE_50mv_SHIFT = 0      # register location of the 50mv pin
+    LDO_VOLTAGE_50mv_SHIFT = 5      # register location of the 50mv pin
     LDO_VOLTAGE_100mv = 100         # voltage value of the 100mv pin
-    LDO_VOLTAGE_100mv_SHIFT = 1     # register location of the 100mv pin
+    LDO_VOLTAGE_100mv_SHIFT = 4     # register location of the 100mv pin
     LDO_VOLTAGE_200mv = 200         # voltage value of the 200mv pin
-    LDO_VOLTAGE_200mv_SHIFT = 2     # register location of the 200mv pin
+    LDO_VOLTAGE_200mv_SHIFT = 3     # register location of the 200mv pin
     LDO_VOLTAGE_400mv = 400         # voltage value of the 400mv pin
-    LDO_VOLTAGE_400mv_SHIFT = 3     # register location of the 400mv pin
+    LDO_VOLTAGE_400mv_SHIFT = 2     # register location of the 400mv pin
     LDO_VOLTAGE_800mv = 800         # voltage value of the 800mv pin
-    LDO_VOLTAGE_800mv_SHIFT = 4     # register location of the 800mv pin
+    LDO_VOLTAGE_800mv_SHIFT = 1     # register location of the 800mv pin
     LDO_VOLTAGE_1600mv = 1600       # voltage value of the 1600mv pin
-    LDO_VOLTAGE_1600mv_SHIFT = 5    # register location of the 16000mv pin
+    LDO_VOLTAGE_1600mv_SHIFT = 0    # register location of the 16000mv pin
 
-    # the resistance at each GPIO pin for calibration
-    CAL_P11_R = 15000
-    CAL_P12_R = 4000
-    CAL_P13_R = 1000
-    CAL_P14_R = 100   # TODO: 100 is too large, HW needs to change to ~50
-
+    CAL_VOLTAGE_MV = 2000
     ADC_SAMPLES = 4  # number of samples to take an average over
     DELAY_CAL_LOAD_SETTLE_MS = 20
     DELAY_PG_LOAD_SETTLE_MS = 100
+    CURR_TRANSFORM = 25.0 / 2.0  # gain of INA190 / Rsense
 
     def __init__(self, perph, addr, name, debug_print=None, type=0):
         self._name = name
         self._perph = perph
+        self._gpio = self.GPIO_PORT[type]
         self._adc = perph.adc()
         self._addr = addr          # this is address if GIO expander than controls this LDO
         self._voltage_mv = 0       # cached output voltage
         self._debug = debug_print
         self._cal_mask = 0x0
-        self._cal_matrix = {}  # { voltage: [(resistance, current_ua)], ...} # starting at zero
+
+        # !! Calibration needs to be done in order of increasing current !!!
+        self._cal_matrix = {}  # { voltage_a: [(expected_ua_0, actual_ua_0),
+                               #              (expected_ua_5000, actual_ua_5000),
+                               #              (expected_ua_500, actual_ua_500),
+                               #              (expected_ua_50, actual_ua_50)],
+                               #   voltage_b: [ (...), ...], ... }
         self._type = type
 
         self.reset()
-        self._enable = False
+
+        self.enable()
+        self.voltage_mv(self.CAL_VOLTAGE_MV)
+        self.calibrate(0)
+        self.reset()
 
         if self._debug: self._debug("init {}".format(self.LDO_TYPE[type]), 102, _DEBUG_FILE, self._name)
 
@@ -110,26 +121,24 @@ class Supply12(object):
         """
         # set the config, All pins are 'input' except for the enable, which is output,
         # ands LDO is disabled, LOW
-        self._perph.PCA95535_write(self._addr, PCA9555_CMD_CONFIG_P0, 0xFF)  # all inputs
-        self._perph.PCA95535_write(self._addr, PCA9555_CMD_CONFIG_P1, 0xFE)  # all inputs, except P10 (LoadBias) is always active
+        self._perph.PCA95535_write(self._addr, self._gpio["PCA9555_CMD_CONFIG"], 0xFF)  # all inputs
 
         # because all the outputs are open-drain, and we only want the
         # LOW value, all the output states will be set to LOW, thus
         # to "activate" a pin, just the CONFIG register needs to be changed.
-        self._perph.PCA95535_write(self._addr, PCA9555_CMD_OUTPUT_P0, 0x00)  # all low
-        self._perph.PCA95535_write(self._addr, PCA9555_CMD_OUTPUT_P1, 0x00)  # all low
+        self._perph.PCA95535_write(self._addr, self._gpio["PCA9555_CMD_OUTPUT"], 0x00)  # all low
 
         # no polarity inversion
-        self._perph.PCA95535_write(self._addr, PCA9555_CMD_POL_P0, 0x00)  # no inversion
-        self._perph.PCA95535_write(self._addr, PCA9555_CMD_POL_P1, 0x00)  # no inversion
+        self._perph.PCA95535_write(self._addr, self._gpio["PCA9555_CMD_POL"], 0x00)  # no inversion
 
         # disable the LDO
-        val = (0xFF & ~(0x1 << self.LDO_ENABLE_SHIFT)) & 0xff  # set P06 LOW
-        self._perph.PCA95535_write(self._addr, PCA9555_CMD_CONFIG_P0, val)
+        val = (0xFF & ~(0x1 << self.LDO_ENABLE_SHIFT)) & 0xff  # set Px6 LOW
+        self._perph.PCA95535_write(self._addr, self._gpio["PCA9555_CMD_CONFIG"], val)
         if self._debug:
             self._debug("reset CONFIG_P0 0x{:02x}".format(val), 115, _DEBUG_FILE, self._name)
 
         self.voltage_mv(self.LDO_VOLTAGE_MIN[self._type])
+        self._enable = False
 
     def _state(self):
         # for debugging, print everything
@@ -144,7 +153,7 @@ class Supply12(object):
         :param enable: True/False
         :return: success, enable
         """
-        _register = self._perph.PCA95535_read(self._addr, PCA9555_CMD_CONFIG_P0)
+        _register = self._perph.PCA95535_read(self._addr, self._gpio["PCA9555_CMD_CONFIG"])
         if enable:
             register = _register | (0x01 << self.LDO_ENABLE_SHIFT)
         else:
@@ -155,7 +164,7 @@ class Supply12(object):
         if self._debug:
             msg = "enable {}, 0x{:02x} -> 0x{:02x}".format(enable, _register, register)
             self._debug(msg, 152, _DEBUG_FILE, self._name)
-        self._perph.PCA95535_write(self._addr, PCA9555_CMD_CONFIG_P0, register)
+        self._perph.PCA95535_write(self._addr, self._gpio["PCA9555_CMD_CONFIG"], register)
         return True, enable
 
     def get_feedback_resistance(self):
@@ -203,14 +212,14 @@ class Supply12(object):
                 voltage_mv -= self.LDO_VOLTAGE_50mv
 
             set_voltage = ~set_voltage & self.LDO_SET_VOLTAGE_MASK
-            _register = self._perph.PCA95535_read(self._addr, PCA9555_CMD_CONFIG_P0)
+            _register = self._perph.PCA95535_read(self._addr, self._gpio["PCA9555_CMD_CONFIG"])
             register = (_register & ~self.LDO_SET_VOLTAGE_MASK) | set_voltage
 
             if self._debug:
                 msg = "voltage_mv {}, 0x{:02x} -> 0x{:02x}".format(self._voltage_mv, _register, register)
                 self._debug(msg, 208, _DEBUG_FILE, self._name)
 
-            self._perph.PCA95535_write(self._addr, PCA9555_CMD_CONFIG_P0, register)
+            self._perph.PCA95535_write(self._addr, self._gpio["PCA9555_CMD_CONFIG"], register)
             sleep_ms(self.DELAY_PG_LOAD_SETTLE_MS)
             return self.power_good()
 
@@ -226,7 +235,7 @@ class Supply12(object):
         :return: success, PG pin value (True = good)
         """
         # check the pin via the I2C GPIO mux
-        pg_cache = self._perph.PCA95535_read(self._addr, PCA9555_CMD_INPUT_P0)
+        pg_cache = self._perph.PCA95535_read(self._addr, self._gpio["PCA9555_CMD_INPUT"])
         pg_ret = PG_BAD
         if pg_cache & 0x80: pg_ret = PG_GOOD
 
@@ -236,65 +245,20 @@ class Supply12(object):
 
         return True, pg_ret
 
-    def cal_load(self, value):
-        """ Enable calibration load(s)
-
-        There are four bits of load. P11 is LSB, P14/15 is MSB.
-        To turn on the bits, the CONFIG register needs each bit to be zero (active low)
-
-        : param value: 0x0 to 0xf
-        :return: success, load resistance in ohms
-        """
-        if value & ~0xf:
-            return False, "value out of range"
-
-        p1_config_cache = self._perph.PCA95535_read(self._addr, PCA9555_CMD_CONFIG_P1)
-        cal_value = (~value & 0xf) << 1
-        # P14/P15 are set the same
-        if cal_value & (0x1 << 4): cal_value = cal_value | (0x1 << 5)
-        else: cal_value = cal_value & ~(0x1 << 5)
-
-        p1_config = p1_config_cache & (~(0x1f << 1) & 0xff) | (cal_value & 0xff)
-        self._perph.PCA95535_write(self._addr, PCA9555_CMD_CONFIG_P1, p1_config)
-
-        _res = 0.0
-        if value & 0x1: _res += 1 / self.CAL_P11_R
-        if value & 0x2: _res += 1 / self.CAL_P12_R
-        if value & 0x4: _res += 1 / self.CAL_P13_R
-        if value & 0x8: _res += 1 / self.CAL_P14_R
-        if _res == 0.0: _res = 0
-        else: _res = 1 / _res
-
-        if self._debug:
-            msg = "cal_load 0x{:02x} {:.1f}, 0x{:02x} -> 0x{:02x}".format(value, _res, p1_config_cache, p1_config)
-            self._debug(msg, 267, _DEBUG_FILE, self._name)
-
-        return True, _res
-
-    def calibrate(self, auto=True, resistance=0.0):
+    def calibrate(self, expected_ua):
         """ Add calibration data
 
         Initially we look only for the zero load bias current offset
         # TODO: add better calibration, use the resistance param
 
-        :param resistance:
+        :param expected_ua:
         :return:
         """
-        self._cal_matrix[self._voltage_mv] = []
+        if self._voltage_mv not in self._cal_matrix:
+            self._cal_matrix[self._voltage_mv] = []
 
-        if auto:
-            test_cals = [0, 1, 2, 4, 8]  # sets the cal loads
-            for c in test_cals:
-                _, resistance = self.cal_load(c)
-                sleep_ms(self.DELAY_CAL_LOAD_SETTLE_MS)
-                _, current_ua = self.current_ua(calibrating=True)
-                self._cal_matrix[self._voltage_mv].append((resistance, current_ua))
-
-            _, _ = self.cal_load(0)  # remove cal load(s)
-
-        else:
-            _, current_ua = self.current_ua(calibrating=True)
-            self._cal_matrix[self._voltage_mv].append((resistance, current_ua))
+        _, actual_ua = self.current_ua(calibrating=True)
+        self._cal_matrix[self._voltage_mv].append((int(expected_ua), actual_ua))
 
         if self._debug:
             msg = "calibrate: {} ".format(self._cal_matrix)
@@ -302,14 +266,24 @@ class Supply12(object):
 
         return True, None
 
-    def _get_calibration_offset(self, adc_value):
+    def _get_calibration_offset(self, current_ua):
         if self._voltage_mv not in self._cal_matrix:
-            # TODO: pick closest calibrated voltage
-            pass
+            # fabricate a calibration offset, given that there is none for this voltage,
+            # the guess cal will be based on zero current, so this is not great, but its something
+            # this entry should always be present from init
+            expected_ua, actual_ua = self._cal_matrix[self.CAL_VOLTAGE_MV][0]
+            delta = (self._voltage_mv - self.CAL_VOLTAGE_MV) * 2.57  # 2.57 found experimentally
+            actual_ua += delta
+            if self._debug:
+                msg = "_get_calibration_offset: no cal for this voltage, estimating"
+                self._debug(msg, 312, _DEBUG_FILE, self._name)
 
-        # TODO: make this better, calibrate based on the current adc value.
+        else:
+            for expected_ua, actual_ua in self._cal_matrix[self._voltage_mv]:
+                if current_ua <= actual_ua: break
 
-        return True, self._cal_matrix[self._voltage_mv][0][1]
+        offset = actual_ua - expected_ua
+        return True, int(offset)
 
     def current_ua(self, calibrating=False):
         ch = self.ADC_CHANNEL[self._type]
@@ -321,28 +295,29 @@ class Supply12(object):
         self._perph.adc_release()
         adc_value /= self.ADC_SAMPLES
 
+        current_ua = int(float(adc_value) / float(0x7fff) / self.CURR_TRANSFORM * 1000000.0)
+
         if calibrating:
             offset_current = 0
         else:
-            success, offset_current = self._get_calibration_offset(adc_value)
-            if not success:
-                if self._debug:
-                    msg = "current_ua: _get_calibration_offset({}) failed at {} mv".format(adc_value, self._voltage_mv)
-                    self._debug(msg, 329, _DEBUG_FILE, self._name)
+            success, offset_current = self._get_calibration_offset(current_ua)
+            if not success and self._debug:
+                msg = "current_ua: _get_calibration_offset({}) failed at {} mv".format(current_ua, self._voltage_mv)
+                self._debug(msg, 329, _DEBUG_FILE, self._name)
 
-        current_ma = int(adc_value / 0x7fff / 12.5 * 1000000.0) - offset_current
+        current_ua -= offset_current
 
         if self._debug:
-            msg = "current_ua: adc_value {} ".format(adc_value)
-            self._debug(msg, 315, _DEBUG_FILE, self._name)
+            msg = "current_ua: adc_value {} -> {} uA (offset: {})".format(adc_value, current_ua, offset_current)
+            self._debug(msg, 338, _DEBUG_FILE, self._name)
 
-        return True, current_ma
+        return True, current_ua
 
     def get_enable_voltage_mv(self):
         return self._enable, self._voltage_mv
 
 
-if False:
+if True:
     # Self Tests, example session, (set to True),
     # martin@martin-Lenovo-YOGA-900-13ISK2:~/sistemi/git/scripts/public/prism/drivers/iba01$ rshell
     # Connecting to /dev/ttyACM0 (buffer-size 512)...
@@ -373,9 +348,10 @@ if False:
         print("{:15s}:{:10s}:{:4d}: {}".format(file, name, line, msg))
 
     perphs = Peripherals(debug_print=_print)
+    # on init perhs does a reset, so the relays are reset so V1/V2 are disconnected from DUT
 
-    #ldo = Supply12(perphs, V1_I2C_ADDR, "V1", debug_print=_print)
-    ldo = Supply12(perphs, V2_I2C_ADDR, "V2", debug_print=_print, type=1)
+    ldo = Supply12(perphs, V1_I2C_ADDR, "V1", debug_print=_print)
+    #ldo = Supply12(perphs, V2_I2C_ADDR, "V2", debug_print=_print, type=1)
 
     # basic enable/disable (after reset)
     ldo.enable()
@@ -384,26 +360,20 @@ if False:
     sleep(1)
 
     # output some voltages, hold for a few sec and each one to measure
-    test_voltages = [1700, 1800, 1900, 2000, 2100]
+    test_voltages = [2000]
+    cal_loads = [0, 0x1, 0x2, 0x4]
     ldo.enable()
-    for v in test_voltages:
-        ldo.voltage_mv(v)
-        sleep(1)
+    for c in cal_loads:
+        success, r = perphs.cal_load(c)
+        for v in test_voltages:
+            ldo.voltage_mv(v)
+            if r == 0: expected_current = 0
+            else: expected_current = int(v * 1000 / r)  # in uA
+            ldo.calibrate(expected_current)  # comment this line out to test estimated calibration
+            ldo.current_ua()
+            sleep(2)
+
     ldo.enable(False)
 
-    # calibrate and apply loads, measure error
-    TEST_VOLTAGE = 2000
-    test_cals = [1, 2, 4, 8, 6]
-    ldo.enable()
-    ldo.voltage_mv(TEST_VOLTAGE)
-    ldo.calibrate()
-    for c in test_cals:
-        _, resistance = ldo.cal_load(c)
-        _, current_ua = ldo.current_ua()
-        expected_ua = TEST_VOLTAGE * 1000 / resistance
-        err = (expected_ua - current_ua) * 100 / expected_ua
-        _print("current: {} uA, expected {} uA, {:.1f}% error".format(current_ua, expected_ua, err))
-        sleep(1)
-    ldo.enable(False)
-    ldo.cal_load(0)
+
 
