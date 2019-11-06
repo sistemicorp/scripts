@@ -244,7 +244,7 @@ class INA220(object):
 
             vshunt = (vshunt * self.INA220_SHUNT_CONVERSION_FACTOR)
             if self._debug:
-                self._debug("read_shunt_voltage: vshunt {}".format(vshunt),
+                self._debug("read_shunt_voltage: vshunt {} uV".format(vshunt),
                             line=250, file=__DEBUG_FILE, name=self._name)
 
             return True, vshunt

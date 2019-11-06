@@ -22,38 +22,23 @@ _DEBUG_FILE = "iba01_supply12"
 class Supply12(object):
     """ IBA01 Supply V1 and V2 class
 
-    V1 uses TPS7A2501, V2 uses TPS7A7200
-
-    V2 has a wider range than V1.  V2 is a fast transient response LDO.
+    V1 uses TPS7A7200, V2 uses TPS7A7200
 
     The PCA9555 setup, refer to the schematic:
-        P00 = output, ~50mV,   Open-Drain
-        P01 = output, ~100mV,  Open-Drain
-        P02 = output, ~2000mV, Open-Drain
-        P03 = output, ~4000mV, Open-Drain
-        P04 = output, ~8000mV, Open-Drain
-        P05 = output, ~1600mV, Open-Drain
+        P00 = output, ~1600mV, Open-Drain
+        P01 = output, ~8000mV, Open-Drain
+        P02 = output, ~4000mV, Open-Drain
+        P03 = output, ~2000mV, Open-Drain
+        P04 = output, ~100mV,  Open-Drain
+        P05 = output, ~50mV,   Open-Drain
 
         P06 = output, ENABLE, Open-Drain
         P07 = input, PowerGood
-
-        P10 = output, Load Bias Current, Open-Drain (this is a known resistive load)
-        P11 = output, Cal Load 15k, Open-Drain
-        P12 = output, Cal Load 4k, Open-Drain
-        P13 = output, Cal Load 1k, Open-Drain
-        P14 = output, Cal Load 100, Open-Drain
-        P15 = output, Cal Load 100, Open-Drain (tied to P14 - !!USE Together!!
-
-        P16 = spare, not used
-        P17 = spare, not used
 
     Notes:
         1) For Open-Drain to be in the Hi-Z state, the pin must be set to an input.
         2) This driver does not cache the PCA9535 registers, instead, they are read
            before setting them.
-        3) The calibration loads are handled like a bit-mask, each bit turns on
-           a load, with special case of P14/15 which are turned on together
-
     """
     LDO_TYPE = ["TPS7A7200", "TPS7A7200"]
     ADC_CHANNEL = [0, 1]
@@ -84,7 +69,7 @@ class Supply12(object):
     ADC_SAMPLES = 4  # number of samples to take an average over
     DELAY_CAL_LOAD_SETTLE_MS = 20
     DELAY_PG_LOAD_SETTLE_MS = 100
-    CURR_TRANSFORM = 25.0 / 2.0  # gain of INA190 / Rsense
+    CURR_TRANSFORM = 25.0 * 2.0  # gain of INA190 * Rsense
 
     def __init__(self, perph, addr, name, debug_print=None, type=0):
         self._name = name
@@ -95,17 +80,18 @@ class Supply12(object):
         self._voltage_mv = 0       # cached output voltage
         self._debug = debug_print
         self._cal_mask = 0x0
+        self._enable = False       # this may not be the case until after reset below...
 
         # !! Calibration needs to be done in order of increasing current !!!
         self._cal_matrix = {}  # { voltage_a: [(expected_ua_0, actual_ua_0),
-                               #              (expected_ua_5000, actual_ua_5000),
+                               #              (expected_ua_2000, actual_ua_2000),
                                #              (expected_ua_500, actual_ua_500),
                                #              (expected_ua_50, actual_ua_50)],
                                #   voltage_b: [ (...), ...], ... }
         self._type = type
 
         self.reset()
-
+        # default calibration
         self.enable()
         self.voltage_mv(self.CAL_VOLTAGE_MV)
         self.calibrate(0)
@@ -254,7 +240,7 @@ class Supply12(object):
         :param expected_ua:
         :return:
         """
-        if self._voltage_mv not in self._cal_matrix:
+        if self._voltage_mv not in self._cal_matrix or expected_ua == 0:
             self._cal_matrix[self._voltage_mv] = []
 
         _, actual_ua = self.current_ua(calibrating=True)
@@ -281,6 +267,8 @@ class Supply12(object):
         else:
             for expected_ua, actual_ua in self._cal_matrix[self._voltage_mv]:
                 if current_ua <= actual_ua: break
+                # FIXME: this is fine, but it ignores the calibration done at 0mA...
+                # the last (only?) values from calmatrix will be used
 
         offset = actual_ua - expected_ua
         return True, int(offset)
@@ -295,7 +283,7 @@ class Supply12(object):
         self._perph.adc_release()
         adc_value /= self.ADC_SAMPLES
 
-        current_ua = int(float(adc_value) / float(0x7fff) / self.CURR_TRANSFORM * 1000000.0)
+        current_ua = int(float(adc_value) / float(0x7fff) * 4.096 / self.CURR_TRANSFORM * 1000000.0)
 
         if calibrating:
             offset_current = 0
@@ -336,9 +324,6 @@ if True:
     # Type "help()" for more information.
     # >>>
     # >>> import iba01_supply12
-    # iba01_perphs   :periphs   :  63: i2c scan: [32, 33, 34, 35, 64, 72]
-    # iba01_perphs   :periphs   :  70: init complete, iba01 True
-    # iba01_supply12 :V2        : 115: reset CONFIG_P0 0xbf
     # ...
 
     from iba01_perphs import Peripherals
@@ -351,7 +336,7 @@ if True:
     # on init perhs does a reset, so the relays are reset so V1/V2 are disconnected from DUT
 
     ldo = Supply12(perphs, V1_I2C_ADDR, "V1", debug_print=_print)
-    #ldo = Supply12(perphs, V2_I2C_ADDR, "V2", debug_print=_print, type=1)
+    ldo2 = Supply12(perphs, V2_I2C_ADDR, "V2", debug_print=_print, type=1)
 
     # basic enable/disable (after reset)
     ldo.enable()
@@ -361,7 +346,7 @@ if True:
 
     # output some voltages, hold for a few sec and each one to measure
     test_voltages = [2000]
-    cal_loads = [0, 0x1, 0x2, 0x4]
+    cal_loads = [0x1, 0x2, 0x4]
     ldo.enable()
     for c in cal_loads:
         success, r = perphs.cal_load(c)
@@ -369,11 +354,9 @@ if True:
             ldo.voltage_mv(v)
             if r == 0: expected_current = 0
             else: expected_current = int(v * 1000 / r)  # in uA
-            ldo.calibrate(expected_current)  # comment this line out to test estimated calibration
+            _print("expected {} uA".format(expected_current))
+            #ldo.calibrate(expected_current)  # comment this line out to test estimated calibration
             ldo.current_ua()
             sleep(2)
 
     ldo.enable(False)
-
-
-

@@ -10,6 +10,7 @@ from core.const import PUB
 from core.sys_log import pub_notice
 import visa
 
+
 class HWDriver(object):
     """
     Create a single instance of an Agilent DSO of "type 1"

@@ -50,7 +50,7 @@ class Peripherals(object):
     RELAYVBAT_CON = 0x1 << 4
     RELAYVBAT_DIS = 0x1 << 5
 
-    CAL_P10_R = 5000
+    CAL_P10_R = 2000
     CAL_P11_R = 500
     CAL_P12_R = 50
 
@@ -200,9 +200,11 @@ class Peripherals(object):
         self.PCA95535_write(CON_I2C_ADDR, PCA9555_CMD_POL_P0, 0x00)  # no inversion
         self.PCA95535_write(CON_I2C_ADDR, PCA9555_CMD_POL_P1, 0x00)  # no inversion
 
+        self.cal_load(0)
         self.relay_v12(False)
         self.relay_vbat(False)
         self.relay_vsys(False)
+
 
 if False:
 

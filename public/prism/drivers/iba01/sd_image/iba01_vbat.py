@@ -36,22 +36,10 @@ class SupplyVBAT(object):
         P06 = output, ENABLE, Open-Drain
         P07 = output, Cal Load 680, Open-Drain
 
-        P10 = output, Cal Load 100, Open Drain
-        P11 = output, -- tied to P10
-        P12 = output, Cal Load 100, Open Drain
-        P13 = output, -- tied to P12
-        P14 = output, Cal Load 50, Open-Drain
-        P15 = output, -- tied to P14
-        P16 = output, -- tied to P14
-        P17 = output, -- tied to P14
-
     Notes:
         1) For Open-Drain to be in the Hi-Z state, the pin must be set to an input.
         2) This driver does not cache the PCA9535 registers, instead, they are read
            before setting them.
-        3) The calibration loads are handled like a bit-mask, each bit turns on
-           a load, with special case of P14/15 which are turned on together
-
     """
     LDO_ENABLE_SHIFT = 6    # bit location of the LDOs enable pin, P06
 
@@ -70,12 +58,6 @@ class SupplyVBAT(object):
     LDO_VOLTAGE_800mv_SHIFT = 4     # register location of the 800mv pin
     LDO_VOLTAGE_1600mv = 1600       # voltage value of the 1600mv pin
     LDO_VOLTAGE_1600mv_SHIFT = 5    # register location of the 16000mv pin
-
-    # the resistance at each GPIO pin for calibration
-    CAL_P07_R = 680
-    CAL_P11_R = 100
-    CAL_P12_R = 100
-    CAL_P14_R = 50
 
     ADC_SAMPLES = 4  # number of samples to take an average over
     DELAY_CAL_LOAD_SETTLE_MS = 20
@@ -231,88 +213,22 @@ class SupplyVBAT(object):
             self._debug(msg, 231, _DEBUG_FILE, self._name)
 
         if abs(self._voltage_mv - vbus) > 200: return True, PG_BAD
-
         return True, PG_GOOD
 
-    def cal_load(self, value):
-        """ Enable calibration load(s)
-
-        There are four bits of load.
-            P07 is LSB
-            P10/11
-            P12/13
-            P14/15/16/17 is MSB
-        To turn on the bits, the CONFIG register needs each bit to be zero (active low)
-
-        : param value: 0x0 to 0xf
-        :return: success, load resistance in ohms
-        """
-        if value & ~0xf:
-            return False, "value out of range"
-
-        p0_config_cache = self._perph.PCA95535_read(self._addr, PCA9555_CMD_CONFIG_P0)
-        if value & 0x1:  # turn on P07
-            p0_config = p0_config_cache & 0x7F & 0xff
-        else:
-            p0_config = p0_config_cache | 0x80 & 0xff
-        self._perph.PCA95535_write(self._addr, PCA9555_CMD_CONFIG_P0, p0_config)
-
-        p1_config = self._perph.PCA95535_read(self._addr, PCA9555_CMD_CONFIG_P1)
-        if value & 0x2:  # turn on P10/11
-            p1_config = p1_config & 0xFC & 0xff
-        else:
-            p1_config = p1_config | 0x03 & 0xff
-
-        if value & 0x4:  # turn on P12/13
-            p1_config = p1_config & 0xF3 & 0xff
-        else:
-            p1_config = p1_config | 0x0C & 0xff
-
-        if value & 0x8:  # turn on P14/15/16/17
-            p1_config = p1_config & 0x0F & 0xff
-        else:
-            p1_config = p1_config | 0xF0 & 0xff
-
-        self._perph.PCA95535_write(self._addr, PCA9555_CMD_CONFIG_P1, p1_config)
-
-        _res = 0.0
-        if value & 0x1: _res += 1 / self.CAL_P07_R
-        if value & 0x2: _res += 1 / self.CAL_P11_R
-        if value & 0x4: _res += 1 / self.CAL_P12_R
-        if value & 0x8: _res += 1 / self.CAL_P14_R
-        if _res == 0.0: _res = 0
-        else: _res = 1 / _res
-
-        if self._debug:
-            msg = "cal_load 0x{:02x} {:.1f}, P0 0x{:02x} P1 0x{:02x}".format(value, _res, p0_config, p1_config)
-            self._debug(msg, 288, _DEBUG_FILE, self._name)
-
-        return True, _res
-
-    def calibrate(self, auto=True, resistance=0.0):
+    def calibrate(self, expected_ua):
         """ Add calibration data
 
         Initially we look only for the zero load bias current offset
         # TODO: add better calibration, use the resistance param
 
-        :param resistance:
+        :param expected_ua:
         :return:
         """
-        self._cal_matrix[self._voltage_mv] = []
+        if self._voltage_mv not in self._cal_matrix or expected_ua == 0:
+            self._cal_matrix[self._voltage_mv] = []
 
-        if auto:
-            test_cals = [0, 1, 2, 4, 8]  # sets the cal loads
-            for c in test_cals:
-                _, resistance = self.cal_load(c)
-                sleep_ms(self.DELAY_CAL_LOAD_SETTLE_MS)
-                _, current_ua = self.current_ua(calibrating=True)
-                self._cal_matrix[self._voltage_mv].append((resistance, current_ua))
-
-            _, _ = self.cal_load(0)  # remove cal load(s)
-
-        else:
-            _, current_ua = self.current_ua(calibrating=True)
-            self._cal_matrix[self._voltage_mv].append((resistance, current_ua))
+        _, actual_ua = self.current_ua(calibrating=True)
+        self._cal_matrix[self._voltage_mv].append((int(expected_ua), actual_ua))
 
         if self._debug:
             msg = "calibrate: {} ".format(self._cal_matrix)
@@ -320,14 +236,25 @@ class SupplyVBAT(object):
 
         return True, None
 
-    def _get_calibration_offset(self, adc_value):
+    def _get_calibration_offset(self, current_ua):
         if self._voltage_mv not in self._cal_matrix:
-            # TODO: pick closest calibrated voltage
-            pass
+            # fabricate a calibration offset, given that there is none for this voltage,
+            # the guess cal will be based on zero current, so this is not great, but its something
+            # this entry should always be present from init
+            expected_ua, actual_ua = self._cal_matrix[self.CAL_VOLTAGE_MV][0]
+            delta = (self._voltage_mv - self.CAL_VOLTAGE_MV) * 2.57  # 2.57 found experimentally
+            actual_ua += delta
+            if self._debug:
+                msg = "_get_calibration_offset: no cal for this voltage, estimating"
+                self._debug(msg, 312, _DEBUG_FILE, self._name)
 
-        # TODO: make this better, calibrate based on the current adc value.
+        else:
+            for expected_ua, actual_ua in self._cal_matrix[self._voltage_mv]:
+                if current_ua <= actual_ua: break
+                # FIXME: this is fine, but it ignores the calibration done at 0mA...
 
-        return True, self._cal_matrix[self._voltage_mv][0][1]
+        offset = actual_ua - expected_ua
+        return True, int(offset)
 
     def current_ua(self, calibrating=False):
         return self.ina220.measure_current()
@@ -380,8 +307,8 @@ if True:
     vs = [1700, 1800, 2000, 3000, 4000, 4500]
     for v in vs:
         vbat.voltage_mv(v)
+        vbat.current_ua()
         sleep_ms(2000)
 
-    vbat.voltage_mv(3000)
-    vbat.calibrate()
-
+    vbat.voltage_mv(3600)
+    vbat.enable(False)
