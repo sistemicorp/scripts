@@ -131,6 +131,10 @@ class SharedState(object):
             self.logger.error("list required")
             return False
 
+        if len(drivers) == 0:
+            self.logger.error("no drivers in list, length zero")
+            return False
+
         has_slot = False
         if drivers[0].get("slot", False): has_slot = True
 
