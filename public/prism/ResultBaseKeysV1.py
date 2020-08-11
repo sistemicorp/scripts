@@ -146,12 +146,13 @@ class ResultBaseKeysV1(ResultBaseClass):
         self.logger.info("blob {} saved".format(d["name"]))
         return True, None
 
-    def measurement(self, name, value, unit=ResultAPI.UNIT_NONE, min=None, max=None):
+    def measurement(self, name, value, unit=ResultAPI.UNIT_NONE, min=None, max=None, force_fail=False):
         """ Check and store a measurement
         - performs a check on the value, returning one of ResultAPI.RECORD_RESULT_*
         - all values are stored as strings in the dB, converted here
 
         :param name: must be unique per test item
+        :param force_fail: when set, forces measurement to fail
         :param min:
         :param max:
         :param value:
@@ -209,7 +210,8 @@ class ResultBaseKeysV1(ResultBaseClass):
         d = {"name": lname, "unit": unit}
 
         if isinstance(min, float) and isinstance(max, float) and isinstance(value, float):
-            if min <= value <= max: _pass = ResultAPI.RECORD_RESULT_PASS
+            if force_fail: _pass = ResultAPI.RECORD_RESULT_FAIL
+            elif min <= value <= max: _pass = ResultAPI.RECORD_RESULT_PASS
             else: _pass = ResultAPI.RECORD_RESULT_FAIL
             d["min"] = "{:32.16}".format(str(min)).rstrip()
             d["max"] = "{:32.16}".format(str(max)).rstrip()
@@ -218,7 +220,8 @@ class ResultBaseKeysV1(ResultBaseClass):
             self.logger.info(_bullet)
 
         elif isinstance(min, int) and isinstance(max, int) and isinstance(value, int):
-            if min <= value <= max: _pass = ResultAPI.RECORD_RESULT_PASS
+            if force_fail: _pass = ResultAPI.RECORD_RESULT_FAIL
+            elif min <= value <= max: _pass = ResultAPI.RECORD_RESULT_PASS
             else: _pass = ResultAPI.RECORD_RESULT_FAIL
             d["min"] = "{}".format(str(min)).rstrip()
             d["max"] = "{}".format(str(max)).rstrip()
@@ -229,13 +232,15 @@ class ResultBaseKeysV1(ResultBaseClass):
         # this needs to be before 'isinstance(value, (int, float, str))', because boolean is an int
         elif min is None and max is None and isinstance(value, bool):
             _pass = ResultAPI.RECORD_RESULT_PASS
-            if not value: _pass = ResultAPI.RECORD_RESULT_FAIL
+            if force_fail: _pass = ResultAPI.RECORD_RESULT_FAIL
+            elif not value: _pass = ResultAPI.RECORD_RESULT_FAIL
             d["value"] = value
             _bullet = "{}: {} {} :: {}".format(name, d["value"], unit, _pass)
             self.logger.info(_bullet)
 
         elif min is None and max is None and isinstance(value, (int, float, str)):
-            _pass = ResultAPI.RECORD_RESULT_PASS
+            if force_fail: _pass = ResultAPI.RECORD_RESULT_FAIL
+            else: _pass = ResultAPI.RECORD_RESULT_PASS
             d["min"] = None
             d["max"] = None
             if unit == ResultAPI.UNIT_INT:
@@ -254,7 +259,8 @@ class ResultBaseKeysV1(ResultBaseClass):
             self.logger.info(_bullet)
 
         else:
-            _pass = ResultAPI.RECORD_RESULT_INTERNAL_ERROR
+            if force_fail: _pass = ResultAPI.RECORD_RESULT_FAIL
+            else: _pass = ResultAPI.RECORD_RESULT_INTERNAL_ERROR
             _bullet = "{}: {} <= {} <= {} {} ??".format(name, min, value, max, unit)
             self.logger.error(_bullet)
             return False, _pass, _bullet
