@@ -312,3 +312,6 @@ class ResultBaseKeysV1(ResultBaseClass):
 
     def getCustomJSONB(self):
         return copy.deepcopy(self._record["jsonb"])
+
+    def get_ruid(self):
+        return self._record["meta"]["ruid"]

@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2019
+Sistemi Corporation, copyright, all rights reserved, 2019-2020
 Martin Guthrie
 
 """
@@ -38,7 +38,8 @@ class ResultBaseClass(object):
                       "operator": operator,
                       "ip": "127.0.0.1",
                       "script": os.path.normpath(script_filename).replace("\\", "/"),
-                    },
+                      "ruid": str(uuid.uuid4()),
+            },
             "info": {},      # stuff customer populates
             "config": {},    # copied from the script input
             "items": [],     # list of results, see Result class

@@ -8,3 +8,5 @@ adafruit-ampy
 jstyleson==0.0.2
 rshell
 pyftdi
+brother_ql
+
