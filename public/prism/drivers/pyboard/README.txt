@@ -1,3 +1,7 @@
+./prism/driver/pyboard is a port of the IBA01 code with all the IBA01 extera peripheral code
+removed, so this driver ONLY supports the PyBoard.  The commands and filenames still
+refer to the "IBA01", but this is not IBA01 code.
+
 How to use these files... Read all of this, lots of info...
 
 1) How to setup a "fresh" MicroPython Pyboard ver 1.1 for use with Sistemi Prism:
@@ -17,7 +21,7 @@ How to use these files... Read all of this, lots of info...
    Or, use rshell (put link to install rshell here) or ampy to copy just one file.
    ampy (see script) is more reliable than rshell (v0.26).
    example rshell session:
-        martin@martin-Lenovo:~/sistemi/git/scripts/public/prism/drivers/iba01/sd_image$ rshell
+        martin@martin-Lenovo:~/sistemi/git/scripts/public/prism/drivers/pyboard/sd_image$ rshell
         Connecting to /dev/ttyACM0 (buffer-size 512)...
         Trying to connect to REPL . connected
         Testing if sys.stdin.buffer exists ... Y
@@ -26,8 +30,8 @@ How to use these files... Read all of this, lots of info...
         Evaluating board_name ... pyboard
         Retrieving time epoch ... Jan 01, 2000
         Welcome to rshell. Use Control-D (or the exit command) to exit rshell.
-        /home/martin/sistemi/git/scripts/public/prism/drivers/iba01/sd_image> cp iba01_*.py /flash
-        /home/martin/sistemi/git/scripts/public/prism/drivers/iba01/sd_image>
+        /home/martin/sistemi/git/scripts/public/prism/drivers/pyboard/sd_image> cp iba01_*.py /flash
+        /home/martin/sistemi/git/scripts/public/prism/drivers/pyboard/sd_image>
 
 
 3) The MicroPyBoard_cli.py can be used for other things, like testing code.  See '--help' for all its functions.
