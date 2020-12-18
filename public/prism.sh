@@ -80,6 +80,7 @@ start () {
             -p 6590:6590 \
             -v $(pwd):/app/public \
             -v /dev:/dev \
+            --privileged \
             --device=/dev \
             --name prism \
             sistemicorp/prism
@@ -90,6 +91,7 @@ start () {
             -p 6590:6590 \
             -v $(pwd):/app/public \
             -v /dev:/dev \
+            --privileged \
             --device=/dev \
             --name prism \
             --rm \
