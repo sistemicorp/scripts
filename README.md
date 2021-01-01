@@ -8,7 +8,7 @@
 * Server dashboard to monitor production yield, rate, etc
 * Check out the [PDF](https://github.com/sistemicorp/scripts/blob/master/SistemiLentePrism_Overview.pdf) slide deck for more information
 * Check out online documentation [docs](https://sistemicorp.github.io/scripts/docs)
-* Check out the Prism [IBA01](https://github.com/sistemicorp/scripts/blob/master/Prism_IBA01_02.pdf) DUT Instrumentation board
+* Check out the Prism [IBA01](https://github.com/sistemicorp/scripts/blob/master/Prism_IBA01_03.pdf) DUT Instrumentation board
 * postgresql backend
 * deployed as Docker containers for easy installation
 
