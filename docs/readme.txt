@@ -33,3 +33,8 @@ drwxr-xr-x 5 martin martin 4096 Jun  3 21:48 html/
 
 If there are any other directories in /build, remove them.
 sphin
+
+Good links for info:
+https://www.docslikecode.com/articles/github-pages-python-sphinx/
+https://github.com/sphinx-doc/sphinx/issues/3382
+
