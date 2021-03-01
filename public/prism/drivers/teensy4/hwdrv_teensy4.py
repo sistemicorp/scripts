@@ -13,6 +13,9 @@ from public.prism.drivers.iba01.list_serial import serial_ports
 
 from Teensy4 import Teensy4
 
+DRIVER_TYPE = "TEENSY4"
+
+
 class HWDriver(object):
     """
     HWDriver is a class that installs a HW driver into the shared state.
@@ -28,7 +31,6 @@ class HWDriver(object):
 
     """
     SFN = os.path.basename(__file__)
-    DRIVER_TYPE = "TEENSY4"
     VERSION = "0.0.1"
 
     def __init__(self, shared_state):
@@ -91,7 +93,7 @@ class HWDriver(object):
             self.teensys.append(_teensy)
 
         self._num_chan = len(self.teensys)
-        self.shared_state.add_drivers(self.DRIVER_TYPE, self.teensys, shared=False)
+        self.shared_state.add_drivers(DRIVER_TYPE, self.teensys, shared=False)
 
         pub_notice("HWDriver:{}: Found {}!".format(self.SFN, self._num_chan), sender=sender)
         self.logger.info("Done: {} channels".format(self._num_chan))

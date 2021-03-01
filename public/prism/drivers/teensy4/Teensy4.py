@@ -45,6 +45,9 @@ class Teensy4():
 
         return False
 
+    def reset(self):
+        return True
+
     def close(self):
         """  Close connection
 
