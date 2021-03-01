@@ -23,7 +23,7 @@ def parse_args():
     epilog = """
     Usage examples:
        python3 teensy4_cli.py --port /dev/ttyACM0 led --on
-       python3 teensy4_cli.py --port /dev/ttyACM0 led --off
+       python3 teensy4_cli.py --port COM5 led --off
     """
     parser = argparse.ArgumentParser(description='teensy4_cli',
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
