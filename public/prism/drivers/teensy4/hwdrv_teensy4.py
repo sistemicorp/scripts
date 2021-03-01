@@ -68,7 +68,7 @@ class HWDriver(object):
         self.logger.info("Serial Ports to look for PyBoard {}".format(port_candidates))
 
         for port in port_candidates:
-            if "ttyACM" not in port:
+            if "ttyACM" not in port:  # this does not work on Windows
                 self.logger.info("skipping port {}...".format(port))
                 continue
 
