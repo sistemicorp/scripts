@@ -11,6 +11,7 @@ import argparse
 from core.sys_log import pub_notice
 from public.prism.drivers.iba01.list_serial import serial_ports
 
+from Teensy4 import Teensy4
 
 class HWDriver(object):
     """
@@ -35,6 +36,7 @@ class HWDriver(object):
         self.logger.info("Start")
         self.shared_state = shared_state
         self._num_chan = 0
+        self.teensys = []
 
     def discover_channels(self):
         """ determine the number of channels, and populate hw drivers into shared state
@@ -42,10 +44,12 @@ class HWDriver(object):
         shared_state: a list,
             self.shared_state.add_drivers(DRV_TYPE, [ {}, {}, ... ], shared=True/False)
 
-        [ {'id': i,               # id of the channel (see Note 1)
-           "version": <VERSION>,  # version of the driver
-           "close": False},       # register a callback on closing the channel
-           "<foo>": <bar>,        # something that makes your HW work...
+        [ {'id': i,                 # slot id of the channel (see Note 1)
+           "version": <VERSION>,    # version of the driver
+           "close": Teensy4.close}, # register a callback on closing the channel
+           "teensy4": Teensy4(),    # class that makes your HW work...
+           "port": serial port
+           "unique_id": unique_id   # cache this here so that it doesn't need to be retrieved for every test
         ]
 
         Note:
@@ -71,12 +75,23 @@ class HWDriver(object):
 
             # test if this COM port is really a Teensy
             # create an instance of Teensy()
+            _teensy['teensy4'] = Teensy4(port, loggerIn=logging.getLogger("teensy.try"))
+            success = _teensy['teensy'].init()
+            if not success:
+                self.logger.info("failed on {}...".format(port))
+                continue
 
             # yes, its a Teensy, add it to the list...
+
+            # TODO: get (channel) id
+            # TODO: get unique_id... this is for test tracking purposes
+
+            _teensy['close'] = _teensy['teensy'].close
+
             self.teensys.append(_teensy)
 
         self._num_chan = len(self.teensys)
-        self.shared_state.add_drivers(self.DRIVER_TYPE, self.pybs, shared=False)
+        self.shared_state.add_drivers(self.DRIVER_TYPE, self.teensys, shared=False)
 
         pub_notice("HWDriver:{}: Found {}!".format(self.SFN, self._num_chan), sender=sender)
         self.logger.info("Done: {} channels".format(self._num_chan))
