@@ -8,6 +8,7 @@ Martin Guthrie
 import time
 import json
 import threading
+from simple_rpc import Interface
 
 try:
     # run locally
@@ -40,21 +41,28 @@ class Teensy4():
 
         :return: <True/False> whether Teensy SimpleRPC connection was created
         """
-        self.rpc = None  # create SimpleRPC instance here
+        self.rpc = Interface(self.port)  # create SimpleRPC instance here
         # test something to be sure your Teensy is working...
-
-        return False
+        
+        try:
+            self.rpc = Interface(self.port)
+        except Exception as e:
+            self.logger.error(e)
+            return False
+        return True
 
     def reset(self):
         return True
 
     def close(self):
         """  Close connection
-
+          
         :return:
         """
         # TODO: close the connection
+        
         self.logger.info("closing")
+        self.rpc.close()
         return True
 
     # -------------------------------------------------------------------------------------------------
@@ -83,6 +91,9 @@ class Teensy4():
         :param set: [(#, True/False), ...], where #: 1=Red, 2=Yellow, 3=Green, 4=Blue
         :return:
         """
+        answer = self.rpc.call_method('inc', 1)
+        return json.loads(answer)
+    
         if not isinstance(set, list):
             return False, "argument must be a list of tuples"
         c = {'method': 'led', 'args': {'set': set}}
