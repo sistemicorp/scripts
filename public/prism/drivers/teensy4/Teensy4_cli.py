@@ -23,22 +23,20 @@ def parse_args():
     epilog = """
     Usage examples:
        python3 teensy4_cli.py --port /dev/ttyACM0 led --on
-       python3 teensy4_cli.py --port COM5 led --off
+       python3 teensy4_cli.py --port COM5 --version led --off
     """
     parser = argparse.ArgumentParser(description='teensy4_cli',
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
                                      epilog=epilog)
 
     parser.add_argument("-p", '--port', dest='port', default=None, type=str,
-                        action='store', help='Active serial port')
-    parser.add_argument("-a", '--all', dest='all_funcs', default=0, action='store_true', help='run all tests')
+                        action='store', help='Active serial port', required=True)
 
     parser.add_argument("-v", '--verbose', dest='verbose', default=0, action='count', help='Increase verbosity')
     parser.add_argument("--version", dest="show_version", action='store_true', help='Show version and exit')
 
     subp = parser.add_subparsers(dest="_cmd", help='commands')
     led_toggle_parser = subp.add_parser('led')
-    led_toggle_parser.add_argument('-a', "--all", dest="all", action='store_true', help='run all tests sequentially', default=False, required=False)
     led_toggle_parser.add_argument('--on',  dest="_on", action='store_true', help='led on', default=False, required=False)
     led_toggle_parser.add_argument('--off', dest="_off", action='store_true', help='led off', default=False, required=False)
 
@@ -47,9 +45,6 @@ def parse_args():
     if args.show_version:
         logging.info("Version {}".format(VERSION))
         sys.exit(0)
-
-    if not args.port:
-        parser.error("--port is required")
 
     return args
 
@@ -61,14 +56,15 @@ def led(args, teensy):
     if args._on:
         logging.info("ON: turn on LED")
 
-        success, result = teensy.led([(0, True)])
-        logging.info("{} {}".format(success, result))
+        response = teensy.led(True)
+        success = response["success"]
+        logging.info("{}".format(response))
         if not success: _success = False
 
     if args._off:
         logging.info("OFF: turn off LED")
 
-        success, result = teensy.led([(0, False)])
+        result = teensy.led([(0, False)])
         logging.info("{} {}".format(success, result))
         if not success: _success = False
 
@@ -77,7 +73,7 @@ def led(args, teensy):
 
 if __name__ == '__main__':
     args = parse_args()
-    all_funcs = args.all_funcs
+    
 
     if args.verbose == 0:
         logging.basicConfig(level=logging.INFO, format='%(filename)20s %(levelname)6s %(lineno)4s %(message)s')
