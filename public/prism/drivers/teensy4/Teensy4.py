@@ -91,14 +91,14 @@ class Teensy4():
         :param set: [(#, True/False), ...], where #: 1=Red, 2=Yellow, 3=Green, 4=Blue
         :return:
         """
-        answer = self.rpc.call_method('inc', 1)
+        answer = self.rpc.call_method('setLed', set)
         return json.loads(answer)
     
-        if not isinstance(set, list):
-            return False, "argument must be a list of tuples"
-        c = {'method': 'led', 'args': {'set': set}}
+        #if not isinstance(set, list):
+           # return False, "argument must be a list of tuples"
+        #c = {'method': 'led', 'args': {'set': set}}
         # FIXME: put SimpleRPC call here, and return the result JSON
-        return {"success": False, "result": {}}
+        #return {"success": False, "result": {}}
 
     def led_toggle(self, led, on_ms=500, off_ms=500, once=False):
         """ toggle and LED ON and then OFF

@@ -1,0 +1,17 @@
+Metadata-Version: 2.0
+Name: Tubes
+Version: 0.2.0
+Summary: 
+    Flow control and backpressure for event-driven applications.    
+Home-page: https://github.com/twisted/tubes/
+Author: UNKNOWN
+Author-email: UNKNOWN
+License: MIT
+Platform: UNKNOWN
+Requires-Dist: Twisted
+Requires-Dist: characteristic
+Requires-Dist: six
+
+UNKNOWN
+
+

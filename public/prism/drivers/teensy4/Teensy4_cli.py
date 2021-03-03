@@ -23,7 +23,7 @@ def parse_args():
     epilog = """
     Usage examples:
        python3 teensy4_cli.py --port /dev/ttyACM0 led --on
-       python3 teensy4_cli.py --port COM5 --version led --off
+       python Teensy4_cli.py --port COM5 led --on
     """
     parser = argparse.ArgumentParser(description='teensy4_cli',
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -64,7 +64,7 @@ def led(args, teensy):
     if args._off:
         logging.info("OFF: turn off LED")
 
-        result = teensy.led([(0, False)])
+        result = teensy.led(False)
         logging.info("{} {}".format(success, result))
         if not success: _success = False
 
