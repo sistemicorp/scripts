@@ -45,14 +45,16 @@ class Teensy4():
         except Exception as e:
             self.logger.error(e)
             return False
-        version_response = json.loads(self.rpc.call_method("version"))
-        print(version_response)
+
+        version_response = self.version()
         if not version_response["success"]:
             self.logger.error("Unable to get version")
             return False
+
         if self.my_version != version_response["result"]["version"]:
             self.logger.error("version does not match, {} {}".format(...))
             return False
+
         # finally, all is well
         self.logger.info("Installed Teensy on port {}".format(self.port))
         return True
