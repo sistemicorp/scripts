@@ -18,9 +18,6 @@ except:
     from public.prism.drivers.iba01.stublogger import StubLogger
 
 
-VERSION = "0.1.0"
-
-
 class Teensy4():
     """ teensy4 SimpleRPC based driver
 
@@ -35,23 +32,29 @@ class Teensy4():
 
         self.port = port
         self.rpc = None
+        self.my_version = "0.1.0"
+
 
     def init(self):
         """ Init Teensy SimpleRPC connection
-
         :return: <True/False> whether Teensy SimpleRPC connection was created
         """
-        self.rpc = Interface(self.port)  # create SimpleRPC instance here
-        # test something to be sure your Teensy is working...
-        
+        self.logger.info("attempting to install Teensy on port {}".format(self.port))
         try:
             self.rpc = Interface(self.port)
         except Exception as e:
             self.logger.error(e)
             return False
-        return True
-
-    def reset(self):
+        version_response = json.loads(self.rpc.call_method("version"))
+        print(version_response)
+        if not version_response["success"]:
+            self.logger.error("Unable to get version")
+            return False
+        if self.my_version != version_response["result"]["version"]:
+            self.logger.error("version does not match, {} {}".format(...))
+            return False
+        # finally, all is well
+        self.logger.info("Installed Teensy on port {}".format(self.port))
         return True
 
     def close(self):
@@ -82,23 +85,19 @@ class Teensy4():
         return {"success": False, "result": {}}
 
     def version(self):
-        c = {'method': 'version', 'args': {}}
         # FIXME: put SimpleRPC call here, and return the result JSON
-        return {"success": False, "result": {}}
+        answer = self.rpc.call_method('version')
+        answer_dict = json.loads(answer)
+        return answer_dict
 
     def led(self, set):
         """ LED on/off
-        :param set: [(#, True/False), ...], where #: 1=Red, 2=Yellow, 3=Green, 4=Blue
+        :param set: True/False
         :return:
         """
-        answer = self.rpc.call_method('setLed', set)
-        return json.loads(answer)
-    
-        #if not isinstance(set, list):
-           # return False, "argument must be a list of tuples"
-        #c = {'method': 'led', 'args': {'set': set}}
-        # FIXME: put SimpleRPC call here, and return the result JSON
-        #return {"success": False, "result": {}}
+        answer = self.rpc.call_method('set_led', set)
+        answer_dict = json.loads(answer)
+        return answer_dict
 
     def led_toggle(self, led, on_ms=500, off_ms=500, once=False):
         """ toggle and LED ON and then OFF
