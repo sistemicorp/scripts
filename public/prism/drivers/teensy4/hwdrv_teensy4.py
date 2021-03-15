@@ -86,11 +86,19 @@ class HWDriver(object):
                 continue
 
             # yes, its a Teensy, add it to the list...
+            answer = _teensy['teensy4'].slot()
+            _teensy['id'] = answer['result']['id']
+            success = answer['success']
+            if not success:
+                self.logger.info("failed on {}...".format('slot'))
+                continue
 
-            _teensy['id'] = _teensy['teensy4'].slot()
-            _teensy['unique_id'] = _teensy['teensy4'].unique_id()
-            # TODO: get (channel) id
-            # TODO: get unique_id... this is for test tracking purposes
+            answer = _teensy['teensy4'].unique_id()
+            _teensy['unique_id'] = answer['result']['unique_id']
+            success = answer['success']
+            if not success:
+                self.logger.info("failed on {}...".format('unique_id'))
+                continue
 
             _teensy['close'] = _teensy['teensy4'].close()
 
