@@ -77,29 +77,50 @@ class Teensy4():
     # all functions return dict: { "success": <True/False>, "result": { key: value, ... }}
 
     def unique_id(self):
-        c = {'method': 'unique_id', 'args': {}}
-        # FIXME: put SimpleRPC call here, and return the result JSON
-        return {"success": False, "result": {}}
+        """ unique id
+        :return: success = True/False unique_id = unique_id
+        """
+
+        # TODO: implement arduino side
+        answer = self.rpc.call_method('unique_id')
+        return json.loads(answer)
 
     def slot(self):
+        """ slot
+        :return: success = True/False id = id
+        """
+
+        # TODO: implement arduino side
+        answer = self.rpc.call_method('slot')
+        return json.loads(answer)
+
+    def channel(self):
         c = {'method': 'slot', 'args': {}}
         # FIXME: put SimpleRPC call here, and return the result JSON
         return {"success": False, "result": {}}
 
     def version(self):
-        # FIXME: put SimpleRPC call here, and return the result JSON
+        """ Version
+        :return: success = True/False version = version#
+        """
         answer = self.rpc.call_method('version')
-        answer_dict = json.loads(answer)
-        return answer_dict
+        return json.loads(answer)
+
+    def reset(self):
+        """ reset
+        :return: success = True/False
+        """
+        answer = self.rpc.call_method('teensy_reset')
+        return json.loads(answer)
+
 
     def led(self, set):
         """ LED on/off
         :param set: True/False
-        :return:
+        :return: success = True/False
         """
         answer = self.rpc.call_method('set_led', set)
-        answer_dict = json.loads(answer)
-        return answer_dict
+        return json.loads(answer)
 
     def led_toggle(self, led, on_ms=500, off_ms=500, once=False):
         """ toggle and LED ON and then OFF

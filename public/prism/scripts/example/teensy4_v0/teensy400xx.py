@@ -40,7 +40,9 @@ class teensy400xx(TestItem):
 
         self.teensy = driver["obj"]["teensy4"]
 
-        success, result = self.teensy.reset()
+        answer = self.teensy.reset()
+        success = answer["success"]
+
         if not success:
             self.logger.error("failed to reset teensy")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
@@ -48,13 +50,15 @@ class teensy400xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def PYBRD0xxTRDN(self):
+    def T0xxTRDN(self):
         ctx = self.item_start()  # always first line of test
 
-        success, result = self.teensy.reset()
+        answer = self.teensy.reset()
+        success = answer["success"]
+
         if not success:
             self.logger.error("failed to reset teensy")
-            self.item_end(ResultAPI.RECORD_RESULT_FAIL)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
         self.item_end()  # always last line of test
@@ -74,12 +78,14 @@ class teensy400xx(TestItem):
         set = ctx.item.get("set", False)
         self.log_bullet("Setting LED {}".format(set))
 
-        success, result = self.teensy.led(set)
+        answer = self.teensy.led(set)
+        success = answer["success"]
+        result = answer["result"]["state"]
+
         if not success:
             self.logger.error(result)
-            _result = ResultAPI.RECORD_RESULT_FAIL
             self.log_bullet("UNKNOWN TEENSY ERROR")
-            self.item_end(_result)  # always last line of test
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
             return
 
         if set: buttons = ["ON", "Fail"]

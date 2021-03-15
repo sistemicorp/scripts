@@ -23,17 +23,20 @@ def parse_args():
     epilog = """
     Usage examples:
        python3 teensy4_cli.py --port /dev/ttyACM0 led --on
-       python Teensy4_cli.py --port COM5 led --on
+       python Teensy4_cli.py -v --port COM5 led --on
+       python Teensy4_cli.py --p COM5 --version
     """
     parser = argparse.ArgumentParser(description='teensy4_cli',
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
                                      epilog=epilog)
 
     parser.add_argument("-p", '--port', dest='port', default=None, type=str,
-                        action='store', help='Active serial port', required=True)
+                        action='store', help='Active serial port')
 
     parser.add_argument("-v", '--verbose', dest='verbose', default=0, action='count', help='Increase verbosity')
     parser.add_argument("--version", dest="show_version", action='store_true', help='Show version and exit')
+
+
 
     subp = parser.add_subparsers(dest="_cmd", help='commands')
     led_toggle_parser = subp.add_parser('led')
@@ -41,10 +44,6 @@ def parse_args():
     led_toggle_parser.add_argument('--off', dest="_off", action='store_true', help='led off', default=False, required=False)
 
     args = parser.parse_args()
-
-    if args.show_version:
-        logging.info("Version {}".format(VERSION))
-        sys.exit(0)
 
     return args
 
@@ -75,7 +74,6 @@ def led(args, teensy):
 
 if __name__ == '__main__':
     args = parse_args()
-    
 
     if args.verbose == 0:
         logging.basicConfig(level=logging.INFO, format='%(filename)20s %(levelname)6s %(lineno)4s %(message)s')
@@ -88,6 +86,10 @@ if __name__ == '__main__':
     if not success:
         logging.error("Failed to create teensy instance")
         exit(1)
+
+    if args.show_version:
+        logging.info("Version {}".format(teensy.version()["result"]["version"]))
+        sys.exit(0)
 
     if args._cmd == 'led':
         success = led(args, teensy)

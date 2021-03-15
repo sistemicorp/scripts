@@ -11,7 +11,7 @@ import argparse
 from core.sys_log import pub_notice
 from public.prism.drivers.iba01.list_serial import serial_ports
 
-from Teensy4 import Teensy4
+from public.prism.drivers.teensy4.Teensy4 import Teensy4
 
 DRIVER_TYPE = "TEENSY4"
 
@@ -48,10 +48,11 @@ class HWDriver(object):
 
         [ {'id': i,                 # slot id of the channel (see Note 1)
            "version": <VERSION>,    # version of the driver
-           "close": Teensy4.close}, # register a callback on closing the channel
+           "close": Teensy4.close, # register a callback on closing the channel
            "teensy4": Teensy4(),    # class that makes your HW work...
            "port": serial port
            "unique_id": unique_id   # cache this here so that it doesn't need to be retrieved for every test
+           }
         ]
 
         Note:
@@ -64,31 +65,34 @@ class HWDriver(object):
         """
         sender = "{}.{}".format(self.SFN, __class__.__name__)  # for debug purposes
 
-        port_candidates = serial_ports()
-        self.logger.info("Serial Ports to look for PyBoard {}".format(port_candidates))
+        port_candidates = ["COM5"] #serial_ports()
+        self.logger.info("Serial Ports to look for Teensy {}".format(port_candidates))
 
         for port in port_candidates:
-            if "ttyACM" not in port:  # this does not work on Windows
-                self.logger.info("skipping port {}...".format(port))
-                continue
+            #if "ttyACM" not in port:  # this does not work on Windows
+             #   self.logger.info("skipping port {}...".format(port))
+               # continue
 
             _teensy = { "port": port}
             self.logger.info("Trying teensy at {}...".format(port))
 
+            #https: // stackoverflow.com / questions / 21050671 / how - to - check - if -device - is -connected - pyserial / 49450813
             # test if this COM port is really a Teensy
             # create an instance of Teensy()
             _teensy['teensy4'] = Teensy4(port, loggerIn=logging.getLogger("teensy.try"))
-            success = _teensy['teensy'].init()
+            success = _teensy['teensy4'].init()
             if not success:
                 self.logger.info("failed on {}...".format(port))
                 continue
 
             # yes, its a Teensy, add it to the list...
 
+            _teensy['id'] = _teensy['teensy4'].slot()
+            _teensy['unique_id'] = _teensy['teensy4'].unique_id()
             # TODO: get (channel) id
             # TODO: get unique_id... this is for test tracking purposes
 
-            _teensy['close'] = _teensy['teensy'].close
+            _teensy['close'] = _teensy['teensy4'].close()
 
             self.teensys.append(_teensy)
 
