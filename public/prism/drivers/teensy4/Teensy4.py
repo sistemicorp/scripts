@@ -189,3 +189,8 @@ class Teensy4():
         # FIXME: put SimpleRPC call here, and return the result JSON
         return {"success": False, "result": {}}
 
+if __name__ == '__main__':
+
+    interface = Interface('COM5')
+    print('hey')
+    list(interface.methods)

@@ -1,0 +1,83 @@
+#include <simpleRPC.h>
+#include <ArduinoJson.h>
+
+void setup(void) {
+  Serial.begin(9600);
+  pinMode(LED_BUILTIN, OUTPUT);
+}
+
+void loop(void) {
+  interface(
+    Serial,
+    teensy_Reset, "teensy_reset: Resets Teensy.",
+    unique_id, "unique_id: Shows Teensy's unique id",
+    slot, "slot: Shows the Teensy's id so you know which Teensy you are using",
+    setLed, "set_led: Set LED ON/OFF.",
+    currVersion, "version: Shows current version.");
+}
+
+String unique_id() {
+  char buffer[200];
+  DynamicJsonDocument doc = helper();
+  JsonObject result = doc.createNestedObject("result");
+
+  result["unique_id"] = "12345";
+  serializeJsonPretty(doc, buffer);
+  return buffer;
+}
+
+String slot() {
+  char buffer[200];
+  DynamicJsonDocument doc = helper();
+  JsonObject result = doc.createNestedObject("result");
+
+  result["id"] = 1;
+  serializeJsonPretty(doc, buffer);
+  return buffer;
+}
+
+String setLed(bool on) {
+  char buffer[200];
+  DynamicJsonDocument doc = helper();
+  JsonObject result = doc.createNestedObject("result");
+  if (on){
+    result["state"] = "on";
+    if (digitalRead(LED_BUILTIN) == LOW){
+      digitalWrite(LED_BUILTIN, HIGH);
+    }
+  }
+  else{
+    result["state"] = "off";
+    if (digitalRead(LED_BUILTIN) == HIGH){
+      digitalWrite(LED_BUILTIN, LOW);
+    }
+  }
+  serializeJsonPretty(doc, buffer);
+  return buffer;
+}
+
+String currVersion(){
+ char buffer[200];
+ DynamicJsonDocument doc = helper();
+ JsonObject result = doc.createNestedObject("result");
+
+ result["version"] = "0.1.0";
+ serializeJsonPretty(doc, buffer);
+ return buffer;
+}
+
+String teensy_Reset(){
+  char buffer[200];
+  DynamicJsonDocument doc = helper();
+  JsonObject result = doc.createNestedObject("result");
+
+  result["action"] = "reset";
+  serializeJsonPretty(doc, buffer);
+  return buffer;
+}
+
+DynamicJsonDocument helper(){
+  DynamicJsonDocument doc(200);
+  doc["success"] = true;
+  return doc;
+}
