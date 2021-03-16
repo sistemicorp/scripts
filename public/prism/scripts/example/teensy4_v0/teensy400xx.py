@@ -9,6 +9,7 @@ import logging
 from core.test_item import TestItem
 from public.prism.api import ResultAPI
 
+from public.prism.drivers.teensy4.Teensy4 import Teensy4
 from public.prism.drivers.teensy4.hwdrv_teensy4 import DRIVER_TYPE
 
 # file and class name must match
@@ -40,6 +41,8 @@ class teensy400xx(TestItem):
 
         self.teensy = driver["obj"]["teensy4"]
 
+        print(self.teensy.slot)
+        print(self.teensy.slot)
         answer = self.teensy.reset()
         success = answer["success"]
 

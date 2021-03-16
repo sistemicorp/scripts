@@ -76,6 +76,12 @@ class Teensy4():
     #
     # all functions return dict: { "success": <True/False>, "result": { key: value, ... }}
 
+    def list(self):
+        """ list
+        :return: list of simple_RPC methods
+        """
+        return list(interface.methods)
+
     def unique_id(self):
         """ unique id
         :return: success = True/False unique_id = unique_id
