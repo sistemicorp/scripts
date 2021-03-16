@@ -100,7 +100,7 @@ class HWDriver(object):
                 self.logger.info("failed on {}...".format('unique_id'))
                 continue
 
-            _teensy['close'] = _teensy['teensy4'].close()
+            _teensy['close'] = _teensy['teensy4'].close
 
             self.teensys.append(_teensy)
 

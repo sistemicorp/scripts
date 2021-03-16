@@ -9,5 +9,5 @@ jstyleson==0.0.2
 rshell
 pyftdi
 brother_ql
-arduino_simple_rpc
+arduino-simple-rpc
 
