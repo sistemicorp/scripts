@@ -63,8 +63,9 @@ def led(args, teensy):
     if args._off:
         logging.info("OFF: turn off LED")
 
-        result = teensy.led(False)
-        logging.info("{} {}".format(success, result))
+        response = teensy.led(False)
+        success = response["success"]
+        logging.info("{}".format(response))
         if not success: _success = False
 
     return _success
