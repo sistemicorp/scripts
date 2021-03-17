@@ -20,23 +20,23 @@ void loop(void) {
 }
 
 String unique_id() {
-  DynamicJsonDocument doc = Helper(__func__);
+  DynamicJsonDocument doc = _helper(__func__);
 
   uint8_t mac_address[MAC_SIZE];
 
-  doc["result"]["unique_id"] = TeensyMAC(mac_address);
-  return Response(doc);
+  doc["result"]["unique_id"] = _teensyMAC(mac_address);
+  return _response(doc);
 }
 
 String slot() {
-  DynamicJsonDocument doc = Helper(__func__);
+  DynamicJsonDocument doc = _helper(__func__);
 
   doc["result"]["id"] = 1;
-  return Response(doc);
+  return _response(doc);
 }
 
 String set_led(bool on) {
-  DynamicJsonDocument doc = Helper(__func__);
+  DynamicJsonDocument doc = _helper(__func__);
 
   if (on){
     doc["result"]["state"] = "on";
@@ -50,23 +50,23 @@ String set_led(bool on) {
       digitalWrite(LED_BUILTIN, LOW);
     }
   }
-  return Response(doc);
+  return _response(doc);
 }
 
 String version(){
- DynamicJsonDocument doc = Helper(__func__);
+ DynamicJsonDocument doc = _helper(__func__);
 
  doc["result"]["version"] = "0.1.0";
- return Response(doc);
+ return _response(doc);
 }
 
 String reset(){
-  DynamicJsonDocument doc = Helper(__func__);
+  DynamicJsonDocument doc = _helper(__func__);
 
-  return Response(doc);
+  return _response(doc);
 }
 
-DynamicJsonDocument Helper(String f){
+DynamicJsonDocument _helper(String f){
   DynamicJsonDocument doc(RESPONSE_BUFFER_SIZE);
   doc["success"] = true;
   doc["method"] = f;
@@ -74,7 +74,7 @@ DynamicJsonDocument Helper(String f){
   return doc;
 }
 
-String Response(DynamicJsonDocument doc){
+String _response(DynamicJsonDocument doc){
   char buffer[RESPONSE_BUFFER_SIZE];
   int s = serializeJsonPretty(doc, buffer);
   if (s >= (RESPONSE_BUFFER_SIZE-1)){
@@ -86,7 +86,7 @@ String Response(DynamicJsonDocument doc){
   return buffer;
 }
 
-String TeensyMAC(uint8_t *mac){
+String _teensyMAC(uint8_t *mac){
     uint32_t m1 = HW_OCOTP_MAC1;
     uint32_t m2 = HW_OCOTP_MAC0;
     mac[0] = m1 >> 8;
