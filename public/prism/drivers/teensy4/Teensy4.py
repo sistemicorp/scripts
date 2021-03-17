@@ -78,125 +78,117 @@ class Teensy4():
 
     def list(self):
         """ list
-        :return: list of simple_RPC methods
+        :return: list of Teensy methods
         """
-        return list(interface.methods)
+        return list(self.rpc.methods)
 
     def unique_id(self):
         """ unique id
-        :return: success = True/False unique_id = unique_id
+        :return: success = True/False, method: unique_id, unique_id = MAC Address
         """
-
-        # TODO: implement arduino side
         answer = self.rpc.call_method('unique_id')
         return json.loads(answer)
 
     def slot(self):
         """ slot
-        :return: success = True/False id = id
+        :return: success = True/False, method: slot, id = id
         """
-
         # TODO: implement arduino side
         answer = self.rpc.call_method('slot')
         return json.loads(answer)
 
-    def channel(self):
-        c = {'method': 'slot', 'args': {}}
-        # FIXME: put SimpleRPC call here, and return the result JSON
-        return {"success": False, "result": {}}
+    # def channel(self):
+    #     c = {'method': 'slot', 'args': {}}
+    #     # FIXME: put SimpleRPC call here, and return the result JSON
+    #     return {"success": False, "result": {}}
 
     def version(self):
         """ Version
-        :return: success = True/False version = version#
+        :return: success = True/False, method = version, version = version#
         """
         answer = self.rpc.call_method('version')
         return json.loads(answer)
 
     def reset(self):
         """ reset
-        :return: success = True/False
+        :return: success = True/False, method = reset
         """
-        answer = self.rpc.call_method('teensy_reset')
+        answer = self.rpc.call_method('reset')
         return json.loads(answer)
 
 
     def led(self, set):
         """ LED on/off
         :param set: True/False
-        :return: success = True/False
+        :return: success = True/False, method = set_led, result = state = ON/OFF
         """
         answer = self.rpc.call_method('set_led', set)
         return json.loads(answer)
 
-    def led_toggle(self, led, on_ms=500, off_ms=500, once=False):
-        """ toggle and LED ON and then OFF
-        - this is a blocking command
+    # def led_toggle(self, led, on_ms=500, off_ms=500, once=False):
+    #     """ toggle and LED ON and then OFF
+    #     - this is a blocking command
+    #
+    #     :param led: # of LED, see self.LED_*
+    #     :param on_ms: # of milliseconds to turn on LED
+    #     :return:
+    #     """
+    #     c = {'method': 'led_toggle', 'args': {'led': led, 'on_ms': on_ms, 'off_ms': off_ms, 'once': once}}
+    #     # FIXME: put SimpleRPC call here, and return the result JSON
+    #     return {"success": False, "result": {}}
 
-        :param led: # of LED, see self.LED_*
-        :param on_ms: # of milliseconds to turn on LED
-        :return:
-        """
-        c = {'method': 'led_toggle', 'args': {'led': led, 'on_ms': on_ms, 'off_ms': off_ms, 'once': once}}
-        # FIXME: put SimpleRPC call here, and return the result JSON
-        return {"success": False, "result": {}}
+    # def jig_closed_detect(self):
+    #     """ Read Jig Closed feature on teensy
+    #
+    #     :return: success, result
+    #     """
+    #     c = {'method': 'jig_closed_detect', 'args': {}}
+    #     # FIXME: put SimpleRPC call here, and return the result JSON
+    #     return {"success": False, "result": {}}
 
-    def jig_closed_detect(self):
-        """ Read Jig Closed feature on teensy
+    # def adc_read(self, pin, samples=1, samples_ms=1):
+    #     """ Read an ADC pin
+    #     - This is a BLOCKING function
+    #     - result is raw ADC value, client needs to scale to VREF (3.3V)
+    #
+    #     :param pin: pin name, X2, X3, etc
+    #     :param samples: Number of samples to average over
+    #     :param samples_ms: Delay between samples
+    #     :return: success, result
+    #     """
+    #     c = {'method': 'adc_read', 'args': {'pin': pin, 'samples': samples, 'samples_ms': samples_ms}}
+    #     # FIXME: put SimpleRPC call here, and return the result JSON
+    #     return {"success": False, "result": {}}
 
-        :return: success, result
-        """
-        c = {'method': 'jig_closed_detect', 'args': {}}
-        # FIXME: put SimpleRPC call here, and return the result JSON
-        return {"success": False, "result": {}}
+    # def init_gpio(self, name, pin, mode, pull):
+    #     """ Init GPIO
+    #
+    #     :param name:
+    #     :param pin:
+    #     :param mode: one of pyb.Pin.IN, Pin.OUT_PP, Pin.OUT_OD, ..
+    #     :param pull: one of pyb.Pin.PULL_NONE, pyb.Pin.PULL_UP, pyb.Pin.PULL_DN
+    #     :return:
+    #     """
+    #     c = {'method': 'init_gpio', 'args': {'name': name, 'pin': pin, 'mode': mode, 'pull': pull}}
+    #     # FIXME: put SimpleRPC call here, and return the result JSON
+    #     return {"success": False, "result": {}}
 
-    def adc_read(self, pin, samples=1, samples_ms=1):
-        """ Read an ADC pin
-        - This is a BLOCKING function
-        - result is raw ADC value, client needs to scale to VREF (3.3V)
+    # def get_gpio(self, pin):
+    #     """ Get GPIO
+    #     :param pin:
+    #     :return:
+    #     """
+    #     c = {'method': 'get_gpio', 'args': {'pin': pin}}
+    #     # FIXME: put SimpleRPC call here, and return the result JSON
+    #     return {"success": False, "result": {}}
 
-        :param pin: pin name, X2, X3, etc
-        :param samples: Number of samples to average over
-        :param samples_ms: Delay between samples
-        :return: success, result
-        """
-        c = {'method': 'adc_read', 'args': {'pin': pin, 'samples': samples, 'samples_ms': samples_ms}}
-        # FIXME: put SimpleRPC call here, and return the result JSON
-        return {"success": False, "result": {}}
+    # def set_gpio(self, name, value):
+    #     """ Set GPIO
+    #     :param name:
+    #     :param value: True|False
+    #     :return:
+    #     """
+    #     c = {'method': 'set_gpio', 'args': {'name': name, 'value': value}}
+    #     # FIXME: put SimpleRPC call here, and return the result JSON
+    #     return {"success": False, "result": {}}
 
-    def init_gpio(self, name, pin, mode, pull):
-        """ Init GPIO
-
-        :param name:
-        :param pin:
-        :param mode: one of pyb.Pin.IN, Pin.OUT_PP, Pin.OUT_OD, ..
-        :param pull: one of pyb.Pin.PULL_NONE, pyb.Pin.PULL_UP, pyb.Pin.PULL_DN
-        :return:
-        """
-        c = {'method': 'init_gpio', 'args': {'name': name, 'pin': pin, 'mode': mode, 'pull': pull}}
-        # FIXME: put SimpleRPC call here, and return the result JSON
-        return {"success": False, "result": {}}
-
-    def get_gpio(self, pin):
-        """ Get GPIO
-        :param pin:
-        :return:
-        """
-        c = {'method': 'get_gpio', 'args': {'pin': pin}}
-        # FIXME: put SimpleRPC call here, and return the result JSON
-        return {"success": False, "result": {}}
-
-    def set_gpio(self, name, value):
-        """ Set GPIO
-        :param name:
-        :param value: True|False
-        :return:
-        """
-        c = {'method': 'set_gpio', 'args': {'name': name, 'value': value}}
-        # FIXME: put SimpleRPC call here, and return the result JSON
-        return {"success": False, "result": {}}
-
-if __name__ == '__main__':
-
-    interface = Interface('COM5')
-    print('hey')
-    list(interface.methods)
