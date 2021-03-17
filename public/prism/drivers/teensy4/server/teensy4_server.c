@@ -2,6 +2,7 @@
 #include <ArduinoJson.h>
 
 #define RESPONSE_BUFFER_SIZE 200
+#define MAC_SIZE 6
 
 void setup(void) {
   Serial.begin(9600);
@@ -20,27 +21,30 @@ void loop(void) {
 
 String unique_id() {
   char buffer[RESPONSE_BUFFER_SIZE];
-  DynamicJsonDocument doc = helper();
+  DynamicJsonDocument doc = helper(__func__);
 
-  doc["result"]["unique_id"] = "12345";
-  serializeJsonPretty(doc, buffer);
-  return buffer;
+  uint8_t mac_address[MAC_SIZE];
+
+  doc["result"]["unique_id"] = teensyMAC(mac_address);
+  return response(doc);
 }
 
 String slot() {
-  char buffer[RESPONSE_BUFFER_SIZE];
-  DynamicJsonDocument doc = helper();
+  DynamicJsonDocument doc = helper(__func__);
 
   doc["result"]["id"] = 1;
-  serializeJsonPretty(doc, buffer);
-  return buffer;
+  return response(doc);
 }
 
 String setLed(bool on) {
-  char buffer[RESPONSE_BUFFER_SIZE];
-  DynamicJsonDocument doc = helper();
+  DynamicJsonDocument doc = helper(__func__);
 
   if (on){
+    String test = "a";
+    for(int count; count <=20; count++){
+      test += "a";
+    }
+    doc["result"]["test"] = test;
     doc["result"]["state"] = "on";
     if (digitalRead(LED_BUILTIN) == LOW){
       digitalWrite(LED_BUILTIN, HIGH);
@@ -52,13 +56,12 @@ String setLed(bool on) {
       digitalWrite(LED_BUILTIN, LOW);
     }
   }
-  //serializeJsonPretty(doc, buffer);
-  return serialize(doc, buffer);
+  return response(doc);
 }
 
 String currVersion(){
  char buffer[RESPONSE_BUFFER_SIZE];
- DynamicJsonDocument doc = helper();
+ DynamicJsonDocument doc = helper(__func__);
 
  doc["result"]["version"] = "0.1.0";
  serializeJsonPretty(doc, buffer);
@@ -66,33 +69,44 @@ String currVersion(){
 }
 
 String teensy_Reset(){
-  char buffer[RESPONSE_BUFFER_SIZE];
-  DynamicJsonDocument doc = helper();
-
+  DynamicJsonDocument doc = helper(__func__);
   doc["result"]["action"] = "reset";
-  serializeJsonPretty(doc, buffer);
-  return buffer;
+  return response(doc);
 }
 
-DynamicJsonDocument helper(){
+DynamicJsonDocument helper(String f){
   DynamicJsonDocument doc(RESPONSE_BUFFER_SIZE);
   doc["success"] = true;
+  doc["method"] = f;
   JsonObject result = doc.createNestedObject("result");
   return doc;
 }
 
-String serialize(DynamicJsonDocument doc, char buffer[]){
-  unsigned int s = serializeJsonPretty(doc, buffer, RESPONSE_BUFFER_SIZE);
-  if (s == RESPONSE_BUFFER_SIZE) {
+String response(DynamicJsonDocument doc){
+  char buffer[RESPONSE_BUFFER_SIZE];
+  int s = serializeJsonPretty(doc, buffer);
+  if (s >= (RESPONSE_BUFFER_SIZE-1)){
+    doc.clear();
     doc["success"] = false;
-    doc["result"]["action"] = "RPC buffer response overrun";
-    char bufferV2[RESPONSE_BUFFER_SIZE];
-    serializeJsonPretty(doc, bufferV2);
-    return bufferV2;
-    // need to start all over, the buffer is overrun (not big enough)..
-    // we want to send back success=false, and we want to tell the client a message, "rpc buffer response overrun"
+    doc["result"]["error"] = "RPC buffer response overrun";
+    serializeJsonPretty(doc, buffer);
   }
-  else{
-    return buffer;
-  }
+  return buffer;
+}
+
+String teensyMAC(uint8_t *mac){
+    uint32_t m1 = HW_OCOTP_MAC1;
+    uint32_t m2 = HW_OCOTP_MAC0;
+    mac[0] = m1 >> 8;
+    mac[1] = m1 >> 0;
+    mac[2] = m2 >> 24;
+    mac[3] = m2 >> 16;
+    mac[4] = m2 >> 8;
+    mac[5] = m2 >> 0;
+
+    char unique_id[18];
+
+    snprintf(unique_id, sizeof(unique_id), "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+
+    return unique_id;
 }
