@@ -164,7 +164,8 @@ class Teensy4():
         :param mode: INPUT/ INPUT_PULLUP/ OUTPUT
         :return: success = True/False, method = init_gpio, result = init = Set pin (pin_number) to (mode)
         """
-        answer = self.rpc.call_method('init_gpio', pin_number, mode)
+        mode_b = mode.encode()
+        answer = self.rpc.call_method('init_gpio', pin_number, mode_b)
         return json.loads(answer)
 
     # def get_gpio(self, pin):

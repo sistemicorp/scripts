@@ -107,7 +107,7 @@ class teensy400xx(TestItem):
     def T020_init_gpio(self):
         """ In this test a GPIO is initialized
 
-        {"id": "T020_init_gpio",            "enable": true, "pin_number": 5, "mode": OUTPUT},
+        {"id": "T020_init_gpio",            "enable": true, "pin_number": 5, "mode": "OUTPUT"},
 
         where,
          pin_number: <0-41>
@@ -118,6 +118,8 @@ class teensy400xx(TestItem):
         pin_number = ctx.item.get("pin_number", 0)
         mode = ctx.item.get("mode", "INPUT")
         self.log_bullet("Initializing GPIO {} as {}".format(pin_number, mode))
+        print(type(pin_number))
+        print(type(mode))
 
         answer = self.teensy.init_gpio(pin_number, mode)
         success = answer["success"]
