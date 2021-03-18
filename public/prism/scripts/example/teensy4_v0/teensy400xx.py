@@ -104,3 +104,29 @@ class teensy400xx(TestItem):
 
         self.item_end(_result)  # always last line of test
 
+    def T020_init_gpio(self):
+        """ In this test a GPIO is initialized
+
+        {"id": "T020_init_gpio",            "enable": true, "pin_number": 5, "mode": OUTPUT},
+
+        where,
+         pin_number: <0-41>
+         mode: <INPUT-INPUT_PULLUP-OUTPUT>
+        """
+        ctx = self.item_start() #always first line of test
+
+        pin_number = ctx.item.get("pin_number", 0)
+        mode = ctx.item.get("mode", "INPUT")
+        self.log_bullet("Initializing GPIO {} as {}".format(pin_number, mode))
+
+        answer = self.teensy.init_gpio(pin_number, mode)
+        success = answer["success"]
+        result = answer["result"]["init"]
+
+        if not success:
+            self.logger.error(result)
+            self.log_bullet("UNKNOWN TEENSY ERROR")
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
+            return
+
+        self.item_end(answer)  # always last line of test

@@ -64,8 +64,6 @@ class Teensy4():
           
         :return:
         """
-        # TODO: close the connection
-        
         self.logger.info("closing")
         self.rpc.close()
         return True
@@ -160,18 +158,14 @@ class Teensy4():
     #     # FIXME: put SimpleRPC call here, and return the result JSON
     #     return {"success": False, "result": {}}
 
-    # def init_gpio(self, name, pin, mode, pull):
-    #     """ Init GPIO
-    #
-    #     :param name:
-    #     :param pin:
-    #     :param mode: one of pyb.Pin.IN, Pin.OUT_PP, Pin.OUT_OD, ..
-    #     :param pull: one of pyb.Pin.PULL_NONE, pyb.Pin.PULL_UP, pyb.Pin.PULL_DN
-    #     :return:
-    #     """
-    #     c = {'method': 'init_gpio', 'args': {'name': name, 'pin': pin, 'mode': mode, 'pull': pull}}
-    #     # FIXME: put SimpleRPC call here, and return the result JSON
-    #     return {"success": False, "result": {}}
+    def init_gpio(self, pin_number, mode):
+        """ Init GPIO
+        :param pin_number: (0 - 41)
+        :param mode: INPUT/ INPUT_PULLUP/ OUTPUT
+        :return: success = True/False, method = init_gpio, result = init = Set pin (pin_number) to (mode)
+        """
+        answer = self.rpc.call_method('init_gpio', pin_number, mode)
+        return json.loads(answer)
 
     # def get_gpio(self, pin):
     #     """ Get GPIO

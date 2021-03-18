@@ -14,8 +14,9 @@ void loop(void) {
     Serial,
     unique_id, "unique_id: Shows Teensy's unique id",
     slot, "slot: Shows the Teensy's slot to differentiate multiple Teensys",
-    set_led, "set_led: Set LED ON/OFF.",
+    set_led, "set_led: Set LED (ON/OFF).",
     version, "version: Shows current version.",
+    init_gpio,"init_gpio: initializes GPIO (INPUT, INPUT_PULLUP, OUTPUT).",
     reset, "reset: Resets Teensy.");
 }
 
@@ -58,6 +59,43 @@ String version(){
 
  doc["result"]["version"] = "0.1.0";
  return _response(doc);
+}
+
+String init_gpio(int pin_number, String mode){
+  DynamicJsonDocument doc = _helper(__func__);
+
+  mode.toUpperCase();
+
+  if(pin_number >= 0 && pin_number <= 41){
+    if(mode == "INPUT"){
+      pinMode(pin_number, INPUT);
+    }
+    else if(mode == "OUTPUT"){
+      pinMode(pin_number, OUTPUT);
+    }
+    else if(mode == "INPUT_PULLUP"){
+      pinMode(pin_number, INPUT_PULLUP);
+    }
+    else{
+      doc["success"] = false;
+      doc["result"]["error"] = "invalid pin mode";
+    }
+  }
+  else{
+      doc["success"] = false;
+      doc["result"]["error"] = "invalid pin number";
+  }
+
+//  String pin_n = String(pin_number);
+//  String init = "Set pin ";
+//  init += pin_n;
+//  init += " to ";
+//  init += mode;
+
+  if(doc["success"]){
+     doc["result"]["init"] = "GPIO initialized";
+  }
+  return _response(doc);
 }
 
 String reset(){
