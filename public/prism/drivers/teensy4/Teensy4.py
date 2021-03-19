@@ -149,19 +149,18 @@ class Teensy4():
     #     # FIXME: put SimpleRPC call here, and return the result JSON
     #     return {"success": False, "result": {}}
 
-    # def adc_read(self, pin, samples=1, samples_ms=1):
-    #     """ Read an ADC pin
-    #     - This is a BLOCKING function
-    #     - result is raw ADC value, client needs to scale to VREF (3.3V)
-    #
-    #     :param pin: pin name, X2, X3, etc
-    #     :param samples: Number of samples to average over
-    #     :param samples_ms: Delay between samples
-    #     :return: success, result
-    #     """
-    #     c = {'method': 'adc_read', 'args': {'pin': pin, 'samples': samples, 'samples_ms': samples_ms}}
-    #     # FIXME: put SimpleRPC call here, and return the result JSON
-    #     return {"success": False, "result": {}}
+    def read_adc(self, pin_number, sample_num=1, sample_rate=1):
+        """ Read an ADC pin
+        - This is a BLOCKING function
+        - result is raw ADC value, client needs to scale to VREF (3.3V)
+
+        :param pin_number: (0 - 41)
+        :param sample_num: Number of samples to average over
+        :param sample_rate: Millisecond delay between samples
+        :return: success = True/False, method = read_adc, result = reading = *
+        """
+        answer = self.rpc.call_method('read_adc', pin_number, sample_num, sample_rate)
+        return json.loads(answer)
 
     def init_gpio(self, pin_number, mode):
         """ Init GPIO

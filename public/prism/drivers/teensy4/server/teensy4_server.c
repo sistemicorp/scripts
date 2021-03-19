@@ -16,7 +16,10 @@ void loop(void) {
     slot, "slot: Shows the Teensy's slot to differentiate multiple Teensys",
     set_led, "set_led: Set LED (ON/OFF).",
     version, "version: Shows current version.",
-    init_gpio,"init_gpio: initializes GPIO (INPUT, INPUT_PULLUP, OUTPUT).",
+    read_adc, "read_adc: Reads analog pin.",
+    init_gpio, "init_gpio: Initializes GPIO (INPUT, INPUT_PULLUP, OUTPUT).",
+    read_gpio, "read_gpio: Reads GPIO (HIGH or LOW).",
+    write_gpio, "write_gpio: Writes GPIO (HIGH or LOW).",
     reset, "reset: Resets Teensy.");
 }
 
@@ -61,39 +64,59 @@ String version(){
  return _response(doc);
 }
 
+String read_adc(int pin_number, int sample_num, int sample_rate){
+  DynamicJsonDocument doc = _helper(__func__);
+
+  unsigned long currentMillis = millis();
+  unsigned long previousMillis = 0;
+  double reading = 0;
+
+  for(int count = 0; count <= sample_num; count++){
+    if(currentMillis - previousMillis >= sample_rate){
+      reading += analogRead(pin_number);
+      previousMillis = currentMillis;
+    }
+  }
+
+  reading = reading/sample_num;
+  doc["result"]["reading"] = reading;
+
+  return _response(doc);
+}
+
 String init_gpio(int pin_number, String& mode){
   DynamicJsonDocument doc = _helper(__func__);
 
-  //mode.toUpperCase();
-
-  if(pin_number >= 0 && pin_number <= 41){
-    if(mode == "INPUT"){
-      pinMode(pin_number, INPUT);
-    }
-    else if(mode == "OUTPUT"){
-      pinMode(pin_number, OUTPUT);
-    }
-    else if(mode == "INPUT_PULLUP"){
-      pinMode(pin_number, INPUT_PULLUP);
-    }
-    else{
-      doc["success"] = false;
-      doc["result"]["error"] = "invalid pin mode";
-    }
+  if(mode == "INPUT"){
+    pinMode(pin_number, INPUT);
   }
-  else{
-      doc["success"] = false;
-      doc["result"]["error"] = "invalid pin number";
+  else if(mode == "OUTPUT"){
+    pinMode(pin_number, OUTPUT);
+  }
+  else if(mode == "INPUT_PULLUP"){
+    pinMode(pin_number, INPUT_PULLUP);
   }
 
-  if(doc["success"]){
-      String pin_n = String(pin_number);
-      String init = "Set pin ";
-      init += pin_n;
-      init += " to ";
-      init += mode;
-      doc["result"]["init"] = init;
-  }
+  doc["result"]["mode"] = mode;
+
+  return _response(doc);
+}
+
+String read_gpio(int pin_number){
+  DynamicJsonDocument doc = _helper(__func__);
+
+  doc["result"]["state"] = digitalRead(pin_number);
+
+  return _response(doc);
+}
+
+String write_gpio(int pin_number, bool state){
+  DynamicJsonDocument doc = _helper(__func__);
+
+  digitalWrite(pin_number, state);
+
+  doc["result"]["state"] = state;
+
   return _response(doc);
 }
 

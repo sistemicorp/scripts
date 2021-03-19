@@ -219,3 +219,52 @@ class teensy400xx(TestItem):
         self.log_bullet("GPIO {} is written as {} ".format(pin_number, result))
 
         self.item_end()  # always last line of test
+
+    def T050_read_adc(self):
+        """ In this test a GPIO is read
+
+        {"id": "T050_read_adc",            "enable": true, "pin_number": 5, "sample_num": 4, "sample_rate": 12},
+
+        where,
+         pin_number: <0-41>
+         sample_num: number of samples to average
+         sample_rate: milliseconds between each sample
+        """
+        ctx = self.item_start() #always first line of test
+
+        pin_number = ctx.item.get("pin_number", None)
+
+        if pin_number < 0 or pin_number > 41 or pin_number is None:
+            self.logger.error(pin_number)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
+            return
+
+        sample_num = ctx.item.get("sample_num", None)
+
+        if sample_num is None:
+            self.logger.error(sample_num)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
+            return
+
+        sample_rate = ctx.item.get("sample_rate", None)
+
+        if sample_rate is None:
+            self.logger.error(sample_rate)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
+            return
+
+        self.log_bullet("Reading Analog Pin {}, {} times per {} ms".format(pin_number, sample_num, sample_rate))
+
+        answer = self.teensy.read_adc(pin_number, sample_num, sample_rate)
+        success = answer["success"]
+        result = answer["result"]["reading"]
+
+        if not success:
+            self.logger.error(answer["result"]["error"])
+            self.log_bullet("UNKNOWN TEENSY ERROR")
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
+            return
+
+        self.log_bullet("Pin {}'s ADC reading is {}".format(pin_number, result))
+
+        self.item_end()  # always last line of test
