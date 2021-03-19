@@ -19,9 +19,12 @@
       },
       "items": [
         {"id": "T0xxSETUP",           "enable": true },
-        {"id": "T010_led",            "enable": true, "set": true},
+        {"id": "T010_led",            "enable": false, "set": true},
         {"id": "T010_led",            "enable": false, "set": false},
-        {"id": "T020_init_gpio",      "enable": true, "pin_number": 5, "mode": "GPIO_MODE_OUTPUT"},
+        {"id": "T020_init_gpio",      "enable": true, "pin_number": 0, "mode": "GPIO_MODE_OUTPUT"},
+        {"id": "T030_read_gpio",      "enable": true, "pin_number": 0},
+        {"id": "T040_write_gpio",     "enable": true, "pin_number": 0, "state": 1},
+        {"id": "T030_read_gpio",      "enable": true, "pin_number": 0},
         {"id": "T0xxTRDN",            "enable": true }
       ]
     }

@@ -178,22 +178,21 @@ class Teensy4():
         answer = self.rpc.call_method('init_gpio', pin_number, mode_b)
         return json.loads(answer)
 
-    # def get_gpio(self, pin):
-    #     """ Get GPIO
-    #     :param pin:
-    #     :return:
-    #     """
-    #     c = {'method': 'get_gpio', 'args': {'pin': pin}}
-    #     # FIXME: put SimpleRPC call here, and return the result JSON
-    #     return {"success": False, "result": {}}
+    def read_gpio(self, pin_number):
+        """ Get GPIO
+        :param pin_number: (0 - 41)
+        :return: success = True/False, method = read_gpio, result = state = 1/0
+        """
+        answer = self.rpc.call_method('read_gpio', pin_number)
+        return json.loads(answer)
 
-    # def set_gpio(self, name, value):
-    #     """ Set GPIO
-    #     :param name:
-    #     :param value: True|False
-    #     :return:
-    #     """
-    #     c = {'method': 'set_gpio', 'args': {'name': name, 'value': value}}
-    #     # FIXME: put SimpleRPC call here, and return the result JSON
-    #     return {"success": False, "result": {}}
+    def write_gpio(self, pin_number, state):
+        """ Set GPIO
+        :param pin_number: (0 - 41)
+        :param state: 1/0
+        :return: success = True/False, method = write_gpio, result = state = 1/0
+        """
+        answer = self.rpc.call_method('write_gpio', pin_number, state)
+        return json.loads(answer)
+
 

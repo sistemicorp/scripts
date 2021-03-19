@@ -115,7 +115,13 @@ class teensy400xx(TestItem):
         """
         ctx = self.item_start() #always first line of test
 
-        pin_number = ctx.item.get("pin_number", 0)
+        pin_number = ctx.item.get("pin_number", None)
+
+        if pin_number < 0 or pin_number>41 or pin_number is None:
+            self.logger.error(pin_number)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
+            return
+
         mode_from_item = ctx.item.get("mode", "GPIO_MODE_INPUT")
         mode = getattr(self.teensy, mode_from_item, None)
 
@@ -128,12 +134,88 @@ class teensy400xx(TestItem):
 
         answer = self.teensy.init_gpio(pin_number, mode)
         success = answer["success"]
-        result = answer["result"]["init"]
+        result = answer["result"]["mode"]
 
         if not success:
-            self.logger.error(result)
+            self.logger.error(answer["result"]["error"])
             self.log_bullet("UNKNOWN TEENSY ERROR")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
             return
+
+        self.log_bullet("GPIO {} is initialized as {} ".format(pin_number, result))
+
+        self.item_end()  # always last line of test
+
+    def T030_read_gpio(self):
+        """ In this test a GPIO is read
+
+        {"id": "T030_init_gpio",            "enable": true, "pin_number": 5},
+
+        where,
+         pin_number: <0-41>
+        """
+        ctx = self.item_start() #always first line of test
+
+        pin_number = ctx.item.get("pin_number", None)
+
+        if pin_number < 0 or pin_number > 41 or pin_number is None:
+            self.logger.error(pin_number)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
+            return
+
+        self.log_bullet("Reading GPIO {} ".format(pin_number))
+
+        answer = self.teensy.read_gpio(pin_number)
+        success = answer["success"]
+        result = answer["result"]["state"]
+
+        if not success:
+            self.logger.error(answer["result"]["error"])
+            self.log_bullet("UNKNOWN TEENSY ERROR")
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
+            return
+
+        self.log_bullet("GPIO {} is {} ".format(pin_number, result))
+
+        self.item_end()  # always last line of test
+
+    def T040_write_gpio(self):
+        """ In this test a GPIO is read
+
+        {"id": "T040_write_gpio",            "enable": true, "pin_number": 5, "state": 1},
+
+        where,
+         pin_number: <0-41>
+         state: <1/0>
+        """
+        ctx = self.item_start() #always first line of test
+
+        pin_number = ctx.item.get("pin_number", None)
+
+        if pin_number < 0 or pin_number > 41 or pin_number is None:
+            self.logger.error(pin_number)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
+            return
+
+        state = ctx.item.get("state", None)
+
+        if state not in [0,1] or state is None:
+            self.logger.error(state)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
+            return
+
+        self.log_bullet("Writing GPIO {} as {}".format(pin_number, state))
+
+        answer = self.teensy.write_gpio(pin_number, state)
+        success = answer["success"]
+        result = answer["result"]["state"]
+
+        if not success:
+            self.logger.error(answer["result"]["error"])
+            self.log_bullet("UNKNOWN TEENSY ERROR")
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
+            return
+
+        self.log_bullet("GPIO {} is written as {} ".format(pin_number, result))
 
         self.item_end()  # always last line of test
