@@ -17,13 +17,18 @@ except:
     # run from prism
     from public.prism.drivers.iba01.stublogger import StubLogger
 
-
 class Teensy4():
     """ teensy4 SimpleRPC based driver
 
     ... add notes as required...
 
     """
+
+    GPIO_MODE_INPUT = "INPUT"
+    GPIO_MODE_OUTPUT = "OUTPUT"
+    GPIO_MODE_INPUT_PULLUP = "INPUT_PULLUP"
+    GPIO_MODE_LIST = [GPIO_MODE_INPUT, GPIO_MODE_OUTPUT, GPIO_MODE_INPUT_PULLUP]
+
     def __init__(self, port, baudrate=9600, loggerIn=None):
         self.lock = threading.Lock()
 
@@ -161,9 +166,14 @@ class Teensy4():
     def init_gpio(self, pin_number, mode):
         """ Init GPIO
         :param pin_number: (0 - 41)
-        :param mode: INPUT/ INPUT_PULLUP/ OUTPUT
+        :param mode: Teensy4.MODE_*
         :return: success = True/False, method = init_gpio, result = init = Set pin (pin_number) to (mode)
         """
+        if mode not in self.GPIO_MODE_LIST:
+            err = "Invalid mode {} not in {}".format(mode, self.GPIO_MODE_LIST)
+            self.logger.error(err)
+            return {'success': False, 'value': {'err': err}}
+
         mode_b = mode.encode()
         answer = self.rpc.call_method('init_gpio', pin_number, mode_b)
         return json.loads(answer)

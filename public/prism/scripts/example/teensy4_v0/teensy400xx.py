@@ -116,10 +116,15 @@ class teensy400xx(TestItem):
         ctx = self.item_start() #always first line of test
 
         pin_number = ctx.item.get("pin_number", 0)
-        mode = ctx.item.get("mode", "INPUT")
+        mode_from_item = ctx.item.get("mode", "GPIO_MODE_INPUT")
+        mode = getattr(self.teensy, mode_from_item, None)
+
+        if mode is None:  # it is None
+            self.logger.error(mode_from_item)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
+            return
+
         self.log_bullet("Initializing GPIO {} as {}".format(pin_number, mode))
-        print(type(pin_number))
-        print(type(mode))
 
         answer = self.teensy.init_gpio(pin_number, mode)
         success = answer["success"]
@@ -131,4 +136,4 @@ class teensy400xx(TestItem):
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
             return
 
-        self.item_end(answer)  # always last line of test
+        self.item_end()  # always last line of test

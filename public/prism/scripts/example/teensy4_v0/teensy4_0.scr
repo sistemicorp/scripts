@@ -19,9 +19,9 @@
       },
       "items": [
         {"id": "T0xxSETUP",           "enable": true },
-        {"id": "T010_led",            "enable": false, "set": true},
+        {"id": "T010_led",            "enable": true, "set": true},
         {"id": "T010_led",            "enable": false, "set": false},
-        {"id": "T020_init_gpio",      "enable": true, "pin_number": 5, "mode": "OUTPUT"},
+        {"id": "T020_init_gpio",      "enable": true, "pin_number": 5, "mode": "GPIO_MODE_OUTPUT"},
         {"id": "T0xxTRDN",            "enable": true }
       ]
     }

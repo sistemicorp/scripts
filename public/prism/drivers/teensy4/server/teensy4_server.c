@@ -61,10 +61,10 @@ String version(){
  return _response(doc);
 }
 
-String init_gpio(int pin_number, String mode){
+String init_gpio(int pin_number, String& mode){
   DynamicJsonDocument doc = _helper(__func__);
 
-  mode.toUpperCase();
+  //mode.toUpperCase();
 
   if(pin_number >= 0 && pin_number <= 41){
     if(mode == "INPUT"){
@@ -86,14 +86,13 @@ String init_gpio(int pin_number, String mode){
       doc["result"]["error"] = "invalid pin number";
   }
 
-//  String pin_n = String(pin_number);
-//  String init = "Set pin ";
-//  init += pin_n;
-//  init += " to ";
-//  init += mode;
-
   if(doc["success"]){
-     doc["result"]["init"] = "GPIO initialized";
+      String pin_n = String(pin_number);
+      String init = "Set pin ";
+      init += pin_n;
+      init += " to ";
+      init += mode;
+      doc["result"]["init"] = init;
   }
   return _response(doc);
 }
