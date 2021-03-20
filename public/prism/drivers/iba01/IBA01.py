@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2019
+Sistemi Corporation, copyright, all rights reserved, 2019-2021
 Martin Guthrie
 
 """
@@ -22,6 +22,7 @@ except:
 
 
 VERSION = "0.2.0"
+DRIVER_TYPE = "IBA01"
 
 
 class IBA01(pyboard.Pyboard):

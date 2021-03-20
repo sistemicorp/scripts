@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Martin Guthrie, copyright, all rights reserved, 2018-2019
+Martin Guthrie, copyright, all rights reserved, 2018-2021
 
 """
 import os
@@ -40,29 +40,40 @@ class HWDriver(object):
     # list of DSOs that accept the same command set
     WHITE_LIST = ["DSO7104B"]
 
-    def __init__(self, shared_state):
+    def __init__(self):
         self.logger = logging.getLogger("{}.{}".format(__class__.__name__, self.SFN))
         self.logger.info("Start")
-        self.shared_state = shared_state
-        self.pybs = []
+        self.drivers = []
         self._num_chan = 0  # not used in this driver
         self.instr = None
 
     def discover_channels(self):
         """ determine the number of channels, and populate hw drivers into shared state
 
-        shared_state: a list,
-            self.shared_state.add_drivers(DRV_TYPE, [ {}, {}, ... ])
+        [ {"id": i,                    # ~slot number of the channel (see Note 1)
+           "version": <VERSION>,       # version of the driver
+           "hwdrv": <foobar>,          # instance of your hardware driver
 
-        [ {'id': i,               # id of the channel
-           "version": <VERSION>,  # version of the driver
-           "close": False},       # register a callback on closing the channel
-           "<foo>": <bar>,        # reference to this driver (can be named anything)
+           # optional
+           "close": None},             # register a callback on closing the channel, or None
+           "play": jig_closed_detect   # function for detecting jig closed
+
+           # not part of the required block
+           "unique_id": <unique_id>,   # unique id of the hardware (for tracking purposes)
+           ...
+          }, ...
         ]
 
-        :return: >0 number of channels,
-                  0 does not indicate num channels, like a shared hardware driver
-                 <0 error
+        Note:
+        1) The hw driver objects are expected to have an 'slot' field, the lowest
+           id is assigned to channel 0, the next highest to channel 1, etc
+
+        :return: <#>, <list>
+            where #: >0 number of channels,
+                      0 does not indicate num channels, like a shared hardware driver
+                     <0 error
+
+                  list of drivers
         """
         sender = "{}.{}".format(self.SFN, __class__.__name__)
         pub_notice("HWDriver:{}: Scanning for {}".format(self.SFN, self.DRIVER_TYPE), sender=sender)
@@ -92,7 +103,7 @@ class HWDriver(object):
 
             # if no scope is found, the test fixture cannot operate, returning
             # an error here will indicate a system fail and won't proceed to testing
-            return -1
+            return -1, self.DRIVER_TYPE, []
 
         # reset scope to a known state
         self.instr.write('*RST')
@@ -105,22 +116,14 @@ class HWDriver(object):
             "visa": self.instr,
         }
 
-        self.shared_state.add_drivers(self.DRIVER_TYPE, [d], shared=True)
-
         pub_notice("HWDriver:{}: Found {}!".format(self.SFN, self.instr), sender=sender)
-        self.logger.info("Done")
+        self.logger.info("{} channels found".format(self._num_chan))
 
         # by returning 0, it means this return values DOES not represent number of channels
-        return 0
+        return 0, self.DRIVER_TYPE, [d]
 
     def num_channels(self):
         return self._num_chan
-
-    def init_play_pub(self):
-        """ Function to instantiate a class/thread to trigger PLAY of script
-        - this is called right after discover_channels
-        """
-        self.logger.info("HWDriver:{}: does not support 'play' messaging".format(self.SFN))
 
     def close(self):
         self.instr.close()

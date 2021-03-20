@@ -149,7 +149,13 @@ class ChanCon(object):
             hwdrv_module_klass = getattr(hwdrv_module, "HWDriver")
             hwdriver = hwdrv_module_klass(self.shared_state)
 
-            _num_channels = hwdriver.discover_channels()
+            _num_channels, driver_type, drivers = hwdriver.discover_channels()
+
+            if _num_channels >= 0:  # add to shared state if all good
+                shared = False
+                if _num_channels == 0: shared = True
+                self.ctx["ss"].add_drivers(driver_type, drivers, shared)
+
             self.logger.info("{} - number channels {}".format(hwdrv_sname, _num_channels))
             if _num_channels == 0:
                 # this HW DRV does not indicate number of channels, its a shared resource
