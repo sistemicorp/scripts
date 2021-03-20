@@ -113,7 +113,7 @@ class HWDriver(object):
             "id": 0,
             "version": self.VERSION,
             "close": self.close,
-            "visa": self.instr,
+            "hwdrv": self.instr,
         }
 
         pub_notice("HWDriver:{}: Found {}!".format(self.SFN, self.instr), sender=sender)

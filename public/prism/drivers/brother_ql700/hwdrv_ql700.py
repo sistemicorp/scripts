@@ -201,7 +201,7 @@ class HWDriver(object):
 
                 drivers.append({"id": id,
                                 "version": VERSION,
-                                "printer": BrotherQL700(id, p),
+                                "hwdrv": BrotherQL700(id, p),
                                 "play": None,
                                 "close": None})
                 id += 1

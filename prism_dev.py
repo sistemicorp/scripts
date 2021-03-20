@@ -147,14 +147,14 @@ class ChanCon(object):
             hwdrv_sname = hwdrv.split(".")[-1]
             hwdrv_module = importlib.import_module(hwdrv)
             hwdrv_module_klass = getattr(hwdrv_module, "HWDriver")
-            hwdriver = hwdrv_module_klass(self.shared_state)
+            hwdriver = hwdrv_module_klass()
 
             _num_channels, driver_type, drivers = hwdriver.discover_channels()
 
             if _num_channels >= 0:  # add to shared state if all good
                 shared = False
                 if _num_channels == 0: shared = True
-                self.ctx["ss"].add_drivers(driver_type, drivers, shared)
+                self.shared_state.add_drivers(driver_type, drivers, shared)
 
             self.logger.info("{} - number channels {}".format(hwdrv_sname, _num_channels))
             if _num_channels == 0:
@@ -167,9 +167,6 @@ class ChanCon(object):
             elif num_channels != _num_channels:
                 self.logger.error("{} - number channels {} does not match previous HWDRV".format(hwdriver, _num_channels))
                 raise ValueError('Mismatch number of channels between HW Drivers')
-
-            # install 'play' action if the driver supports it
-            hwdriver.init_play_pub()
 
         self.num_channels = num_channels
         self.logger.info("number channels {}".format(self.num_channels))
