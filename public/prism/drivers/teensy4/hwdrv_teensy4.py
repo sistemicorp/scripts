@@ -7,13 +7,10 @@ Martin Guthrie
 """
 import os
 import logging
-import argparse
 from core.sys_log import pub_notice
 from public.prism.drivers.iba01.list_serial import serial_ports
 
-from public.prism.drivers.teensy4.Teensy4 import Teensy4
-
-DRIVER_TYPE = "TEENSY4"
+from public.prism.drivers.teensy4.Teensy4 import Teensy4, DRIVER_TYPE
 
 
 class HWDriver(object):
@@ -33,35 +30,39 @@ class HWDriver(object):
     SFN = os.path.basename(__file__)
     VERSION = "0.0.1"
 
-    def __init__(self, shared_state):
-        self.logger = logging.getLogger("SC.{}.{}".format(__class__.__name__, self.SFN))
+    def __init__(self):
+        self.logger = logging.getLogger("{}".format(self.SFN))
         self.logger.info("Start")
-        self.shared_state = shared_state
         self._num_chan = 0
         self.teensys = []
 
     def discover_channels(self):
         """ determine the number of channels, and populate hw drivers into shared state
 
-        shared_state: a list,
-            self.shared_state.add_drivers(DRV_TYPE, [ {}, {}, ... ], shared=True/False)
+        [ {"id": i,                    # ~slot number of the channel (see Note 1)
+           "version": <VERSION>,       # version of the driver
+           "hwdrv": <foobar>,          # instance of your hardware driver
 
-        [ {'id': i,                 # slot id of the channel (see Note 1)
-           "version": <VERSION>,    # version of the driver
-           "close": Teensy4.close, # register a callback on closing the channel
-           "teensy4": Teensy4(),    # class that makes your HW work...
-           "port": serial port
-           "unique_id": unique_id   # cache this here so that it doesn't need to be retrieved for every test
-           }
+           # optional
+           "close": None},             # register a callback on closing the channel, or None
+           "play": jig_closed_detect   # function for detecting jig closed
+
+           # not part of the required block
+           "unique_id": <unique_id>,   # unique id of the hardware (for tracking purposes)
+           ...
+          }, ...
         ]
 
         Note:
-        1) The hw driver objects are expected to have an 'id' field, the lowest
+        1) The hw driver objects are expected to have an 'slot' field, the lowest
            id is assigned to channel 0, the next highest to channel 1, etc
 
-        :return: >0 number of channels,
-                  0 does not indicate num channels, like a shared hardware driver
-                 <0 error
+        :return: <#>, <list>
+            where #: >0 number of channels,
+                      0 does not indicate num channels, like a shared hardware driver
+                     <0 error
+
+                  list of drivers
         """
         sender = "{}.{}".format(self.SFN, __class__.__name__)  # for debug purposes
 
@@ -102,56 +103,30 @@ class HWDriver(object):
 
             _teensy['close'] = _teensy['teensy4'].close
 
+            _teensy['play'] = _teensy['teensy4'].jig_closed_detect
+
             self.teensys.append(_teensy)
 
         self._num_chan = len(self.teensys)
-        self.shared_state.add_drivers(DRIVER_TYPE, self.teensys, shared=False)
 
         pub_notice("HWDriver:{}: Found {}!".format(self.SFN, self._num_chan), sender=sender)
         self.logger.info("Done: {} channels".format(self._num_chan))
-        return self._num_chan
+        return self._num_chan, DRIVER_TYPE, self.teensys
 
     def num_channels(self):
         return self._num_chan
-
-    def init_play_pub(self):
-        """ Function to instantiate a class/thread to trigger PLAY of script
-        - this is called right after discover_channels
-        """
-        self.logger.info("HWDriver:{}: does not support 'play' messaging".format(self.SFN))
 
     def close(self):
         self.logger.info("closed")
 
 
-# -----------------------------------------------------------------------------------------------------
-# CLI interface example to test the driver
-
-
-def parse_args():
-    epilog = """
-    Usage examples:
-    """
-    parser = argparse.ArgumentParser(description='fake',
-                                     formatter_class=argparse.RawDescriptionHelpFormatter,
-                                     epilog=epilog)
-
-    parser.add_argument("-v", '--verbose', dest='verbose', default=0, action='count', help='Increase verbosity')
-    parser.add_argument("--version", dest="show_version", action='store_true', help='Show version and exit')
-
-    args = parser.parse_args()
-
-    return args
-
-
+# ===============================================================================================
+# Debugging code
+# - Test your hardware discover here by running this file from a terminal
+#
 if __name__ == '__main__':
     logger = logging.getLogger()
-    args = parse_args()
-
-    if args.verbose == 0:
-        logging.basicConfig(level=logging.INFO, format='%(levelname)6s %(lineno)4s %(message)s')
-    else:
-        logging.basicConfig(level=logging.DEBUG, format='%(levelname)6s %(lineno)4s %(message)s')
 
     d = HWDriver()
+    d.discover_channels()
     logger.info("Number channels: {}".format(d.num_channels()))

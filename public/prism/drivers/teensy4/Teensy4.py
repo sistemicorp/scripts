@@ -5,7 +5,6 @@ Sistemi Corporation, copyright, all rights reserved, 2021
 Martin Guthrie
 
 """
-import time
 import json
 import threading
 from simple_rpc import Interface
@@ -16,6 +15,10 @@ try:
 except:
     # run from prism
     from public.prism.drivers.iba01.stublogger import StubLogger
+
+
+DRIVER_TYPE = "TEENSY4"
+
 
 class Teensy4():
     """ teensy4 SimpleRPC based driver
@@ -194,4 +197,11 @@ class Teensy4():
         answer = self.rpc.call_method('write_gpio', pin_number, state)
         return json.loads(answer)
 
+    # TODO: add jig closed detect
+    #       this method will be different than the others as Prism Player logic
+    #       expects to see a simple True|False return, not a dict or success, etc...
+    #       so do the usual rpc, but then validate and return the response
+    def jig_closed_detect(self):
+        # implement
+        return False
 
