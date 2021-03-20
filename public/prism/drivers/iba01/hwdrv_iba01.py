@@ -132,8 +132,9 @@ class HWDriver(object):
             # close, or else problems trying to re-open
             _pyb["close"] = pyb.close
 
-            # install play callback
+            # install play callback, and pass/fail indicator
             _pyb["play"] = pyb.jig_closed_detect
+            _pyb["show_pass_fail"] = pyb.show_pass_fail
 
             self.drivers.append(_pyb)
             msg = "HWDriver:{}: {}".format(self.SFN, _pyb)

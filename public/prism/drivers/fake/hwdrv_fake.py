@@ -48,6 +48,7 @@ class HWDriver(object):
            # optional
            "close": None},             # register a callback on closing the channel, or None
            "play": jig_closed_detect   # function for detecting jig closed
+           "show_pass_fail": jig_led   # function for indicating pass/fail (like LED)
 
            # not part of the required block
            "unique_id": <unique_id>,   # unique id of the hardware (for tracking purposes)
@@ -91,6 +92,7 @@ class HWDriver(object):
                   "unique_id": _driver.unique_id(),
                   "version": _driver.version(),
                   "play": None,
+                  "show_pass_fail": None,
                   "close": None}  # or _driver.close
 
             #

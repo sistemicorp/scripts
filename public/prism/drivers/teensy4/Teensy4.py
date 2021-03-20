@@ -197,11 +197,36 @@ class Teensy4():
         answer = self.rpc.call_method('write_gpio', pin_number, state)
         return json.loads(answer)
 
-    # TODO: add jig closed detect
-    #       this method will be different than the others as Prism Player logic
-    #       expects to see a simple True|False return, not a dict or success, etc...
-    #       so do the usual rpc, but then validate and return the response
+    # ---------------------------------------------------------------------------------------------
+    # Prism Player functions
+    #
+
     def jig_closed_detect(self):
-        # implement
+        # TODO: add jig closed detect, see IBA01.py for example
+        #       this method will be different than the others as Prism Player logic
+        #       expects to see a simple True|False return, not a dict or success, etc...
+        #       so do the usual rpc, but then validate and return the response
+        #       make it so the GPIO used on the server can be easily changed, like its a define at the
+        #       top of the server code.  This driver doesn't need to know the GPIO number.
+        #       You might want code that if someone tried to init/set the same GPIO you
+        #       throw an error... as if the GPIO is dedicated to jig closed, its not allowed to to anything else
         return False
+
+    def show_pass_fail(self, p=False, f=False, other=False):
+        """ Set pass/fail indicator
+
+        :param p: <True|False>  set the Pass LED
+        :param f: <True|False>  set the Fail LED
+        :param o: <True|False>  "other" is set
+        :return: None
+        """
+        # TODO: here again we take 2-3 GPIOs from Teensy and dedicate them to a visual
+        #       (usually LED) indication of test result.
+        #       see IBA01.py for example
+        pass
+
+    #
+    # Prism Player functions
+    # ---------------------------------------------------------------------------------------------
+
 

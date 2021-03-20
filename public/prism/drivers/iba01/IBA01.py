@@ -234,6 +234,40 @@ class IBA01(pyboard.Pyboard):
 
         return success, result
 
+    # ---------------------------------------------------------------------------------------------
+    # Prism Player functions
+    #
+    def jig_closed_detect(self):
+        """ Read Jig Closed feature on pyboard
+        This is used by Prism Player logic, and can only return True|False
+
+        :return: <True|False>
+        """
+        c = {'method': 'jig_closed_detect', 'args': {}}
+        success, result = self._verify_single_cmd_ret(c)  # this is success, result
+
+        if not success:
+            if result.get('err', False): self.logger.error(result['err'])
+            else: self.logger.error('success False')
+            return False
+
+        return result['value']['value']
+
+
+    def show_pass_fail(self, p=False, f=False, other=False):
+        """ Set pass/fail indicator
+
+        :param p: <True|False>  set the Pass LED
+        :param f: <True|False>  set the Fail LED
+        :param o: <True|False>  "other" is set
+        :return: None
+        """
+        self.led([(LED_GREEN, p), (LED_RED, f), (LED_YELLOW, other)])
+
+    #
+    # Prism Player functions
+    # ---------------------------------------------------------------------------------------------
+
     def led(self, set):
         """ LED on/off
         :param set: [(#, True/False), ...], where #: 1=Red, 2=Yellow, 3=Green, 4=Blue
@@ -253,14 +287,6 @@ class IBA01(pyboard.Pyboard):
         :return:
         """
         c = {'method': 'led_toggle', 'args': {'led': led, 'on_ms': on_ms, 'off_ms': off_ms, 'once': once}}
-        return self._verify_single_cmd_ret(c)
-
-    def jig_closed_detect(self):
-        """ Read Jig Closed feature on pyboard
-
-        :return: success, result
-        """
-        c = {'method': 'jig_closed_detect', 'args': {}}
         return self._verify_single_cmd_ret(c)
 
     def adc_read(self, pin, samples=1, samples_ms=1):
