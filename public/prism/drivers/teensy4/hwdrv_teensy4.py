@@ -46,6 +46,7 @@ class HWDriver(object):
            # optional
            "close": None},             # register a callback on closing the channel, or None
            "play": jig_closed_detect   # function for detecting jig closed
+           "show_pass_fail": jig_led   # function for indicating pass/fail (like LED)
 
            # not part of the required block
            "unique_id": <unique_id>,   # unique id of the hardware (for tracking purposes)
@@ -104,6 +105,7 @@ class HWDriver(object):
             _teensy['close'] = _teensy['hwdrv'].close
 
             _teensy['play'] = _teensy['hwdrv'].jig_closed_detect
+            _teensy['show_pass_fail'] = _teensy['hwdrv'].show_pass_fail
 
             self.teensys.append(_teensy)
 
