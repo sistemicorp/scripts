@@ -38,7 +38,7 @@ class teensy400xx(TestItem):
         self.log_bullet(_bullet)
         self.logger.info("Found teensy4: {} {}, chan {}".format(driver, id, self.chan))
 
-        self.teensy = driver["obj"]["teensy4"]
+        self.teensy = driver["obj"]["hwdrv"]
 
         answer = self.teensy.reset()
         success = answer["success"]

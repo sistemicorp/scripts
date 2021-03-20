@@ -79,7 +79,7 @@ class HWDriver(object):
             _pyb = { "port": port}
             self.logger.info("Trying pyboard at {}...".format(port))
 
-            _pyb['pyb'] = pyb = IBA01(port, loggerIn=logging.getLogger("IBA01.try"))
+            _pyb['hwdrv'] = pyb = IBA01(port, loggerIn=logging.getLogger("IBA01.try"))
             success, result = pyb.start_server()
             self.logger.info("{}, {}".format(success, result))
             if not success:

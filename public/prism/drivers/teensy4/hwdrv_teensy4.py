@@ -80,30 +80,30 @@ class HWDriver(object):
             #https: // stackoverflow.com / questions / 21050671 / how - to - check - if -device - is -connected - pyserial / 49450813
             # test if this COM port is really a Teensy
             # create an instance of Teensy()
-            _teensy['teensy4'] = Teensy4(port, loggerIn=logging.getLogger("teensy.try"))
+            _teensy['hwdrv'] = Teensy4(port, loggerIn=logging.getLogger("teensy.try"))
             success = _teensy['teensy4'].init()
             if not success:
                 self.logger.info("failed on {}...".format(port))
                 continue
 
             # yes, its a Teensy, add it to the list...
-            answer = _teensy['teensy4'].slot()
+            answer = _teensy['hwdrv'].slot()
             _teensy['id'] = answer['result']['id']
             success = answer['success']
             if not success:
                 self.logger.info("failed on {}...".format('slot'))
                 continue
 
-            answer = _teensy['teensy4'].unique_id()
+            answer = _teensy['hwdrv'].unique_id()
             _teensy['unique_id'] = answer['result']['unique_id']
             success = answer['success']
             if not success:
                 self.logger.info("failed on {}...".format('unique_id'))
                 continue
 
-            _teensy['close'] = _teensy['teensy4'].close
+            _teensy['close'] = _teensy['hwdrv'].close
 
-            _teensy['play'] = _teensy['teensy4'].jig_closed_detect
+            _teensy['play'] = _teensy['hwdrv'].jig_closed_detect
 
             self.teensys.append(_teensy)
 
