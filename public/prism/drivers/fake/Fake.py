@@ -68,4 +68,6 @@ class Fake(object):
     def close(self):
         pass
 
-
+    def jig_closed_detect(self):
+        self.logger.info("False")
+        return False

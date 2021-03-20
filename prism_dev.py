@@ -156,6 +156,9 @@ class ChanCon(object):
                 if _num_channels == 0: shared = True
                 self.shared_state.add_drivers(driver_type, drivers, shared)
 
+                # call the player function if exist, ignore result, but see logs
+                if drivers and drivers[0].get("play", None): drivers[0].get("play")()
+
             self.logger.info("{} - number channels {}".format(hwdrv_sname, _num_channels))
             if _num_channels == 0:
                 # this HW DRV does not indicate number of channels, its a shared resource
