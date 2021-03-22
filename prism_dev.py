@@ -139,7 +139,6 @@ class ChanCon(object):
         self.logger.info("BULLET: {}".format(text))
 
     def run(self):
-
         # process HW drivers
         num_channels = -1
         for hwdrv in self.script["config"]["drivers"]:
@@ -157,7 +156,11 @@ class ChanCon(object):
                 self.shared_state.add_drivers(driver_type, drivers, shared)
 
                 # call the player function if exist, ignore result, but see logs
-                if drivers and drivers[0].get("play", None): drivers[0].get("play")()
+                if drivers:
+                    if drivers[0].get("play", None):
+                        drivers[0].get("play")()
+
+                    show_pass_fail = drivers[0].get("show_pass_fail", None)
 
             self.logger.info("{} - number channels {}".format(hwdrv_sname, _num_channels))
             if _num_channels == 0:
@@ -203,6 +206,13 @@ class ChanCon(object):
 
         self.record.record_record_meta_fini()
         self.record.record_publish()
+
+        if show_pass_fail is not None:
+            p = f = o = False
+            if self.record["meta"]["result"] == ResultAPI.RECORD_RESULT_PASS: p = True
+            elif self.record["meta"]["result"] == ResultAPI.RECORD_RESULT_FAIL: f = True
+            else: o = True
+            show_pass_fail(p, f, o)
 
 
 def setup_logging(log_file_name_prefix="log", level=logging.INFO, path="./log"):
