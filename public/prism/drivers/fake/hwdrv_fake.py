@@ -92,7 +92,7 @@ class HWDriver(object):
                   "unique_id": _driver.unique_id(),
                   "version": _driver.version(),
                   "play": _driver.jig_closed_detect,
-                  "show_pass_fail": None,
+                  "show_pass_fail": _driver.show_pass_fail,
                   "close": None}  # or _driver.close
 
             #

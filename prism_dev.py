@@ -211,7 +211,7 @@ class ChanCon(object):
 
         if show_pass_fail is not None:
             p = f = o = False
-            if self.record["meta"]["result"] == ResultAPI.RECORD_RESULT_PASS: p = True
+            if self.record.record_meta_get_result() == ResultAPI.RECORD_RESULT_PASS: p = True
             elif self.record["meta"]["result"] == ResultAPI.RECORD_RESULT_FAIL: f = True
             else: o = True
             show_pass_fail(p, f, o)

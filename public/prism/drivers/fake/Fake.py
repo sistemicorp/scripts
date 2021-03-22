@@ -71,3 +71,7 @@ class Fake(object):
     def jig_closed_detect(self):
         self.logger.info("False")
         return False
+
+    def show_pass_fail(self, p, f, o):
+        self.logger.info("{} {} {}".format(p, f, o))
+
