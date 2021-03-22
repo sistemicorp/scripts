@@ -158,7 +158,8 @@ class ChanCon(object):
                 # call the player function if exist, ignore result, but see logs
                 if drivers:
                     if drivers[0].get("play", None):
-                        drivers[0].get("play")()
+                        play = drivers[0].get("play")()
+                        self.logger.info("player: {} (ignored in development)".format(play))
 
                     show_pass_fail = drivers[0].get("show_pass_fail", None)
 
