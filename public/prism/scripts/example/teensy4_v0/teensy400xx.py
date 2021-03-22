@@ -186,7 +186,7 @@ class teensy400xx(TestItem):
 
         where,
          pin_number: <0-41>
-         state: <1/0>
+         state: <1/0> or <trule/false>
         """
         ctx = self.item_start() #always first line of test
 
@@ -199,7 +199,7 @@ class teensy400xx(TestItem):
 
         state = ctx.item.get("state", None)
 
-        if state not in [0,1] or state is None:
+        if state not in [0, 1] or state is None:
             self.logger.error(state)
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
             return

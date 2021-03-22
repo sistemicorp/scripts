@@ -31,10 +31,12 @@ class Teensy4():
     GPIO_MODE_INPUT_PULLUP = "INPUT_PULLUP"
     GPIO_MODE_LIST = [GPIO_MODE_INPUT, GPIO_MODE_OUTPUT, GPIO_MODE_INPUT_PULLUP]
 
-    JIG_CLOSE_GPIO = 23
-    TEST_INDICATOR_RED = 22
+    JIG_CLOSE_GPIO = 23 # GPIO number for Jig Closed detect, set to None if not using
+
+    TEST_INDICATOR_RED = 22 # GPIO number for Test indicator LED, set to None if not using
     TEST_INDICATOR_YELLOW = 21
     TEST_INDICATOR_GREEN = 20
+    TEST_INDICATOR_LIST = [TEST_INDICATOR_RED, TEST_INDICATOR_YELLOW, TEST_INDICATOR_GREEN]
 
     def __init__(self, port, baudrate=9600, loggerIn=None):
         self.lock = threading.Lock()
@@ -206,18 +208,30 @@ class Teensy4():
     #
 
     def jig_closed_detect(self):
-        """ Read Jig Closed feature on pyboard
+        """ Read Jig Closed feature on Teensy
         This is used by Prism Player logic, and can only return True|False
 
         return: <True|False>
         """
+        if self.JIG_CLOSE_GPIO < 0 or self.JIG_CLOSE_GPIO > 41:
+            self.logger.error("Invalid GPIO")
+            return False
+
+        if self.JIG_CLOSE_GPIO is None:
+            self.logger.error("Jig Closed Detector not used")
+            return False
+
         answer = self.rpc.call_method('read_gpio', self.JIG_CLOSE_GPIO)
 
-        # TODO: evaluate success
+        success = answer["success"]
+
+        if not success:
+            self.logger.error("Failed to detect Jig Close GPIO")
+            return False
 
         return answer['result']['state']
 
-    def show_pass_fail(self, p=False, f=False, other=False):
+    def show_pass_fail(self, p=False, f=False, o=False):
         """ Set pass/fail indicator
 
         :param p: <True|False>  set the Pass LED
@@ -225,16 +239,28 @@ class Teensy4():
         :param o: <True|False>  "other" is set
         :return: None
         """
-        self.rpc.call_method('write_gpio', self.TEST_INDICATOR_GREEN, LOW)
-        self.rpc.call_method('write_gpio', self.TEST_INDICATOR_YEL, LOW)
-        self.rpc.call_method('write_gpio', self.TEST_INDICATOR_GREEN, LOW)
+        for pin_number in self.TEST_INDICATOR_LIST:
+            if pin_number < 0 or pin_number > 41:
+                self.logger.error("Invalid GPIO")
+                return False
+            if pin_number is None:
+                self.logger.error("Test Indicator not used")
+                return False
+
+        self.rpc.call_method('init_gpio', self.TEST_INDICATOR_GREEN, self.GPIO_MODE_OUTPUT)
+        self.rpc.call_method('init_gpio', self.TEST_INDICATOR_YELLOW, self.GPIO_MODE_OUTPUT)
+        self.rpc.call_method('init_gpio', self.TEST_INDICATOR_RED, self.GPIO_MODE_OUTPUT)
+
+        self.rpc.call_method('write_gpio', self.TEST_INDICATOR_GREEN, 0)
+        self.rpc.call_method('write_gpio', self.TEST_INDICATOR_YELLOW, 0)
+        self.rpc.call_method('write_gpio', self.TEST_INDICATOR_GREEN, 0)
 
         if p:
-            self.rpc.call_method('write_gpio', self.TEST_INDICATOR_GREEN, HIGH)
-        elif other:
-            self.rpc.call_method('write_gpio', self.TEST_INDICATOR_YELLOW, HIGH)
+            self.rpc.call_method('write_gpio', self.TEST_INDICATOR_GREEN, 1)
+        elif o:
+            self.rpc.call_method('write_gpio', self.TEST_INDICATOR_YELLOW, 1)
         elif f:
-            self.rpc.call_method('write_gpio', self.TEST_INDICATOR_RED, HIGH)
+            self.rpc.call_method('write_gpio', self.TEST_INDICATOR_RED, 1)
 
         return None
 
