@@ -33,10 +33,18 @@ class Teensy4():
 
     JIG_CLOSE_GPIO = 23 # GPIO number for Jig Closed detect, set to None if not using
 
-    TEST_INDICATOR_RED = 22 # GPIO number for Test indicator LED, set to None if not using
-    TEST_INDICATOR_YELLOW = 21
-    TEST_INDICATOR_GREEN = 20
-    TEST_INDICATOR_LIST = [TEST_INDICATOR_RED, TEST_INDICATOR_YELLOW, TEST_INDICATOR_GREEN]
+    # TEST_INDICATOR_RED = 22 # GPIO number for Test indicator LED, set to None if not using
+    # TEST_INDICATOR_YELLOW = 21
+    # TEST_INDICATOR_GREEN = 20
+    # TEST_INDICATOR_LIST = [TEST_INDICATOR_RED, TEST_INDICATOR_YELLOW, TEST_INDICATOR_GREEN]
+
+    # LED test indicators GPIO numbers and whether they are active_high. Set GPIO to None if not using
+    TEST_INDICATORS = {
+        "pass": {'gpio': 20, 'active_high': True},
+        "fail": {'gpio': 21, 'active_high': True},
+        "other": {'gpio': 22, 'active_high': True}
+    }
+
 
     def __init__(self, port, baudrate=9600, loggerIn=None):
         self.lock = threading.Lock()
@@ -53,12 +61,13 @@ class Teensy4():
         """ Init Teensy SimpleRPC connection
         :return: <True/False> whether Teensy SimpleRPC connection was created
         """
-        self.logger.info("attempting to install Teensy on port {}".format(self.port))
         try:
             self.rpc = Interface(self.port)
         except Exception as e:
             self.logger.error(e)
             return False
+
+        self.logger.info("attempting to install Teensy on port {}".format(self.port))
 
         version_response = self.version()
         if not version_response["success"]:
@@ -68,6 +77,28 @@ class Teensy4():
         if self.my_version != version_response["result"]["version"]:
             self.logger.error("version does not match, {} {}".format(...))
             return False
+
+        # for pin_number in self.TEST_INDICATOR_LIST:
+        #     if pin_number < 0 or pin_number > 41:
+        #         self.logger.error("Invalid GPIO")
+        #         return False
+        #     if pin_number is None:
+        #         self.logger.error("Test Indicator not defined (None)")
+        #         return False
+
+        for k in self.TEST_INDICATORS.keys():
+            pin_number = self.TEST_INDICATORS[k]['gpio']
+            if pin_number < 0 or pin_number > 41:
+                self.logger.error("{} has Invalid GPIO {}".format(k, pin_number))
+                return False
+            if pin_number is None:
+                self.logger.error("Test Indicator not defined (None)")
+                return False
+            self.rpc.call_method('init_gpio', pin_number, self.GPIO_MODE_OUTPUT.encode())
+
+        # self.rpc.call_method('init_gpio', self.TEST_INDICATOR['pass']['gpio'], self.GPIO_MODE_OUTPUT.encode())
+        # self.rpc.call_method('init_gpio', self.TEST_INDICATOR['fail']['gpio'], self.GPIO_MODE_OUTPUT.encode())
+        # self.rpc.call_method('init_gpio', self.self.TEST_INDICATOR['other']['gpio'], self.GPIO_MODE_OUTPUT.encode())
 
         # finally, all is well
         self.logger.info("Installed Teensy on port {}".format(self.port))
@@ -218,11 +249,10 @@ class Teensy4():
             return False
 
         if self.JIG_CLOSE_GPIO is None:
-            self.logger.error("Jig Closed Detector not used")
+            self.logger.error("Jig Closed Detector not defined (None)")
             return False
 
-        answer = self.rpc.call_method('read_gpio', self.JIG_CLOSE_GPIO)
-
+        answer = json.loads(self.rpc.call_method('read_gpio', self.JIG_CLOSE_GPIO))
         success = answer["success"]
 
         if not success:
@@ -239,28 +269,17 @@ class Teensy4():
         :param o: <True|False>  "other" is set
         :return: None
         """
-        for pin_number in self.TEST_INDICATOR_LIST:
-            if pin_number < 0 or pin_number > 41:
-                self.logger.error("Invalid GPIO")
-                return False
-            if pin_number is None:
-                self.logger.error("Test Indicator not used")
-                return False
+        for k in self.TEST_INDICATORS.keys():
+            self.rpc.call_method('write_gpio', self.TEST_INDICATORS[k]['gpio'], not self.TEST_INDICATORS[k]['active_high'])
 
-        self.rpc.call_method('init_gpio', self.TEST_INDICATOR_GREEN, self.GPIO_MODE_OUTPUT)
-        self.rpc.call_method('init_gpio', self.TEST_INDICATOR_YELLOW, self.GPIO_MODE_OUTPUT)
-        self.rpc.call_method('init_gpio', self.TEST_INDICATOR_RED, self.GPIO_MODE_OUTPUT)
+        if p and self.TEST_INDICATORS.get('pass', False):
+            self.rpc.call_method('write_gpio', self.TEST_INDICATORS["pass"]["gpio"], self.TEST_INDICATORS["pass"]["active_high"])
 
-        self.rpc.call_method('write_gpio', self.TEST_INDICATOR_GREEN, 0)
-        self.rpc.call_method('write_gpio', self.TEST_INDICATOR_YELLOW, 0)
-        self.rpc.call_method('write_gpio', self.TEST_INDICATOR_GREEN, 0)
+        if f and self.TEST_INDICATORS.get('fail', False):
+            self.rpc.call_method('write_gpio', self.TEST_INDICATORS["fail"]["gpio"], self.TEST_INDICATORS["fail"]["active_high"])
 
-        if p:
-            self.rpc.call_method('write_gpio', self.TEST_INDICATOR_GREEN, 1)
-        elif o:
-            self.rpc.call_method('write_gpio', self.TEST_INDICATOR_YELLOW, 1)
-        elif f:
-            self.rpc.call_method('write_gpio', self.TEST_INDICATOR_RED, 1)
+        if o and self.TEST_INDICATORS.get('other', False):
+            self.rpc.call_method('write_gpio', self.TEST_INDICATORS["other"]["gpio"], self.TEST_INDICATORS["other"]["active_high"])
 
         return None
 

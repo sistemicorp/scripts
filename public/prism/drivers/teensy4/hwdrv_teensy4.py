@@ -82,7 +82,7 @@ class HWDriver(object):
             # test if this COM port is really a Teensy
             # create an instance of Teensy()
             _teensy['hwdrv'] = Teensy4(port, loggerIn=logging.getLogger("teensy.try"))
-            success = _teensy['teensy4'].init()
+            success = _teensy['hwdrv'].init()
             if not success:
                 self.logger.info("failed on {}...".format(port))
                 continue
