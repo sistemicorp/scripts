@@ -162,6 +162,7 @@ class ChanCon(object):
                         self.logger.info("player: {} (ignored in development)".format(play))
 
                     show_pass_fail = drivers[0].get("show_pass_fail", None)
+                    if show_pass_fail: show_pass_fail(False, False, False)
 
             self.logger.info("{} - number channels {}".format(hwdrv_sname, _num_channels))
             if _num_channels == 0:
