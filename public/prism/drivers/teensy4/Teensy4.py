@@ -26,11 +26,15 @@ class Teensy4():
     ... add notes as required...
 
     """
-
     GPIO_MODE_INPUT = "INPUT"
     GPIO_MODE_OUTPUT = "OUTPUT"
     GPIO_MODE_INPUT_PULLUP = "INPUT_PULLUP"
     GPIO_MODE_LIST = [GPIO_MODE_INPUT, GPIO_MODE_OUTPUT, GPIO_MODE_INPUT_PULLUP]
+
+    JIG_CLOSE_GPIO = 23
+    TEST_INDICATOR_RED = 22
+    TEST_INDICATOR_YELLOW = 21
+    TEST_INDICATOR_GREEN = 20
 
     def __init__(self, port, baudrate=9600, loggerIn=None):
         self.lock = threading.Lock()
@@ -202,15 +206,16 @@ class Teensy4():
     #
 
     def jig_closed_detect(self):
-        # TODO: add jig closed detect, see IBA01.py for example
-        #       this method will be different than the others as Prism Player logic
-        #       expects to see a simple True|False return, not a dict or success, etc...
-        #       so do the usual rpc, but then validate and return the response
-        #       make it so the GPIO used on the server can be easily changed, like its a define at the
-        #       top of the server code.  This driver doesn't need to know the GPIO number.
-        #       You might want code that if someone tried to init/set the same GPIO you
-        #       throw an error... as if the GPIO is dedicated to jig closed, its not allowed to to anything else
-        return False
+        """ Read Jig Closed feature on pyboard
+        This is used by Prism Player logic, and can only return True|False
+
+        return: <True|False>
+        """
+        answer = self.rpc.call_method('read_gpio', self.JIG_CLOSE_GPIO)
+
+        # TODO: evaluate success
+
+        return answer['result']['state']
 
     def show_pass_fail(self, p=False, f=False, other=False):
         """ Set pass/fail indicator
@@ -220,10 +225,18 @@ class Teensy4():
         :param o: <True|False>  "other" is set
         :return: None
         """
-        # TODO: here again we take 2-3 GPIOs from Teensy and dedicate them to a visual
-        #       (usually LED) indication of test result.
-        #       see IBA01.py for example
-        pass
+        self.rpc.call_method('write_gpio', self.TEST_INDICATOR_GREEN, LOW)
+        self.rpc.call_method('write_gpio', self.TEST_INDICATOR_YEL, LOW)
+        self.rpc.call_method('write_gpio', self.TEST_INDICATOR_GREEN, LOW)
+
+        if p:
+            self.rpc.call_method('write_gpio', self.TEST_INDICATOR_GREEN, HIGH)
+        elif other:
+            self.rpc.call_method('write_gpio', self.TEST_INDICATOR_YELLOW, HIGH)
+        elif f:
+            self.rpc.call_method('write_gpio', self.TEST_INDICATOR_RED, HIGH)
+
+        return None
 
     #
     # Prism Player functions
