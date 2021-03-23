@@ -253,11 +253,13 @@ class Teensy4():
             return False
 
         answer = json.loads(self.rpc.call_method('read_gpio', self.JIG_CLOSE_GPIO))
-        success = answer["success"]
+        success = answer['success']
 
         if not success:
             self.logger.error("Failed to detect Jig Close GPIO")
             return False
+
+        self.logger.info("Jig Detection GPIO is {}".format(answer['result']['state']))
 
         return answer['result']['state']
 
