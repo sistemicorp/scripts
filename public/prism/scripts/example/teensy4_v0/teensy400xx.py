@@ -253,7 +253,7 @@ class teensy400xx(TestItem):
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
             return
 
-        self.log_bullet("Reading Analog Pin {}, {} times per {} ms".format(pin_number, sample_num, sample_rate))
+        self.log_bullet("Reading Analog Pin {}, {} times with an interval of {} ms".format(pin_number, sample_num, sample_rate))
 
         answer = self.teensy.read_adc(pin_number, sample_num, sample_rate)
         success = answer["success"]
