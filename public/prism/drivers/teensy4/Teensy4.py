@@ -31,12 +31,7 @@ class Teensy4():
     GPIO_MODE_INPUT_PULLUP = "INPUT_PULLUP"
     GPIO_MODE_LIST = [GPIO_MODE_INPUT, GPIO_MODE_OUTPUT, GPIO_MODE_INPUT_PULLUP]
 
-    JIG_CLOSE_GPIO = 23 # GPIO number for Jig Closed detect, set to None if not using
-
-    # TEST_INDICATOR_RED = 22 # GPIO number for Test indicator LED, set to None if not using
-    # TEST_INDICATOR_YELLOW = 21
-    # TEST_INDICATOR_GREEN = 20
-    # TEST_INDICATOR_LIST = [TEST_INDICATOR_RED, TEST_INDICATOR_YELLOW, TEST_INDICATOR_GREEN]
+    JIG_CLOSE_GPIO = 23 # GPIO number for Jig Closed detect, set to None if not using (Active-Low)
 
     # LED test indicators GPIO numbers and whether they are active_high. Set GPIO to None if not using
     TEST_INDICATORS = {
@@ -78,14 +73,6 @@ class Teensy4():
             self.logger.error("version does not match, {} {}".format(...))
             return False
 
-        # for pin_number in self.TEST_INDICATOR_LIST:
-        #     if pin_number < 0 or pin_number > 41:
-        #         self.logger.error("Invalid GPIO")
-        #         return False
-        #     if pin_number is None:
-        #         self.logger.error("Test Indicator not defined (None)")
-        #         return False
-
         for k in self.TEST_INDICATORS.keys():
             pin_number = self.TEST_INDICATORS[k]['gpio']
             if pin_number < 0 or pin_number > 41:
@@ -96,9 +83,15 @@ class Teensy4():
                 return False
             self.rpc.call_method('init_gpio', pin_number, self.GPIO_MODE_OUTPUT.encode())
 
-        # self.rpc.call_method('init_gpio', self.TEST_INDICATOR['pass']['gpio'], self.GPIO_MODE_OUTPUT.encode())
-        # self.rpc.call_method('init_gpio', self.TEST_INDICATOR['fail']['gpio'], self.GPIO_MODE_OUTPUT.encode())
-        # self.rpc.call_method('init_gpio', self.self.TEST_INDICATOR['other']['gpio'], self.GPIO_MODE_OUTPUT.encode())
+        if self.JIG_CLOSE_GPIO < 0 or self.JIG_CLOSE_GPIO > 41:
+            self.logger.error("Invalid GPIO")
+            return False
+
+        if self.JIG_CLOSE_GPIO is None:
+            self.logger.error("Jig Closed Detector not defined (None)")
+            return False
+
+        self.rpc.call_method('init_gpio', self.JIG_CLOSE_GPIO, self.GPIO_MODE_INPUT_PULLUP.encode())
 
         # finally, all is well
         self.logger.info("Installed Teensy on port {}".format(self.port))
@@ -244,14 +237,6 @@ class Teensy4():
 
         return: <True|False>
         """
-        if self.JIG_CLOSE_GPIO < 0 or self.JIG_CLOSE_GPIO > 41:
-            self.logger.error("Invalid GPIO")
-            return False
-
-        if self.JIG_CLOSE_GPIO is None:
-            self.logger.error("Jig Closed Detector not defined (None)")
-            return False
-
         answer = json.loads(self.rpc.call_method('read_gpio', self.JIG_CLOSE_GPIO))
         success = answer['success']
 
@@ -259,7 +244,10 @@ class Teensy4():
             self.logger.error("Failed to detect Jig Close GPIO")
             return False
 
-        self.logger.info("Jig Detection GPIO is {}".format(answer['result']['state']))
+        if answer['result']['state'] != 1:
+            self.logger.info("Jig close detected")
+        else:
+            self.logger.info("Jig close NOT detected")
 
         return answer['result']['state']
 
