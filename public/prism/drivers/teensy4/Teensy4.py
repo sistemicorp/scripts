@@ -8,6 +8,7 @@ Martin Guthrie
 import json
 import threading
 from simple_rpc import Interface
+from pathlib import Path
 
 try:
     # run locally
@@ -41,7 +42,7 @@ class Teensy4():
     }
 
 
-    def __init__(self, port, baudrate=9600, loggerIn=None):
+    def __init__(self, port, loggerIn=None):
         self.lock = threading.Lock()
 
         if loggerIn: self.logger = loggerIn
@@ -49,8 +50,11 @@ class Teensy4():
 
         self.port = port
         self.rpc = None
-        self.my_version = "0.1.0"
 
+        s = Path("C:/Users/Owen's PC/Documents/Arduino/libraries/version/version.h").read_text()
+        ver = [i for i in s.split(' ') if len(i)][-1].replace('"','')
+
+        self.my_version = ver
 
     def init(self):
         """ Init Teensy SimpleRPC connection
@@ -70,7 +74,7 @@ class Teensy4():
             return False
 
         if self.my_version != version_response["result"]["version"]:
-            self.logger.error("version does not match, {} {}".format(...))
+            self.logger.error("version does not match, Python: {} Arduino: {}".format(self.my_version, version_response["result"]["version"]))
             return False
 
         for k in self.TEST_INDICATORS.keys():
@@ -83,15 +87,13 @@ class Teensy4():
                 return False
             self.rpc.call_method('init_gpio', pin_number, self.GPIO_MODE_OUTPUT.encode())
 
-        if self.JIG_CLOSE_GPIO < 0 or self.JIG_CLOSE_GPIO > 41:
-            self.logger.error("Invalid GPIO")
-            return False
-
         if self.JIG_CLOSE_GPIO is None:
             self.logger.error("Jig Closed Detector not defined (None)")
+        elif self.JIG_CLOSE_GPIO < 0 or self.JIG_CLOSE_GPIO > 41:
+            self.logger.error("Invalid GPIO")
             return False
-
-        self.rpc.call_method('init_gpio', self.JIG_CLOSE_GPIO, self.GPIO_MODE_INPUT_PULLUP.encode())
+        else:
+            self.rpc.call_method('init_gpio', self.JIG_CLOSE_GPIO, self.GPIO_MODE_INPUT_PULLUP.encode())
 
         # finally, all is well
         self.logger.info("Installed Teensy on port {}".format(self.port))
@@ -237,6 +239,13 @@ class Teensy4():
 
         return: <True|False>
         """
+        if self.JIG_CLOSE_GPIO is None:
+            self.logger.error("Jig Closed Detector not defined (None)")
+            return False
+
+        elif self.JIG_CLOSE_GPIO < 0 or self.JIG_CLOSE_GPIO > 41:
+            self.logger.error("Invalid GPIO")
+            return False
         answer = json.loads(self.rpc.call_method('read_gpio', self.JIG_CLOSE_GPIO))
         success = answer['success']
 
