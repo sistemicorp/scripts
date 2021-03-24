@@ -13,6 +13,7 @@ import jstyleson
 import logging
 import logging.handlers as handlers
 import importlib
+import time
 
 from public.prism.api import ResultAPI
 from public.prism.ResultBaseKeysV1 import ResultBaseKeysV1
@@ -157,9 +158,12 @@ class ChanCon(object):
 
                 # call the player function if exist, ignore result, but see logs
                 if drivers:
-                    if drivers[0].get("play", None):
-                        play = drivers[0].get("play")()
-                        self.logger.info("player: {} (ignored in development)".format(play))
+                    if drivers[0].get('play', None):
+                        play = drivers[0].get('play')()
+                        while play: #Active-Low
+                            play = drivers[0].get("play")()
+                            self.logger.info("player: {}".format(play))
+                            if play: time.sleep(1)
 
                     show_pass_fail = drivers[0].get("show_pass_fail", None)
                     if show_pass_fail: show_pass_fail(False, False, False)

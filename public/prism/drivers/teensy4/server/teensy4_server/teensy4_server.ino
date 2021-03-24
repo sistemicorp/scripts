@@ -1,28 +1,12 @@
 #include <simpleRPC.h>
 #include <ArduinoJson.h>
-#include <version.h>
+#include "version.h"
 
 #define RESPONSE_BUFFER_SIZE 200
 #define MAC_SIZE 6
 
-void setup(void) {
-  Serial.begin(9600);
-  pinMode(LED_BUILTIN, OUTPUT);
-}
-
-void loop(void) {
-  interface(
-    Serial,
-    unique_id, "unique_id: Shows Teensy's unique id",
-    slot, "slot: Shows the Teensy's slot to differentiate multiple Teensys",
-    set_led, "set_led: Set LED (ON/OFF).",
-    version, "version: Shows current version.",
-    read_adc, "read_adc: Reads analog pin.",
-    init_gpio, "init_gpio: Initializes GPIO (INPUT, INPUT_PULLUP, OUTPUT).",
-    read_gpio, "read_gpio: Reads GPIO (HIGH or LOW).",
-    write_gpio, "write_gpio: Writes GPIO (HIGH or LOW).",
-    reset, "reset: Resets Teensy.");
-}
+//-------------------------------------------------------------------------------------------------------------
+//simpleRPC Functions
 
 String unique_id() {
   DynamicJsonDocument doc = _helper(__func__);
@@ -123,9 +107,14 @@ String write_gpio(int pin_number, bool state){
 
 String reset(){
   DynamicJsonDocument doc = _helper(__func__);
+
+  // ... add any required resetting code here ...
   
   return _response(doc);
 }
+
+//-------------------------------------------------------------------------------------------------------------
+//Helper Functions
 
 DynamicJsonDocument _helper(String f){
   DynamicJsonDocument doc(RESPONSE_BUFFER_SIZE);
@@ -162,4 +151,26 @@ String _teensyMAC(uint8_t *mac){
     snprintf(unique_id, sizeof(unique_id), "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
     
     return unique_id;
+}
+
+//-------------------------------------------------------------------------------------------------------------
+//set-up/loop Functions
+
+void setup(void) {
+  Serial.begin(9600);
+  pinMode(LED_BUILTIN, OUTPUT);
+}
+
+void loop(void) {
+  interface(
+    Serial,
+    unique_id, "unique_id: Shows Teensy's unique id",
+    slot, "slot: Shows the Teensy's slot to differentiate multiple Teensys",
+    set_led, "set_led: Set LED (ON/OFF).",
+    version, "version: Shows current version.",
+    read_adc, "read_adc: Reads analog pin.",
+    init_gpio, "init_gpio: Initializes GPIO (INPUT, INPUT_PULLUP, OUTPUT).",
+    read_gpio, "read_gpio: Reads GPIO (HIGH or LOW).",
+    write_gpio, "write_gpio: Writes GPIO (HIGH or LOW).",
+    reset, "reset: Resets Teensy.");
 }

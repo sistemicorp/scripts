@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Sistemi Corporation, copyright, all rights reserved, 2021
-Martin Guthrie
+Owen Li
 
 """
 import os
@@ -103,7 +103,6 @@ class HWDriver(object):
                 continue
 
             _teensy['close'] = _teensy['hwdrv'].close
-
             _teensy['play'] = _teensy['hwdrv'].jig_closed_detect
             _teensy['show_pass_fail'] = _teensy['hwdrv'].show_pass_fail
 

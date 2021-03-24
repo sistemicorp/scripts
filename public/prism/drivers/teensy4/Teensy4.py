@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 """
 Sistemi Corporation, copyright, all rights reserved, 2021
-Martin Guthrie
+Owen Li
 
 """
 import json
 import threading
+import os
 from simple_rpc import Interface
 from pathlib import Path
 
@@ -24,7 +25,17 @@ DRIVER_TYPE = "TEENSY4"
 class Teensy4():
     """ teensy4 SimpleRPC based driver
 
-    ... add notes as required...
+    Adding new RPC calls...
+
+    1) Write server code by adding a function in teensy4_server.ino (Look at existing functions as example)
+    2) Export the function by adding a name and description in the loop() (Look at existing exports as example)
+    3) Write function in Teensy4 Class (this one) to call your simpleRPC function (Look at existing functions as example)
+    4) Write function in teensy400xx.py to call your Teensy4 Class function (Look at existing functions as example)
+    5) Add your function call to the test script!
+
+    VERSION...
+
+    There is a version for teensy4_server.ino and for the python code. The version number must be the same for testing to run.
 
     """
     GPIO_MODE_INPUT = "INPUT"
@@ -51,10 +62,26 @@ class Teensy4():
         self.port = port
         self.rpc = None
 
-        s = Path("C:/Users/Owen's PC/Documents/Arduino/libraries/version/version.h").read_text()
+        my_dir = r"C:\Users"
+        arduino_dir = "Arduino"
+        header = "version.h"
+
+        for root, dirs, files in os.walk(my_dir):
+            for name in dirs:
+                if name == arduino_dir:
+                    my_dir = os.path.abspath(os.path.join(root, name))
+                    break
+
+        for root, dirs, files in os.walk(my_dir):
+            for name in files:
+                if name == header:
+                    my_dir = os.path.abspath(os.path.join(root, name))
+
+        s = Path(my_dir).read_text()
         ver = [i for i in s.split(' ') if len(i)][-1].replace('"','')
 
         self.my_version = ver
+        print(ver)
 
     def init(self):
         """ Init Teensy SimpleRPC connection

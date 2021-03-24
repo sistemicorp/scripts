@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Sistemi Corporation, copyright, all rights reserved, 2021
-Martin Guthrie
+Owen Li
 
 This CLI provides a linux CLI interface to Teensy4 SimpleRPC.
 
