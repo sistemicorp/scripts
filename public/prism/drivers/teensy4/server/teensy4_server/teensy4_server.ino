@@ -1,3 +1,7 @@
+/*  Sistemi Corporation, copyright, all rights reserved, 2021
+ *  Owen Li
+*/
+
 #include <simpleRPC.h>
 #include <ArduinoJson.h>
 #include "version.h"

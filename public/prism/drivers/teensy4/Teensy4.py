@@ -52,6 +52,7 @@ class Teensy4():
         "other": {'gpio': 22, 'active_high': True}
     }
 
+    header_dir = "public/prism/drivers/teensy4/server/libraries/version/version.h"
 
     def __init__(self, port, loggerIn=None):
         self.lock = threading.Lock()
@@ -62,22 +63,22 @@ class Teensy4():
         self.port = port
         self.rpc = None
 
-        my_dir = r"C:\Users"
-        arduino_dir = "Arduino"
-        header = "version.h"
+        # my_dir = r"C:\Users"
+        # arduino_dir = "Arduino"
+        # header = "version.h"
 
-        for root, dirs, files in os.walk(my_dir):
-            for name in dirs:
-                if name == arduino_dir:
-                    my_dir = os.path.abspath(os.path.join(root, name))
-                    break
+        # for root, dirs, files in os.walk(my_dir):
+        #     for name in dirs:
+        #         if name == arduino_dir:
+        #             my_dir = os.path.abspath(os.path.join(root, name))
+        #             break
+        #
+        # for root, dirs, files in os.walk(my_dir):
+        #     for name in files:
+        #         if name == header:
+        #             my_dir = os.path.abspath(os.path.join(root, name))
 
-        for root, dirs, files in os.walk(my_dir):
-            for name in files:
-                if name == header:
-                    my_dir = os.path.abspath(os.path.join(root, name))
-
-        s = Path(my_dir).read_text()
+        s = Path(self.header_dir).read_text()
         ver = [i for i in s.split(' ') if len(i)][-1].replace('"','')
 
         self.my_version = ver
@@ -285,7 +286,7 @@ class Teensy4():
         else:
             self.logger.info("Jig close NOT detected")
 
-        return answer['result']['state']
+        return not answer['result']['state']
 
     def show_pass_fail(self, p=False, f=False, o=False):
         """ Set pass/fail indicator

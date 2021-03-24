@@ -160,10 +160,10 @@ class ChanCon(object):
                 if drivers:
                     if drivers[0].get('play', None):
                         play = drivers[0].get('play')()
-                        while play: #Active-Low
+                        while not play:
                             play = drivers[0].get("play")()
                             self.logger.info("player: {}".format(play))
-                            if play: time.sleep(1)
+                            if not play: time.sleep(1)
 
                     show_pass_fail = drivers[0].get("show_pass_fail", None)
                     if show_pass_fail: show_pass_fail(False, False, False)
