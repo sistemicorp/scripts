@@ -63,26 +63,7 @@ class Teensy4():
         self.port = port
         self.rpc = None
 
-        # my_dir = r"C:\Users"
-        # arduino_dir = "Arduino"
-        # header = "version.h"
-
-        # for root, dirs, files in os.walk(my_dir):
-        #     for name in dirs:
-        #         if name == arduino_dir:
-        #             my_dir = os.path.abspath(os.path.join(root, name))
-        #             break
-        #
-        # for root, dirs, files in os.walk(my_dir):
-        #     for name in files:
-        #         if name == header:
-        #             my_dir = os.path.abspath(os.path.join(root, name))
-
-        s = Path(self.header_dir).read_text()
-        ver = [i for i in s.split(' ') if len(i)][-1].replace('"','')
-
-        self.my_version = ver
-        print(ver)
+        self.my_version = self._get_version()
 
     def init(self):
         """ Init Teensy SimpleRPC connection
@@ -105,23 +86,11 @@ class Teensy4():
             self.logger.error("version does not match, Python: {} Arduino: {}".format(self.my_version, version_response["result"]["version"]))
             return False
 
-        for k in self.TEST_INDICATORS.keys():
-            pin_number = self.TEST_INDICATORS[k]['gpio']
-            if pin_number < 0 or pin_number > 41:
-                self.logger.error("{} has Invalid GPIO {}".format(k, pin_number))
-                return False
-            if pin_number is None:
-                self.logger.error("Test Indicator not defined (None)")
-                return False
-            self.rpc.call_method('init_gpio', pin_number, self.GPIO_MODE_OUTPUT.encode())
+        # check if test indicator has valid GPIOs
+        self._test_indicator_check()
 
-        if self.JIG_CLOSE_GPIO is None:
-            self.logger.error("Jig Closed Detector not defined (None)")
-        elif self.JIG_CLOSE_GPIO < 0 or self.JIG_CLOSE_GPIO > 41:
-            self.logger.error("Invalid GPIO")
-            return False
-        else:
-            self.rpc.call_method('init_gpio', self.JIG_CLOSE_GPIO, self.GPIO_MODE_INPUT_PULLUP.encode())
+        # check if jig close has valid GPIOs
+        self._jig_close_check()
 
         # finally, all is well
         self.logger.info("Installed Teensy on port {}".format(self.port))
@@ -136,7 +105,38 @@ class Teensy4():
         self.rpc.close()
         return True
 
-    # -------------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------------------
+    # Helper Functions
+
+    def _get_version(self):
+        s = Path(self.header_dir).read_text()
+        ver = [i for i in s.split(' ') if len(i)][-1].replace('"', '')
+
+        return ver
+
+    def _test_indicator_check(self):
+        for k in self.TEST_INDICATORS.keys():
+            pin_number = self.TEST_INDICATORS[k]['gpio']
+            if pin_number < 0 or pin_number > 41:
+                self.logger.error("{} has Invalid GPIO {}".format(k, pin_number))
+                return False
+            if pin_number is None:
+                self.logger.error("Test Indicator not defined (None)")
+                return False
+            self.rpc.call_method('init_gpio', pin_number, self.GPIO_MODE_OUTPUT.encode())
+
+    def _jig_close_check(self):
+        if self.JIG_CLOSE_GPIO is None:
+            self.logger.error("Jig Closed Detector not defined (None)")
+        elif self.JIG_CLOSE_GPIO < 0 or self.JIG_CLOSE_GPIO > 41:
+            self.logger.error("Invalid GPIO")
+            return False
+        else:
+            self.rpc.call_method('init_gpio', self.JIG_CLOSE_GPIO, self.GPIO_MODE_INPUT_PULLUP.encode())
+
+    # Helper Functions
+    # ----------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------------------
     # API (wrapper functions)
     # these are the important functions
     #
@@ -203,15 +203,6 @@ class Teensy4():
     #     # FIXME: put SimpleRPC call here, and return the result JSON
     #     return {"success": False, "result": {}}
 
-    # def jig_closed_detect(self):
-    #     """ Read Jig Closed feature on teensy
-    #
-    #     :return: success, result
-    #     """
-    #     c = {'method': 'jig_closed_detect', 'args': {}}
-    #     # FIXME: put SimpleRPC call here, and return the result JSON
-    #     return {"success": False, "result": {}}
-
     def read_adc(self, pin_number, sample_num=1, sample_rate=1):
         """ Read an ADC pin
         - This is a BLOCKING function
@@ -257,6 +248,9 @@ class Teensy4():
         answer = self.rpc.call_method('write_gpio', pin_number, state)
         return json.loads(answer)
 
+    #
+    # API (wrapper functions)
+    # ---------------------------------------------------------------------------------------------
     # ---------------------------------------------------------------------------------------------
     # Prism Player functions
     #
