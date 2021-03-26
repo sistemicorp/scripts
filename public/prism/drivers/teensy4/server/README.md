@@ -40,3 +40,16 @@ Instructions for uploading server file to Teensy.
               Teensy4.py   INFO   69 attempting to install Teensy on port COM5
               Teensy4.py   INFO   99 Installed Teensy on port COM5
           Teensy4_cli.py   INFO   92 Version 0.1.0
+
+--Resources for automizing Server Code Updates--
+
+    https://www.pjrc.com/teensy/loader_cli.html
+
+    An Error I came across:
+
+    C:\Users\User's PC\Documents\teensy_loader_cli-master>MinGW32-make
+    rm -f teensy_loader_cli teensy_loader_cli.exe*
+    process_begin: CreateProcess(NULL, rm -f teensy_loader_cli teensy_loader_cli.exe*, ...) failed.
+    make (e=2): The system cannot find the file specified.
+    Makefile:59: recipe for target 'clean' failed
+    MinGW32-make: *** [clean] Error 2
