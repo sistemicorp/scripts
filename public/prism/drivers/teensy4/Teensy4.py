@@ -111,6 +111,7 @@ class Teensy4():
     def _get_version(self):
         s = Path(self.header_dir).read_text()
         ver = [i for i in s.split(' ') if len(i)][-1].replace('"', '')
+        # reading version number from header file and removing quotes
 
         return ver
 
@@ -124,15 +125,18 @@ class Teensy4():
                 self.logger.error("Test Indicator not defined (None)")
                 return False
             self.rpc.call_method('init_gpio', pin_number, self.GPIO_MODE_OUTPUT.encode())
+        return True
 
     def _jig_close_check(self):
         if self.JIG_CLOSE_GPIO is None:
             self.logger.error("Jig Closed Detector not defined (None)")
+            return True
         elif self.JIG_CLOSE_GPIO < 0 or self.JIG_CLOSE_GPIO > 41:
             self.logger.error("Invalid GPIO")
             return False
         else:
             self.rpc.call_method('init_gpio', self.JIG_CLOSE_GPIO, self.GPIO_MODE_INPUT_PULLUP.encode())
+            return True
 
     # Helper Functions
     # ----------------------------------------------------------------------------------------------
