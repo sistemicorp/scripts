@@ -115,7 +115,6 @@ class Teensy4():
         #     #define VERSION "1.0.0"
         # Extract "1.0.0" and remove quotations
         ver = [i for i in s.split(' ') if len(i)][-1].replace('"', '')
-
         return ver
 
     def _test_indicator_check(self):
