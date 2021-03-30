@@ -110,8 +110,11 @@ class Teensy4():
 
     def _get_version(self):
         s = Path(self.header_dir).read_text()
+        # Expected version.h file contents, no other pattern is accounted for,
+        # !!no other lines or comments are allowed!!
+        #     #define VERSION "1.0.0"
+        # Extract "1.0.0" and remove quotations
         ver = [i for i in s.split(' ') if len(i)][-1].replace('"', '')
-        # reading version number from header file and removing quotes
 
         return ver
 
