@@ -27,7 +27,7 @@
   },
   "config": {
     "fail_fast": false,
-    "drivers": ["public.prism.drivers.fake.fake"]
+    "drivers": ["public.prism.drivers.fake.hwdrv_fake"]
   },
   "tests": [
     {

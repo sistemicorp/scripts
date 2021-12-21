@@ -56,10 +56,10 @@ start () {
         echo "Lente IP address is required flag (--server)"
         exit 1
     elif [[ $flag_server_ip == "none" ]]; then
-        SERVERIP=127.0.0.1
+        LENTEIP=127.0.0.1
     else
         if valid_ip $flag_server_ip; then
-            SERVERIP=${flag_server_ip}
+            LENTEIP=${flag_server_ip}
         else
             echo "IP address is invalid, please check"
             exit 1
@@ -69,30 +69,30 @@ start () {
             echo "--restart= must be always or no"
             exit 1
     fi
-    echo Using Lente IP = $SERVERIP
+    echo Using Lente IP = $LENTEIP
     docker stop prism 2> /dev/null
     docker rm prism 2> /dev/null
     if [[ $flag_restart == "always" ]]; then
         docker run -d \
             --restart=${flag_restart} \
-            -e SERVERIP=${SERVERIP} \
+            -e LENTEIP=${LENTEIP} \
             --hostname=${flag_hostname} \
             -p 6590:6590 \
             -v $(pwd):/app/public \
             -v /dev:/dev \
-            --privileged \
             --device=/dev \
+            --privileged \
             --name prism \
             sistemicorp/prism
     elif [[ $flag_restart == "no" ]]; then
         docker run -d \
-            -e SERVERIP=${SERVERIP} \
+            -e LENTEIP=${LENTEIP} \
             --hostname=${flag_hostname} \
             -p 6590:6590 \
             -v $(pwd):/app/public \
             -v /dev:/dev \
-            --privileged \
             --device=/dev \
+            --privileged \
             --name prism \
             --rm \
             sistemicorp/prism

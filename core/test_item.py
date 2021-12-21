@@ -10,6 +10,8 @@ from public.prism.api import ResultAPI
 
 class TestItem(object):
 
+    BULLET_TEXT_MAX_LENGTH = 50
+
     def __init__(self, controller, ch_num, shared_state):
         self.logger = logging.getLogger("SC.{}.{}".format("TestItem", ch_num))
         self.chan = ch_num
@@ -23,6 +25,10 @@ class TestItem(object):
     # ------------ Script APIs wrapped by TestItem -----------------------------
 
     def log_bullet(self, text, ovrwrite_last_line=False):
+        if len(text) > self.BULLET_TEXT_MAX_LENGTH:
+            self.logger.warning("bullet text max length exceeded, truncating")
+            text = text[0:self.BULLET_TEXT_MAX_LENGTH]
+
         self.con.log_bullet(text, ovrwrite_last_line)
 
     def input_button(self, buttons, timeout=10):

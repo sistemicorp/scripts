@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2020
+Sistemi Corporation, copyright, all rights reserved, 2020-2021
 Vivian Guthrie, Martin Guthrie
 
 """
@@ -149,10 +149,9 @@ class HWDriver(object):
     """
     SFN = os.path.basename(__file__)
 
-    def __init__(self, shared_state):
-        self.logger = logging.getLogger("SC.{}.{}".format(__class__.__name__, self.SFN))
+    def __init__(self):
+        self.logger = logging.getLogger("{}".format(self.SFN))
         self.logger.info("Start")
-        self.shared_state = shared_state
 
     def discover_channels(self):
         """ Determine the number of channels, and populate hw drivers into shared state
@@ -162,22 +161,30 @@ class HWDriver(object):
         Multiple printers could be supported by assigning the /dev/usb/lp# to the channel
         number.
 
-        shared_state: a list,
-            self.shared_state.add_drivers(DRV_TYPE, [ {}, {}, ... ], shared=True/False)
+        [ {"id": i,                    # ~slot number of the channel (see Note 1)
+           "version": <VERSION>,       # version of the driver
+           "hwdrv": <foobar>,          # instance of your hardware driver
 
-        [ {'id': i,               # id of the channel (see Note 1)
-           "version": <VERSION>,  # version of the driver
-           "close": False},       # register a callback on closing the channel
-           "<foo>": <bar>,        # something that makes your HW work...
+           # optional
+           "close": None},             # register a callback on closing the channel, or None
+           "play": jig_closed_detect   # function for detecting jig closed
+
+           # not part of the required block
+           "unique_id": <unique_id>,   # unique id of the hardware (for tracking purposes)
+           ...
+          }, ...
         ]
 
         Note:
-        1) The hw driver objects are expected to have an 'id' field, the lowest
-        id is assigned to channel 0, the next highest to channel 1, etc
+        1) The hw driver objects are expected to have an 'slot' field, the lowest
+           id is assigned to channel 0, the next highest to channel 1, etc
 
-        :return: >0 number of channels,
-                  0 does not indicate num channels, like a shared hardware driver
-                 <0 error
+        :return: <#>, <list>
+            where #: >0 number of channels,
+                      0 does not indicate num channels, like a shared hardware driver
+                     <0 error
+
+                  list of drivers
         """
         drivers = []
 
@@ -192,13 +199,17 @@ class HWDriver(object):
 
                 p = '/dev/usb/lp0'  # FIXME: when multiple printers exist, need to find file association
 
-                drivers.append({"id": id, "version": VERSION, "printer": BrotherQL700(id, p), "close": False})
+                drivers.append({"id": id,
+                                "version": VERSION,
+                                "hwdrv": BrotherQL700(id, p),
+                                "play": None,
+                                "close": None})
                 id += 1
 
         if not drivers:
             self.logger.error("printer not found")
             pub_notice("HWDriver:{}: Error none found".format(self.SFN), sender="discover_channels", type=PUB.NOTICES_ERROR)
-            return -1
+            return -1, DRIVER_TYPE, []
 
         # do not allow the test script validation step to succeed if can't print a test label
         for d in drivers:
@@ -207,23 +218,10 @@ class HWDriver(object):
             if not success:
                 self.logger.error("failed to print")
                 pub_notice("HWDriver:{}: failed to print".format(self.SFN), sender="discover_channels", type=PUB.NOTICES_ERROR)
-                return -1
+                return -1, DRIVER_TYPE, []
 
             pub_notice("HWDriver:{}: found {} {}".format(self.SFN, id, path), sender="discover_channels", type=PUB.NOTICES_NORMAL)
 
-        self.shared_state.add_drivers(DRIVER_TYPE, drivers, shared=True)
         # by returning 0, it means this return values DOES not represent number of channels
-        return 0
+        return 0, DRIVER_TYPE, drivers
 
-    def init_play_pub(self):
-        """ Function to instantiate a class/thread to trigger PLAY of script
-        - this is called right after discover_channels
-        """
-        self.logger.info("HWDriver:{}: does not support 'play' messaging".format(self.SFN))
-
-    def close(self):
-        """ Called on shutdown of the system.  There is nothing to do for Brother QL printer
-
-        :return:
-        """
-        pass

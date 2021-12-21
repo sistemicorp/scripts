@@ -1,0 +1,284 @@
+Metadata-Version: 2.1
+Name: PyVISA-py
+Version: 0.5.2
+Summary: Python VISA bindings for GPIB, RS232, and USB instruments
+Home-page: https://github.com/pyvisa/pyvisa-py
+Author: Hernan E. Grecco
+Author-email: hernan.grecco@gmail.com
+Maintainer: Matthieu C. Dartiailh
+Maintainer-email: m.dartiailh@gmail.com
+License: MIT License
+Keywords: Remote,VISA,GPIB,USB,serial,RS232,measurement,acquisition
+Platform: Linux; Windows; Mac
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Operating System :: MacOS :: MacOS X
+Classifier: Programming Language :: Python
+Classifier: Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Requires-Python: >=3.6
+Description-Content-Type: text/x-rst
+Requires-Dist: pyvisa (>=1.11.0)
+Requires-Dist: typing-extensions
+Requires-Dist: importlib-metadata ; python_version < "3.8"
+Provides-Extra: gpib_ctypes
+Requires-Dist: gpib-ctypes (>=0.3.0) ; extra == 'gpib_ctypes'
+Provides-Extra: serial
+Requires-Dist: pyserial (>=3.0) ; extra == 'serial'
+Provides-Extra: usb
+Requires-Dist: pyusb ; extra == 'usb'
+
+PyVISA-py
+=========
+
+.. image:: https://github.com/pyvisa/pyvisa-py/workflows/Continuous%20Integration/badge.svg
+    :target: https://github.com/pyvisa/pyvisa-py/actions
+    :alt: Continuous integration
+.. image:: https://github.com/pyvisa/pyvisa-py/workflows/Documentation%20building/badge.svg
+    :target: https://github.com/pyvisa/pyvisa-py/actions
+    :alt: Documentation building
+.. image:: https://dev.azure.com/pyvisa/pyvisa-py/_apis/build/status/pyvisa.pyvisa-py.keysight-assisted?branchName=main
+    :target: https://dev.azure.com/pyvisa/pyvisa-py/_build
+    :alt: Keysight assisted testing
+.. image:: https://codecov.io/gh/pyvisa/pyvisa-py/branch/main/graph/badge.svg
+    :target: https://codecov.io/gh/pyvisa/pyvisa-py
+    :alt: Code Coverage
+.. image:: https://readthedocs.org/projects/pyvisa-py/badge/?version=latest
+    :target: https://pyvisa.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
+.. image:: https://img.shields.io/pypi/l/PyVISA-py
+    :target: https://pypi.python.org/pypi/pyvisa-py
+    :alt: PyPI - License
+.. image:: https://img.shields.io/pypi/v/PyVISA-py
+    :target: https://pypi.python.org/pypi/pyvisa-py
+    :alt: PyPI
+
+A PyVISA backend that implements a large part of the "Virtual Instrument Software
+Architecture" (VISA_) in pure Python (with the help of some nice cross platform
+libraries python packages!).
+
+Description
+-----------
+
+PyVISA started as wrapper for the IVI-VISA library and therefore you need to install
+a VISA library in your system (National Instruments, Keysight, etc). This works
+most of the time, for most people. But IVI-VISA implementations are proprietary
+libraries that only works on certain systems. That is when PyVISA-py jumps in.
+
+Starting from version 1.6, PyVISA allows to use different backends. These
+backends can be dynamically loaded. PyVISA-py is one of such backends. It
+implements most of the methods for Message Based communication
+(Serial/USB/GPIB/Ethernet) using Python and some well developed, easy to deploy
+and cross platform libraries
+
+.. _VISA: http://www.ivifoundation.org/Downloads/Specifications.htm
+
+
+VISA and Python
+---------------
+
+Python has a couple of features that make it very interesting for measurement
+controlling:
+
+- Python is an easy-to-learn scripting language with short development cycles.
+- It represents a high abstraction level, which perfectly blends with the
+  abstraction level of measurement programs.
+- It has a very rich set of native libraries, including numerical and plotting
+  modules for data analysis and visualisation.
+- A large set of books (in many languages) and on-line publications is available.
+
+
+Requirements
+------------
+
+- Python (tested with 3.6+)
+- PyVISA 1.11+
+
+Optionally
+- PySerial (to interface with Serial instruments)
+- PyUSB (to interface with USB instruments)
+- linux-gpib (to interface with gpib instruments, only on linux)
+- gpib-ctypes (to interface with GPIB instruments on Windows and Linux)
+
+
+Installation
+--------------
+
+Using pip:
+
+    $ pip install pyvisa-py
+
+
+Documentation
+--------------
+
+The documentation can be read online at https://pyvisa-py.readthedocs.org
+
+pyvisa-py was started by Hernan E. Grecco <hernan.grecco@gmail.com>.
+
+It is now maintained by Matthieu C. Dartiailh <m.dartiailh@gmail.com>
+
+
+Other contributors, listed alphabetically, are:
+
+* Alex Forencich <alex@alexforencich.com>
+* Alexander Bessman <bessman@kth.se>
+* Colin Marquardt <github@marquardt-home.de>
+* Lance McCulley <lancemcculley@gmail.com>
+* Martin Ritter <ritter@mpp.mpg.de>
+* Matthieu C. Dartiailh <m.dartiailh@gmail.com>
+* Sebastian Held <sebastian.held@imst.de>
+* Thomas Kopp <20.kopp@gmail.com>
+* Thorsten Liebig <liebig@imst.de>
+* Tobias Müller <Tobias_Mueller@twam.info>
+
+(If you think that your name belongs here, please let the maintainer know)
+
+PyVISA-py Changelog
+===================
+
+0.5.2 (04-02-2020)
+------------------
+
+- handle SUPPRESS_END_EN in usb.py to fix #293 PR #294
+- add python_requires to avoid people trying to get a
+  new pyvisa-py on Python 2 PR #295
+  This addresses pyvisa issue #578
+
+0.5.1 (30-09-2020)
+------------------
+
+- list serial resources under Windows without the COM prefix #269
+- fix writing to serial resources PR #277
+- fix return value of USB close method PR #265
+- fix pyvisa version constraint PR #268
+
+0.5.0 (16-09-2020)
+------------------
+
+In 0.5.0, the Python package installed in site-packages in now called pyvisa_py
+which makes it a valid python package. This change was decided because the old name
+was causing issues with tools such as Mypy and PyInstaller.
+
+- start running testsuite on Keysight buildbot PR #247 #252
+- fix import in gpib.py when using linux-gpib PR #246
+- fix opening some TCPIP resources PR #242
+  Some instrument do not indicate that the returned packet is the last one, so
+  fix the number of returned packet for a TCPIP INSTR resource.
+- add typing validation through mypy PR #238
+- use Numpy style dosctrings PR #238
+- format the code with black and isort PR #236
+- drop Python 2 support and run against PyVISA 1.11 PR #222
+- usbtmc: improve support for USB488 devices. PR #241
+  For instrument that support REN_CONTROL, we now always assert the REN line.
+- fix a crash on Windows when opening multiple USBTMC devices
+
+0.4.1 (2020-05-27)
+------------------
+
+- fix typo in tcpip.py PR #233 (back-ported)
+
+0.4.0 (2020-05-06)
+------------------
+
+- support device lan name in TCPIP INSTR resources PR #226
+- fix handling of VXI11 flags in device_write PR #226
+- do not enforce 4 bytes padding RFC 1014 since some instrument do not respect
+  it (Issue # 225) PR #226
+- fix not setting stop bits with serial devices PR #205
+- fix improper wait time before a timeout in the TCPIP backend PR # 173
+- add GPIB support for proprietary device drivers on Windows and Linux
+  (experimental): try importing gpib-ctypes if linux-gpib is not present.
+  fix #105 #137
+- fix return types of PyVisaLibrary and Session methods to match
+  pyvisa.highlevel.VisaLibraryBase fix #169 PR #170
+- avoid double closing of gpib resources PR #171
+- fix initialization of timeout for the USB resources (the default was set
+  before creating the underlying connection to which the timeout must be passed
+  and was not). PR #167
+- implement USBTMC abort sequence after read timeout to avoid losing
+  communication with the instrument after a timeout occurs. PR #179
+- fix custom timeout for USB instruments. PR #179
+- fix triggering for all protocols. PR #180
+- add support for "quirky" devices made by Rigol. PR #186 PR #207
+- add support for Visa flush operation. PR #208
+- fix reading large amounts of data from some instruments when using VXI-11. PR #209
+
+0.3.1 (2018-09-12)
+------------------
+
+- Fix initialization of timeout (issue identified in TCPIP resources) PR #160
+
+0.3 (2018-09-05)
+----------------
+
+- Fix handling of seesion registration under Python 3.7 PR #155
+- Add read_stb, assert_trigger, lock, unlock to highlevel PR #139
+- Fix timeout handling in usb PR #144
+- Add gpib_command and assert_trigger to GPIB PR # 136
+- Handle ValueError in usb list fix #131 PR #132
+- Fix reading on GPIB and implement clear and gpib_send_ifc PR #132
+- Do not error when listing USB devices PR #126
+- Fix an error in the handling of the termchar for TCPIP INSTR PR #126
+- Make list_resources return an empty tuple instead of erroring PR #121
+- Proper support for timeout in TCPIP INSTR sessions PR #120 #127 #130 #144
+- Proper encoding of data before transfer for all backends PR #119
+- Unify use of StatusCode PR #118
+- Improve handling of sessions attrs PR #116
+- TCPIP SOCKET timeout handling improvement PR #115
+- Fix compatibility with pyserial 3.0 PR #112
+- TCPIP SOCKET handler read should not block PR #107
+- TCPIP error handling fixes PR #100
+- Use repr() instead of str() to log RPC record PR #97
+- Speed up large transfer over GPIB 2beb52a5bcea2dae32d4a9908dc19f7874bfc0b7
+- Catch GPIB errors while enumerating devices 9fea9d5c40cc6c33ce1244c209e5e576a33abfc2
+- Add a serial poll function to GPIB backend PR #67
+- Handle timeout in USB TMC backend PR #64
+- Make USB TMC backend faster by transferring multiple bytes PR #63
+- Fix issue with encoding before data transfer PR #59 #
+- Get Linux GPIB version PR #55
+- Fix broken import in TCPIP sessions PR #51
+
+
+0.2 (2015-08-25)
+----------------
+
+- Added support for TCPIP Socket.
+  (Issue #38, thanks Thorsten Liebig)
+- Added support for GPIB INSTR using linux-gpib.
+  (Issue #24, thanks bessman)
+- Added support for USB RAW.
+  (Issue #18, kopp)
+- Better error reporting when pyusb or pyserial is missing.
+- Fixed logging of unicode strings.
+  (Issue #54)
+- Fixed timeout in SerialSession.
+  (Issue #44)
+- Moved resource name parsing to PyVISA.
+- VXI11 protocol performance enhancement.
+  (thanks alexforencich)
+- Improved pyusb importing.
+- Fixed large binary reads in TCPIP.
+- Added backend information to logger.
+- Use pyvisa compat/struct.py for python < 2.7.8
+  (thanks Martin Ritter)
+
+
+
+0.1 (2015-02-08)
+----------------
+
+- Initial release. Preliminary support for:
+  - USB INSTR
+  - TCPIP INSTR
+  - ASRL INSTR
+
+

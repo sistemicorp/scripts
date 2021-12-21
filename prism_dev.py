@@ -13,6 +13,7 @@ import jstyleson
 import logging
 import logging.handlers as handlers
 import importlib
+import time
 
 from public.prism.api import ResultAPI
 from public.prism.ResultBaseKeysV1 import ResultBaseKeysV1
@@ -139,7 +140,6 @@ class ChanCon(object):
         self.logger.info("BULLET: {}".format(text))
 
     def run(self):
-
         # process HW drivers
         num_channels = -1
         for hwdrv in self.script["config"]["drivers"]:
@@ -147,9 +147,27 @@ class ChanCon(object):
             hwdrv_sname = hwdrv.split(".")[-1]
             hwdrv_module = importlib.import_module(hwdrv)
             hwdrv_module_klass = getattr(hwdrv_module, "HWDriver")
-            hwdriver = hwdrv_module_klass(self.shared_state)
+            hwdriver = hwdrv_module_klass()
 
-            _num_channels = hwdriver.discover_channels()
+            _num_channels, driver_type, drivers = hwdriver.discover_channels()
+
+            if _num_channels >= 0:  # add to shared state if all good
+                shared = False
+                if _num_channels == 0: shared = True
+                self.shared_state.add_drivers(driver_type, drivers, shared)
+
+                # call the player function if exist, ignore result, but see logs
+                if drivers:
+                    if drivers[0].get('play', None):
+                        play = drivers[0].get('play')()
+                        while not play:
+                            play = drivers[0].get("play")()
+                            self.logger.info("player: {}".format(play))
+                            if not play: time.sleep(1)
+
+                    show_pass_fail = drivers[0].get("show_pass_fail", None)
+                    if show_pass_fail: show_pass_fail(False, False, False)
+
             self.logger.info("{} - number channels {}".format(hwdrv_sname, _num_channels))
             if _num_channels == 0:
                 # this HW DRV does not indicate number of channels, its a shared resource
@@ -161,9 +179,6 @@ class ChanCon(object):
             elif num_channels != _num_channels:
                 self.logger.error("{} - number channels {} does not match previous HWDRV".format(hwdriver, _num_channels))
                 raise ValueError('Mismatch number of channels between HW Drivers')
-
-            # install 'play' action if the driver supports it
-            hwdriver.init_play_pub()
 
         self.num_channels = num_channels
         self.logger.info("number channels {}".format(self.num_channels))
@@ -197,6 +212,13 @@ class ChanCon(object):
 
         self.record.record_record_meta_fini()
         self.record.record_publish()
+
+        if show_pass_fail is not None:
+            p = f = o = False
+            if self.record.record_meta_get_result() == ResultAPI.RECORD_RESULT_PASS: p = True
+            elif self.record.record_meta_get_result() == ResultAPI.RECORD_RESULT_FAIL: f = True
+            else: o = True
+            show_pass_fail(p, f, o)
 
 
 def setup_logging(log_file_name_prefix="log", level=logging.INFO, path="./log"):

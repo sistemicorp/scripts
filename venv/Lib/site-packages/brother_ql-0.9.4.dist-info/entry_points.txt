@@ -1,0 +1,8 @@
+[console_scripts]
+brother_ql = brother_ql.cli:cli
+brother_ql_analyse = brother_ql.brother_ql_analyse:main
+brother_ql_create = brother_ql.brother_ql_create:main
+brother_ql_debug = brother_ql.brother_ql_debug:main
+brother_ql_info = brother_ql.brother_ql_info:main
+brother_ql_print = brother_ql.brother_ql_print:main
+

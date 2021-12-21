@@ -40,7 +40,7 @@ class brthr00xx(TestItem):
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
-        self.printer = printer_info[0]['obj']['printer']
+        self.printer = printer_info[0]['obj']['hwdrv']
         self.item_end()  # always last line of test
 
     def BRTHR0xxTRDN(self):

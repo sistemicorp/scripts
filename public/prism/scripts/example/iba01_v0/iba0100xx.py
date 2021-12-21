@@ -44,7 +44,7 @@ class iba0100xx(TestItem):
         self.log_bullet(_bullet)
         self.logger.info("Found pybrd: {} {}, chan {}".format(driver, id, self.chan))
 
-        self.pyb = driver["obj"]["pyb"]
+        self.pyb = driver["obj"]["hwdrv"]
 
         success, result = self.pyb.reset()
         if not success:

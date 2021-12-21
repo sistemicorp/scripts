@@ -48,7 +48,7 @@ class pydso(TestItem):
             self.log_bullet("Unexpected number of drivers")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
-        self.dso = drivers[0]['obj']["visa"]
+        self.dso = drivers[0]['obj']["hwdrv"]
         self.logger.info("Found dso: {}".format(self.dso))
 
         self.shared_lock(self.DSO).acquire()
