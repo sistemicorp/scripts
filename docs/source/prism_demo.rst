@@ -36,9 +36,16 @@ Requirements
   * Google Chrome browser (other browsers are not tested)
   * install Docker CE (https://docs.docker.com/install/linux/docker-ce/ubuntu/)
 
-    * Don't miss the step of adding the current user (its well hidden)::
+    * Several instillation methods are described.  The "convenience script" works well.
 
-        sudo usermod -aG docker your-user
+    * Don't miss the step of adding the current user (its well hidden)
+
+::
+
+        sudo usermod -aG docker ${USER}
+
+
+* reboot Ubuntu
 
 Basic
 *****
@@ -63,13 +70,13 @@ edit or create new scripts, or send results to the Lente server.
 
 ::
 
-    docker run -d -p 6590:6590 sistemicorp/prism
+    docker run -d -p 6590:6590 --name prism sistemicorp/prism
 
 * Open Google Chrome to
 
     http://127.0.0.1:6590
 
-    * Note on slower computers, it may take 5-15 seconds for the Prism window to display
+    * Note on slower computers (RPi), it may take 5-15 seconds for the Prism window to display
 
   * Prism login user/password is admin@here.com/password
   * Other users passwords are `password`
@@ -83,6 +90,14 @@ edit or create new scripts, or send results to the Lente server.
   * If everything checked out, the `Start Testing` button will turn Green, press it, and
     you should be on the test screen, press Start to test
   * **Note:** The tests have delays in them for demo effect.  The delays are not needed.
+
+
+* Shut down Prism Demo
+
+::
+
+    docker stop prism
+
 
 Full
 ****

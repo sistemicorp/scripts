@@ -1,20 +1,19 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Scripts &#8212; Sistemi Lente/Prism Test System 0.2.0 documentation</title>
-    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -34,7 +33,8 @@
           <a href="prism_config.html" title="Config"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.2.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="prism_main.html" accesskey="U">Prism</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="prism_main.html" accesskey="U">Prism</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Scripts</a></li> 
       </ul>
     </div>  
 
@@ -43,18 +43,19 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="scripts">
+  <section id="scripts">
 <h1>Scripts<a class="headerlink" href="#scripts" title="Permalink to this headline">¶</a></h1>
 <p><code class="docutils literal notranslate"><span class="pre">Scripts</span></code></p>
 <ul class="simple">
-<li>define the test sequence and operating modes of the test being run</li>
-<li>are in human readable JSON file format<ul>
-<li>JSON is used so that non-programmers may be able to read/edit <a class="footnote-reference" href="#id2" id="id1">[1]</a> the script without requiring a
-programming background.  This is useful in development or emergency situations.</li>
+<li><p>define the test sequence and operating modes of the test being run</p></li>
+<li><p>are in human readable JSON file format</p>
+<ul>
+<li><p>JSON is used so that non-programmers may be able to read/edit <a class="footnote-reference brackets" href="#id2" id="id1">1</a> the script without requiring a
+programming background.  This is useful in development or emergency situations.</p></li>
 </ul>
 </li>
-<li>extend JSON a little bit, by allowing comments, any line begining with <cite>#</cite> is a comment.  This allows
-the script to be documented</li>
+<li><p>extend JSON a little bit, by allowing comments, any line begining with <cite>#</cite> is a comment.  This allows
+the script to be documented</p></li>
 </ul>
 <p>The <code class="docutils literal notranslate"><span class="pre">script</span></code> has the following sections,</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -69,7 +70,7 @@ the script to be documented</li>
 <span class="p">}</span>
 </pre></div>
 </div>
-<div class="section" id="subs">
+<section id="subs">
 <h2>subs<a class="headerlink" href="#subs" title="Permalink to this headline">¶</a></h2>
 <p>This is a section of User configurable substitutions for variables in the script.  For example, if there was a test
 limit that could have two values, the values can be listed as a <cite>subs</cite> field and the user can select which one to use.</p>
@@ -106,43 +107,44 @@ to change some parameters might be useful.  This feature does not have to be use
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">key</span></code></p>
 <ul class="simple">
-<li>the name of the variable to be replaced somewhere else in the script, for example, the variable could be in
-the <code class="docutils literal notranslate"><span class="pre">info</span></code> section<ul>
-<li>the variable in other sections, would be named <code class="docutils literal notranslate"><span class="pre">&quot;%%key&quot;</span></code></li>
-<li>the variable would be listed with double quotes, regardless of the variable type</li>
+<li><p>the name of the variable to be replaced somewhere else in the script, for example, the variable could be in
+the <code class="docutils literal notranslate"><span class="pre">info</span></code> section</p>
+<ul>
+<li><p>the variable in other sections, would be named <code class="docutils literal notranslate"><span class="pre">&quot;%%key&quot;</span></code></p></li>
+<li><p>the variable would be listed with double quotes, regardless of the variable type</p></li>
 </ul>
 </li>
-<li><code class="docutils literal notranslate"><span class="pre">key</span></code> should not have any special characters in it, else bad things happen</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">key</span></code> should not have any special characters in it, else bad things happen</p></li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">title</span></code></p>
 <ul class="simple">
-<li>this is the title of the field to be presented to the Operator in the Test Config view</li>
-<li>if there is a specific format of the variable expected, that should be indicated in the <code class="docutils literal notranslate"><span class="pre">title</span></code></li>
+<li><p>this is the title of the field to be presented to the Operator in the Test Config view</p></li>
+<li><p>if there is a specific format of the variable expected, that should be indicated in the <code class="docutils literal notranslate"><span class="pre">title</span></code></p></li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">type</span></code></p>
 <ul class="simple">
-<li>indicates type of variable that is ultimately required in the final JSON version of the script</li>
-<li>string (<cite>str</cite>) and number (<cite>num</cite>) (covers float and ints) are the only options</li>
+<li><p>indicates type of variable that is ultimately required in the final JSON version of the script</p></li>
+<li><p>string (<cite>str</cite>) and number (<cite>num</cite>) (covers float and ints) are the only options</p></li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">widget</span></code></p>
 <ul class="simple">
-<li>the type of GUI widget to present to the Operator in the Test Config view</li>
-<li><cite>textinput</cite> is a generic text input box, which will be populated by the <code class="docutils literal notranslate"><span class="pre">default</span></code> field</li>
-<li><cite>select</cite> is a drop down selection menu</li>
+<li><p>the type of GUI widget to present to the Operator in the Test Config view</p></li>
+<li><p><cite>textinput</cite> is a generic text input box, which will be populated by the <code class="docutils literal notranslate"><span class="pre">default</span></code> field</p></li>
+<li><p><cite>select</cite> is a drop down selection menu</p></li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">regex</span></code></p>
 <ul class="simple">
-<li>used only for <cite>textinput</cite> <code class="docutils literal notranslate"><span class="pre">widget</span></code></li>
-<li>used to validate the Operator entered correct information</li>
-<li>this is optional field</li>
+<li><p>used only for <cite>textinput</cite> <code class="docutils literal notranslate"><span class="pre">widget</span></code></p></li>
+<li><p>used to validate the Operator entered correct information</p></li>
+<li><p>this is optional field</p></li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">default</span></code></p>
 <ul class="simple">
-<li>sets the default value for <cite>textinput</cite> <code class="docutils literal notranslate"><span class="pre">widget</span></code></li>
-<li>optional</li>
+<li><p>sets the default value for <cite>textinput</cite> <code class="docutils literal notranslate"><span class="pre">widget</span></code></p></li>
+<li><p>optional</p></li>
 </ul>
-</div>
-<div class="section" id="info">
+</section>
+<section id="info">
 <h2>info<a class="headerlink" href="#info" title="Permalink to this headline">¶</a></h2>
 <p>This section is a list of fields that correspond to fields that exist in the backend database and are typically
 used for database searches.</p>
@@ -163,8 +165,8 @@ in the Test Config view.</p>
 <p><code class="docutils literal notranslate"><span class="pre">product</span></code>, <code class="docutils literal notranslate"><span class="pre">bom</span></code>, <code class="docutils literal notranslate"><span class="pre">lot</span></code>, <code class="docutils literal notranslate"><span class="pre">location</span></code> are fields that you define a meaning specific to your operation.</p>
 <p>Defining rules and a naming convention for these fields will help you later when you need to make database searches
 for specific sets of results.  This is important.</p>
-</div>
-<div class="section" id="config">
+</section>
+<section id="config">
 <h2>config<a class="headerlink" href="#config" title="Permalink to this headline">¶</a></h2>
 <p>This section sets required variables that Prism uses to drive the test script.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -176,32 +178,32 @@ for specific sets of results.  This is important.</p>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">result</span></code></p>
 <ul class="simple">
-<li>sets the result record type</li>
-<li>this is related to the back end database processing</li>
-<li>the dot notation is specifying a directory path to the python file to read</li>
-<li>its possible to extend the backend database to incorporate new fields for your application. See TBD</li>
+<li><p>sets the result record type</p></li>
+<li><p>this is related to the back end database processing</p></li>
+<li><p>the dot notation is specifying a directory path to the python file to read</p></li>
+<li><p>its possible to extend the backend database to incorporate new fields for your application. See TBD</p></li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">fail_fast</span></code></p>
 <ul class="simple">
-<li>this directive tells Prism whether to stop the test script on the first occurrance of a failed test</li>
-<li>this directive can be overridden by the directive in the <code class="docutils literal notranslate"><span class="pre">options</span></code> section of the <code class="docutils literal notranslate"><span class="pre">tests</span></code> section - in other
-words, here it has the least priority</li>
+<li><p>this directive tells Prism whether to stop the test script on the first occurrance of a failed test</p></li>
+<li><p>this directive can be overridden by the directive in the <code class="docutils literal notranslate"><span class="pre">options</span></code> section of the <code class="docutils literal notranslate"><span class="pre">tests</span></code> section - in other
+words, here it has the least priority</p></li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">drivers</span></code></p>
 <ul class="simple">
-<li>this is a list of <code class="docutils literal notranslate"><span class="pre">drivers</span></code> to start when the script it loaded</li>
-<li>the dot notation is specifying a directory path to the python file to read</li>
-<li>every script must have a driver.  A fake driver is available in the case where you don’t want/need a real driver,
-for example, in development of code</li>
-<li>See <a class="reference internal" href="prism_drivers.html#drivers"><span class="std std-ref">Drivers</span></a></li>
+<li><p>this is a list of <code class="docutils literal notranslate"><span class="pre">drivers</span></code> to start when the script it loaded</p></li>
+<li><p>the dot notation is specifying a directory path to the python file to read</p></li>
+<li><p>every script must have a driver.  A fake driver is available in the case where you don’t want/need a real driver,
+for example, in development of code</p></li>
+<li><p>See <a class="reference internal" href="prism_drivers.html#drivers"><span class="std std-ref">Drivers</span></a></p></li>
 </ul>
-</div>
-<div class="section" id="tests">
+</section>
+<section id="tests">
 <h2>tests<a class="headerlink" href="#tests" title="Permalink to this headline">¶</a></h2>
 <p>This section has a list of test definitions</p>
 <ul class="simple">
-<li>each definition has fields <code class="docutils literal notranslate"><span class="pre">module</span></code>, <code class="docutils literal notranslate"><span class="pre">options</span></code>, <code class="docutils literal notranslate"><span class="pre">items</span></code></li>
-<li><code class="docutils literal notranslate"><span class="pre">items</span></code> has fields <code class="docutils literal notranslate"><span class="pre">id</span></code>, <code class="docutils literal notranslate"><span class="pre">enable</span></code>, <code class="docutils literal notranslate"><span class="pre">fail</span></code>, and <code class="docutils literal notranslate"><span class="pre">args</span></code></li>
+<li><p>each definition has fields <code class="docutils literal notranslate"><span class="pre">module</span></code>, <code class="docutils literal notranslate"><span class="pre">options</span></code>, <code class="docutils literal notranslate"><span class="pre">items</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">items</span></code> has fields <code class="docutils literal notranslate"><span class="pre">id</span></code>, <code class="docutils literal notranslate"><span class="pre">enable</span></code>, <code class="docutils literal notranslate"><span class="pre">fail</span></code>, and <code class="docutils literal notranslate"><span class="pre">args</span></code></p></li>
 </ul>
 <p>Consider the following <code class="docutils literal notranslate"><span class="pre">test</span></code> section, which only has ONE test definition in the JSON list.  An example of more than
 one test definition will be shown later.</p>
@@ -226,71 +228,77 @@ one test definition will be shown later.</p>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">module</span></code></p>
 <ul class="simple">
-<li>a dot notation path to the python code that is associated with this test definition</li>
+<li><p>a dot notation path to the python code that is associated with this test definition</p></li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">options</span></code></p>
 <ul class="simple">
-<li>a list of fields assigned values that persist over the execution life of the test definition</li>
-<li>only <code class="docutils literal notranslate"><span class="pre">fail_fast</span></code> is used by the system, which overrides the value used in the <code class="docutils literal notranslate"><span class="pre">config</span></code> section</li>
-<li>you may add fields here as your application requires</li>
-<li>these <code class="docutils literal notranslate"><span class="pre">options</span></code> fields are available programmatically to each test <code class="docutils literal notranslate"><span class="pre">items</span></code><ul>
-<li>for example, you could have a global value assigned here that any test <code class="docutils literal notranslate"><span class="pre">items</span></code> can access</li>
+<li><p>a list of fields assigned values that persist over the execution life of the test definition</p></li>
+<li><p>only <code class="docutils literal notranslate"><span class="pre">fail_fast</span></code> is used by the system, which overrides the value used in the <code class="docutils literal notranslate"><span class="pre">config</span></code> section</p></li>
+<li><p>you may add fields here as your application requires</p></li>
+<li><p>these <code class="docutils literal notranslate"><span class="pre">options</span></code> fields are available programmatically to each test <code class="docutils literal notranslate"><span class="pre">items</span></code></p>
+<ul>
+<li><p>for example, you could have a global value assigned here that any test <code class="docutils literal notranslate"><span class="pre">items</span></code> can access</p></li>
 </ul>
 </li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">items</span></code></p>
 <ul class="simple">
-<li>a list of test <code class="docutils literal notranslate"><span class="pre">items</span></code></li>
-<li>the system will execute these tests in order<ul>
-<li><code class="docutils literal notranslate"><span class="pre">id</span></code> - A unique identifier of the test</li>
-<li><code class="docutils literal notranslate"><span class="pre">enable</span></code> - <cite>true</cite> or <cite>false</cite>, can be omitted if always enabled</li>
-<li><code class="docutils literal notranslate"><span class="pre">args</span></code> - a list of key/value pairs of any name/value required by your application<ul>
-<li>in the example shown, <code class="docutils literal notranslate"><span class="pre">min</span></code> and <code class="docutils literal notranslate"><span class="pre">max</span></code> keys are used and assigned values</li>
-<li>note that <code class="docutils literal notranslate"><span class="pre">max</span></code> is using a <code class="docutils literal notranslate"><span class="pre">subs</span></code> entry</li>
+<li><p>a list of test <code class="docutils literal notranslate"><span class="pre">items</span></code></p></li>
+<li><p>the system will execute these tests in order</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> - A unique identifier of the test</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">enable</span></code> - <cite>true</cite> or <cite>false</cite>, can be omitted if always enabled</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">args</span></code> - a list of key/value pairs of any name/value required by your application</p>
+<ul>
+<li><p>in the example shown, <code class="docutils literal notranslate"><span class="pre">min</span></code> and <code class="docutils literal notranslate"><span class="pre">max</span></code> keys are used and assigned values</p></li>
+<li><p>note that <code class="docutils literal notranslate"><span class="pre">max</span></code> is using a <code class="docutils literal notranslate"><span class="pre">subs</span></code> entry</p></li>
 </ul>
 </li>
-<li><code class="docutils literal notranslate"><span class="pre">fail</span></code> - a list of failure messages to present to the Operator and to store in the result database<ul>
-<li>These failure modes are accessed programmatically by your test code, see TBD</li>
-<li><code class="docutils literal notranslate"><span class="pre">fid</span></code> - a unique ID for this failure mode</li>
-<li><code class="docutils literal notranslate"><span class="pre">msg</span></code> - message to show operator</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fail</span></code> - a list of failure messages to present to the Operator and to store in the result database</p>
+<ul>
+<li><p>These failure modes are accessed programmatically by your test code, see TBD</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fid</span></code> - a unique ID for this failure mode</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">msg</span></code> - message to show operator</p></li>
 </ul>
 </li>
 </ul>
 </li>
 </ul>
-<table class="docutils footnote" frame="void" id="id2" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td><code class="docutils literal notranslate"><span class="pre">Scripts</span></code> CAN BE LOCKED DOWN so that a production user cannot change them.  Locking down the Prism is covered TBD.</td></tr>
-</tbody>
-</table>
-</div>
-</div>
+<dl class="footnote brackets">
+<dt class="label" id="id2"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">Scripts</span></code> CAN BE LOCKED DOWN so that a production user cannot change them.  Locking down the Prism is covered TBD.</p>
+</dd>
+</dl>
+</section>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="prism_config.html"
-                        title="previous chapter">Config</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="prism_programs.html"
-                        title="next chapter">Programs</a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="prism_config.html"
+                          title="previous chapter">Config</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="prism_programs.html"
+                          title="next chapter">Programs</a></p>
+  </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -308,12 +316,13 @@ one test definition will be shown later.</p>
           <a href="prism_config.html" title="Config"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.2.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="prism_main.html" >Prism</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="prism_main.html" >Prism</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Scripts</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Sistemi Corp..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
   </body>
 </html>

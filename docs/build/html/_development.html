@@ -1,20 +1,19 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Development &#8212; Sistemi Lente/Prism Test System 0.2.0 documentation</title>
-    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -33,7 +32,8 @@
         <li class="right" >
           <a href="_prodplan.html" title="Production Planning"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.2.0 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.2.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Development</a></li> 
       </ul>
     </div>  
 
@@ -42,22 +42,23 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="development">
+  <section id="development">
 <h1>Development<a class="headerlink" href="#development" title="Permalink to this headline">¶</a></h1>
 <p>This section describes how to get started with your own development.</p>
 <div class="contents local topic" id="contents">
 <ul class="simple">
-<li><a class="reference internal" href="#your-own-git-repo" id="id1">Your Own Git Repo</a></li>
-<li><a class="reference internal" href="#repo-setup" id="id2">Repo Setup</a><ul>
-<li><a class="reference internal" href="#install-git-hooks" id="id3">Install Git Hooks</a></li>
-<li><a class="reference internal" href="#create-a-tag" id="id4">Create a Tag</a></li>
-<li><a class="reference internal" href="#change-readme-md" id="id5">Change README.md</a></li>
+<li><p><a class="reference internal" href="#your-own-git-repo" id="id1">Your Own Git Repo</a></p></li>
+<li><p><a class="reference internal" href="#repo-setup" id="id2">Repo Setup</a></p>
+<ul>
+<li><p><a class="reference internal" href="#install-git-hooks" id="id3">Install Git Hooks</a></p></li>
+<li><p><a class="reference internal" href="#create-a-tag" id="id4">Create a Tag</a></p></li>
+<li><p><a class="reference internal" href="#change-readme-md" id="id5">Change README.md</a></p></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#command-line-development" id="id6">Command Line Development</a></li>
+<li><p><a class="reference internal" href="#command-line-development" id="id6">Command Line Development</a></p></li>
 </ul>
 </div>
-<div class="section" id="your-own-git-repo">
+<section id="your-own-git-repo">
 <h2><a class="toc-backref" href="#id1">Your Own Git Repo</a><a class="headerlink" href="#your-own-git-repo" title="Permalink to this headline">¶</a></h2>
 <p>You will want to begin with setting up your own Git repo.  If you are unfamiliar with Git,
 then you should read up on it, and/or do some tutorials.  It is beyond the scope
@@ -78,20 +79,21 @@ below, but you may use it if you want.</p>
 <p>The second way is to clone scripts and push it to your own repo.  Detailed instructions
 are shown below</p>
 <ul class="simple">
-<li>Create a new repository at github.com. (this is <strong>your</strong> repository)<ul>
-<li>Give it the same name as Sistemi repository, <cite>scripts</cite></li>
-<li>Don’t initialize it with a README, .gitignore, or license.</li>
+<li><p>Create a new repository at github.com. (this is <strong>your</strong> repository)</p>
+<ul>
+<li><p>Give it the same name as Sistemi repository, <cite>scripts</cite></p></li>
+<li><p>Don’t initialize it with a README, .gitignore, or license.</p></li>
 </ul>
 </li>
-<li>Clone the <cite>scripts</cite> repository repository to your local machine. (if you haven’t done so already)</li>
+<li><p>Clone the <cite>scripts</cite> repository repository to your local machine. (if you haven’t done so already)</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">sistemicorp</span><span class="o">/</span><span class="n">scripts</span><span class="o">.</span><span class="n">git</span>
 </pre></div>
 </div>
 <ul class="simple">
-<li>Note that the <cite>scripts</cite> clone will be created under your current directory.
+<li><p>Note that the <cite>scripts</cite> clone will be created under your current directory.
 Some prefer all their repositories to be under a common directory, so you might actually
-do something like this,</li>
+do something like this,</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">~/</span><span class="n">git</span>
 <span class="n">cd</span> <span class="o">~/</span><span class="n">git</span>
@@ -99,46 +101,46 @@ do something like this,</li>
 </pre></div>
 </div>
 <ul class="simple">
-<li>Rename the local repository’s current ‘origin’ to ‘upstream’</li>
+<li><p>Rename the local repository’s current ‘origin’ to ‘upstream’</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">remote</span> <span class="n">rename</span> <span class="n">origin</span> <span class="n">upstream</span>
 </pre></div>
 </div>
 <ul class="simple">
-<li>Give the local repository an ‘origin’ that points to your repository</li>
+<li><p>Give the local repository an ‘origin’ that points to your repository</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">remote</span> <span class="n">add</span> <span class="n">origin</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">your</span><span class="o">-</span><span class="n">account</span><span class="o">/</span><span class="n">scripts</span><span class="o">.</span><span class="n">git</span>
 </pre></div>
 </div>
 <ul class="simple">
-<li>Push the local repository to your repository on github</li>
+<li><p>Push the local repository to your repository on github</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="n">master</span>
 </pre></div>
 </div>
 <ul class="simple">
-<li>Now ‘origin’ points to your repository &amp; ‘upstream’ points to the other repository</li>
-<li>Create a new branch for your changes with</li>
+<li><p>Now ‘origin’ points to your repository &amp; ‘upstream’ points to the other repository</p></li>
+<li><p>Create a new branch for your changes with</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="n">my</span><span class="o">-</span><span class="n">feature</span><span class="o">-</span><span class="n">branch</span>
 </pre></div>
 </div>
 <ul class="simple">
-<li>You can git commit as usual to your repository</li>
-<li>To pull changes from Sistemi <cite>scripts</cite> to your master branch use,</li>
+<li><p>You can git commit as usual to your repository</p></li>
+<li><p>To pull changes from Sistemi <cite>scripts</cite> to your master branch use,</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">pull</span> <span class="n">upstream</span> <span class="n">master</span>
 </pre></div>
 </div>
 <ul class="simple">
-<li>You want to be able to pull from Sistemi <cite>scripts</cite> occasionally to get Sistemi updates to scripts, and/or
-examples, drivers, etc.</li>
+<li><p>You want to be able to pull from Sistemi <cite>scripts</cite> occasionally to get Sistemi updates to scripts, and/or
+examples, drivers, etc.</p></li>
 </ul>
-</div>
-<div class="section" id="repo-setup">
+</section>
+<section id="repo-setup">
 <h2><a class="toc-backref" href="#id2">Repo Setup</a><a class="headerlink" href="#repo-setup" title="Permalink to this headline">¶</a></h2>
 <p>Additional steps.</p>
-<div class="section" id="install-git-hooks">
+<section id="install-git-hooks">
 <h3><a class="toc-backref" href="#id3">Install Git Hooks</a><a class="headerlink" href="#install-git-hooks" title="Permalink to this headline">¶</a></h3>
 <p>In the <cite>scripts</cite> repo, there is a folder called <cite>hooks</cite>.  The contents of this folder
 needs to be copied to <cite>./.git/hooks</cite> folder of your repository.</p>
@@ -147,8 +149,8 @@ needs to be copied to <cite>./.git/hooks</cite> folder of your repository.</p>
 <span class="n">cp</span> <span class="n">hooks</span><span class="o">/*</span> <span class="o">./</span><span class="n">git</span><span class="o">/</span><span class="n">hooks</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="create-a-tag">
+</section>
+<section id="create-a-tag">
 <h3><a class="toc-backref" href="#id4">Create a Tag</a><a class="headerlink" href="#create-a-tag" title="Permalink to this headline">¶</a></h3>
 <p>The Sistemi system reports the version of things to help keep you organized, including the version of your scripts.</p>
 <p>On whatever branch you decide to “release” your scripts, for example, the “master” branch, create a
@@ -181,13 +183,13 @@ the minor version,</p>
 <span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="o">--</span><span class="n">tags</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="change-readme-md">
+</section>
+<section id="change-readme-md">
 <h3><a class="toc-backref" href="#id5">Change README.md</a><a class="headerlink" href="#change-readme-md" title="Permalink to this headline">¶</a></h3>
 <p>Change this file to suit your needs.  For example, document your script/program naming strategy.</p>
-</div>
-</div>
-<div class="section" id="command-line-development">
+</section>
+</section>
+<section id="command-line-development">
 <h2><a class="toc-backref" href="#id6">Command Line Development</a><a class="headerlink" href="#command-line-development" title="Permalink to this headline">¶</a></h2>
 <p>Initial development will be done in “headless” mode, whereupon coding is done outside of the GUI used in production.</p>
 <p>A command line version of the core engine of the system is at the top of the <cite>scripts</cite> folder, called <cite>prism_dev.py</cite>.
@@ -207,38 +209,41 @@ Usage examples:
 </div>
 <p>Notes about the command line development environment,</p>
 <ul class="simple">
-<li>parallel, multi-threaded, multiple test jigs are not supported</li>
-<li>script is run as a single thread</li>
-<li>NO results are sent to the Lente Server</li>
+<li><p>parallel, multi-threaded, multiple test jigs are not supported</p></li>
+<li><p>script is run as a single thread</p></li>
+<li><p>NO results are sent to the Lente Server</p></li>
 </ul>
 <p>After your script is running in the command line mode, you can try it in the Prism GUI.</p>
-</div>
-</div>
+</section>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="_prodplan.html"
-                        title="previous chapter">Production Planning</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="_jigs.html"
-                        title="next chapter">Test Jigs</a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="_prodplan.html"
+                          title="previous chapter">Production Planning</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="_jigs.html"
+                          title="next chapter">Test Jigs</a></p>
+  </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -255,12 +260,13 @@ Usage examples:
         <li class="right" >
           <a href="_prodplan.html" title="Production Planning"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.2.0 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.2.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Development</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Sistemi Corp..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
   </body>
 </html>
