@@ -10,4 +10,15 @@ rshell
 pyftdi
 brother_ql
 arduino-simple-rpc
-
+wget
+PyPubSub
+fpdf
+requests
+pycryptodome
+py-bcrypt
+pyftdi
+peewee
+filehash
+deepdiff
+email-validator
+python-rapidjson
