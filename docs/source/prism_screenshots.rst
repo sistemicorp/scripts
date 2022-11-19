@@ -1,11 +1,20 @@
 Screenshots
 ###########
 
+Title Page
+**********
+
+.. image:: static/Screenshot_title_01.png
+
+
 Main view
 *********
-Shows a log of Prism status, the Software License, and the menu options for Admin user.
+After the User has logged in, they may scan a traveller to configure Prism testing, or
+use the Test Configuration button to access scripts manually.
+
 
 .. image:: static/Screenshot_main_01.png
+
 
 Test Config view
 ****************
