@@ -16,7 +16,6 @@ fpdf
 requests
 pycryptodome
 py-bcrypt
-pyftdi
 peewee
 filehash
 deepdiff
