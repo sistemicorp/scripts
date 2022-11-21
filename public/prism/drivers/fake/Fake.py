@@ -69,9 +69,12 @@ class Fake(object):
         pass
 
     def jig_closed_detect(self):
-        self.logger.info("False")
-        return False
+        """ Always report jig is closed as this is a Fake driver.
+        :return: <True|False>
+        """
+        self.logger.info("True")
+        return True
 
     def show_pass_fail(self, p, f, o):
-        self.logger.info("{} {} {}".format(p, f, o))
+        self.logger.info("pass: {}, Fail: {}, Other: {}".format(p, f, o))
 
