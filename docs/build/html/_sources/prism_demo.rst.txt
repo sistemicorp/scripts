@@ -99,10 +99,10 @@ edit or create new scripts, or send results to the Lente server.
     docker stop prism
 
 
-Full
-****
+Full Demo and/or Instillation
+*****************************
 
-The Full Demo assume you have followed the instructions for the basic_ demo.
+The Full Demo (or Instillation) assumes you have followed the instructions for the basic_ demo.
 
 The Full Demo works by creating a local file structure and telling the ``Prism`` Docker container to use that
 local file system.
@@ -139,8 +139,8 @@ Clone Sistemi Scripts
     cd ~/git
     git clone https://github.com/sistemicorp/scripts.git
 
-Run Full
-========
+Run Full Demo
+=============
 
 * Run Prism
 
