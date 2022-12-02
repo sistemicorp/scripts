@@ -74,8 +74,8 @@ the command line interface of Git.  Consider these,</p>
 <p>There are two ways to being using Sistemi Lente/Prism with Git,</p>
 <p>The first way, is to fork the <cite>scripts</cite> repo to your own github repo.  This is the
 easiest way to get started, but it has the draw back that all git forks must be
-public, and its very unlikley that you want that.  So the forking method will not be used
-below, but you may use it if you want.</p>
+public, and its very unlikely that you want that.  So the forking method will not be used
+below.</p>
 <p>The second way is to clone scripts and push it to your own repo.  Detailed instructions
 are shown below</p>
 <ul class="simple">
@@ -92,12 +92,14 @@ are shown below</p>
 </div>
 <ul class="simple">
 <li><p>Note that the <cite>scripts</cite> clone will be created under your current directory.
-Some prefer all their repositories to be under a common directory, so you might actually
+Some prefer all their (git) repositories to be under a common directory, so you might actually
 do something like this,</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">~/</span><span class="n">git</span>
 <span class="n">cd</span> <span class="o">~/</span><span class="n">git</span>
-<span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">sistemicorp</span><span class="o">/</span><span class="n">cripts</span><span class="o">.</span><span class="n">git</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">sistemicorp</span><span class="o">/</span><span class="n">scripts</span><span class="o">.</span><span class="n">git</span>
+<span class="n">cd</span> <span class="n">scripts</span>
+<span class="n">pip3</span> <span class="n">install</span> <span class="o">-</span><span class="n">f</span> <span class="n">requirements</span><span class="o">.</span><span class="n">txt</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -224,16 +226,12 @@ Usage examples:
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="_prodplan.html"
-                          title="previous chapter">Production Planning</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="_jigs.html"
-                          title="next chapter">Test Jigs</a></p>
-  </div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="_prodplan.html"
+                        title="previous chapter">Production Planning</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="_jigs.html"
+                        title="next chapter">Test Jigs</a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
@@ -266,7 +264,7 @@ Usage examples:
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Sistemi Corp..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
   </body>
 </html>

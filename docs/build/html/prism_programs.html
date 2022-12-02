@@ -229,10 +229,10 @@ example program is distributed with the system, and may be more up to date than 
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#! /usr/bin/env python</span>
 <span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">from</span> <span class="nn">core.test_item</span> <span class="k">import</span> <span class="n">TestItem</span>
-<span class="kn">from</span> <span class="nn">public.prims.api</span> <span class="k">import</span> <span class="n">ResultAPI</span>
+<span class="kn">from</span> <span class="nn">core.test_item</span> <span class="kn">import</span> <span class="n">TestItem</span>
+<span class="kn">from</span> <span class="nn">public.prims.api</span> <span class="kn">import</span> <span class="n">ResultAPI</span>
 <span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">from</span> <span class="nn">random</span> <span class="k">import</span> <span class="n">randint</span><span class="p">,</span> <span class="n">random</span>
+<span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">randint</span><span class="p">,</span> <span class="n">random</span>
 
 
 <span class="c1"># file and class name must match</span>
@@ -241,7 +241,7 @@ example program is distributed with the system, and may be more up to date than 
     <span class="n">DEMO_TIME_DELAY</span> <span class="o">=</span> <span class="mf">1.0</span>
     <span class="n">DEMO_TIME_RND_ENABLE</span> <span class="o">=</span> <span class="mi">1</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">controller</span><span class="p">,</span> <span class="n">chan</span><span class="p">,</span> <span class="n">shared_state</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">controller</span><span class="p">,</span> <span class="n">chan</span><span class="p">,</span> <span class="n">shared_state</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">controller</span><span class="p">,</span> <span class="n">chan</span><span class="p">,</span> <span class="n">shared_state</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;SC.</span><span class="si">{}</span><span class="s2">.</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">chan</span><span class="p">))</span>
 
@@ -789,16 +789,12 @@ production failures become understood.</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="prism_scripts.html"
-                          title="previous chapter">Scripts</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="prism_drivers.html"
-                          title="next chapter">Drivers</a></p>
-  </div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="prism_scripts.html"
+                        title="previous chapter">Scripts</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="prism_drivers.html"
+                        title="next chapter">Drivers</a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
@@ -832,7 +828,7 @@ production failures become understood.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Sistemi Corp..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
   </body>
 </html>

@@ -83,8 +83,8 @@ approach is to use Postgres as a separate resource from the VM running Lente.</p
 <p>Traffic to/from the GCP node needs to be allowed by the Firewall,</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">VPC</span> <span class="n">Network</span> <span class="o">-&gt;</span> <span class="n">Firewall</span> <span class="n">Rules</span>
 <span class="n">Name</span>            <span class="n">Type</span>        <span class="n">Targets</span>         <span class="n">Filters</span>                 <span class="n">Protocols</span> <span class="o">/</span> <span class="n">ports</span>           <span class="n">Action</span>      <span class="n">Priority</span>        <span class="n">Network</span>
-<span class="n">lente</span><span class="o">-</span><span class="n">egress</span>    <span class="n">Egress</span>  <span class="n">Apply</span> <span class="n">to</span> <span class="nb">all</span>        <span class="n">IP</span> <span class="n">ranges</span><span class="p">:</span> <span class="mf">0.0</span><span class="o">.</span><span class="mf">0.0</span><span class="o">/</span><span class="mi">0</span>    <span class="n">tcp</span><span class="p">:</span><span class="mi">6600</span>    <span class="n">udp</span><span class="p">:</span><span class="mi">6600</span>    <span class="n">Allow</span>   <span class="mi">1000</span>        <span class="n">default</span>
-<span class="n">lente</span><span class="o">-</span><span class="n">ingress</span>   <span class="n">Ingress</span> <span class="n">Apply</span> <span class="n">to</span> <span class="nb">all</span>    <span class="n">IP</span> <span class="n">ranges</span><span class="p">:</span> <span class="mf">0.0</span><span class="o">.</span><span class="mf">0.0</span><span class="o">/</span><span class="mi">0</span>    <span class="n">tcp</span><span class="p">:</span><span class="mi">6600</span>    <span class="n">udp</span><span class="p">:</span><span class="mi">6600</span>    <span class="n">Allow</span>   <span class="mi">1000</span>        <span class="n">default</span>
+<span class="n">lente</span><span class="o">-</span><span class="n">egress</span>    <span class="n">Egress</span>  <span class="n">Apply</span> <span class="n">to</span> <span class="nb">all</span>        <span class="n">IP</span> <span class="n">ranges</span><span class="p">:</span> <span class="mf">0.0.0.0</span><span class="o">/</span><span class="mi">0</span>    <span class="n">tcp</span><span class="p">:</span><span class="mi">6600</span>    <span class="n">udp</span><span class="p">:</span><span class="mi">6600</span>    <span class="n">Allow</span>   <span class="mi">1000</span>        <span class="n">default</span>
+<span class="n">lente</span><span class="o">-</span><span class="n">ingress</span>   <span class="n">Ingress</span> <span class="n">Apply</span> <span class="n">to</span> <span class="nb">all</span>    <span class="n">IP</span> <span class="n">ranges</span><span class="p">:</span> <span class="mf">0.0.0.0</span><span class="o">/</span><span class="mi">0</span>    <span class="n">tcp</span><span class="p">:</span><span class="mi">6600</span>    <span class="n">udp</span><span class="p">:</span><span class="mi">6600</span>    <span class="n">Allow</span>   <span class="mi">1000</span>        <span class="n">default</span>
 </pre></div>
 </div>
 <p><strong>The above Firewall rules allow connection to Lente from any external IP.  You should instead limit access to Lente
@@ -135,16 +135,12 @@ Run these commands to install <cite>scripts</cite>,</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="lente_accounts.html"
-                          title="previous chapter">Accounts</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="_system.html"
-                          title="next chapter">System</a></p>
-  </div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="lente_accounts.html"
+                        title="previous chapter">Accounts</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="_system.html"
+                        title="next chapter">System</a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
@@ -178,7 +174,7 @@ Run these commands to install <cite>scripts</cite>,</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Sistemi Corp..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
   </body>
 </html>

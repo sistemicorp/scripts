@@ -29,8 +29,8 @@ There are two ways to being using Sistemi Lente/Prism with Git,
 
 The first way, is to fork the `scripts` repo to your own github repo.  This is the
 easiest way to get started, but it has the draw back that all git forks must be
-public, and its very unlikley that you want that.  So the forking method will not be used
-below, but you may use it if you want.
+public, and its very unlikely that you want that.  So the forking method will not be used
+below.
 
 The second way is to clone scripts and push it to your own repo.  Detailed instructions
 are shown below
@@ -47,14 +47,16 @@ are shown below
         git clone https://github.com/sistemicorp/scripts.git
 
 * Note that the `scripts` clone will be created under your current directory.
-  Some prefer all their repositories to be under a common directory, so you might actually
+  Some prefer all their (git) repositories to be under a common directory, so you might actually
   do something like this,
 
 ::
 
         mkdir ~/git
         cd ~/git
-        git clone https://github.com/sistemicorp/cripts.git
+        git clone https://github.com/sistemicorp/scripts.git
+        cd scripts
+        pip3 install -f requirements.txt
 
 * Rename the local repository's current 'origin' to 'upstream'
 
