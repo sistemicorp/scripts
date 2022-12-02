@@ -53,7 +53,7 @@ String version(){
  return _response(doc);
 }
 
-String read_adc(int pin_number, int sample_num, int sample_rate){
+String read_adc(int pin_number, int sample_num, unsigned int sample_rate){
   DynamicJsonDocument doc = _helper(__func__);
 
   unsigned long currentMillis = millis();
@@ -61,7 +61,7 @@ String read_adc(int pin_number, int sample_num, int sample_rate){
   double reading = 0;
 
   for(int count = 0; count <= sample_num; count++){
-    if(currentMillis - previousMillis >= sample_rate){
+    if((currentMillis - previousMillis) >= sample_rate){
       reading += analogRead(pin_number);
       previousMillis = currentMillis;
     }

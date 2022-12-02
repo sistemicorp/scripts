@@ -30,7 +30,7 @@ def parse_args():
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
                                      epilog=epilog)
 
-    parser.add_argument("-p", '--port', dest='port', default=None, type=str,
+    parser.add_argument("-p", '--port', dest='port', default=None, type=str, required=True,
                         action='store', help='Active serial port')
 
     parser.add_argument("-v", '--verbose', dest='verbose', default=0, action='count', help='Increase verbosity')
@@ -69,8 +69,6 @@ def led(args, teensy):
         if not success: _success = False
 
     return _success
-
-
 
 
 if __name__ == '__main__':

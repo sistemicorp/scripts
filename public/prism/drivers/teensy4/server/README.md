@@ -1,6 +1,12 @@
 Instructions for uploading server file to Teensy.
 
 1)Install Arduino IDE (https://www.arduino.cc/en/software).
+  Use version 1.8.19
+  Do not use the AppImage version, use the Linux Zip file.
+
+  Download the Teensy add in for Arduino from here: https://www.pjrc.com/teensy/td_download.html
+  Download and install the Linux UDEV rules: https://www.pjrc.com/teensy/00-teensy.rules
+
 
 2)Copy the absolute path of the server directory (Ctrl + Shift + C on the server directory)
     - ex. C:\Users\User's PC\PycharmProjects\scripts\public\prism\drivers\teensy4\server
@@ -29,17 +35,31 @@ Instructions for uploading server file to Teensy.
 
 14)Go to Arduino IDE and upload the sketch onto the Teensy.
 
---Teensy4 CLI Example--
+--Teensy4 CLI Examples--
 
-    Microsoft Windows
-    (c) 2019 Microsoft Corporation. All rights reserved.
-    
-    (venv) C:\Users\User's PC\PycharmProjects\scripts>cd public/prism/drivers/teensy4
-    
-    (venv) C:\Users\User's PC\PycharmProjects\scripts\public\prism\drivers\teensy4>python Teensy4_cli.py --p COM5 --version
-              Teensy4.py   INFO   69 attempting to install Teensy on port COM5
-              Teensy4.py   INFO   99 Installed Teensy on port COM5
-          Teensy4_cli.py   INFO   92 Version 0.1.0
+
+    martin@martin-virtual-machine:~/git/scripts$ source venv/bin/activate
+    (venv) martin@martin-virtual-machine:~/git/scripts$ python3 public/prism/drivers/teensy4/Teensy4_cli.py -p /dev/ttyACM0 --version
+          Teensy4.py       INFO   79 attempting to install Teensy on port /dev/ttyACM0
+          Teensy4.py       INFO   97 Installed Teensy on port /dev/ttyACM0
+          Teensy4_cli.py   INFO   90 Version 0.1.0
+    (venv) martin@martin-virtual-machine:~/git/scripts$ python3 public/prism/drivers/teensy4/Teensy4_cli.py -p /dev/ttyACM0 led --on
+              Teensy4.py   INFO   79 attempting to install Teensy on port /dev/ttyACM0
+              Teensy4.py   INFO   97 Installed Teensy on port /dev/ttyACM0
+          Teensy4_cli.py   INFO   53 led: Namespace(port='/dev/ttyACM0', verbose=0, show_version=False, _cmd='led', _on=True, _off=False)
+          Teensy4_cli.py   INFO   56 ON: turn on LED
+          Teensy4_cli.py   INFO   60 {'success': True, 'method': 'set_led', 'result': {'state': 'on'}}
+          Teensy4_cli.py   INFO  100 all tests passed
+              Teensy4.py   INFO  105 closing
+    (venv) martin@martin-virtual-machine:~/git/scripts$ python3 public/prism/drivers/teensy4/Teensy4_cli.py -p /dev/ttyACM0 led --off
+              Teensy4.py   INFO   79 attempting to install Teensy on port /dev/ttyACM0
+              Teensy4.py   INFO   97 Installed Teensy on port /dev/ttyACM0
+          Teensy4_cli.py   INFO   53 led: Namespace(port='/dev/ttyACM0', verbose=0, show_version=False, _cmd='led', _on=False, _off=True)
+          Teensy4_cli.py   INFO   64 OFF: turn off LED
+          Teensy4_cli.py   INFO   68 {'success': True, 'method': 'set_led', 'result': {'state': 'off'}}
+          Teensy4_cli.py   INFO  100 all tests passed
+              Teensy4.py   INFO  105 closing
+
 
 --Resources for automizing Server Code Updates--
 

@@ -67,7 +67,7 @@ class HWDriver(object):
         """
         sender = "{}.{}".format(self.SFN, __class__.__name__)  # for debug purposes
 
-        port_candidates = ["COM5"] #serial_ports()
+        port_candidates = serial_ports()
         self.logger.info("Serial Ports to look for Teensy {}".format(port_candidates))
 
         for port in port_candidates:

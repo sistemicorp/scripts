@@ -22,7 +22,7 @@ except:
 DRIVER_TYPE = "TEENSY4"
 
 
-class Teensy4():
+class Teensy4:
     """ teensy4 SimpleRPC based driver
 
     Adding new RPC calls...
@@ -43,7 +43,10 @@ class Teensy4():
     GPIO_MODE_INPUT_PULLUP = "INPUT_PULLUP"
     GPIO_MODE_LIST = [GPIO_MODE_INPUT, GPIO_MODE_OUTPUT, GPIO_MODE_INPUT_PULLUP]
 
-    JIG_CLOSE_GPIO = 23 # GPIO number for Jig Closed detect, set to None if not using (Active-Low)
+    JIG_CLOSE_GPIO = None  # GPIO number for Jig Closed detect, set to None if not using (Active-Low)
+
+    GPIO_NUMBER_MIN = 0
+    GPIO_NUMBER_MAX = 41
 
     # LED test indicators GPIO numbers and whether they are active_high. Set GPIO to None if not using
     TEST_INDICATORS = {
@@ -52,7 +55,7 @@ class Teensy4():
         "other": {'gpio': 22, 'active_high': True}
     }
 
-    header_dir = "public/prism/drivers/teensy4/server/libraries/version/version.h"
+    _version_file = "public/prism/drivers/teensy4/server/libraries/version/version.h"
 
     def __init__(self, port, loggerIn=None):
         self.lock = threading.Lock()
@@ -71,6 +74,7 @@ class Teensy4():
         """
         try:
             self.rpc = Interface(self.port)
+
         except Exception as e:
             self.logger.error(e)
             return False
@@ -109,7 +113,8 @@ class Teensy4():
     # Helper Functions
 
     def _get_version(self):
-        s = Path(self.header_dir).read_text()
+        with open(self._version_file) as f:
+            s = f.readline()
         # Expected version.h file contents, no other pattern is accounted for,
         # !!no other lines or comments are allowed!!
         #     #define VERSION "1.0.0"
@@ -131,9 +136,9 @@ class Teensy4():
 
     def _jig_close_check(self):
         if self.JIG_CLOSE_GPIO is None:
-            self.logger.error("Jig Closed Detector not defined (None)")
+            self.logger.info("Jig Closed Detector not defined (None)")
             return True
-        elif self.JIG_CLOSE_GPIO < 0 or self.JIG_CLOSE_GPIO > 41:
+        elif self.GPIO_NUMBER_MIN < self.JIG_CLOSE_GPIO > self.GPIO_NUMBER_MAX:
             self.logger.error("Invalid GPIO")
             return False
         else:
@@ -187,7 +192,6 @@ class Teensy4():
         """
         answer = self.rpc.call_method('reset')
         return json.loads(answer)
-
 
     def led(self, set):
         """ LED on/off
@@ -268,12 +272,9 @@ class Teensy4():
         return: <True|False>
         """
         if self.JIG_CLOSE_GPIO is None:
-            self.logger.error("Jig Closed Detector not defined (None)")
-            return False
+            self.logger.info("Jig Closed Detector not defined (None), returning True")
+            return True
 
-        elif self.JIG_CLOSE_GPIO < 0 or self.JIG_CLOSE_GPIO > 41:
-            self.logger.error("Invalid GPIO")
-            return False
         answer = json.loads(self.rpc.call_method('read_gpio', self.JIG_CLOSE_GPIO))
         success = answer['success']
 
