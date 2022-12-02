@@ -1,5 +1,8 @@
 How to make docs:
 
+If not already installed:
+   sudo apt-get install python3-sphinx
+
 martin@martin-Lenovo-YOGA-900-13ISK2:~/sistemi/git/scripts/docs$ rm -rf build/
 martin@martin-Lenovo-YOGA-900-13ISK2:~/sistemi/git/scripts/docs$ make html
 Running Sphinx v1.8.5
@@ -32,7 +35,6 @@ drwxr-xr-x 5 martin martin 4096 Jun  3 21:48 html/
 
 
 If there are any other directories in /build, remove them.
-sphin
 
 Good links for info:
 https://www.docslikecode.com/articles/github-pages-python-sphinx/
