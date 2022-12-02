@@ -1,5 +1,5 @@
-/*  Sistemi Corporation, copyright, all rights reserved, 2021
- *  Owen Li
+/*  Sistemi Corporation, copyright, all rights reserved, 2021-2022
+ *  Owen Li, Martin Guthrie
 */
 
 #include <simpleRPC.h>
