@@ -71,9 +71,9 @@ class HWDriver(object):
         self.logger.info("Serial Ports to look for Teensy {}".format(port_candidates))
 
         for port in port_candidates:
-            #if "ttyACM" not in port:  # this does not work on Windows
-             #   self.logger.info("skipping port {}...".format(port))
-               # continue
+            if "ttyACM" not in port:  # this does not work on Windows as only see "COM#"
+                self.logger.info("skipping port {}...".format(port))
+                continue
 
             _teensy = { "port": port}
             self.logger.info("Trying teensy at {}...".format(port))
