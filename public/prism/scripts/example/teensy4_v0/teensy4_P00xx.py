@@ -181,9 +181,18 @@ class teensy4_P00xx(TestItem):
             return
 
         unique_id = result['result']['unique_id']
-        self.log_bullet(f"{unique_id}")
-
         _, _, _bullet = ctx.record.measurement("teensy4_id", unique_id, ResultAPI.UNIT_STRING)
+        self.log_bullet(_bullet)
+
+        result = _teensy.version()
+        success = result['success']
+        if not success:
+            self.logger.error("failed on {}...".format('version'))
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        version = result['result']['version']
+        _, _, _bullet = ctx.record.measurement("teensy4_version", version, ResultAPI.UNIT_STRING)
         self.log_bullet(_bullet)
 
         _teensy.close()
