@@ -7,7 +7,12 @@ Instructions for uploading server file to Teensy.
    Download the Teensy add in for Arduino from here: https://www.pjrc.com/teensy/td_download.html
    Download and install the Linux UDEV rules: https://www.pjrc.com/teensy/00-teensy.rules
 
-   Optional CLI loader:
+   The teensy CLI loader is used by Prism scripts to load teensy, and that binary
+   is stored in this repo. libusb-dev is required to use it.
+
+        sudo apt-get install libusb-dev
+   
+   Optional CLI loader source and infromation:
       https://www.pjrc.com/teensy/loader_cli.html
       https://github.com/PaulStoffregen/teensy_loader_cli
 
@@ -59,6 +64,26 @@ Instructions for uploading server file to Teensy.
     Read "/tmp/arduino_build_864038/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
     Programming..................................................................
     Booting
+
+
+16) Showing Teensy devices with lsusb,
+
+
+    martin@martin-virtual-machine:~/git/scripts/public/prism/drivers/teensy4/server$ lsusb
+    Bus 001 Device 050: ID 16c0:0486 Van Ooijen Technische Informatica Teensyduino RawHID
+    Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+    Bus 002 Device 004: ID 0e0f:0008 VMware, Inc. Virtual Bluetooth Adapter
+    Bus 002 Device 003: ID 0e0f:0002 VMware, Inc. Virtual USB Hub
+    Bus 002 Device 002: ID 0e0f:0003 VMware, Inc. Virtual Mouse
+    Bus 002 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+
+
+After programming, the teensy will show up as a serial, like so,
+
+    martin@martin-virtual-machine:~/git/scripts/public/prism/drivers/teensy4/server$ lsusb
+    Bus 001 Device 053: ID 16c0:0483 Van Ooijen Technische Informatica Teensyduino Serial
+
+
 
 
 --Teensy4 CLI Examples--
