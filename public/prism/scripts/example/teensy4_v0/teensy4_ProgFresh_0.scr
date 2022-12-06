@@ -1,0 +1,31 @@
+// Example: Teensy 4 board example script to program attached Teensy4s
+// !! NOTE: Only works if there is a Teensy 4 board on USB !!
+// !!       See public/prism/drivers/teensy4/README.txt for provision instructions
+// !!
+// 1) Only ONE Teensy should be plugged in at a time for this script.
+//    TODO: support multiple devices plugged in.
+// 2) The Teensy is a "fresh" (never programmed before) unit.  Or has been Memory Wiped.
+//
+{
+  "info": {
+    "product": "teensy4_1"
+  },
+  "config": {
+    "fail_fast": false,
+    "drivers": ["public.prism.drivers.teensy4.hwdrv_teensy4_prog"]
+  },
+  "tests": [
+    {
+      "module": "public.prism.scripts.example.teensy4_v0.teensy4_P00xx",
+      "options": {
+      },
+      "items": [
+        {"id": "P0xxSETUP",           "enable": true },
+        {"id": "P100_Check",          "enable": true },
+        {"id": "P200_Program",        "enable": true, "file": "teensy4_server.ino.hex" },
+        {"id": "P300_Verify",         "enable": true, "delay": 5 },
+        {"id": "P0xxTRDN",            "enable": true }
+      ]
+    }
+  ]
+}

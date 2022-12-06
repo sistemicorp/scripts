@@ -7,9 +7,8 @@ Owen Li
 """
 import json
 import threading
-import os
 from simple_rpc import Interface
-from pathlib import Path
+from serial import SerialException
 
 try:
     # run locally
@@ -105,8 +104,11 @@ class Teensy4:
           
         :return:
         """
+        if self.rpc is None: return
+
         self.logger.info("closing")
         self.rpc.close()
+        self.rpc = None
         return True
 
     # ----------------------------------------------------------------------------------------------
@@ -192,6 +194,19 @@ class Teensy4:
         """
         answer = self.rpc.call_method('reset')
         return json.loads(answer)
+
+    def reboot(self):
+        """ reboot
+        :return: success = True/False, method = reset
+        """
+        try:
+            answer = self.rpc.call_method('reboot')
+            # reboot will not return, expect the exception
+
+        except SerialException:
+            pass
+
+        return json.loads("""{"success": true}""")
 
     def led(self, set):
         """ LED on/off
@@ -297,6 +312,9 @@ class Teensy4:
         :param o: <True|False>  "other" is set
         :return: None
         """
+        if self.rpc is None:
+            return
+
         for k in self.TEST_INDICATORS.keys():
             self.rpc.call_method('write_gpio', self.TEST_INDICATORS[k]['gpio'], not self.TEST_INDICATORS[k]['active_high'])
 

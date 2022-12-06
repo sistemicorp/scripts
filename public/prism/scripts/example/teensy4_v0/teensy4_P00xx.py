@@ -16,6 +16,8 @@ from public.prism.drivers.iba01.list_serial import serial_ports
 from public.prism.drivers.teensy4.Teensy4 import Teensy4
 
 DRIVER_TYPE = "TEENSY4_PROG"
+DRIVER_TYPE_UPDATE = "TEENSY4"  # matches Teensy4 driver type
+
 TEENSY4_ASSETS_PATH = "./public/prism/scripts/example/teensy4_v0/assets"
 
 
@@ -35,6 +37,7 @@ class teensy4_P00xx(TestItem):
         super().__init__(controller, chan, shared_state)
         self.logger = logging.getLogger("teensy400xx.{}".format(self.chan))
         self.teensy = None
+        self._teensy_port = None
 
     def P0xxSETUP(self):
         ctx = self.item_start()  # always first line of test
@@ -197,3 +200,131 @@ class teensy4_P00xx(TestItem):
 
         _teensy.close()
         self.item_end()  # always last line of test
+
+    def P500_SETUP(self):
+        ctx = self.item_start()  # always first line of test
+
+        # drivers are stored in the shared_state and are retrieved as,
+        drivers = self.shared_state.get_drivers(self.chan, type=DRIVER_TYPE_UPDATE)
+        if len(drivers) > 1:
+            self.logger.error("Unexpected number of drivers: {}".format(drivers))
+            self.log_bullet("Unexpected number of drivers")
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+        driver = drivers[0]
+
+        self._teensy_port = driver["obj"]["port"]  # cache for after update reconnect
+
+        id = driver["obj"]["unique_id"]  # save the id of the teensy4 for the record
+        _, _, _bullet = ctx.record.measurement("teensy4_id", id, ResultAPI.UNIT_STRING)
+        self.log_bullet(_bullet)
+        self.logger.info("Found teensy4: {} {}, chan {}".format(driver, id, self.chan))
+
+        self.teensy = driver["obj"]["hwdrv"]
+
+        answer = self.teensy.reset()
+        success = answer["success"]
+
+        if not success:
+            self.logger.error("failed to reset teensy")
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        self.item_end()  # always last line of test
+
+    def P600_Update(self):
+        ctx = self.item_start()  # always first line of test
+
+        file_path = os.path.join(TEENSY4_ASSETS_PATH, ctx.item.file)
+
+        if not os.path.isfile(file_path):
+            self.log_bullet(f"file not found")
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        self.log_bullet(f"{ctx.item.file}")
+
+        self.teensy.close()
+
+        time.sleep(0.1)
+        result = subprocess.run(['./public/prism/drivers/teensy4/server/teensy_loader_cli',
+                                 '--mcu=TEENSY41',
+                                 '-w',
+                                 '-s',
+                                 '-v',
+                                 file_path],
+                                stdout=subprocess.PIPE).stdout.decode('utf-8')
+        self.logger.info(result)
+
+        # expected output looks like,
+        #   Teensy Loader, Command Line, Version 2.2
+        #   Read "./public/prism/scripts/example/teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
+        #   Waiting for Teensy device...
+        #    (hint: press the reset button)
+        #   Found HalfKay Bootloader
+        #   Read "./public/prism/scripts/example/teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
+        #   Programming..................................................................
+        #   Booting
+
+        # check for some key words to confirm success
+        if not result.count('Programming'):
+            self.log_bullet(f"Unexpected Programming")
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        if not result.count('Booting'):
+            self.log_bullet(f"Unexpected Booting")
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        self.item_end()  # always last line of test
+
+    def P700_Verify(self):
+        """ Verify Teensy
+        - by verifying that we can re-install instance of driver after the update
+        - uses the cached serial port from P500_SETUP
+
+        {"id": "P300_Verify",         "enable": true },
+
+        """
+        ctx = self.item_start()  # always first line of test
+        self.log_bullet(f"{ctx.item.delay}s wait for boot")
+        time.sleep(ctx.item.delay)
+        self.log_bullet("done wait")
+
+        self.logger.info("Trying teensy at {}...".format(self._teensy_port))
+
+        # (re)create an instance of Teensy()
+        self.teensy = Teensy4(self._teensy_port, loggerIn=logging.getLogger("teensy.try"))
+        success = self.teensy.init()
+        if not success:
+            self.log_bullet(f"Failed init")
+            self.logger.error("failed on {}...".format(self._teensy_port))
+
+        else:
+            self.log_bullet(f"Found teensy")
+
+        result = self.teensy.unique_id()
+        success = result['success']
+        if not success:
+            self.logger.error("failed on {}...".format('unique_id'))
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        unique_id = result['result']['unique_id']
+        _, _, _bullet = ctx.record.measurement("teensy4_id", unique_id, ResultAPI.UNIT_STRING)
+        self.log_bullet(_bullet)
+
+        result = self.teensy.version()
+        success = result['success']
+        if not success:
+            self.logger.error("failed on {}...".format('version'))
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        version = result['result']['version']
+        _, _, _bullet = ctx.record.measurement("teensy4_version", version, ResultAPI.UNIT_STRING)
+        self.log_bullet(_bullet)
+
+        self.item_end()  # always last line of test
+

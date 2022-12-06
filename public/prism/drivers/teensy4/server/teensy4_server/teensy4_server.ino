@@ -46,11 +46,19 @@ String set_led(bool on) {
   return _response(doc);
 }
 
-String version(){
+String reboot() {
  DynamicJsonDocument doc = _helper(__func__);
+  // send reboot command ----- from https://forum.pjrc.com/threads/59935-Reboot-Teensy-programmatically?p=232143&viewfull=1#post232143
+  SCB_AIRCR = 0x05FA0004;
+  
+  return _response(doc);  
+}
+
+String version(){
+  DynamicJsonDocument doc = _helper(__func__);
  
- doc["result"]["version"] = VERSION;
- return _response(doc);
+  doc["result"]["version"] = VERSION;
+  return _response(doc);
 }
 
 String read_adc(int pin_number, int sample_num, unsigned int sample_rate){
@@ -171,6 +179,7 @@ void loop(void) {
     unique_id, "unique_id: Shows Teensy's unique id",
     slot, "slot: Shows the Teensy's slot to differentiate multiple Teensys",
     set_led, "set_led: Set LED (ON/OFF).",
+    reboot, "reboot: Reboot Teensy",
     version, "version: Shows current version.",
     read_adc, "read_adc: Reads analog pin.",
     init_gpio, "init_gpio: Initializes GPIO (INPUT, INPUT_PULLUP, OUTPUT).",

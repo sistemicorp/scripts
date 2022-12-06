@@ -4,7 +4,7 @@
 // !!
 // 1) Only ONE Teensy should be plugged in at a time for this script.
 //    TODO: support multiple devices plugged in.
-// 2) The Teensey can be "fresh" unit or one that was previously programmed.
+// 2) The Teensy has been previously programmed and supports API 'reboot'
 //
 {
   "info": {
@@ -12,7 +12,7 @@
   },
   "config": {
     "fail_fast": false,
-    "drivers": ["public.prism.drivers.teensy4.hwdrv_teensy4_prog"]
+    "drivers": ["public.prism.drivers.teensy4.hwdrv_teensy4"]
   },
   "tests": [
     {
@@ -20,11 +20,9 @@
       "options": {
       },
       "items": [
-        {"id": "P0xxSETUP",           "enable": true },
-        {"id": "P100_Check",          "enable": true },
-        {"id": "P200_Program",        "enable": true, "file": "teensy4_server.ino.hex" },
-        {"id": "P300_Verify",         "enable": true, "delay": 10 },
-        {"id": "P0xxTRDN",            "enable": true }
+        {"id": "P500_SETUP",          "enable": true },
+        {"id": "P600_Update",         "enable": true, "file": "teensy4_server.ino.hex" },
+        {"id": "P700_Verify",         "enable": true, "delay": 5 },
       ]
     }
   ]
