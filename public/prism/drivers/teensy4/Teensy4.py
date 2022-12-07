@@ -195,18 +195,22 @@ class Teensy4:
         answer = self.rpc.call_method('reset')
         return json.loads(answer)
 
-    def reboot(self):
+    def reboot_to_bootloader(self):
         """ reboot
         :return: success = True/False, method = reset
         """
         try:
-            answer = self.rpc.call_method('reboot')
-            # reboot will not return, expect the exception
+            self.rpc.call_method('reboot_to_bootloader')
+            # reboot will not return, expect SerialException exception, fake the return success
 
         except SerialException:
             pass
 
-        return json.loads("""{"success": true}""")
+        except Exception as e:
+            self.logger.error(e)
+            return json.loads("""{"success": false}""")  # json false is lower case
+
+        return json.loads("""{"success": true}""")  # json true is lower case
 
     def led(self, set):
         """ LED on/off

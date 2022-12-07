@@ -46,12 +46,11 @@ String set_led(bool on) {
   return _response(doc);
 }
 
-String reboot() {
- DynamicJsonDocument doc = _helper(__func__);
-  // send reboot command ----- from https://forum.pjrc.com/threads/59935-Reboot-Teensy-programmatically?p=232143&viewfull=1#post232143
-  SCB_AIRCR = 0x05FA0004;
-  
-  return _response(doc);  
+String reboot_to_bootloader() {
+  DynamicJsonDocument doc = _helper(__func__);
+  // send reboot command ----- from https://forum.pjrc.com/threads/71624-teensy_loader_cli-with-multiple-Teensys-connected?p=316838#post316838
+  _reboot_Teensyduino_();
+  return _response(doc);  // this never happens because of reboot call
 }
 
 String version(){
@@ -174,12 +173,14 @@ void setup(void) {
 }
 
 void loop(void) {
+
+  // NOTE: !! the function name and string begining must match !!
   interface(
     Serial,
     unique_id, "unique_id: Shows Teensy's unique id",
     slot, "slot: Shows the Teensy's slot to differentiate multiple Teensys",
     set_led, "set_led: Set LED (ON/OFF).",
-    reboot, "reboot: Reboot Teensy",
+    reboot_to_bootloader, "reboot_to_bootloader: Reboot Teensy to bootloader for FW update via teensy_loader_cli",
     version, "version: Shows current version.",
     read_adc, "read_adc: Reads analog pin.",
     init_gpio, "init_gpio: Initializes GPIO (INPUT, INPUT_PULLUP, OUTPUT).",

@@ -11,7 +11,7 @@
     "product": "teensy4_1"
   },
   "config": {
-    "fail_fast": false,
+    "fail_fast": true,
     "drivers": ["public.prism.drivers.teensy4.hwdrv_teensy4_prog"]
   },
   "tests": [

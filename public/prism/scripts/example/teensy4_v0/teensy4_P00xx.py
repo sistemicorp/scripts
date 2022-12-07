@@ -41,6 +41,10 @@ class teensy4_P00xx(TestItem):
     Having multiple Teensy's connected over USB is not yet supported.
     The issue is the Teensy CLI loader cannot be directed to a specific device.
 
+    Helpful,
+    https://forum.pjrc.com/threads/66942-Program-Teensy-4-from-command-line-without-pushing-the-button?highlight=bootloader
+    https://forum.pjrc.com/threads/71624-teensy_loader_cli-with-multiple-Teensys-connected?p=316838#post316838
+
     """
     def __init__(self, controller, chan, shared_state):
         super().__init__(controller, chan, shared_state)
@@ -277,6 +281,12 @@ class teensy4_P00xx(TestItem):
         self.log_bullet(f"{ctx.item.file}")
 
         # close teensy connection, its going to get rebooted
+        result = self.teensy.reboot_to_bootloader()
+        if not result['success']:
+            self.logger.error("failed on {}...".format('reboot_to_bootloader'))
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
         self.teensy.close()
 
         # block other instances from trying to use Teensy CLI loader
@@ -285,7 +295,6 @@ class teensy4_P00xx(TestItem):
         result = subprocess.run(['./public/prism/drivers/teensy4/server/teensy_loader_cli',
                                  '--mcu=TEENSY41',
                                  '-w',
-                                 '-s',
                                  '-v',
                                  file_path],
                                 stdout=subprocess.PIPE).stdout.decode('utf-8')
