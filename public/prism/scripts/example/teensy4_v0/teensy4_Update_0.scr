@@ -4,7 +4,7 @@
 // !!
 // 1) Only ONE Teensy should be plugged in at a time for this script.
 //    TODO: support multiple devices plugged in.
-// 2) The Teensy has been previously programmed and supports API 'reboot'
+// 2) The Teensy has been previously programmed
 //
 {
   "info": {

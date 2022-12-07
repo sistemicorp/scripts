@@ -30,7 +30,16 @@ class teensy4_P00xx(TestItem):
     That driver contains the API for interfacing between Prism test scripts
     and the Teensy based interface board hardware.
 
-    This is an example of how to program your Teensy4 interface board.
+    The Teensy (loaded software) is either,
+    1) Fresh, or Memory Wiped, and runs the built in LED flash code.
+       For this state use script teensy4_ProgFresh_0.scr
+
+    2) Running the Prism Server code and thus has a serial port connection.
+       For this state use script teensy4_Update_0.scr
+       The serial port connection will be closed during update.
+
+    Having multiple Teensy's connected over USB is not yet supported.
+    The issue is the Teensy CLI loader cannot be directed to a specific device.
 
     """
     def __init__(self, controller, chan, shared_state):
@@ -109,9 +118,18 @@ class teensy4_P00xx(TestItem):
         self.log_bullet(f"{ctx.item.file}")
         self.log_bullet(f"Press Teensy Button")
 
-        result = subprocess.run(['./public/prism/drivers/teensy4/server/teensy_loader_cli', '--mcu=TEENSY41', '-w', '-v', file_path],
+        self.shared_lock(DRIVER_TYPE).acquire()
+
+        result = subprocess.run(['./public/prism/drivers/teensy4/server/teensy_loader_cli',
+                                 '--mcu=TEENSY41',
+                                 '-w',
+                                 '-v',
+                                 '-s',
+                                 file_path],
                                 stdout=subprocess.PIPE).stdout.decode('utf-8')
         self.logger.info(result)
+
+        self.shared_lock(DRIVER_TYPE).release()
 
         # expected output looks like,
         #   Teensy Loader, Command Line, Version 2.2
@@ -202,6 +220,14 @@ class teensy4_P00xx(TestItem):
         self.item_end()  # always last line of test
 
     def P500_SETUP(self):
+        """ Setup teensy for Update
+        - close the current connection to Teensy
+        - cache the port, so we can open it later in P700_Verify
+
+        {"id": "P500_SETUP",          "enable": true },
+
+        :return:
+        """
         ctx = self.item_start()  # always first line of test
 
         # drivers are stored in the shared_state and are retrieved as,
@@ -233,6 +259,12 @@ class teensy4_P00xx(TestItem):
         self.item_end()  # always last line of test
 
     def P600_Update(self):
+        """ Update the teensy Firmware
+
+        {"id": "P600_Update",         "enable": true, "file": "teensy4_server.ino.hex" },
+
+        :return:
+        """
         ctx = self.item_start()  # always first line of test
 
         file_path = os.path.join(TEENSY4_ASSETS_PATH, ctx.item.file)
@@ -244,9 +276,12 @@ class teensy4_P00xx(TestItem):
 
         self.log_bullet(f"{ctx.item.file}")
 
+        # close teensy connection, its going to get rebooted
         self.teensy.close()
 
-        time.sleep(0.1)
+        # block other instances from trying to use Teensy CLI loader
+        self.shared_lock(DRIVER_TYPE).acquire()
+
         result = subprocess.run(['./public/prism/drivers/teensy4/server/teensy_loader_cli',
                                  '--mcu=TEENSY41',
                                  '-w',
@@ -255,6 +290,8 @@ class teensy4_P00xx(TestItem):
                                  file_path],
                                 stdout=subprocess.PIPE).stdout.decode('utf-8')
         self.logger.info(result)
+
+        self.shared_lock(DRIVER_TYPE).release()
 
         # expected output looks like,
         #   Teensy Loader, Command Line, Version 2.2
@@ -284,7 +321,7 @@ class teensy4_P00xx(TestItem):
         - by verifying that we can re-install instance of driver after the update
         - uses the cached serial port from P500_SETUP
 
-        {"id": "P300_Verify",         "enable": true },
+        {"id": "P700_Verify",         "enable": true, "delay": 5 },
 
         """
         ctx = self.item_start()  # always first line of test
