@@ -75,7 +75,7 @@ class HWDriver(object):
                 self.logger.info("skipping port {}...".format(port))
                 continue
 
-            _teensy = { "port": port}
+            _teensy = {"port": port}
             self.logger.info("Trying teensy at {}...".format(port))
 
             #https: // stackoverflow.com / questions / 21050671 / how - to - check - if -device - is -connected - pyserial / 49450813

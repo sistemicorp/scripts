@@ -5,7 +5,8 @@
 // 1) Only ONE Teensy should be plugged in at a time for this script.
 //    TODO: support multiple devices plugged in.
 // 2) The Teensy is a "fresh" (never programmed before) unit.  Or has been Memory Wiped.
-//
+// 3) As an alternative to this script, use
+//    martin@martin-virtual-machine:~/git/scripts/public/prism/scripts/example/teensy4_v0$ ../../../drivers/teensy4/server/teensy_loader_cli --mcu=TEENSY41 -w -v assets/teensy4_server.ino.hex
 {
   "info": {
     "product": "teensy4_1"

@@ -24,7 +24,10 @@ String unique_id() {
 String slot() {
   DynamicJsonDocument doc = _helper(__func__); 
 
-  doc["result"]["id"] = 1;
+  // slot id will be based on MAC address last 2 bytes
+  uint32_t m2 = HW_OCOTP_MAC0;
+  uint32_t _id = m2 & 0xffff;
+  doc["result"]["id"] = _id;
   return _response(doc);
 }
 
