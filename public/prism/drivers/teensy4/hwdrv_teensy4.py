@@ -8,7 +8,7 @@ Owen Li
 import os
 import logging
 from core.sys_log import pub_notice
-from public.prism.drivers.iba01.list_serial import serial_ports
+from public.prism.drivers.common.list_serial import serial_ports
 
 from public.prism.drivers.teensy4.Teensy4 import Teensy4, DRIVER_TYPE
 

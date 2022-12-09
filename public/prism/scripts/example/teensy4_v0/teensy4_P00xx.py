@@ -11,6 +11,7 @@ from public.prism.api import ResultAPI
 import subprocess
 import os
 import time
+import pyudev
 
 from public.prism.drivers.iba01.list_serial import serial_ports
 from public.prism.drivers.teensy4.Teensy4 import Teensy4
@@ -280,6 +281,9 @@ class teensy4_P00xx(TestItem):
 
         self.log_bullet(f"{ctx.item.file}")
 
+        # block other instances from reboot/Teensy CLI loader
+        self.shared_lock(DRIVER_TYPE).acquire()
+
         # close teensy connection, its going to get rebooted
         result = self.teensy.reboot_to_bootloader()
         if not result['success']:
@@ -288,9 +292,6 @@ class teensy4_P00xx(TestItem):
             return
 
         self.teensy.close()
-
-        # block other instances from trying to use Teensy CLI loader
-        self.shared_lock(DRIVER_TYPE).acquire()
 
         result = subprocess.run(['./public/prism/drivers/teensy4/server/teensy_loader_cli',
                                  '--mcu=TEENSY41',
@@ -371,6 +372,49 @@ class teensy4_P00xx(TestItem):
         version = result['result']['version']
         _, _, _bullet = ctx.record.measurement("teensy4_version", version, ResultAPI.UNIT_STRING)
         self.log_bullet(_bullet)
+
+        self.item_end()  # always last line of test
+
+    def P800_USBTree(self):
+        """ USB Tree
+
+        {"id": "P800_USBTree",        "enable": true },
+
+        Device('/sys/devices/pci0000:00/0000:00:11.0/0000:02:03.0/usb1')
+        Device('/sys/devices/pci0000:00/0000:00:11.0/0000:02:03.0/usb1/1-0:1.0')
+        Device('/sys/devices/pci0000:00/0000:00:11.0/0000:02:03.0/usb1/1-2')
+        Device('/sys/devices/pci0000:00/0000:00:11.0/0000:02:03.0/usb1/1-2/1-2:1.0')
+        Device('/sys/devices/pci0000:00/0000:00:11.0/0000:02:03.0/usb1/1-2/1-2:1.0/tty/ttyACM2')
+        Device('/sys/devices/pci0000:00/0000:00:11.0/0000:02:03.0/usb1/1-2/1-2:1.1')
+        """
+        ctx = self.item_start()  # always first line of test
+
+        context = pyudev.Context()
+        for device in context.list_devices(subsystem='tty'):
+            _node = str(device.device_node)
+            if "ttyACM" in _node:
+                self.logger.info(f"{device.device_node} {device.device_type}")
+                self.logger.info(dir(device))
+                self.logger.info(device.sys_path)
+                self.logger.info(device.device_path)
+                self.logger.info(device.subsystem)
+                self.logger.info(device.parent)
+                self.logger.info(device.traverse)
+                self.logger.info(dir(device.properties))
+                self.logger.info(device.properties.items)
+                _parent = device.parent
+
+        self.logger.info("===============================================================================")
+
+        for device in context.list_devices():
+            if device.parent == _parent:
+                self.logger.info(device)
+
+        #for device in context.list_devices(subsystem='block', DEVTYPE='partition'):
+        #     self.logger.info(device)
+
+        #for device in context.list_devices(subsystem='block'):
+        #    print('{0} ({1})'.format(device.device_node, device.device_type))
 
         self.item_end()  # always last line of test
 

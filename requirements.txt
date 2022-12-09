@@ -21,3 +21,4 @@ filehash
 deepdiff
 email-validator
 python-rapidjson
+pyudev

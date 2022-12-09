@@ -56,7 +56,8 @@ are shown below
         cd ~/git
         git clone https://github.com/sistemicorp/scripts.git
         cd scripts
-        pip3 install -f requirements.txt
+        sudo pip3 install -f requirements.txt
+
 
 * Rename the local repository's current 'origin' to 'upstream'
 
