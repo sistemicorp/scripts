@@ -112,16 +112,17 @@ local file system.
 Additional Requirements
 =======================
 
-* install git::
+* install additional packages
+
+::
 
     sudo apt update
-    sudo apt install git
+    sudo apt install git python3-dev
 
-  * if you are unfamiliar with `git`, in short it is a free cloud based software version control platform
-  * `git` is an advanced tool, and although widely used, it can be an complicated tool.  There are
-    GUI programs that try and make `git` easier for the novice user, and a quick google can point you to some for your host operating system.
-  * these instructions (attempt to) only use the simple basic commands of `git`
-  * the perscriptive way to setup is described TBD
+* if you are unfamiliar with `git`, in short it is a free cloud based software version control platform
+* `git` is an advanced tool, and although widely used, it can be an complicated tool.  There are
+  GUI programs that try and make `git` easier for the novice user, and a quick google can point you to some for your host operating system.
+* these instructions (attempt to) only use the simple basic commands of `git`
 
 
 Clone Sistemi Scripts
