@@ -13,3 +13,11 @@ public/users.sqlite
 create_manifest.py
 
 public/prism/drivers/brother_ql700/wip/
+
+*.so
+
+public/prism/drivers/nrfprog/config.toml
+
+public/prism/drivers/nrfprog/jlinkarm_nrf_worker_linux
+
+public/prism/drivers/nrfprog/nrfjprog
