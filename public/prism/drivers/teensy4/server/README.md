@@ -55,15 +55,13 @@ Instructions for uploading server file to Teensy.
 15) Program Teensy with command line tool,
 
 
-    martin@martin-virtual-machine:~/git/scripts/public/prism/drivers/teensy4/server$ ./teensy_loader_cli --mcu=TEENSY41 -w -v /tmp/arduino_build_864038/teensy4_server.ino.hex 
+    martin@martin-staric2:~/git/scripts/public/prism/drivers/teensy4/server$ ./teensy_loader_cli --mcu=TEENSY41 -w -v ../../../../prism/scripts/example/teensy4_v0/assets/teensy4_server.ino.hex 
     Teensy Loader, Command Line, Version 2.2
-    Read "/tmp/arduino_build_864038/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
-    Waiting for Teensy device...
-     (hint: press the reset button)
+    Read "../../../../prism/scripts/example/teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
     Found HalfKay Bootloader
-    Read "/tmp/arduino_build_864038/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
     Programming..................................................................
     Booting
+
 
 
 16) Showing Teensy devices with lsusb,

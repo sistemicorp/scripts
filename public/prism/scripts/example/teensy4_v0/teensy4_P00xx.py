@@ -347,10 +347,10 @@ class teensy4_P00xx(TestItem):
         if not success:
             self.log_bullet(f"Failed init")
             self.logger.error("failed on {}...".format(self._teensy_port))
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
 
-        else:
-            self.log_bullet(f"Found teensy")
-
+        self.log_bullet(f"Found teensy")
         result = self.teensy.unique_id()
         success = result['success']
         if not success:
@@ -377,6 +377,7 @@ class teensy4_P00xx(TestItem):
 
     def P800_USBTree(self):
         """ USB Tree
+        - this is debug code to learn about pyudev.Context()
 
         {"id": "P800_USBTree",        "enable": true },
 
@@ -405,16 +406,6 @@ class teensy4_P00xx(TestItem):
                 _parent = device.parent
 
         self.logger.info("===============================================================================")
-
-        for device in context.list_devices():
-            if device.parent == _parent:
-                self.logger.info(device)
-
-        #for device in context.list_devices(subsystem='block', DEVTYPE='partition'):
-        #     self.logger.info(device)
-
-        #for device in context.list_devices(subsystem='block'):
-        #    print('{0} ({1})'.format(device.device_node, device.device_type))
 
         self.item_end()  # always last line of test
 

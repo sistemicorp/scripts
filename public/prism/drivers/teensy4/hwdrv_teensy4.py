@@ -1,12 +1,13 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2021
-Owen Li
+Sistemi Corporation, copyright, all rights reserved, 2021-2022
+Owen Li, Martin Guthrie
 
 """
 import os
 import logging
+import pyudev
 from core.sys_log import pub_notice
 from public.prism.drivers.common.list_serial import serial_ports
 
@@ -34,7 +35,7 @@ class HWDriver(object):
         self.logger = logging.getLogger("{}".format(self.SFN))
         self.logger.info("Start")
         self._num_chan = 0
-        self.teensys = []
+        self.teensys = []  # holds a list of all objects found
 
     def discover_channels(self):
         """ determine the number of channels, and populate hw drivers into shared state
@@ -106,9 +107,29 @@ class HWDriver(object):
             _teensy['play'] = _teensy['hwdrv'].jig_closed_detect
             _teensy['show_pass_fail'] = _teensy['hwdrv'].show_pass_fail
 
+            # add USB port location
+            context = pyudev.Context()
+            for device in context.list_devices(subsystem='tty'):
+                _node = str(device.device_node)
+                if port in _node:
+                    _teensy['usb_path'] = device.device_path
+                    break
+
+            if not _teensy.get('usb_path', False):
+                _teensy['usb_path'] = None
+
+            self.logger.info(_teensy)
             self.teensys.append(_teensy)
 
         self._num_chan = len(self.teensys)
+
+        # sort based on USB path, slot 0, 1, 2, etc
+        self.teensys = sorted(self.teensys, key=lambda d: d['usb_path'])
+        # fix the slot IDs as the slot order is set by the USB path
+        for idx, t in enumerate(self.teensys):
+            t["id"] = idx
+
+        self.logger.info(self.teensys)
 
         pub_notice("HWDriver:{}: Found {}!".format(self.SFN, self._num_chan), sender=sender)
         self.logger.info("Done: {} channels".format(self._num_chan))
@@ -123,10 +144,14 @@ class HWDriver(object):
 
 # ===============================================================================================
 # Debugging code
-# - Test your hardware discover here by running this file from a terminal
+# - Test your hardware discover here by running this file from PyCharm (be sure to set the working
+#   directory as ~/git/scripts, else imports will fail)
+# - the purpose is to valid discover_channels() is working
 #
 if __name__ == '__main__':
+    logging.basicConfig()
     logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
 
     d = HWDriver()
     d.discover_channels()
