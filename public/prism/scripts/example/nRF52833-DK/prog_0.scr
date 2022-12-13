@@ -1,0 +1,21 @@
+// Example for nRF52833-DK
+{
+  "info": {
+    "product": "nrf52833_1"
+  },
+  "config": {
+    "fail_fast": true,
+    "drivers": ["public.prism.drivers.nrfprog.hwdrv_nrfjprog"]
+  },
+  "tests": [
+    {
+      "module": "public.prism.scripts.example.nRF52833-DK.prog_P00xx",
+      "options": {
+      },
+      "items": [
+        {"id": "P0xxSETUP",          "enable": true, "target": "nrf52"},
+        {"id": "P100_Program",       "enable": true, "file": "blinky_pca10100e.hex" },
+      ]
+    }
+  ]
+}

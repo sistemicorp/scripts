@@ -7,9 +7,7 @@ Martin guthrie
 """
 import os
 import logging
-import subprocess
 import pyudev
-import usb.core
 from core.sys_log import pub_notice
 
 from public.prism.drivers.nrfprog.NRFProg import NRFProg, DRIVER_TYPE
@@ -76,17 +74,21 @@ class HWDriver(object):
         """
         sender = "{}.{}".format(self.SFN, __class__.__name__)  # for debug purposes
 
+        found_serial_nums = []
         context = pyudev.Context()
         for device in context.list_devices():
             if device.properties.get("ID_SERIAL", False):
                 if "SEGGER_J-Link_" in device.properties["ID_SERIAL"]:
-                    _segger = {"id": device.properties["ID_SERIAL"]}
-                    _segger['usb_path'] = device.device_path
-                    _segger['version'] = self.VERSION
-                    sn = device.properties["ID_SERIAL"].split("_")[-1]
-                    _segger['hwdrv'] = NRFProg(sn)
+                    sn = device.properties["ID_SERIAL"].split("_")[-1].lstrip("0")
+                    if sn not in found_serial_nums:
+                        _segger = {"id": 0}  # this will get re-indexed below
+                        _segger['usb_path'] = device.device_path
+                        _segger['version'] = self.VERSION
+                        _segger['hwdrv'] = NRFProg(sn)
+                        _segger['unique_id'] = sn
 
-                    self.seggers.append(_segger)
+                        self.seggers.append(_segger)
+                        found_serial_nums.append(sn)
 
         # Note:
         # the nrf prog tool will be run as,
