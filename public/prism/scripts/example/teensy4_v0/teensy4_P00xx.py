@@ -51,6 +51,7 @@ class teensy4_P00xx(TestItem):
         self.logger = logging.getLogger("teensy400xx.{}".format(self.chan))
         self.teensy = None
         self._teensy_port = None
+        self._teensy_usb_path = None
         self._teensy_ports_cache = None
 
     def P0xxSETUP(self):
@@ -242,21 +243,16 @@ class teensy4_P00xx(TestItem):
             self.log_bullet("Unexpected number of drivers")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
-        driver = drivers[0]
+        driver = drivers[0]  # this is a dict from hwdrv_teensy4
 
         id = driver["obj"]["unique_id"]  # save the id of the teensy4 for the record
         _, _, _bullet = ctx.record.measurement("teensy4_id", id, ResultAPI.UNIT_STRING)
         self.log_bullet(_bullet)
         self.logger.info("Found teensy4: {} {}, chan {}".format(driver, id, self.chan))
 
-        # code to deal with running the test repeated times
-        # the port may have changed after program update
-        if self.teensy is None:
-            self._teensy_port = driver["obj"]["port"]  # cache for after update reconnect
-            self.teensy = driver["obj"]["hwdrv"]
-
-        else:
-            self.teensy.set_port(self._teensy_port)
+        self._teensy_usb_path = driver["obj"]["usb_path"]  # cache for after update reconnect
+        #self._teensy_port = driver["obj"]["port"]  # cache for after update reconnect
+        self.teensy = driver["obj"]["hwdrv"]
 
         success = self.teensy.init()
         if not success:
@@ -264,9 +260,8 @@ class teensy4_P00xx(TestItem):
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
-        answer = self.teensy.reset()
-        success = answer["success"]
-        if not success:
+        result = self.teensy.reset()   # set Teensy to a known good state
+        if not result["success"]:
             self.logger.error("failed to reset teensy")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
@@ -283,7 +278,6 @@ class teensy4_P00xx(TestItem):
         ctx = self.item_start()  # always first line of test
 
         file_path = os.path.join(TEENSY4_ASSETS_PATH, ctx.item.file)
-
         if not os.path.isfile(file_path):
             self.log_bullet(f"file not found")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
@@ -293,12 +287,6 @@ class teensy4_P00xx(TestItem):
 
         # block other instances from reboot/Teensy CLI loader
         self.shared_lock(DRIVER_TYPE).acquire()
-
-        # When teensy is closed, updated, when it comes back, it may not be
-        # on the same serial port.  Need to track ports.
-        self._teensy_ports_cache = glob.glob('/dev/ttyA[A-Za-z]*')
-        self._teensy_ports_cache.remove(self._teensy_port)
-        self.logger.info(f"Teensy will not come back on {self._teensy_ports_cache}")
 
         # close teensy connection, its going to get rebooted
         self.logger.info("reboot_to_bootloader")
@@ -335,7 +323,7 @@ class teensy4_P00xx(TestItem):
             #   Programming..................................................................
             #   Booting
 
-            # check for some key words to confirm success
+            # check for some keywords to confirm success
             if result.count('Programming') and result.count('Booting'):
                 success = True
                 break
@@ -351,43 +339,68 @@ class teensy4_P00xx(TestItem):
 
         self.item_end()  # always last line of test
 
+    def _find_matching_ttyACM_from_usb_path(self, ref_path):
+        """ Find longest matching USB path
+        - the USB path might look different on different systems...
+        - TODO: find out how to break the path down to the port mapping on the hub.
+                it would be better to match port hubs.  Today, just looking for longest match
+                which will include the port.
+
+        Example USB Device path:
+        'usb_path': '/devices/pci0000:00/0000:00:08.1/0000:03:00.3/usb1/1-2/1-2.1/1-2.1.4/1-2.1.4.1/1-2.1.4.1:1.0/tty/ttyACM3'
+
+        :param ref_path: path to find the longest match
+        :return: string port (example ttyACM0)
+        """
+        # find the matching tty port from the usb_path
+        port = None
+        match_len = 0
+        context = pyudev.Context()
+        for device in context.list_devices(subsystem='tty'):
+            _node = str(device.device_node)
+            if "ttyACM" in _node:
+                device_path = device.device_path
+                # compare strings to find longest matching
+                _idx = 0
+                while _idx < len(self._teensy_usb_path):
+                    if device_path[_idx] != self._teensy_usb_path[_idx]:
+                        if _idx > match_len:
+                            port = _node
+                            match_len = _idx
+
+                    _idx += 1
+
+                self.logger.info(f"{port} {match_len}")
+
+        return port
+
     def P700_Verify(self):
         """ Verify Teensy
         - by verifying that we can re-install instance of driver after the update
-        - uses the cached serial port from P500_SETUP
+        - this is difficult because on USB re-enumeration teensy may be on a different
+          serial port.  So use the usb_path to find the correct port.
 
         {"id": "P700_Verify",         "enable": true, "delay": 5 },
 
         """
         ctx = self.item_start()  # always first line of test
+
+        # Teensy should be re-enumerating on USB, using a simple delay to let that happen
         self.log_bullet(f"{ctx.item.delay}s wait for boot")
         time.sleep(ctx.item.delay)
         self.log_bullet("done wait")
 
-        ports = glob.glob('/dev/ttyA[A-Za-z]*')
-        self.logger.info(ports)
-        if self._teensy_port in ports:
-            pass
-        else:
-            for p in self._teensy_ports_cache:  # Teensy can't come back in these ports
-                if p in ports:
-                    ports.remove(p)
+        port = self._find_matching_ttyACM_from_usb_path(self._teensy_usb_path)
+        if port is None:
+            self.log_bullet(f"Failed find port")
+            self.shared_lock(DRIVER_TYPE).release()
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
 
-            self.logger.info(ports)
-            if len(ports) == 1:
-                self._teensy_port = ports[0]
-
-            else:
-                self.log_bullet(f"Failed find port")
-                self.logger.error("Too many ports {}...".format(ports))
-                self.shared_lock(DRIVER_TYPE).release()
-                self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-                return
-
-        self.logger.info("Trying teensy at {}...".format(self._teensy_port))
+        self.logger.info("Trying teensy at {}...".format(port))
 
         # (re)create an instance of Teensy()
-        self.teensy = Teensy4(self._teensy_port, loggerIn=logging.getLogger("teensy.try"))
+        self.teensy = Teensy4(port, loggerIn=logging.getLogger("teensy.try"))
         success = self.teensy.init()
         if not success:
             self.log_bullet(f"Failed init")
@@ -421,6 +434,7 @@ class teensy4_P00xx(TestItem):
         _, _, _bullet = ctx.record.measurement("teensy4_version", version, ResultAPI.UNIT_STRING)
         self.log_bullet(_bullet)
 
+        self.log_bullet("! ONLY RUN ONCE !")
         self.item_end()  # always last line of test
 
     def P800_USBTree(self):

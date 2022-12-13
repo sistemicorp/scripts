@@ -1,9 +1,14 @@
+// !! CAN ONLY RUN THIS ONCE IN PRISM !!
+//
 // Example: Teensy 4 board example script to program attached Teensy4s
 // !! NOTE: Only works if there is a Teensy 4 board on USB !!
 // !!       See public/prism/drivers/teensy4/README.txt for provision instructions
 // !!
 // 1) The Teensy has been previously programmed with teensy4_server.ino.hex
+// 2) Can only run once in prism because after firmware update, USB re-enumeration
+//    may cause the Teensy to change ports, and mess up the hwdrv init.
 //
+// !! CAN ONLY RUN THIS ONCE IN PRISM !!
 {
   "info": {
     "product": "teensy4_1"
@@ -21,7 +26,6 @@
         {"id": "P500_SETUP",          "enable": true, "timeout": 30 },
         {"id": "P600_Update",         "enable": true, "file": "teensy4_server.ino.hex" },
         {"id": "P700_Verify",         "enable": true, "delay": 2 },
-        {"id": "P800_USBTree",        "enable": false },
       ]
     }
   ]
