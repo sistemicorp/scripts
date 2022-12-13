@@ -1,18 +1,27 @@
 Instructions for uploading server file to Teensy.
 
 1) Install Arduino IDE (https://www.arduino.cc/en/software).
-   Use version 1.8.19
-   Do not use the AppImage version, use the Linux Zip file.
 
-   Download the Teensy add in for Arduino from here: https://www.pjrc.com/teensy/td_download.html
+   !! Use version 1.8.19 !!
+
+   Do not use the AppImage version, use the Linux Zip file.
+   
+   Note there is a Getting Started page to show you how to install the tar file: https://docs.arduino.cc/software/ide-v1/tutorials/Linux
+
+   When you run the Teensy installer, you have to point it at the Arduino installation that 
+   you just installed, which will be at the location that you just executed from.
+
    Download and install the Linux UDEV rules: https://www.pjrc.com/teensy/00-teensy.rules
 
+   Download the Teensy add in for Arduino from here: https://www.pjrc.com/teensy/td_download.html
+     
+
    The teensy CLI loader is used by Prism scripts to load teensy, and that binary
-   is stored in this repo. libusb-dev is required to use it.
+   is stored in `scripts` repo. libusb-dev is required to use it.
 
         sudo apt-get install libusb-dev
    
-   Optional CLI loader source and infromation:
+   Optional CLI loader source and information:
       https://www.pjrc.com/teensy/loader_cli.html
       https://github.com/PaulStoffregen/teensy_loader_cli
 

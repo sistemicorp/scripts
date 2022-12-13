@@ -11,6 +11,7 @@ from public.prism.api import ResultAPI
 import subprocess
 import os
 import time
+import glob
 import pyudev
 
 from public.prism.drivers.iba01.list_serial import serial_ports
@@ -34,15 +35,13 @@ class teensy4_P00xx(TestItem):
     The Teensy (loaded software) is either,
     1) Fresh, or Memory Wiped, and runs the built in LED flash code.
        For this state use script teensy4_ProgFresh_0.scr
+       Having multiple Teensy's connected over USB is not yet supported.
 
     2) Running the Prism Server code and thus has a serial port connection.
        For this state use script teensy4_Update_0.scr
        The serial port connection will be closed during update.
 
-    Having multiple Teensy's connected over USB is not yet supported.
-    The issue is the Teensy CLI loader cannot be directed to a specific device.
-
-    Helpful,
+    Helpful:
     https://forum.pjrc.com/threads/66942-Program-Teensy-4-from-command-line-without-pushing-the-button?highlight=bootloader
     https://forum.pjrc.com/threads/71624-teensy_loader_cli-with-multiple-Teensys-connected?p=316838#post316838
 
@@ -52,6 +51,7 @@ class teensy4_P00xx(TestItem):
         self.logger = logging.getLogger("teensy400xx.{}".format(self.chan))
         self.teensy = None
         self._teensy_port = None
+        self._teensy_ports_cache = None
 
     def P0xxSETUP(self):
         ctx = self.item_start()  # always first line of test
@@ -244,18 +244,28 @@ class teensy4_P00xx(TestItem):
             return
         driver = drivers[0]
 
-        self._teensy_port = driver["obj"]["port"]  # cache for after update reconnect
-
         id = driver["obj"]["unique_id"]  # save the id of the teensy4 for the record
         _, _, _bullet = ctx.record.measurement("teensy4_id", id, ResultAPI.UNIT_STRING)
         self.log_bullet(_bullet)
         self.logger.info("Found teensy4: {} {}, chan {}".format(driver, id, self.chan))
 
-        self.teensy = driver["obj"]["hwdrv"]
+        # code to deal with running the test repeated times
+        # the port may have changed after program update
+        if self.teensy is None:
+            self._teensy_port = driver["obj"]["port"]  # cache for after update reconnect
+            self.teensy = driver["obj"]["hwdrv"]
+
+        else:
+            self.teensy.set_port(self._teensy_port)
+
+        success = self.teensy.init()
+        if not success:
+            self.logger.error("failed to reset teensy")
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
 
         answer = self.teensy.reset()
         success = answer["success"]
-
         if not success:
             self.logger.error("failed to reset teensy")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
@@ -284,43 +294,58 @@ class teensy4_P00xx(TestItem):
         # block other instances from reboot/Teensy CLI loader
         self.shared_lock(DRIVER_TYPE).acquire()
 
+        # When teensy is closed, updated, when it comes back, it may not be
+        # on the same serial port.  Need to track ports.
+        self._teensy_ports_cache = glob.glob('/dev/ttyA[A-Za-z]*')
+        self._teensy_ports_cache.remove(self._teensy_port)
+        self.logger.info(f"Teensy will not come back on {self._teensy_ports_cache}")
+
         # close teensy connection, its going to get rebooted
+        self.logger.info("reboot_to_bootloader")
         result = self.teensy.reboot_to_bootloader()
         if not result['success']:
             self.logger.error("failed on {}...".format('reboot_to_bootloader'))
+            self.shared_lock(DRIVER_TYPE).release()
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
         self.teensy.close()
 
-        result = subprocess.run(['./public/prism/drivers/teensy4/server/teensy_loader_cli',
-                                 '--mcu=TEENSY41',
-                                 '-w',
-                                 '-v',
-                                 file_path],
-                                stdout=subprocess.PIPE).stdout.decode('utf-8')
-        self.logger.info(result)
+        attempts = 2
+        success = False
+        while attempts:
+            # NOTE: there is a bug somewhere, so we have to try this twice!
+            #       see https://forum.pjrc.com/threads/69236-TeensyLoader-CLI-issues
 
-        self.shared_lock(DRIVER_TYPE).release()
+            result = subprocess.run(['./public/prism/drivers/teensy4/server/teensy_loader_cli',
+                                     '--mcu=TEENSY41',
+                                     '-w',
+                                     '-v',
+                                     file_path],
+                                    stdout=subprocess.PIPE).stdout.decode('utf-8')
+            self.logger.info(result)
 
-        # expected output looks like,
-        #   Teensy Loader, Command Line, Version 2.2
-        #   Read "./public/prism/scripts/example/teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
-        #   Waiting for Teensy device...
-        #    (hint: press the reset button)
-        #   Found HalfKay Bootloader
-        #   Read "./public/prism/scripts/example/teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
-        #   Programming..................................................................
-        #   Booting
+            # expected output looks like,
+            #   Teensy Loader, Command Line, Version 2.2
+            #   Read "./public/prism/scripts/example/teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
+            #   Waiting for Teensy device...
+            #    (hint: press the reset button)
+            #   Found HalfKay Bootloader
+            #   Read "./public/prism/scripts/example/teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
+            #   Programming..................................................................
+            #   Booting
 
-        # check for some key words to confirm success
-        if not result.count('Programming'):
-            self.log_bullet(f"Unexpected Programming")
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+            # check for some key words to confirm success
+            if result.count('Programming') and result.count('Booting'):
+                success = True
+                break
 
-        if not result.count('Booting'):
-            self.log_bullet(f"Unexpected Booting")
+            attempts -= 1
+            time.sleep(0.1)
+
+        if not success:
+            self.log_bullet(f"teensy_loader_cli failed")
+            self.shared_lock(DRIVER_TYPE).release()
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
@@ -339,6 +364,26 @@ class teensy4_P00xx(TestItem):
         time.sleep(ctx.item.delay)
         self.log_bullet("done wait")
 
+        ports = glob.glob('/dev/ttyA[A-Za-z]*')
+        self.logger.info(ports)
+        if self._teensy_port in ports:
+            pass
+        else:
+            for p in self._teensy_ports_cache:  # Teensy can't come back in these ports
+                if p in ports:
+                    ports.remove(p)
+
+            self.logger.info(ports)
+            if len(ports) == 1:
+                self._teensy_port = ports[0]
+
+            else:
+                self.log_bullet(f"Failed find port")
+                self.logger.error("Too many ports {}...".format(ports))
+                self.shared_lock(DRIVER_TYPE).release()
+                self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+                return
+
         self.logger.info("Trying teensy at {}...".format(self._teensy_port))
 
         # (re)create an instance of Teensy()
@@ -347,10 +392,13 @@ class teensy4_P00xx(TestItem):
         if not success:
             self.log_bullet(f"Failed init")
             self.logger.error("failed on {}...".format(self._teensy_port))
+            self.shared_lock(DRIVER_TYPE).release()
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
         self.log_bullet(f"Found teensy")
+        self.shared_lock(DRIVER_TYPE).release()
+
         result = self.teensy.unique_id()
         success = result['success']
         if not success:

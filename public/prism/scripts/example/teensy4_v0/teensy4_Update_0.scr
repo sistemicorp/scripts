@@ -2,9 +2,7 @@
 // !! NOTE: Only works if there is a Teensy 4 board on USB !!
 // !!       See public/prism/drivers/teensy4/README.txt for provision instructions
 // !!
-// 1) Only ONE Teensy should be plugged in at a time for this script.
-//    TODO: support multiple devices plugged in.
-// 2) The Teensy has been previously programmed
+// 1) The Teensy has been previously programmed with teensy4_server.ino.hex
 //
 {
   "info": {
@@ -20,9 +18,9 @@
       "options": {
       },
       "items": [
-        {"id": "P500_SETUP",          "enable": true },
+        {"id": "P500_SETUP",          "enable": true, "timeout": 30 },
         {"id": "P600_Update",         "enable": true, "file": "teensy4_server.ino.hex" },
-        {"id": "P700_Verify",         "enable": true, "delay": 5 },
+        {"id": "P700_Verify",         "enable": true, "delay": 2 },
         {"id": "P800_USBTree",        "enable": false },
       ]
     }

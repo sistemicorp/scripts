@@ -1,8 +1,8 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2021
-Owen Li
+Sistemi Corporation, copyright, all rights reserved, 2021-2022
+Owen Li, Martin Guthrie
 
 """
 import json
@@ -67,18 +67,22 @@ class Teensy4:
 
         self.my_version = self._get_version()
 
+    def set_port(self, port):
+        self.port = port
+
     def init(self):
         """ Init Teensy SimpleRPC connection
         :return: <True/False> whether Teensy SimpleRPC connection was created
         """
-        try:
-            self.rpc = Interface(self.port)
-
-        except Exception as e:
-            self.logger.error(e)
-            return False
-
         self.logger.info("attempting to install Teensy on port {}".format(self.port))
+
+        if self.rpc is None:
+            try:
+                self.rpc = Interface(self.port)
+
+            except Exception as e:
+                self.logger.error(e)
+                return False
 
         version_response = self.version()
         if not version_response["success"]:
@@ -104,9 +108,10 @@ class Teensy4:
           
         :return:
         """
-        if self.rpc is None: return
+        if self.rpc is None:
+            return True
 
-        self.logger.info("closing")
+        self.logger.info(f"closing {self.port}")
         self.rpc.close()
         self.rpc = None
         return True
