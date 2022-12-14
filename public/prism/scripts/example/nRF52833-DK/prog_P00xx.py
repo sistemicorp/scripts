@@ -80,6 +80,7 @@ class prog_P00xx(TestItem):
         rc = result.returncode
         if rc:
             self.log_bullet(f"program error {rc}")
+            self.logger.error(result.stderr)
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 

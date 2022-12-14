@@ -76,17 +76,17 @@ class HWDriver(object):
 
         found_serial_nums = []
         context = pyudev.Context()
+
         for device in context.list_devices():
-            if device.properties.get("ID_SERIAL", False):
-                if "SEGGER_J-Link_" in device.properties["ID_SERIAL"]:
-                    sn = device.properties["ID_SERIAL"].split("_")[-1].lstrip("0")
+            if device.attributes.get("manufacturer", False):
+                if "SEGGER" in str(device.attributes.get("manufacturer")):
+                    sn = device.attributes.get("serial").decode("utf-8").lstrip("0")
                     if sn not in found_serial_nums:
                         _segger = {"id": 0}  # this will get re-indexed below
                         _segger['usb_path'] = device.device_path
                         _segger['version'] = self.VERSION
                         _segger['hwdrv'] = NRFProg(sn)
                         _segger['unique_id'] = sn
-
                         self.seggers.append(_segger)
                         found_serial_nums.append(sn)
 
