@@ -28,8 +28,9 @@ Requirements
 
 * Operating System
 
-  * The system was developed and tested on Ubuntu 18.04
-  * All these instructions are for Ubuntu 18.04
+  * The system was developed and tested on Ubuntu 22.04
+  * All these instructions are for Ubuntu 22.04
+  * The Docker Prism image is based on Ubuntu 22.04
 
 * Outside Software Requirements
 
