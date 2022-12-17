@@ -172,7 +172,9 @@ Clone Sistemi Scripts
 * There is a prescriptive directory structure to use, and that is stored on `github` in a project called ``scripts``
 * This `github` repo is where you would ultimately store and version control your own scripts
 
-  * Instead of cloning the repo, you would *fork* [1]_ (copy) it, making it your own, and then add your own code
+  * To make the repo your own, instead of cloning the repo, you would *fork* (copy) it,
+    making it your own, and then add your own code
+
 * The instructions below will create a folder called *git/scripts* which `git` will copy the required files into
 
 * Clone ``scripts``::
@@ -180,32 +182,26 @@ Clone Sistemi Scripts
     mkdir ~/git
     cd ~/git
     git clone https://github.com/sistemicorp/scripts.git
+    cd scripts
+    pip install -r requirements.txt
 
 Run Full Demo
 =============
 
+* The difference between the basic Demo and this full install, is that the Basic Demo
+  used the same files just cloned from scripts, but they were "inside" the docker Prism image
+  and not accessible.
+* Now Prism will use the scripts you just cloned.
 * Run Prism
-
-  * You need to provide a Lente IP address
-
-    * If you don't have Lente running, then it won't matter what IP address you use, use '127.0.0.1'
-    * If Lente is running on this computer, use this computer IP address, don't use
-      'localhost', or '127.0.0.1'
-
-  * The last argument to the script, `no`, is for the `restart` setting.
 
 ::
 
     cd ~/git/scripts/public
-    ./prism.sh --server=<lente_ip_address> --restart=no start
+    ./prism.sh --server=none --restart=no start
 
 
 * Open Google Chrome to
 
         http://127.0.0.1:6590
 
-
-* See additional :ref:`_jigs:Ubuntu Install` instructions if the MicroPython PyBoard will be used
-
-.. [1] This is covered in section TBD
-
+* Follow the same steps above from the Basic Demo and re-run the same test.
