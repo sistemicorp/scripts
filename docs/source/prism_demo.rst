@@ -118,16 +118,22 @@ edit or create new scripts, or send results to the Lente server.
 * Historical stats of your testing will be shown in the plot (3).
 * **Note:** Example tests have delays in them for demo effect.
 * `prod_0.scr` test script, demonstrates many features
+
   * the user will be shown buttons to press, any button will pass.
   * the user will have to enter some text, any text will pass
+
 * this Demo shows only one active "Jig", if you want to display more,
-  * Access the Main menu and select Demo
-  * Change the number of "fake" jogs between 1-4.
+
+  * Access the Main menu and select Demo (Main->Demo)
+  * Change the number of "fake" jigs between 1-4.
   * Go back to the Main page (Menu->Main)
   * Repeat the steps above to re-run the demo test.
 
 
+
 * Shut down Prism Demo
+
+  * On the Linux command line,
 
 ::
 
