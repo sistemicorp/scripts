@@ -133,25 +133,62 @@ edit or create new scripts, or send results to the Lente server.</p>
 <li><p>Open Google Chrome to</p>
 <blockquote>
 <div><p><a class="reference external" href="http://127.0.0.1:6590">http://127.0.0.1:6590</a></p>
-<ul class="simple">
-<li><p>Note on slower computers (RPi), it may take 5-15 seconds for the Prism window to display</p></li>
-</ul>
 </div></blockquote>
 <ul class="simple">
+<li><p><strong>Do Not use the browser BACK button, always use the page controls for navigation</strong></p></li>
+<li><p>Note on slower computers (RPi), it may take 5-15 seconds for the Prism window to display</p></li>
+<li><p>The Prism landing page should appear,</p></li>
+</ul>
+</li>
+</ul>
+<img alt="_images/Screenshot_prism_demo_2.png" src="_images/Screenshot_prism_demo_2.png" />
+<ul class="simple">
+<li><p>Press the Login button (upper left corner)</p>
+<ul>
 <li><p>Prism login user/password is <a class="reference external" href="mailto:admin&#37;&#52;&#48;here&#46;com/password">admin<span>&#64;</span>here<span>&#46;</span>com/password</a></p></li>
 <li><p>Other users passwords are <cite>password</cite></p></li>
 </ul>
 </li>
-<li><p>Run your first script after logging in,</p>
-<ul class="simple">
-<li><p>Select button <cite>Test Configuration</cite></p></li>
-<li><p>Select script <cite>prod_0.scr</cite> from the pulldown</p></li>
-<li><p>Press button <cite>Validate</cite></p></li>
-<li><p>If everything checked out, the <cite>Start Testing</cite> button will turn Green, press it, and
-you should be on the test screen, press Start to test</p></li>
-<li><p><strong>Note:</strong> The tests have delays in them for demo effect.  The delays are not needed.</p></li>
+<li><p>Its a good idea to bookmark this URL, and display bookmark bar in the browser.</p></li>
+<li><p>This is the Main page, the starting point to begin testing.</p>
+<ul>
+<li><p>In real production environment, the operator would scan a traveller to
+configure Prism to test a product.  Since this is a demo, we will select a
+test manually.</p></li>
+<li><p>Select button <cite>Test Configuration</cite> (1)</p></li>
 </ul>
 </li>
+</ul>
+<img alt="_images/Screenshot_prism_demo_1.png" src="_images/Screenshot_prism_demo_1.png" />
+<ul class="simple">
+<li><p>Run your first script after logging in,</p>
+<ul>
+<li><p>Select Group select <cite>Example</cite> (1)</p></li>
+<li><p>Select Script select <cite>prod_0.scr</cite> (2)</p></li>
+<li><p>Press button <cite>Validate</cite> (3)</p></li>
+<li><p>If everything checked out, the <cite>Start Testing</cite> button will turn Green. (4)</p></li>
+<li><p>The script that will be run is shown (5)</p></li>
+</ul>
+</li>
+</ul>
+<img alt="_images/Screenshot_prism_demo_3.png" src="_images/Screenshot_prism_demo_3.png" />
+<ul class="simple">
+<li><p>Press <cite>Start Testing</cite> (4) to proceed to the testing view.</p></li>
+</ul>
+<img alt="_images/Screenshot_prism_demo_4.png" src="_images/Screenshot_prism_demo_4.png" />
+<ul class="simple">
+<li><p>Press the <cite>TEST</cite> (1) button to begin the test.</p></li>
+<li><p>Logging from the test will be shown in the table (2).</p></li>
+<li><p>Historical stats of your testing will be shown in the plot (3).</p></li>
+<li><p><strong>Note:</strong> Example tests have delays in them for demo effect.</p></li>
+<li><p><cite>prod_0.scr</cite> test script, demonstrates many features
+* the user will be shown buttons to press, any button will pass.
+* the user will have to enter some text, any text will pass</p></li>
+<li><p>this Demo shows only one active “Jig”, if you want to display more,
+* Access the Main menu and select Demo
+* Change the number of “fake” jogs between 1-4.
+* Go back to the Main page (Menu-&gt;Main)
+* Repeat the steps above to re-run the demo test.</p></li>
 <li><p>Shut down Prism Demo</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">stop</span> <span class="n">prism</span>

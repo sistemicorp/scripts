@@ -77,20 +77,54 @@ edit or create new scripts, or send results to the Lente server.
 
     http://127.0.0.1:6590
 
-    * Note on slower computers (RPi), it may take 5-15 seconds for the Prism window to display
+  * **Do Not use the browser BACK button, always use the page controls for navigation**
+  * Note on slower computers (RPi), it may take 5-15 seconds for the Prism window to display
+  * The Prism landing page should appear,
+
+.. image:: static/Screenshot_prism_demo_2.png
+
+
+* Press the Login button (upper left corner)
 
   * Prism login user/password is admin@here.com/password
   * Other users passwords are `password`
 
+* Its a good idea to bookmark this URL, and display bookmark bar in the browser.
+* This is the Main page, the starting point to begin testing.
+
+  * In real production environment, the operator would scan a traveller to
+    configure Prism to test a product.  Since this is a demo, we will select a
+    test manually.
+  * Select button `Test Configuration` (1)
+
+.. image:: static/Screenshot_prism_demo_1.png
 
 * Run your first script after logging in,
 
-  * Select button `Test Configuration`
-  * Select script `prod_0.scr` from the pulldown
-  * Press button `Validate`
-  * If everything checked out, the `Start Testing` button will turn Green, press it, and
-    you should be on the test screen, press Start to test
-  * **Note:** The tests have delays in them for demo effect.  The delays are not needed.
+  * Select Group select `Example` (1)
+  * Select Script select `prod_0.scr` (2)
+  * Press button `Validate` (3)
+  * If everything checked out, the `Start Testing` button will turn Green. (4)
+  * The script that will be run is shown (5)
+
+.. image:: static/Screenshot_prism_demo_3.png
+
+* Press `Start Testing` (4) to proceed to the testing view.
+
+.. image:: static/Screenshot_prism_demo_4.png
+
+* Press the `TEST` (1) button to begin the test.
+* Logging from the test will be shown in the table (2).
+* Historical stats of your testing will be shown in the plot (3).
+* **Note:** Example tests have delays in them for demo effect.
+* `prod_0.scr` test script, demonstrates many features
+  * the user will be shown buttons to press, any button will pass.
+  * the user will have to enter some text, any text will pass
+* this Demo shows only one active "Jig", if you want to display more,
+  * Access the Main menu and select Demo
+  * Change the number of "fake" jogs between 1-4.
+  * Go back to the Main page (Menu->Main)
+  * Repeat the steps above to re-run the demo test.
 
 
 * Shut down Prism Demo
