@@ -110,3 +110,87 @@ Notes:
 #. The Result JSON is backed up at each level.  These backups can be turned off if desired.
 #. Any Lente dashboard can be accessed with web browser.  The results that can be seen
    will be that which is local to that Lente.
+
+
+Docker
+******
+
+Prism and Lente are running as Docker images/containers.  Using Docker containers has two
+advantages,
+
+* Less impact of the local operating system setup, and/or installed libraries, modules, etc.
+  on impacting Prism/Lente
+* Deployment (software updates) via Docker Hub
+
+Docker is a large subject and there is a lot of online content.  There are but a few Docker
+commands that you should know for the purposes of troubleshooting.
+
+Check what is running
+---------------------
+
+To determine what docker images are running,
+
+::
+
+        $ docker ps
+        CONTAINER ID   IMAGE               COMMAND                CREATED      STATUS      PORTS                                       NAMES
+        c206788fcc35   sistemicorp/prism   "python ./prism.pyc"   5 days ago   Up 5 days   0.0.0.0:6590->6590/tcp, :::6590->6590/tcp   prism
+
+* Key information
+
+  * STATUS: how long has the image been running.  If there has been a reset/crash, the running time will be less than
+    what you expect.
+
+
+Prism Docker Script
+-------------------
+
+Prism and Lente each have a helper script for simplifying working with Docker.
+
+The scripts can be found here:
+
+::
+
+
+        ~/git/scripts/public$ ll
+        total 76
+        drwxr-xr-x 5 martin martin  4096 Dec 13 20:48 ./
+        drwxrwxr-x 9 martin martin  4096 Dec 14 16:26 ../
+        -rw-r--r-- 1 martin martin     0 Dec  9 10:30 __init__.py
+        -rw-r--r-- 1 martin martin   903 Dec  9 10:30 lente.json
+        -rwxr-xr-x 1 martin martin  3056 Dec  9 10:30 lente.sh*    <---- Lente helper
+        drwxr-xr-x 2 root   root    4096 Dec 19 09:40 log/
+        -rwxr-xr-x 1 martin martin  2868 Dec  9 10:30 postg.sh*    <---- Postgres helper
+        drwxr-xr-x 4 martin martin  4096 Dec 13 20:48 prism/
+        -rwxr-xr-x 1 martin martin  4405 Dec  9 10:30 prism.sh*    <---- Prism helper
+        drwxr-xr-x 3 root   root    4096 Dec  9 14:03 result/
+        -rw-r--r-- 1 root   root   28672 Dec  9 14:03 users.sqlite
+        -rw-r--r-- 1 martin martin   121 Dec 17 15:46 VERSION
+
+
+Each script will display a help if run with no arguments,
+
+::
+
+        ~/git/scripts/public$ ./prism.sh
+        Usage: prism.sh [flags] <command>
+
+        command:
+          start                     Start Prism
+
+            flags, --server=, -s    (REQUIRED) Lente IP address. Use 'none' if no Lente.
+                   --hostname=, -h  Specify an alternative hostname for this computer (default martin-staric2)
+                   --restart=, -r   <always|no> (default no) 'always' will start Lente EVERY time the
+                                    computer is booted, which is typically used on a node that
+                                    is in actual deployment.
+                                    To disable restart, use 'docker update --restart=no prism'
+                                    and then reboot the node.
+
+          update                    Update the docker image, requires internet connection.
+                                    You will need to restart Prism with the start command.
+
+          stop                      Stop Prism
+
+
+How to use these scripts in detail is covered in Deployment section.
+

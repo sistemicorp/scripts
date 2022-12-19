@@ -58,6 +58,10 @@ are shown below
         cd scripts
         sudo pip3 install -f requirements.txt
 
+* Pip install will install all the Python modules needed to run Prism
+
+  * **NOTE:** Do not use/install any other Python modules.
+  * If another module is needed, contact Sistemi to have it added to Prism.
 
 * Rename the local repository's current 'origin' to 'upstream'
 
