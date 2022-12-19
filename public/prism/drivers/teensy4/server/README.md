@@ -96,7 +96,7 @@ After programming, the teensy will show up as a serial, like so,
 --Teensy4 CLI Examples--
 
 
-    martin@martin-virtual-machine:~/git/scripts$ source venv/bin/activate
+    martin@martin-virtual-machine:~/git/scripts$ source venv/bin/activate  # only if using venv
     (venv) martin@martin-virtual-machine:~/git/scripts$ python3 public/prism/drivers/teensy4/Teensy4_cli.py -p /dev/ttyACM0 --version
           Teensy4.py       INFO   79 attempting to install Teensy on port /dev/ttyACM0
           Teensy4.py       INFO   97 Installed Teensy on port /dev/ttyACM0
@@ -118,3 +118,5 @@ After programming, the teensy will show up as a serial, like so,
           Teensy4_cli.py   INFO  100 all tests passed
               Teensy4.py   INFO  105 closing
 
+
+Using the Teensy_cli.py program is how you will be testing/developing new APIs to the Teensy4 server.
