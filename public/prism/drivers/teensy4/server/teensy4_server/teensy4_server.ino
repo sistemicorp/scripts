@@ -8,7 +8,7 @@
 
 #include <simpleRPC.h>
 #include <ArduinoJson.h>
-#include "version.h"
+#include "version.h"  // holds the "version" of this code
 
 
 //-------------------------------------------------------------------------------------------------------------
@@ -36,6 +36,9 @@ String _teensyMAC(char *unique_id){
     return unique_id;
 }
 
+/* unique_id
+ *  - return MAC address as the uniqie identifier
+ */
 String unique_id() {
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
   
@@ -45,6 +48,16 @@ String unique_id() {
   return _response(doc);  // always the last line of RPC API
 }
 
+/* slot
+ *  - DEPRICATED (mostly)
+ *  - return the "slot number" or channel number of the test jig so that Prism
+ *    can assign it.
+ *  - Teensy's discovery is based on the USB (physical) tree, so this is not used to discover
+ *    attached Teensys and map the slot number
+ *  - Prism sorts slot numbers, assinig the lowest to slot 0, and so on.  This
+ *    function returned a partial of the MAC address, and Prism sorted slots
+ *    based on that value.
+ */
 String slot() {
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
 
@@ -56,6 +69,11 @@ String slot() {
   return _response(doc);  // always the last line of RPC API
 }
 
+/* set_led
+ *  - turn LED that is on the Teensy module on or off
+ *  
+ *  bool on: <true|false>
+ */
 String set_led(bool on) {
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
   
@@ -75,6 +93,12 @@ String set_led(bool on) {
   return _response(doc);  // always the last line of RPC API
 }
 
+
+/* reboot_to_bootloader
+ *  - software reset Teensy to jump to bootloader for reprogramming
+ *  - this function does not really return because Teensy has been "reset",
+ *    in the Python Teensy class, the return has been "faked".
+ */
 String reboot_to_bootloader() {
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
   // send reboot command ----- from https://forum.pjrc.com/threads/71624-teensy_loader_cli-with-multiple-Teensys-connected?p=316838#post316838
@@ -82,6 +106,9 @@ String reboot_to_bootloader() {
   return _response(doc);  // this never happens because of reboot call
 }
 
+/* version
+ *  - return the version of this code
+ */
 String version(){
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
  
@@ -90,6 +117,13 @@ String version(){
   return _response(doc);  // always the last line of RPC API
 }
 
+/* read_adc
+ *  - read ADC value on a Teensy pin
+ *  
+ *  int pin_number: GPIO number
+ *  int sample_num: number of samples which to average over
+ *  unsigned int sample_rate: milliseconds between samples
+ */
 String read_adc(int pin_number, int sample_num, unsigned int sample_rate){
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
 
@@ -110,6 +144,12 @@ String read_adc(int pin_number, int sample_num, unsigned int sample_rate){
   return _response(doc);  // always the last line of RPC API
 }
 
+/* init_gpio
+ *  - intit GPIO mode
+ *  
+ * int pin_number: GPIO number
+ * String& mode: <"INPUT"|"OUTPUT"|"INPUT_PULLUP">
+ */
 String init_gpio(int pin_number, String& mode){
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
   
@@ -127,6 +167,11 @@ String init_gpio(int pin_number, String& mode){
   return _response(doc);  // always the last line of RPC API
 }
 
+/* read_gpio
+ *  - read state of GPIO
+ *  
+ * int pin_number: GPIO number
+ */
 String read_gpio(int pin_number){
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
 
@@ -135,6 +180,12 @@ String read_gpio(int pin_number){
   return _response(doc);  // always the last line of RPC API
 }
 
+/* write_gpio
+ *  - read state of GPIO
+ *  
+ * int pin_number: GPIO number
+ * bool state: <true|false>
+ */
 String write_gpio(int pin_number, bool state){
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
 
@@ -145,6 +196,11 @@ String write_gpio(int pin_number, bool state){
   return _response(doc);  // always the last line of RPC API
 }
 
+
+/* reset
+ *  - reset this code
+ *  - DOES NOT RESET TEENSY
+ */
 String reset(){
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
 
@@ -158,7 +214,7 @@ String reset(){
 //set-up/loop Functions
 
 void setup(void) {
-  Serial.begin(9600);
+  Serial.begin(115200);
   pinMode(LED_BUILTIN, OUTPUT);
 }
 
