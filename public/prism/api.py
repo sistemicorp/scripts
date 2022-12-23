@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2019
+Sistemi Corporation, copyright, all rights reserved, 2019-2022
 Martin Guthrie
 
 """
@@ -31,11 +31,26 @@ class ResultAPI(Const):
     UNIT_STRING = "STR"
     UNIT_INT = "Integer"
     UNIT_FLOAT = "Float"
-    UNIT_CELCIUS = "Celcius"
+    UNIT_CELSIUS = "Celsius"
+    UNIT_KELVIN = "Kelvin"
+    UNIT_NEWTON = "Newton"
+    UNIT_PASCAL = "Pascal"
+    UNIT_BAR = "Bar"
+    UNIT_METER = "Meter"
+    UNIT_MILLIMETER = "Millimeter"
+    UNIT_SECONDS = "Seconds"
+    UNIT_MILLISECONDS = "Milliseconds"
+    UNIT_MICROSECONDS = "Microseconds"
+    UNIT_KILOGRAM = "Kilogram"
+    UNIT_GRAM = "gram"
+    UNIT_LITRE = "litre"
     UNIT_BOOLEAN = "Boolean"
+    UNIT_CANDELA = "candela"
     UNIT_NONE = "None"
-    UNIT_ALL = [UNIT_OHMS, UNIT_BOOLEAN, UNIT_NONE, UNIT_STRING, UNIT_VOLTS, UNIT_CELCIUS, UNIT_CURRENT,
-                UNIT_DB, UNIT_FLOAT, UNIT_INT]
+    UNIT_ALL = [UNIT_OHMS, UNIT_BOOLEAN, UNIT_NONE, UNIT_STRING, UNIT_VOLTS, UNIT_CELSIUS, UNIT_CURRENT,
+                UNIT_DB, UNIT_FLOAT, UNIT_PASCAL, UNIT_BAR, UNIT_NEWTON, UNIT_METER,
+                UNIT_MILLIMETER, UNIT_INT, UNIT_SECONDS, UNIT_MILLISECONDS, UNIT_MICROSECONDS,
+                UNIT_KILOGRAM, UNIT_GRAM, UNIT_LITRE, UNIT_KELVIN, UNIT_CANDELA]
 
     # ===================================================================================
     # BLOB data types
