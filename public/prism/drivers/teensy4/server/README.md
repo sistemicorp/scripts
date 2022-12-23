@@ -92,6 +92,11 @@ After programming, the teensy will show up as a serial, like so,
 
 
 
+17) Teensy RPC Development
+
+    - Prism calls Teensy's RPC server from Python, and there is a way to test that API from Python using 
+      a command line (CLI) interface.
+    - Using the Teensy_cli.py program is how you will be testing/developing new APIs to the Teensy4 server.
 
 --Teensy4 CLI Examples--
 
@@ -119,4 +124,9 @@ After programming, the teensy will show up as a serial, like so,
               Teensy4.py   INFO  105 closing
 
 
-Using the Teensy_cli.py program is how you will be testing/developing new APIs to the Teensy4 server.
+18) Your own Teensy Development
+
+   - the code here (~/public/prism/drivers/teensy4) is a starting point (template) for creating
+     your own Teensy4 code.
+   - copy ~/public/prism/drivers/teensy4 to your own driver folder, for example, ~/public/prism/drivers/company_teensy4
+
