@@ -549,17 +549,24 @@ Example of measurement API is show in the example above, but are reviewed here i
 
 ::
 
-    def measurement(self, name, value, unit, min=None, max=None):
-        """
-        :param name: name of measurement
-        :param min: minimum value, None for ignore
-        :param max: maximum value, None for ignore
-        :param value: value
+    def measurement(self, name, value, unit=ResultAPI.UNIT_NONE, min=None, max=None, force_fail=False):
+        """ Check and store a measurement
+        - performs a check on the value, returning one of ResultAPI.RECORD_RESULT_*
+        - all values are stored as strings in the dB, converted here
+
+        :param name: must be unique per test item
+        :param force_fail: when set, forces measurement to fail
+        :param min: min limit (int or float), None to ignore
+        :param max: min limit (int or float), None to ignore
+        :param value: any
         :param unit: one of self.UNIT_*
-        :return: result, msg
-            where:
-                result: one of <ResultAPI.RECORD_*>
-                msg: string, string of measurement result, suitable for humans
+        :return: success, result, msg
+            success: True: measurement accepted
+                     False: a error occurred
+            result: one of ResultAPI.RECORD_RESULT_*
+                    (can be passed into self.item_end(), see examples)
+            msg: if not success, this is error message
+                 if success, this is human friendly message of the measurment
         """
 
 ``name`` - this will be appended to the full name of the test, which is the path to the python
@@ -593,12 +600,26 @@ name is a unique identifier
         UNIT_STRING = "STR"
         UNIT_INT = "Integer"
         UNIT_FLOAT = "Float"
-        UNIT_CELCIUS = "Celcius"
+        UNIT_CELSIUS = "Celsius"
+        UNIT_KELVIN = "Kelvin"
+        UNIT_NEWTON = "Newton"
+        UNIT_PASCAL = "Pascal"
+        UNIT_BAR = "Bar"
+        UNIT_METER = "Meter"
+        UNIT_MILLIMETER = "Millimeter"
+        UNIT_SECONDS = "Seconds"
+        UNIT_MILLISECONDS = "Milliseconds"
+        UNIT_MICROSECONDS = "Microseconds"
+        UNIT_KILOGRAM = "Kilogram"
+        UNIT_GRAM = "gram"
+        UNIT_LITRE = "litre"
         UNIT_BOOLEAN = "Boolean"
-        UNIT_NONE = None
-        UNIT_ALL = [UNIT_OHMS, UNIT_BOOLEAN, UNIT_NONE, UNIT_STRING, UNIT_VOLTS, UNIT_CELCIUS, UNIT_CURRENT,
-                    UNIT_DB, UNIT_FLOAT, UNIT_INT]
-
+        UNIT_CANDELA = "candela"
+        UNIT_NONE = "None"
+        UNIT_ALL = [UNIT_OHMS, UNIT_BOOLEAN, UNIT_NONE, UNIT_STRING, UNIT_VOLTS, UNIT_CELSIUS, UNIT_CURRENT,
+                    UNIT_DB, UNIT_FLOAT, UNIT_PASCAL, UNIT_BAR, UNIT_NEWTON, UNIT_METER,
+                    UNIT_MILLIMETER, UNIT_INT, UNIT_SECONDS, UNIT_MILLISECONDS, UNIT_MICROSECONDS,
+                    UNIT_KILOGRAM, UNIT_GRAM, UNIT_LITRE, UNIT_KELVIN, UNIT_CANDELA]
 
         # ===================================================================================
         # BLOB data types
@@ -645,26 +666,30 @@ name is a unique identifier
 
 Measurements are called thru the ``ctx.record.measurement()`` API like this,
 
+* calling ``ctx.record.measurement()`` means that this value will be in the backend database
+
 ::
 
     def myTest(self):
         ctx = self.item_start()   # always first line of test
 
         value = <some_value_from_test_equipment>
-        _result, _bullet = ctx.record.measurement("apples",
-                                                  value,
-                                                  ResultAPI.UNIT_DB,
-                                                  ctx.item.args.min,
-                                                  ctx.item.args.max)
+        success, _result, _bullet = ctx.record.measurement("apples",
+                                                           random.randint(0, 10),
+                                                           ResultAPI.UNIT_DB,
+                                                           ctx.item.args.min,
+                                                           ctx.item.args.max)
         self.log_bullet(_bullet)
         self.item_end(_result)  # always last line of test
 
-* two results are returned, shown above as ``_result, _bullet``
-* ``_bullet`` string (second variable returned) is suitable for printing to the log via ``self.log_bullet()``
-* ``_result`` is meant to be sent to ``self.item_end()`` as shown and thus the state of the test is set (Pass or Fail)
-* ``_result`` may cause the program to take different action and not affect the state of the test item simply
-  by not sending the result to ``self.item_end()``
-* calling ``ctx.record.measurement()`` means that this value will be in the backend database
+* three parameters are returned, shown above as ``success, _result, _bullet``
+
+  * ``success`` boolean indicating if the function was called successfully (not the result of the measurement).
+  * ``_bullet`` string suitable for printing to the log via ``self.log_bullet()``
+  * ``_result`` is meant to be sent to ``self.item_end()`` as shown and thus the state of the test is set (Pass or Fail)
+  * ``_result`` may cause the program to take different action and not affect the state of the test item simply
+    by not sending the result to ``self.item_end()``
+
 
 
 Binning Failures
@@ -715,7 +740,7 @@ Program code,
         """
         ctx = self.item_start()   # always first line of test
 
-        time.sleep(self.DEMO_TIME_DELAY * random() * self.DEMO_TIME_RND_ENABLE)
+        time.sleep(self.DEMO_TIME_DELAY * random.random() * self.DEMO_TIME_RND_ENABLE)
 
         FAIL_APPLE   = 0  # indexes into the "fail" list, just for code readability
         FAIL_BANANNA = 1
@@ -723,11 +748,15 @@ Program code,
         measurement_results = []  # list for all the coming measurements...
 
         # Apples measurement...
-        _result, _bullet = ctx.record.measurement("apples",
-                                                  randint(0, 10),
-                                                  ResultAPI.UNIT_DB,
-                                                  ctx.item.args.min,
-                                                  ctx.item.args.max)
+        success, _result, _bullet = ctx.record.measurement("apples",
+                                                           random.randint(0, 10),
+                                                           ResultAPI.UNIT_DB,
+                                                           ctx.item.args.min,
+                                                           ctx.item.args.max)
+        if not success:
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
         # if failed, there is a msg in script to attach to the record, for repair purposes
         if _result == ResultAPI.RECORD_RESULT_FAIL:
             msg = ctx.item.fail[FAIL_APPLE]
@@ -737,11 +766,14 @@ Program code,
         measurement_results.append(_result)
 
         # Bananas measurement...
-        _result, _bullet = ctx.record.measurement("bananas",
-                                                  randint(0, 10),
-                                                  ResultAPI.UNIT_DB,
-                                                  ctx.item.args.min,
-                                                  ctx.item.args.max)
+        success, _result, _bullet = ctx.record.measurement("bananas",
+                                                           random.randint(0, 10),
+                                                           ResultAPI.UNIT_DB,
+                                                           ctx.item.args.min,
+                                                           ctx.item.args.max)
+        if not success:
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
 
         # if failed, there is a msg in script to attach to the record, for repair purposes
         if _result == ResultAPI.RECORD_RESULT_FAIL:
@@ -753,6 +785,7 @@ Program code,
 
         # Note that we can send a list of measurements
         self.item_end(item_result_state=measurement_results)  # always last line of test
+
 
 The idea is that over time, the failure codes and messages can become more accurate and meaningful as
 production failures become understood.

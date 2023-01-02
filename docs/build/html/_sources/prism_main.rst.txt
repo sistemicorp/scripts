@@ -9,6 +9,7 @@ Prism is the production floor program that runs your scripts and tests your prod
 
    prism_demo
    prism_screenshots
+   prism_sw_arch
    prism_config
    prism_scripts
    prism_programs

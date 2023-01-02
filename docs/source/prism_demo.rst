@@ -39,7 +39,13 @@ Requirements
 
     * Several instillation methods are described.  The "convenience script" works well.
 
-    * Don't miss the step of adding the current user (its well hidden)
+::
+
+    curl -fsSL https://get.docker.com -o get-docker.sh
+    sudo sh get-docker.sh
+
+
+* Don't miss the step of adding the current user (its well hidden in their instructions)
 
 ::
 
@@ -158,7 +164,7 @@ Additional Requirements
 ::
 
     sudo apt update
-    sudo apt install git python3-dev
+    sudo apt install git build-essential python3-dev
 
 * if you are unfamiliar with `git`, in short it is a free cloud based software version control platform
 * `git` is an advanced tool, and although widely used, it can be an complicated tool.  There are
@@ -177,13 +183,17 @@ Clone Sistemi Scripts
 
 * The instructions below will create a folder called *git/scripts* which `git` will copy the required files into
 
-* Clone ``scripts``::
+* Clone ``scripts`` and install Python requirements,
+
+::
 
     mkdir ~/git
     cd ~/git
     git clone https://github.com/sistemicorp/scripts.git
     cd scripts
-    pip install -r requirements.txt
+    pip3 install -f requirements.txt
+
+
 
 Run Full Demo
 =============
@@ -205,3 +215,8 @@ Run Full Demo
         http://127.0.0.1:6590
 
 * Follow the same steps above from the Basic Demo and re-run the same test.
+* Prism can be stopped with this command,
+
+::
+
+./prism.sh stop

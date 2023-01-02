@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2019
+Sistemi Corporation, copyright, all rights reserved, 2019-2022
 Martin Guthrie
 
 """
@@ -153,9 +153,9 @@ class ResultBaseKeysV1(ResultBaseClass):
 
         :param name: must be unique per test item
         :param force_fail: when set, forces measurement to fail
-        :param min:
-        :param max:
-        :param value:
+        :param min: min limit (int or float), None to ignore
+        :param max: min limit (int or float), None to ignore
+        :param value: any
         :param unit: one of self.UNIT_*
         :return: success, result, msg
             success: True: measurement accepted

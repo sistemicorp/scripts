@@ -1,0 +1,171 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Software Architecture &#8212; Sistemi Lente/Prism Test System 0.2.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Config" href="prism_config.html" />
+    <link rel="prev" title="Screenshots" href="prism_screenshots.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="prism_config.html" title="Config"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="prism_screenshots.html" title="Screenshots"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.2.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="prism_main.html" accesskey="U">Prism</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Software Architecture</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="software-architecture">
+<h1>Software Architecture<a class="headerlink" href="#software-architecture" title="Permalink to this headline">¶</a></h1>
+<img alt="_images/Screenshot_teensy4_1.png" src="_images/Screenshot_teensy4_1.png" />
+<p>Referring to the above diagram:</p>
+<section id="script">
+<h2>Script<a class="headerlink" href="#script" title="Permalink to this headline">¶</a></h2>
+<p>The script is a JSON(like) text file that defines the tests and information for
+a particular Device Under Test (DUT).</p>
+<p>The script file is essentially human readable, with the intention that some changes
+to the test sequence can be made without changing the underlying programming
+(which is usually a more involved process).  For example, if there is a maximum limit for
+a particular test that is unknown, or subject to change, that limit can be defined
+in the script and changed at will; no Python code needs to change.</p>
+</section>
+<section id="hardware-drivers">
+<h2>Hardware Drivers<a class="headerlink" href="#hardware-drivers" title="Permalink to this headline">¶</a></h2>
+<p>HW Drivers are a Python class that is created/copied from a template with the following purposes,</p>
+<ul class="simple">
+<li><p>Discovers the hardware connected to the Prism PC</p>
+<ul>
+<li><p>There may be one or more of the hardware devices connected</p></li>
+<li><p>Often USB physical cabling is used to discover multiple hardware types</p></li>
+<li><p>The Interface board is a “hardware driver” object (class)</p></li>
+<li><p>There may be one hardware that is shared among multiple Interface Boards.</p></li>
+</ul>
+</li>
+<li><p>Creates an object instantiation of the hardware which is passed along to the Python
+test script.</p></li>
+</ul>
+<p>The Hardware driver(s) associated with a particular test setup are listed in the Script (above).</p>
+<p>The Hardware driver code is run only once, on Script validation.</p>
+<p>The Hardware Driver provides an API class and communication pathway for Python Test Code
+to request stimulus or measurements.  For example, Teensy4 devices will appear as
+serial ports to the Prism PC. The Hardware Driver will create a Teensy4 class object that
+will include a serial port interface, as well as an abstracted API for all the functions
+that the Teensy4 supports, like reading an ADC to measure a voltage.</p>
+<p>The Hardware Driver is meant to make the actual Python Test code as straightforward
+as possible.</p>
+</section>
+<section id="python-test-code">
+<h2>Python Test Code<a class="headerlink" href="#python-test-code" title="Permalink to this headline">¶</a></h2>
+<p>Python Test code performs the tests on the DUT.  Here is where you will find the actual
+code that sets up the DUT stimulus and performs the measurements on the DUT to determine
+Pass/Fail results.</p>
+<p>The Python Test code is a class.  For every test Jig connected to the Prism PC, there will
+be an instantiation of the Python Test code, and each jig can run in parallel to all the others.</p>
+<p>The methods in the Python test code map to tests that are defined in the Script (above).  Each
+method will have access to the arguments from the Script (if any).</p>
+<p>The Python Test code class gets a handle to the Hardware Driver(s) that were “discovered”.
+The handles are mapped per slot, thus the same code can handle multiple attached test jigs.</p>
+<p>Python Test code, via the Hardware Driver’s API, set up the stimulus and/or make measurement(s)
+per the test (item) as defined in the Script (above).  For every measurement taken, Prism
+will create a Test Record.</p>
+<p>The measurement will typically determine if the Test will Pass or Fail.</p>
+</section>
+<section id="jig-rpc-server">
+<h2>JIG - RPC Server<a class="headerlink" href="#jig-rpc-server" title="Permalink to this headline">¶</a></h2>
+<p>Consider the example of Teensy4, there is a JSON RPC Server running on the Teensy.
+The Hardware Driver will discover and create a Class for the Teensy.  The Example
+code provided in the scripts git repo includes the discovery and class API code.</p>
+<p>The example discovery class code should not have to change for most applications.</p>
+<p>Consider the Teensy4’s module LED control code in the example.  Reviewing the code
+that implements that API explains the architecture.  Note there is a Teensy4 command
+line interface (CLI) Python program that is intended to test the Teensy’s Class APIs.</p>
+</section>
+<section id="jig-hal-driver">
+<h2>JIG - HAL Driver<a class="headerlink" href="#jig-hal-driver" title="Permalink to this headline">¶</a></h2>
+<p>For a particular implementation of an Interface Board for a DUT, specific hardware stimulus
+and/or measurement functions will be designed.</p>
+<p>Teensy would interface to those functions via one of its (local) communications ports, for example,
+I2C or SPI.</p>
+<p>Controlling and accessing those functions via the Teensy’s local communications ports
+would become an extended API from the basic functions included in the example code.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="prism_screenshots.html"
+                        title="previous chapter">Screenshots</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="prism_config.html"
+                        title="next chapter">Config</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="prism_config.html" title="Config"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="prism_screenshots.html" title="Screenshots"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.2.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="prism_main.html" >Prism</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Software Architecture</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Sistemi Corp..
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+    </div>
+  </body>
+</html>
