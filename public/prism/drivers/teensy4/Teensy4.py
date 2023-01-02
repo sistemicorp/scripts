@@ -7,6 +7,7 @@ Owen Li, Martin Guthrie
 """
 import json
 import threading
+import re
 from simple_rpc import Interface
 from serial import SerialException
 
@@ -28,13 +29,17 @@ class Teensy4:
 
     1) Write server code by adding a function in teensy4_server.ino (Look at existing functions as example)
     2) Export the function by adding a name and description in the loop() (Look at existing exports as example)
-    3) Write function in Teensy4 Class (this one) to call your simpleRPC function (Look at existing functions as example)
-    4) Write function in teensy400xx.py to call your Teensy4 Class function (Look at existing functions as example)
-    5) Add your function call to the test script!
+    3) Write function in Teensy4 Class (this one) to call your simpleRPC function (Look at existing
+       functions as example).  Note the code is organized so that "on-board" Teensy functions are in one
+       section, and off module functions are in another.
+    4) Test your new API with the Teensy4_cli.py script.
+    5) Write function in teensy400xx.py to call your Teensy4 Class function (Look at existing functions as example)
+    6) Add your function call to the test script!
 
-    VERSION...
-
-    There is a version for teensy4_server.ino and for the python code. The version number must be the same for testing to run.
+    version.h:
+    ----------
+    There is a version for teensy4_server.ino and for the python code. The version number must be
+    the same for testing to run.
 
     """
     GPIO_MODE_INPUT = "INPUT"
@@ -66,6 +71,7 @@ class Teensy4:
         self.rpc = None
 
         self.my_version = self._get_version()
+        self.logger.info(f"version {self.my_version}")
 
     def set_port(self, port):
         self.port = port
@@ -118,16 +124,36 @@ class Teensy4:
 
     # ----------------------------------------------------------------------------------------------
     # Helper Functions
+    #
+    # - function names should all begin with "_"
+    # - functions are all private to this class
 
     def _get_version(self):
+        """ Get Version from version.h
+        - The version of the "RPC server" running on Teensy, is expected to be the
+          same version of this Python code.  If there is a difference, then
+          something is out of sync.  init() will fail if the versions do not match.
+        - The Teensy Arduino Code uses version.h to set its version.  This function
+          reads that same file to get the expected version running on Teensy.
+
+        Expected version.h file contents, no other pattern is accounted for,
+        !!no other lines or comments are allowed!!
+            #define VERSION "1.0.0"
+        Extract "1.0.0"
+
+        :return: <version>|"ERROR"
+        """
+        regex = r"\d+\.\d+\.\d+"
+
         with open(self._version_file) as f:
-            s = f.readline()
-        # Expected version.h file contents, no other pattern is accounted for,
-        # !!no other lines or comments are allowed!!
-        #     #define VERSION "1.0.0"
-        # Extract "1.0.0" and remove quotations
-        ver = [i for i in s.split(' ') if len(i)][-1].replace('"', '')
-        return ver
+            s = f.read()
+
+        m = re.findall(regex, s)
+        if not m:
+            self.logger.error(f"Unable to find version in {self._version_file}: {s}")
+            return "ERROR"
+
+        return m[0]
 
     def _test_indicator_check(self):
         for k in self.TEST_INDICATORS.keys():
@@ -156,9 +182,10 @@ class Teensy4:
     # ----------------------------------------------------------------------------------------------
     # ----------------------------------------------------------------------------------------------
     # API (wrapper functions)
-    # these are the important functions
     #
-    # all functions return dict: { "success": <True/False>, "result": { key: value, ... }}
+    # - functions that are Teensy module functions (on-board)
+    # - all RPC functions return dict: { "success": <True/False>, "result": { key: value, ... }}
+    #
 
     def list(self):
         """ list
@@ -341,5 +368,10 @@ class Teensy4:
     #
     # Prism Player functions
     # ---------------------------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------------------------
+    # Teensy OFF-Module Functions
+    #
+    # - APIs to features that are off the Teensy module
+    # - for example, I2C component APIs, etc
 
 
