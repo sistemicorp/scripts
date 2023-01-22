@@ -1,20 +1,29 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2021-2022
+Sistemi Corporation, copyright, all rights reserved, 2021-2023
 Owen Li, Martin Guthrie
 
 This CLI provides a linux CLI interface to Teensy4 SimpleRPC.
 
+Example:  (note the starting folder)
+
+martin@martin-staric2:~/git/scripts/public/prism/drivers/teensy4$ python3 Teensy4_cli.py --port /dev/ttyACM0 read_gpio --pin-number 2
+          Teensy4.py   INFO   78 version 0.1.0
+          Teensy4.py   INFO   87 attempting to install Teensy on port /dev/ttyACM0
+          Teensy4.py   INFO  176 Jig Closed Detector not defined (None)
+          Teensy4.py   INFO  113 Installed Teensy on port /dev/ttyACM0
+      Teensy4_cli.py   INFO  161 read_gpio: Namespace(port='/dev/ttyACM0', verbose=0, _cmd='read_gpio', _pin_number=2)
+      Teensy4_cli.py   INFO  165 {'success': True, 'method': 'read_gpio', 'result': {'state': 1}}
+      Teensy4_cli.py   INFO  202 Success
+          Teensy4.py   INFO  124 closing /dev/ttyACM0
+
+
 """
-import sys
-import time
 import logging
 import argparse
 
 from Teensy4 import Teensy4
-
-VERSION = "0.1.0"
 
 # global teensy object
 teensy = None
@@ -24,8 +33,30 @@ def parse_args():
     epilog = """
     Usage examples:
        python3 teensy4_cli.py --port /dev/ttyACM0 led --on
-       python Teensy4_cli.py -v --port COM5 led --on
-       python Teensy4_cli.py --p COM5 --version
+
+    Port: Teensy4 when plugged into USB on Linux will show up as a ttyACM# device in /dev.
+          Use 'ls -al /dev/ttyACM*' to find the port. 
+          
+    Getting Help for a command:
+    $ python3 Teensy4_cli.py --port /dev/ttyACM0 write_gpio --help
+    usage: Teensy4_cli.py write_gpio [-h] --pin-number _PIN_NUMBER --state {True,False}
+
+    options:
+    -h, --help            show this help message and exit
+    --pin-number _PIN_NUMBER
+                        GPIO number (0-41)
+    --state {True,False}  True|False
+      
+    Example:
+    $ python3 Teensy4_cli.py --port /dev/ttyACM0 write_gpio --pin-number 2 --state False
+          Teensy4.py   INFO   78 version 0.1.0
+          Teensy4.py   INFO   87 attempting to install Teensy on port /dev/ttyACM0
+          Teensy4.py   INFO  176 Jig Closed Detector not defined (None)
+          Teensy4.py   INFO  113 Installed Teensy on port /dev/ttyACM0
+      Teensy4_cli.py   INFO  116 write_gpio: Namespace(port='/dev/ttyACM0', verbose=0, _cmd='write_gpio', _pin_number=2, _state='False')
+      Teensy4_cli.py   INFO  123 {'success': True, 'method': 'write_gpio', 'result': {'state': False}}
+      Teensy4_cli.py   INFO  157 Success
+          Teensy4.py   INFO  124 closing /dev/ttyACM0   
     """
     parser = argparse.ArgumentParser(description='teensy4_cli',
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -35,7 +66,6 @@ def parse_args():
                         action='store', help='Active serial port')
 
     parser.add_argument("-v", '--verbose', dest='verbose', default=0, action='count', help='Increase verbosity')
-    parser.add_argument("--version", dest="show_version", action='store_true', help='Show version and exit')
 
     subp = parser.add_subparsers(dest="_cmd", help='commands')
 
@@ -45,8 +75,21 @@ def parse_args():
 
     uid_parser = subp.add_parser('uid')
 
-    args = parser.parse_args()
+    version_parser = subp.add_parser('version')
 
+    write_gpio = subp.add_parser('write_gpio')
+    write_gpio.add_argument('--pin-number', dest="_pin_number", action='store', type=int, help='GPIO number (0-41)',
+                            default=None, required=True)
+    write_gpio.add_argument('--state', dest="_state", choices=('1', '0'), help='True|False', required=True)
+
+    read_gpio = subp.add_parser('read_gpio')
+    read_gpio.add_argument('--pin-number', dest="_pin_number", action='store', type=int, help='GPIO number (0-41)',
+                            default=None, required=True)
+
+
+    # add new commands here...
+
+    args = parser.parse_args()
     return args
 
 
@@ -85,8 +128,48 @@ def uid(args):
     return success
 
 
+def version(args):
+    _success = True
+    logging.info("version: {}".format(args))
+
+    response = teensy.version()
+    success = response["success"]
+    logging.info("{}".format(response))
+    if not success: _success = False
+
+    return success
+
+
+def write_gpio(args):
+    _success = True
+    logging.info("write_gpio: {}".format(args))
+
+    _state = True
+    if args._state == '0': _state = False
+
+    response = teensy.write_gpio(args._pin_number, _state)
+    success = response["success"]
+    logging.info("{}".format(response))
+    if not success: _success = False
+
+    return success
+
+
+def read_gpio(args):
+    _success = True
+    logging.info("read_gpio: {}".format(args))
+
+    response = teensy.read_gpio(args._pin_number)
+    success = response["success"]
+    logging.info("{}".format(response))
+    if not success: _success = False
+
+    return success
+
+
 if __name__ == '__main__':
     args = parse_args()
+    exit_code = 0
 
     if args.verbose == 0:
         logging.basicConfig(level=logging.INFO, format='%(filename)20s %(levelname)6s %(lineno)4s %(message)s')
@@ -94,15 +177,10 @@ if __name__ == '__main__':
         logging.basicConfig(level=logging.DEBUG, format='%(filename)20s %(levelname)6s %(lineno)4s %(message)s')
 
     teensy = Teensy4(args.port, loggerIn=logging)
-
     success = teensy.init()
     if not success:
         logging.error("Failed to create teensy instance")
         exit(1)
-
-    if args.show_version:
-        logging.info("Version {}".format(teensy.version()["result"]["version"]))
-        sys.exit(0)
 
     if args._cmd == 'led':
         success = led(args)
@@ -110,11 +188,20 @@ if __name__ == '__main__':
     elif args._cmd == 'uid':
         success = uid(args)
 
-    if not success:
+    elif args._cmd == 'version':
+        success = version(args)
+
+    elif args._cmd == 'write_gpio':
+        success = write_gpio(args)
+
+    elif args._cmd == 'read_gpio':
+        success = read_gpio(args)
+
+    if success:
+        logging.info("Success")
+
+    else:
         logging.error("Failed")
-        teensy.close()
-        exit(1)
+        exit_code = 1
 
-    logging.info("all tests passed")
     teensy.close()
-

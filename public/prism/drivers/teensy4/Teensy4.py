@@ -1,10 +1,11 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2021-2022
+Sistemi Corporation, copyright, all rights reserved, 2021-2023
 Owen Li, Martin Guthrie
 
 """
+import os
 import json
 import threading
 import re
@@ -59,7 +60,10 @@ class Teensy4:
         "other": {'gpio': 22, 'active_high': True}
     }
 
-    _version_file = "public/prism/drivers/teensy4/server/libraries/version/version.h"
+    # For Teensy FW version checking the SAME (c code) header file that created the Teensy4
+    # firmware is used to check if that firmware is now running (deployed) on Teensy4.
+    # if that FW is not running, there is probably a problem!  See method init().
+    _version_file = os.path.join(os.path.dirname(__file__), "server/libraries/version/version.h")
 
     def __init__(self, port, loggerIn=None):
         self.lock = threading.Lock()
@@ -300,7 +304,7 @@ class Teensy4:
         answer = self.rpc.call_method('read_gpio', pin_number)
         return json.loads(answer)
 
-    def write_gpio(self, pin_number, state):
+    def write_gpio(self, pin_number, state: bool):
         """ Set GPIO
         :param pin_number: (0 - 41)
         :param state: 1/0
