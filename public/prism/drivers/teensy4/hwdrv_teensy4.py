@@ -42,7 +42,7 @@ class HWDriver(object):
 
         [ {"id": i,                    # ~slot number of the channel (see Note 1)
            "version": <VERSION>,       # version of the driver
-           "hwdrv": <foobar>,          # instance of your hardware driver
+           "hwdrv": <object>,          # instance of your hardware driver
 
            # optional
            "close": None},             # register a callback on closing the channel, or None

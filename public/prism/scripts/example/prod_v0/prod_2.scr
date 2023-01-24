@@ -1,4 +1,5 @@
 // Example: Shows substitution being used in more than one place.
+//          Shows multiple modules being used.
 {
   "subs": {
     "Lot": {
@@ -41,7 +42,6 @@
                                         "fail": [ {"fid": "TST000-0", "msg": "Component apple R1"},
                                                   {"fid": "TST000-1", "msg": "Component banana R1"}] },
         {"id": "TST001_Skip",           "enable": false },
-        {"id": "TST0xxTRDN",            "enable": true }
       ]
     },
     {
@@ -56,7 +56,6 @@
         {"id": "TST100_Meas", "enable": true,  "args": {"min": 0, "max": "%%TST100Max"},
                               "fail": [ {"fid": "TST100-0", "msg": "Component R1"} ] },
         {"id": "TST101_Skip", "enable": false },
-        {"id": "TST1xxTRDN",  "enable": true }
       ]
     }
   ]

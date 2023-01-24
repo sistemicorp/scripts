@@ -28,11 +28,6 @@ class tst01xx(TestItem):
 
         self.item_end() # always last line of test
 
-    def TST1xxTRDN(self):
-        ctx = self.item_start()  # always first line of test
-        time.sleep(self.DEMO_TIME_DELAY * random() * self.DEMO_TIME_RND_ENABLE)
-        self.item_end() # always last line of test
-
     def TST100_Meas(self):
         """ Example test
 

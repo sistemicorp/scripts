@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2021
+Sistemi Corporation, copyright, all rights reserved, 2021-2023
 Martin Guthrie
 
 """
@@ -22,6 +22,7 @@ DRIVER_TYPE = "FAKE"
 
 class Fake(object):
     """ Example of a hardware driver class
+    - there is no hardware, this is a simulation
 
     """
 
@@ -66,7 +67,26 @@ class Fake(object):
         return self._id
 
     def close(self):
-        pass
+        """ Always called at the end of a test sequence by Prism
+        - perform any reset, or closing of the hardware if the testing is done, or ended
+        - note the result state (Pass|Fail) of the DUT is not known and should not be assumed,
+          meaning that this hardware may be in an unknown state.  This close() function
+          allows you to get back to a known state, if required.
+
+        :return: None
+        """
+        self.logger.info("closing")
+
+    def adc_read(self):
+        """ Example of reading an ADC
+
+        :return: Int
+        """
+        return random.randint(0, 10)
+
+    # ---------------------------------------------------------------------------------------------
+    # Prism Player functions
+    #
 
     def jig_closed_detect(self):
         """ Always report jig is closed as this is a Fake driver.
@@ -78,3 +98,7 @@ class Fake(object):
     def show_pass_fail(self, p, f, o):
         self.logger.info("pass: {}, Fail: {}, Other: {}".format(p, f, o))
 
+
+    #
+    # Prism Player functions
+    # ---------------------------------------------------------------------------------------------
