@@ -8,7 +8,16 @@ This CLI provides a linux CLI interface to Fake.
 Use this CLI to test your hardware driver.
 
 Example:  (note the starting folder)
-
+martin@martin-staric2:~/git/scripts/public/prism/drivers/fake$ python3 fake_cli.py version
+         fake_cli.py   INFO   57 version: Namespace(verbose=0, _cmd='version')
+         fake_cli.py   INFO   59 0.2.0
+         fake_cli.py   INFO   81 Success
+             Fake.py   INFO   78 closing
+martin@martin-staric2:~/git/scripts/public/prism/drivers/fake$ python3 fake_cli.py uid
+         fake_cli.py   INFO   50 uid: Namespace(verbose=0, _cmd='uid')
+         fake_cli.py   INFO   52 0878
+         fake_cli.py   INFO   81 Success
+             Fake.py   INFO   78 closing
 
 """
 import logging
