@@ -12,7 +12,7 @@ try:
     from stublogger import StubLogger
 except:
     # run from prism
-    from public.prism.drivers.iba01.stublogger import StubLogger
+    from public.prism.drivers.common.stublogger import StubLogger
 
 
 # this is the (example) version of the remote hardware
