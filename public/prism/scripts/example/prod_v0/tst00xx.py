@@ -299,9 +299,11 @@ class tst00xx(TestItem):
 
         self.item_end()  # always last line of test
 
-
     def TST008_TextInput(self):
         """ Text Input Box
+        - input text boxes in production are probably a bad idea unless the data
+          is coming from a scanner.  User input error correction is not something
+          scalable in production setting.
 
         {"id": "TST008_TextInput",      "enable": true, "timeout": 10 },
 
@@ -341,7 +343,6 @@ class tst00xx(TestItem):
             percent += 10
 
         self.item_end()  # always last line of test
-
 
     def TST010_BlobUnknown(self):
         """ Blob Unknown
