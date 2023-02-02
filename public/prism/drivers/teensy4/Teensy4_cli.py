@@ -78,14 +78,41 @@ def parse_args():
     version_parser = subp.add_parser('version')
 
     write_gpio = subp.add_parser('write_gpio')
-    write_gpio.add_argument('--pin-number', dest="_pin_number", action='store', type=int, help='GPIO number (0-41)',
+    write_gpio.add_argument('--pin-number',
+                            dest="_pin_number",
+                            action='store',
+                            type=int,
+                            help='GPIO number (0-41)',
                             default=None, required=True)
     write_gpio.add_argument('--state', dest="_state", choices=('1', '0'), help='True|False', required=True)
 
     read_gpio = subp.add_parser('read_gpio')
-    read_gpio.add_argument('--pin-number', dest="_pin_number", action='store', type=int, help='GPIO number (0-41)',
-                            default=None, required=True)
+    read_gpio.add_argument('--pin-number',
+                           dest="_pin_number",
+                           action='store',
+                           type=int,
+                           help='GPIO number (0-41)',
+                           default=None, required=True)
 
+    read_gpio = subp.add_parser('read_adc')
+    read_gpio.add_argument('--pin-number',
+                           dest="_pin_number",
+                           action='store',
+                           type=int,
+                           help='GPIO number (0-41)',
+                           default=None, required=True)
+    read_gpio.add_argument('--sample-number',
+                           dest="_sample_number",
+                           action='store',
+                           type=int,
+                           help='Number of samples to take, 1-#',
+                           default=None, required=True)
+    read_gpio.add_argument('--sample-rate',
+                           dest="_sample_rate",
+                           action='store',
+                           type=int,
+                           help='Sample rate in milli-seconds, 0-#',
+                           default=None, required=True)
 
     # add new commands here...
 
@@ -99,21 +126,14 @@ def led(args):
 
     if args._on:
         logging.info("ON: turn on LED")
-
         response = teensy.led(True)
-        success = response["success"]
-        logging.info("{}".format(response))
-        if not success: _success = False
 
-    if args._off:
+    else:
         logging.info("OFF: turn off LED")
-
         response = teensy.led(False)
-        success = response["success"]
-        logging.info("{}".format(response))
-        if not success: _success = False
 
-    return _success
+    logging.info("{}".format(response))
+    return response["success"]
 
 
 def uid(args):
@@ -121,11 +141,8 @@ def uid(args):
     logging.info("uid: {}".format(args))
 
     response = teensy.unique_id()
-    success = response["success"]
     logging.info("{}".format(response))
-    if not success: _success = False
-
-    return success
+    return response["success"]
 
 
 def version(args):
@@ -133,11 +150,8 @@ def version(args):
     logging.info("version: {}".format(args))
 
     response = teensy.version()
-    success = response["success"]
     logging.info("{}".format(response))
-    if not success: _success = False
-
-    return success
+    return response["success"]
 
 
 def write_gpio(args):
@@ -148,11 +162,8 @@ def write_gpio(args):
     if args._state == '0': _state = False
 
     response = teensy.write_gpio(args._pin_number, _state)
-    success = response["success"]
     logging.info("{}".format(response))
-    if not success: _success = False
-
-    return success
+    return response["success"]
 
 
 def read_gpio(args):
@@ -160,11 +171,17 @@ def read_gpio(args):
     logging.info("read_gpio: {}".format(args))
 
     response = teensy.read_gpio(args._pin_number)
-    success = response["success"]
     logging.info("{}".format(response))
-    if not success: _success = False
+    return response["success"]
 
-    return success
+
+def read_adc(args):
+    _success = True
+    logging.info("read_adc: {}".format(args))
+
+    response = teensy.read_adc(args._pin_number, args._sample_number, args._sample_rate)
+    logging.info("{}".format(response))
+    return response["success"]
 
 
 if __name__ == '__main__':
@@ -196,6 +213,9 @@ if __name__ == '__main__':
 
     elif args._cmd == 'read_gpio':
         success = read_gpio(args)
+
+    elif args._cmd == 'read_adc':
+        success = read_adc(args)
 
     if success:
         logging.info("Success")

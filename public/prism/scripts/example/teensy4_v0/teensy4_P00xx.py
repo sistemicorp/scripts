@@ -72,11 +72,6 @@ class teensy4_P00xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def P0xxTRDN(self):
-        ctx = self.item_start()  # always first line of test
-
-        self.item_end()  # always last line of test
-
     def P100_Check(self):
         """ Check Teensy Connected
 

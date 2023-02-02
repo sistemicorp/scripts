@@ -25,7 +25,6 @@
         {"id": "P100_Check",          "enable": true },
         {"id": "P200_Program",        "enable": true, "file": "teensy4_server.ino.hex" },
         {"id": "P300_Verify",         "enable": true, "delay": 5 },
-        {"id": "P0xxTRDN",            "enable": true }
       ]
     }
   ]
