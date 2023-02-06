@@ -260,4 +260,3 @@ class teensy400xx(TestItem):
         self.log_bullet("Pin {}'s ADC reading is {}".format(pin_number, result))
 
         self.item_end()  # always last line of test
-        

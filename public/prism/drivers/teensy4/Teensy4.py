@@ -352,20 +352,30 @@ class Teensy4:
         :param o: <True|False>  "other" is set
         :return: None
         """
+        self.logger.info(f"pass: {p}, fail: {f}, other: {o}")
         if self.rpc is None:
             return
 
+        # turn off all indicators - end of test so any previous state is not valid
         for k in self.TEST_INDICATORS.keys():
-            self.rpc.call_method('write_gpio', self.TEST_INDICATORS[k]['gpio'], not self.TEST_INDICATORS[k]['active_high'])
+            self.rpc.call_method('write_gpio',
+                                 self.TEST_INDICATORS[k]['gpio'],
+                                 not self.TEST_INDICATORS[k]['active_high'])
 
         if p and self.TEST_INDICATORS.get('pass', False):
-            self.rpc.call_method('write_gpio', self.TEST_INDICATORS["pass"]["gpio"], self.TEST_INDICATORS["pass"]["active_high"])
+            self.rpc.call_method('write_gpio',
+                                 self.TEST_INDICATORS["pass"]["gpio"],
+                                 self.TEST_INDICATORS["pass"]["active_high"])
 
         if f and self.TEST_INDICATORS.get('fail', False):
-            self.rpc.call_method('write_gpio', self.TEST_INDICATORS["fail"]["gpio"], self.TEST_INDICATORS["fail"]["active_high"])
+            self.rpc.call_method('write_gpio',
+                                 self.TEST_INDICATORS["fail"]["gpio"],
+                                 self.TEST_INDICATORS["fail"]["active_high"])
 
         if o and self.TEST_INDICATORS.get('other', False):
-            self.rpc.call_method('write_gpio', self.TEST_INDICATORS["other"]["gpio"], self.TEST_INDICATORS["other"]["active_high"])
+            self.rpc.call_method('write_gpio',
+                                 self.TEST_INDICATORS["other"]["gpio"],
+                                 self.TEST_INDICATORS["other"]["active_high"])
 
         return None
 

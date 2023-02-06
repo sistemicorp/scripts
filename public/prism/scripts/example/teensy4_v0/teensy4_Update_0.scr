@@ -7,6 +7,7 @@
 // 1) The Teensy has been previously programmed with teensy4_server.ino.hex
 // 2) Can only run once in prism because after firmware update, USB re-enumeration
 //    may cause the Teensy to change ports, and mess up the hwdrv init.
+// 3) Arduino IDE must not be running else it will jump in and mess things up when Teensy reboots.
 //
 // !! CAN ONLY RUN THIS ONCE IN PRISM !!
 {
