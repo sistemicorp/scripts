@@ -333,7 +333,7 @@ class Teensy4:
         return: <True|False|None>
         """
         if self.JIG_CLOSE_GPIO is None:
-            self.logger.error("Jig Closed Detector not defined (None), returning None")
+            self.logger.error("Jig Closed JIG_CLOSE_GPIO Detector not defined (None), returning None")
             # if not using jig_closed_detect feature see note above
             return None
 
@@ -342,9 +342,7 @@ class Teensy4:
             return None
 
         answer = json.loads(self.rpc.call_method('read_gpio', self.JIG_CLOSE_GPIO))
-        success = answer['success']
-
-        if not success:
+        if not answer['success']:
             self.logger.error("Failed to detect Jig Close GPIO")
             return None
 
@@ -390,7 +388,7 @@ class Teensy4:
                                  self.TEST_INDICATORS["other"]["gpio"],
                                  self.TEST_INDICATORS["other"]["active_high"])
 
-        return None
+        return
 
     #
     # Prism Player functions
