@@ -158,6 +158,7 @@ class ChanCon(object):
 
                 # call the player function if exist, ignore result, but see logs
                 if drivers:
+                    self.logger.info(drivers)
                     if drivers[0].get('play', None):
                         play = drivers[0].get('play')()
                         while not play:

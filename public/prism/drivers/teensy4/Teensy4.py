@@ -323,24 +323,37 @@ class Teensy4:
     def jig_closed_detect(self):
         """ Read Jig Closed feature on Teensy
         This is used by Prism Player logic, and can only return True|False
+        True - Jig Closed (testing will start)
+        False - Jig Open
+        None - Not implemented, or error
 
-        return: <True|False>
+        # NOTE: !! if not using jig_closed_detect the play function should be None
+        #          See hwdrv_teensy4.py:discover_channels():line 108
+
+        return: <True|False|None>
         """
         if self.JIG_CLOSE_GPIO is None:
-            self.logger.info("Jig Closed Detector not defined (None), returning True")
-            return True
+            self.logger.error("Jig Closed Detector not defined (None), returning None")
+            # if not using jig_closed_detect feature see note above
+            return None
+
+        if self.rpc is None:
+            self.logger.error("No rpc handler returning None")
+            return None
 
         answer = json.loads(self.rpc.call_method('read_gpio', self.JIG_CLOSE_GPIO))
         success = answer['success']
 
         if not success:
             self.logger.error("Failed to detect Jig Close GPIO")
-            return False
+            return None
 
+        # Example uses an Active LOW for indicating jig is closed
         if answer['result']['state'] != 1:
             self.logger.info("Jig close detected")
         else:
-            self.logger.info("Jig close NOT detected")
+            # squelched log line to avoid flooding log
+            self.logger.debug("Jig close NOT detected")
 
         return not answer['result']['state']
 

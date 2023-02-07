@@ -85,7 +85,7 @@ class HWDriver(object):
             _teensy['hwdrv'] = Teensy4(port, loggerIn=logging.getLogger("teensy.try"))
             success = _teensy['hwdrv'].init()
             if not success:
-                self.logger.info("failed on {}...".format(port))
+                self.logger.error("failed on {}...".format(port))
                 continue
 
             # yes, its a Teensy, add it to the list...
@@ -93,18 +93,22 @@ class HWDriver(object):
             _teensy['id'] = answer['result']['id']
             success = answer['success']
             if not success:
-                self.logger.info("failed on {}...".format('slot'))
+                self.logger.error("failed on {}...".format('slot'))
                 continue
 
             answer = _teensy['hwdrv'].unique_id()
             _teensy['unique_id'] = answer['result']['unique_id']
             success = answer['success']
             if not success:
-                self.logger.info("failed on {}...".format('unique_id'))
+                self.logger.error("failed on {}...".format('unique_id'))
                 continue
 
             _teensy['close'] = _teensy['hwdrv'].close
-            _teensy['play'] = _teensy['hwdrv'].jig_closed_detect
+
+            # NOTE: !! If not using jig_closed_detect this should be NONE !!
+            #_teensy['play'] = _teensy['hwdrv'].jig_closed_detect
+            _teensy['play'] = None
+
             _teensy['show_pass_fail'] = _teensy['hwdrv'].show_pass_fail
 
             # add USB port location
