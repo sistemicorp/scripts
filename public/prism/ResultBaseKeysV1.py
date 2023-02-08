@@ -125,7 +125,8 @@ class ResultBaseKeysV1(ResultBaseClass):
             self.logger.error(msg)
             return False, msg
 
-        lname = "{}.{}".format(self._item["name"], name)
+        _name = self._item["name"].removeprefix('public.prism.scripts.')
+        lname = "{}.{}".format(_name, name)
         # check for duplicate name
         for b in self._item["blobs"]:
             if b["name"] == lname:
@@ -165,10 +166,11 @@ class ResultBaseKeysV1(ResultBaseClass):
             msg: if not success, this is error message
                  if success, this is human friendly message of the measurment
         """
+        _name = self._item["name"].removeprefix('public.prism.scripts.')
         if name is None:
-            lname = "{}".format(self._item["name"])
+            lname = "{}".format(_name)
         else:
-            lname = "{}.{}".format(self._item["name"], name)
+            lname = "{}.{}".format(_name, name)
 
         # check for duplicate name
         for m in self._item["measurements"]:

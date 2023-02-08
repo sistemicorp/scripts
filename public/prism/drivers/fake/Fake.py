@@ -90,12 +90,13 @@ class Fake(object):
 
     def jig_closed_detect(self):
         """ Always report jig is closed as this is a Fake driver.
+        - Needs to be enabled by hwdrv_fake.py:discover_channels:line ~95
         :return: <True|False>
         """
-        self.logger.info("True")
-        return True
+        self.logger.info("False")
+        return False
 
-    def show_pass_fail(self, p, f, o):
+    def show_pass_fail(self, p=False, f=False, o=False):
         self.logger.info("pass: {}, Fail: {}, Other: {}".format(p, f, o))
 
 
