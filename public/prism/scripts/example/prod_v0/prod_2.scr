@@ -41,7 +41,7 @@
         {"id": "TST000_Meas",           "enable": true, "args": {"min": 0, "max": "%%TST000Max"},
                                         "fail": [ {"fid": "TST000-0", "msg": "Component apple R1"},
                                                   {"fid": "TST000-1", "msg": "Component banana R1"}] },
-        {"id": "TST001_Skip",           "enable": false },
+        {"id": "TST002_Skip",           "enable": false },
       ]
     },
     {
