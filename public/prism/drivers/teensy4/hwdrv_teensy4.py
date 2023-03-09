@@ -110,6 +110,7 @@ class HWDriver(object):
             _teensy['play'] = None
 
             _teensy['show_pass_fail'] = _teensy['hwdrv'].show_pass_fail
+            _teensy['jig_reset'] = _teensy['hwdrv'].jig_reset
 
             # add USB port location
             context = pyudev.Context()
