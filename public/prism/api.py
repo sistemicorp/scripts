@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2019-2022
+Sistemi Corporation, copyright, all rights reserved, 2019-2023
 Martin Guthrie
 
 """
@@ -10,10 +10,10 @@ from core.const import Const
 
 class ResultAPI(Const):
 
-    # More types can be created for your specific application needs
-    # These items will be in the result record and backend database
-
     TESTITEM_TIMEOUT = 10.0  # default test item timeout in seconds
+                             # Note this can be overridden for any specific test item,
+                             # see Example test item TST008_TextInput
+
 
     RECORD_RESULT_UNKNOWN = "UNKNOWN" # this is an error if not changed
     RECORD_RESULT_PASS = "PASS"
@@ -24,6 +24,9 @@ class ResultAPI(Const):
     RECORD_RESULT_SKIP = "SKIP"
     RECORD_RESULT_DISABLED = "DISABLED"
 
+    # More unit types can be created for your specific application needs,
+    # be sure to update UNIT_ALL list.
+    # These items will be in the result record and backend database
     UNIT_OHMS = "Ohms"
     UNIT_DB = "dB"
     UNIT_VOLTS = "Volts"
@@ -47,6 +50,8 @@ class ResultAPI(Const):
     UNIT_BOOLEAN = "Boolean"
     UNIT_CANDELA = "candela"
     UNIT_NONE = "None"
+
+    # any new units added above need to be included in this list for checking
     UNIT_ALL = [UNIT_OHMS, UNIT_BOOLEAN, UNIT_NONE, UNIT_STRING, UNIT_VOLTS, UNIT_CELSIUS, UNIT_CURRENT,
                 UNIT_DB, UNIT_FLOAT, UNIT_PASCAL, UNIT_BAR, UNIT_NEWTON, UNIT_METER,
                 UNIT_MILLIMETER, UNIT_INT, UNIT_SECONDS, UNIT_MILLISECONDS, UNIT_MICROSECONDS,
