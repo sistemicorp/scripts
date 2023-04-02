@@ -106,12 +106,13 @@ class ChanCon(object):
         self.record.record_record_meta_init()
 
     def item_start(self):
-        d = {"item": self._item,             # item dict from the script, ex {"id": "TST000", "enable": true,  "args": {"min": 0, "max": 2}}
-             "options": self._options,       # options dict from the script, ex { "fail_fast": false }
+        d = {"item": self._item,
+             # item dict from the script, ex {"id": "TST000", "enable": true,  "args": {"min": 0, "max": 2}}
+             "options": self._options,  # options dict from the script, ex { "fail_fast": false }
              "record": self.record,
 
              # TODO: add more stuff as needed
-            }
+             }
         self.record.record_item_create(d["item"]["id"])
         return attrdict(d)
 
@@ -140,6 +141,8 @@ class ChanCon(object):
         self.logger.info("BULLET: {}".format(text))
 
     def run(self):
+        show_pass_fail = None
+
         # process HW drivers
         num_channels = -1
         for hwdrv in self.script["config"]["drivers"]:
@@ -158,7 +161,6 @@ class ChanCon(object):
 
                 # call the player function if exist, ignore result, but see logs
                 if drivers:
-                    self.logger.info(drivers)
                     if drivers[0].get('play', None):
                         play = drivers[0].get('play')()
                         while not play:
@@ -166,8 +168,10 @@ class ChanCon(object):
                             self.logger.info("player: {}".format(play))
                             if not play: time.sleep(1)
 
-                    show_pass_fail = drivers[0].get("show_pass_fail", None)
-                    if show_pass_fail: show_pass_fail(False, False, False)
+                    if show_pass_fail is None:
+                        show_pass_fail = drivers[0].get("show_pass_fail", None)
+                        if show_pass_fail:
+                            show_pass_fail(False, False, False)
 
             self.logger.info("{} - number channels {}".format(hwdrv_sname, _num_channels))
             if _num_channels == 0:
@@ -178,7 +182,8 @@ class ChanCon(object):
             elif num_channels == -1:
                 num_channels = _num_channels
             elif num_channels != _num_channels:
-                self.logger.error("{} - number channels {} does not match previous HWDRV".format(hwdriver, _num_channels))
+                self.logger.error(
+                    "{} - number channels {} does not match previous HWDRV".format(hwdriver, _num_channels))
                 raise ValueError('Mismatch number of channels between HW Drivers')
 
         self.num_channels = num_channels
@@ -186,6 +191,8 @@ class ChanCon(object):
         if self.num_channels < 1:
             self.logger.error("Invalid number of channels, must be >0")
             raise ValueError('Invalid number of channels')
+
+        fail_fast = self.script["config"].get("fail_fast", True)
 
         for test in self.script["tests"]:
 
@@ -211,14 +218,20 @@ class ChanCon(object):
                     func = getattr(test_klass, item["id"])
                     func()
 
+                    if fail_fast and self.record.record_meta_get_result() != ResultAPI.RECORD_RESULT_PASS:
+                        break
+
         self.record.record_record_meta_fini()
         self.record.record_publish()
 
         if show_pass_fail is not None:
             p = f = o = False
-            if self.record.record_meta_get_result() == ResultAPI.RECORD_RESULT_PASS: p = True
-            elif self.record.record_meta_get_result() == ResultAPI.RECORD_RESULT_FAIL: f = True
-            else: o = True
+            if self.record.record_meta_get_result() == ResultAPI.RECORD_RESULT_PASS:
+                p = True
+            elif self.record.record_meta_get_result() == ResultAPI.RECORD_RESULT_FAIL:
+                f = True
+            else:
+                o = True
             show_pass_fail(p, f, o)
 
 
@@ -274,7 +287,7 @@ def parse_args():
 Usage examples:
     python3 prism_dev.py --script ./public/prism/scripts/example/prod_v0/prod_0.scr 
     python3 prism_dev.py --script ./public/prism/scripts/example/pybrd_v0/pybrd_0.scr 
-    
+
 Sistemi Corporation, copyright, all rights reserved, 2019
     """
     parser = argparse.ArgumentParser(description='prism_dev',
