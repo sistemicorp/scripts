@@ -42,6 +42,9 @@
                                         "fail": [ {"fid": "TST000-0", "msg": "Component apple R1"},
                                                   {"fid": "TST000-1", "msg": "Component banana R1"}] },
         {"id": "TST002_Skip",           "enable": false },
+
+        // always called, no matter if test fails above
+        {"id": "TST0xxTEARDOWN",        "enable": true },
       ]
     },
     {
@@ -56,6 +59,9 @@
         {"id": "TST100_Meas", "enable": true,  "args": {"min": 0, "max": "%%TST100Max"},
                               "fail": [ {"fid": "TST100-0", "msg": "Component R1"} ] },
         {"id": "TST101_Skip", "enable": false },
+
+        // always called, no matter if test fails above
+        {"id": "TST0xxTEARDOWN",        "enable": true },
       ]
     }
   ]

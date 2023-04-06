@@ -79,6 +79,8 @@ class tst00xx(TestItem):
         - main purpose is to get a local handle to the connected hardware
         - store the ID of the hardware for tracking purposes
 
+            {"id": "TST0xxSETUP",           "enable": true },
+
         """
         ctx = self.item_start()  # always first line of test
 
@@ -98,6 +100,16 @@ class tst00xx(TestItem):
 
         self.log_bullet(_bullet)
         self.item_end(_result)  # always last line of test
+
+    def TST0xxTEARDOWN(self):
+        """  Always called at the end of testing
+        - process any cleanup, closing, etc
+
+            {"id": "TST0xxTEARDOWN",        "enable": true },
+
+        """
+        ctx = self.item_start()  # always first line of test
+        self.item_end()  # always last line of test
 
     def TST000_Meas(self):
         """ Measurement example, simplest example

@@ -10,7 +10,7 @@
   },
   "config": {
     // fail_fast: if true (default), testing will stop on first failed test
-    "fail_fast": false,
+    "fail_fast": true,
     // channel_hw_driver: list of code to initialize the test environment, must be specified
     "drivers": ["public.prism.drivers.fake.hwdrv_fake"]
   },
@@ -20,7 +20,7 @@
       "module": "public.prism.scripts.example.prod_v0.tst00xx",
       "options": {
         // fail_fast: if true (default), testing will stop on first failed test, overrides config section
-        "fail_fast": false
+        "fail_fast": true
         // timeout: defaults to 10 seconds, but can be overridden here, or in a test item (below)
         //"timeout": 20
         //
@@ -49,6 +49,9 @@
         {"id": "TST010_BlobUnknown",    "enable": true },
         {"id": "TST011_BlobXY",         "enable": true },
         {"id": "TST012_JSONB",          "enable": true },
+
+        // always called, no matter if test fails above
+        {"id": "TST0xxTEARDOWN",        "enable": true },
       ]
     }
   ]

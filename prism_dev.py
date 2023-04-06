@@ -222,6 +222,26 @@ class ChanCon(object):
                     if fail_fast and self.record.record_meta_get_result() != ResultAPI.RECORD_RESULT_PASS:
                         break
 
+            # run teardown if not done so already
+            if item != test["items"][-1]:
+                item = test["items"][-1]
+                logger.info("ITEM: {}".format(item))
+                if item.get("enable", True):
+                    self._item = item
+                    if not getattr(test_klass, item["id"], False):
+                        msg = "method {} is not in module {}".format(item["id"], test_klass)
+                        logger.error(msg)
+                        raise ValueError(msg)
+
+                    func = getattr(test_klass, item["id"])
+                    func()
+
+                else:
+                    logger.error("teardown (last item) script should not be disabled")
+
+            if fail_fast and self.record.record_meta_get_result() != ResultAPI.RECORD_RESULT_PASS:
+                break
+
         self.record.record_record_meta_fini()
         result_file = self.record.record_publish()
 

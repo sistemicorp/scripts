@@ -57,6 +57,7 @@
       "items": [
         {"id": "BRTHR0xxSETUP",         "enable": true, },
         {"id": "BRTHR001_PrintRUID",    "enable": true, }
+        {"id": "BRTHR0xxTRDN",          "enable": true, },
       ]
     },
   ]
