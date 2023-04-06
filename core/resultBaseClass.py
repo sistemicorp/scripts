@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2019-2020
+Sistemi Corporation, copyright, all rights reserved, 2019-2023
 Martin Guthrie
 
 """
@@ -24,7 +24,7 @@ class ResultBaseClass(object):
 
     """
     EPOCH_DECIMAL_PLACES = 2
-    MAX_KEYS = 2  # !! must match fields in DB backend - can't change arbitrarily
+    MAX_KEYS = 5  # !! must match fields in DB backend - can't change arbitrarily
                   # !! only increase in future versions
 
     def __init__(self, chan_num, operator="UNKNOWN", script_filename=None):
