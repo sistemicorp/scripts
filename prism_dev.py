@@ -1,10 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2019
+Sistemi Corporation, copyright, all rights reserved, 2019-2023
 Martin Guthrie
 
-bump master version
 """
 import os
 import sys
@@ -18,8 +17,10 @@ import time
 from public.prism.api import ResultAPI
 from public.prism.ResultBaseKeysV1 import ResultBaseKeysV1
 from core.shared_state import SharedState
+from prism_result_scan import scan_result_file
 
 logger = None
+
 
 class attrdict(dict):
     """
@@ -222,7 +223,7 @@ class ChanCon(object):
                         break
 
         self.record.record_record_meta_fini()
-        self.record.record_publish()
+        result_file = self.record.record_publish()
 
         if show_pass_fail is not None:
             p = f = o = False
@@ -233,6 +234,8 @@ class ChanCon(object):
             else:
                 o = True
             show_pass_fail(p, f, o)
+
+        return result_file
 
 
 def setup_logging(log_file_name_prefix="log", level=logging.INFO, path="./log"):
@@ -300,6 +303,11 @@ Sistemi Corporation, copyright, all rights reserved, 2019
                         required=True,
                         help="Path to script file to run")
 
+    parser.add_argument("--result-scan",
+                        dest="result_scan",
+                        action="store_true",
+                        help="Scan result file for correctness")
+
     args = parser.parse_args()
     args_dict = vars(args)
     return args_dict
@@ -352,7 +360,7 @@ def main():
     shared_state = SharedState()
 
     con = ChanCon(0, script, shared_state, args["script"])
-    con.run()
+    result_file = con.run()
 
     # close any drivers
     drivers = shared_state.get_drivers(0)
@@ -361,6 +369,10 @@ def main():
             d["obj"]["close"]()
 
     # TODO: publish shutdown
+
+    if args["result_scan"]:
+        logger.info(f"Running result record scan on {result_file}")
+        scan_result_file(result_file)
 
     return 0
 
