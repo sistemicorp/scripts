@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2022
+Sistemi Corporation, copyright, all rights reserved, 2022-2023
 Martin Guthrie
 
 """
@@ -55,6 +55,10 @@ class prog_P00xx(TestItem):
         self.item_end()  # always last line of test
 
     def P0xxTRDN(self):
+        """ Teardown
+        - always the last test called
+        :return:
+        """
         ctx = self.item_start()  # always first line of test
 
         self.item_end()  # always last line of test

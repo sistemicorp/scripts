@@ -77,17 +77,12 @@ String slot() {
 String set_led(bool on) {
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
   
-  if (on){
+  if (on) {
     doc["result"]["state"] = "on";
-    if (digitalRead(LED_BUILTIN) == LOW){
-      digitalWrite(LED_BUILTIN, HIGH);
-    }
-  }
-  else{
+    digitalWrite(LED_BUILTIN, HIGH);
+  } else {
     doc["result"]["state"] = "off";
-    if (digitalRead(LED_BUILTIN) == HIGH){
-      digitalWrite(LED_BUILTIN, LOW);
-    }
+    digitalWrite(LED_BUILTIN, LOW);
   }
   
   return _response(doc);  // always the last line of RPC API
@@ -120,25 +115,28 @@ String version(){
 /* read_adc
  *  - read ADC value on a Teensy pin
  *  
- *  int pin_number: GPIO number
- *  int sample_num: number of samples which to average over
+ *  unsigned int pin_number: GPIO number
+ *  unsigned int sample_num: number of samples which to average over
  *  unsigned int sample_rate: milliseconds between samples
  */
-String read_adc(int pin_number, int sample_num, unsigned int sample_rate){
+String read_adc(unsigned int pin_number, unsigned int sample_num, unsigned int sample_rate){
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
 
   unsigned long currentMillis = millis();
-  unsigned long previousMillis = 0;
-  double reading = 0;
+  unsigned long previousMillis = 0;  // =0 causes sample to be taken right away
+  unsigned int accumulator = 0;
+  unsigned int counter = sample_num;
 
-  for(int count = 0; count <= sample_num; count++){
-    if((currentMillis - previousMillis) >= sample_rate){
-      reading += analogRead(pin_number);
+  while (counter) {
+    if ((currentMillis - previousMillis) >= sample_rate) {
+      accumulator += analogRead(pin_number);
       previousMillis = currentMillis;
+      counter--;
     }
+    currentMillis = millis();
   }
 
-  reading = reading/sample_num;
+  unsigned int reading = (unsigned int)(accumulator / sample_num);
   doc["result"]["reading"] = reading;
 
   return _response(doc);  // always the last line of RPC API
@@ -216,10 +214,15 @@ String reset(){
 void setup(void) {
   Serial.begin(115200);
   pinMode(LED_BUILTIN, OUTPUT);
+
+  // add hardware specific setup here
+  
 }
 
 void loop(void) {
 
+
+  // interface() is non-blocking
   // NOTE: !! the function name and string begining must match !!
   interface(
     Serial,

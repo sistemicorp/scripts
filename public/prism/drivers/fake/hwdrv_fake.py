@@ -12,7 +12,7 @@ from core.sys_log import pub_notice
 # import your hardware driver class, and details
 from public.prism.drivers.fake.Fake import Fake, VERSION, DRIVER_TYPE
 
-NUM_CHANNELS = 4  # set this to simulate multiple channels, range 1-4
+NUM_CHANNELS = 1  # set this to simulate multiple channels, range 1-4
 
 
 class HWDriver(object):
@@ -43,10 +43,10 @@ class HWDriver(object):
 
         [ {"id": i,                    # ~slot number of the channel (see Note 1)
            "version": <VERSION>,       # version of the driver
-           "hwdrv": <foobar>,          # instance of your hardware driver
+           "hwdrv": <object>,          # instance of your hardware driver
 
            # optional
-           "close": None},             # register a callback on closing the channel, or None
+           "close": None,              # register a callback on closing the channel, or None
            "play": jig_closed_detect   # function for detecting jig closed
            "show_pass_fail": jig_led   # function for indicating pass/fail (like LED)
 
@@ -73,7 +73,7 @@ class HWDriver(object):
         # Your specific driver discovery code goes here
         #
 
-        for i in range(NUM_CHANNELS):
+        for i in range(NUM_CHANNELS):  # NUM_CHANNELS is used to fake more than one test jig
             _driver = Fake(self.logger)
 
             remote_version = _driver.version()
@@ -84,16 +84,17 @@ class HWDriver(object):
                 self.logger.error("{} has unexpected version {} != {}".format(_id, remote_version, VERSION))
                 continue
 
-            # ... perform any other validation of the remote hardware as required...
+            # ... perform any other validation of the remote hardware as required here
 
+            # create the dict with keys expected by Prism
             _d = {'id': _id,
                   "version": VERSION,
                   "hwdrv": _driver,
                   "unique_id": _driver.unique_id(),
                   "version": _driver.version(),
-                  "play": _driver.jig_closed_detect,
+                  "play": None,  # _driver.jig_closed_detect,
                   "show_pass_fail": _driver.show_pass_fail,
-                  "close": None}  # or _driver.close
+                  "close": _driver.close}  # good practice to have in place
 
             #
             # End of your specific driver code

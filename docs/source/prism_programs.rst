@@ -540,10 +540,10 @@ And here is the script that drives the program,
 Measurements
 ------------
 
-Measurements are typically made by your test programs to decide on Pass/Fail.  Measurements can also be stored in
-a results (JSON) file and sent to a backend database.  What measurements to save are up to your requirements.  The
-Prism platform has an API to make storing measurements easy, and in a prescriptive way, so that these results
-can be analyzed from the backend database.
+Measurements are typically made by your test programs to decide on Pass/Fail.  Measurements are stored in
+a results (JSON) file and sent to a backend `Lente` database.  What measurements to save are up to your requirements.
+The Prism platform has an API to make storing measurements easy, and in a prescriptive way, so that these results
+can be analyzed from the backend SQL database.
 
 Example of measurement API is show in the example above, but are reviewed here in detail.
 
@@ -571,28 +571,52 @@ Example of measurement API is show in the example above, but are reviewed here i
 
 ``name`` - this will be appended to the full name of the test, which is the path to the python
 program, the program filename, the class method, and finally this name.  As such the final test
-name is a unique identifier
+name is a unique identifier.
 
-``units`` - from,
+.. note::
+
+    It is important that test measurements have a unique `name` so that any particular measurement
+    can be searched for in the SQL database.  If a duplicate `name` is used, `measurement()` will
+    fail with RECORD_RESULT_UNKNOWN.
+
+
+``value`` - the quantity to be tested.  The instance type of the value determines the behaviour
+of the testing and the requirements of 'min' and 'max'.  Valid types are int, float, bool, and str.
+
+.. note::
+
+    For boolean type, `measurement()` will test that `value` is True.  If a `value` of False is
+    a PASS, you will need to invert it before calling `measurement()`.
+
+
+.. note::
+
+    For integer and float types, `measurement()` will test `min <= value <= max`.
+
+
+.. note::
+
+    For str (string) types, `measurement()` will always PASS.  `min` and `max` must be set to None.
+    String types are useful for storing serial numbers in the database.
+
+
+``min`` - minimum quantity to test on ``value``.  Can only be of type `int`, `float`, or `None`.
+Type `None` is used for types of ``value`` that do not use `min` or `max`, for example, when ``value``
+is a boolean or string type, `min` and `max` must be None.
+
+
+``max`` - maximum quantity to test on ``value``.  Can only be of type `int`, `float`, or `None`.
+Type `None` is used for types of ``value`` that do not use `min` or `max`, for example, when ``value``
+is a boolean or string type, `min` and `max` must be None.
+
+
+``units`` - the units of measurement to be stored in the result.  The units of measurement are not
+used to determine the type of test to do on ``value``. Valid units come from,
 
 ::
 
     class ResultAPI(Const):
-
-        # More types can be created for your specific application needs
-        # These items will be in the result record and backend database
-
-        TESTITEM_TIMEOUT = 10.0  # default test item timeout in seconds
-
-        RECORD_RESULT_UNKNOWN = "UNKNOWN" # this is an error if not changed
-        RECORD_RESULT_PASS = "PASS"
-        RECORD_RESULT_FAIL = "FAIL"
-        RECORD_RESULT_TIMEOUT = "TIMEOUT"
-        RECORD_RESULT_INCOMPLETE = "INC"
-        RECORD_RESULT_INTERNAL_ERROR = "INTERNAL_ERROR"
-        RECORD_RESULT_SKIP = "SKIP"
-        RECORD_RESULT_DISABLED = "DISABLED"
-
+        ...
         UNIT_OHMS = "Ohms"
         UNIT_DB = "dB"
         UNIT_VOLTS = "Volts"
@@ -616,57 +640,10 @@ name is a unique identifier
         UNIT_BOOLEAN = "Boolean"
         UNIT_CANDELA = "candela"
         UNIT_NONE = "None"
-        UNIT_ALL = [UNIT_OHMS, UNIT_BOOLEAN, UNIT_NONE, UNIT_STRING, UNIT_VOLTS, UNIT_CELSIUS, UNIT_CURRENT,
-                    UNIT_DB, UNIT_FLOAT, UNIT_PASCAL, UNIT_BAR, UNIT_NEWTON, UNIT_METER,
-                    UNIT_MILLIMETER, UNIT_INT, UNIT_SECONDS, UNIT_MILLISECONDS, UNIT_MICROSECONDS,
-                    UNIT_KILOGRAM, UNIT_GRAM, UNIT_LITRE, UNIT_KELVIN, UNIT_CANDELA]
-
-        # ===================================================================================
-        # BLOB data types
-        #
-        # BLOB_UNKNOWN
-        # - unknown type of blob
-        # - Lente will not try and plot/analyse blobs of this type, they are unknown
-        BLOB_UNKNOWN = {
-            "type": "BLOB_UNKNOWN",
-            "data": None,              # replace with your data, must be JSON serializable
-        }
-
-        # Blobs that can be plotted
-        # - Lente can plot blob data given the blob data type
-        # - blobs that can be plotted, use BLOB_BOKEH_* dicts to define the plot
-        # - there are a billion options to plotting with Bokeh, Lente only does bare minimum
-        BLOB_BOKEH_FIGURE = {
-            "title": "Title",
-            "x_axis_type": "auto",  # auto, linear, log, datetime, mercator
-            "x_axis_label": "X-Axis",
-            "y_axis_type": "auto",  # auto, linear, log, datetime, mercator
-            "y_axis_label": "Y-Axis",
-        }
-
-        # BLOB_PLOTXY
-        # - XY plots
-        # - 1 or more lines can be plotted
-        # - use this type for plotting waves that fit a template (for example)
-        BLOB_PLOTXY_PLOT = {
-            "legend": None,  # change to string
-            "line_width": 1,
-            "x": [],         # x/y list lengths must be the same
-            "y": [],
-        }
-        BLOB_PLOTXY = {
-            "type": "BLOB_DICTXY",
-            "BLOB_BOKEH_FIGURE": BLOB_BOKEH_FIGURE,
-            "plots": [],   # append BLOB_DICTXY_PLOTs here as required...
-        }
-
-        # add any new types created here for the purposes of validating
-        BLOB_TYPES = [BLOB_UNKNOWN["type"], BLOB_PLOTXY["type"]]
+        ...
 
 
 Measurements are called thru the ``ctx.record.measurement()`` API like this,
-
-* calling ``ctx.record.measurement()`` means that this value will be in the backend database
 
 ::
 
@@ -681,6 +658,11 @@ Measurements are called thru the ``ctx.record.measurement()`` API like this,
                                                            ctx.item.args.max)
         self.log_bullet(_bullet)
         self.item_end(_result)  # always last line of test
+
+* calling ``ctx.record.measurement()`` means that this value will be in the backend database
+
+  * The stored `name` of the test will be "myTest.apples".
+
 
 * three parameters are returned, shown above as ``success, _result, _bullet``
 

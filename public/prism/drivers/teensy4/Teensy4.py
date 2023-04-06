@@ -1,10 +1,11 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2021-2022
+Sistemi Corporation, copyright, all rights reserved, 2021-2023
 Owen Li, Martin Guthrie
 
 """
+import os
 import json
 import threading
 import re
@@ -16,7 +17,7 @@ try:
     from stublogger import StubLogger
 except:
     # run from prism
-    from public.prism.drivers.iba01.stublogger import StubLogger
+    from public.prism.drivers.common.stublogger import StubLogger
 
 
 DRIVER_TYPE = "TEENSY4"
@@ -59,7 +60,10 @@ class Teensy4:
         "other": {'gpio': 22, 'active_high': True}
     }
 
-    _version_file = "public/prism/drivers/teensy4/server/libraries/version/version.h"
+    # For Teensy FW version checking the SAME (c code) header file that created the Teensy4
+    # firmware is used to check if that firmware is now running (deployed) on Teensy4.
+    # if that FW is not running, there is probably a problem!  See method init().
+    _version_file = os.path.join(os.path.dirname(__file__), "server/libraries/version/version.h")
 
     def __init__(self, port, loggerIn=None):
         self.lock = threading.Lock()
@@ -67,6 +71,7 @@ class Teensy4:
         if loggerIn: self.logger = loggerIn
         else: self.logger = StubLogger()
 
+        self._lock = threading.Lock()
         self.port = port
         self.rpc = None
 
@@ -178,6 +183,22 @@ class Teensy4:
             self.rpc.call_method('init_gpio', self.JIG_CLOSE_GPIO, self.GPIO_MODE_INPUT_PULLUP.encode())
             return True
 
+    def _rpc_validate(self, answer, squelch=False):
+        try:
+            answer = json.loads(answer)
+            if answer["success"]:
+                if not squelch:
+                    self.logger.info(answer)
+            else:
+                self.logger.error(answer)
+
+        except Exception as e:
+            self.logger.error(answer)
+            self.logger.error(e)
+            answer = {"success": False}
+
+        return answer
+
     # Helper Functions
     # ----------------------------------------------------------------------------------------------
     # ----------------------------------------------------------------------------------------------
@@ -197,16 +218,20 @@ class Teensy4:
         """ unique id
         :return: success = True/False, method: unique_id, unique_id = MAC Address
         """
-        answer = self.rpc.call_method('unique_id')
-        return json.loads(answer)
+        with self._lock:
+            self.logger.info(f"unique_id")
+            answer = self.rpc.call_method('unique_id')
+            return self._rpc_validate(answer)
 
     def slot(self):
         """ slot
         :return: success = True/False, method: slot, id = id
         """
         # TODO: implement arduino side
-        answer = self.rpc.call_method('slot')
-        return json.loads(answer)
+        with self._lock:
+            self.logger.info(f"slot")
+            answer = self.rpc.call_method('slot')
+            return self._rpc_validate(answer)
 
     # def channel(self):
     #     c = {'method': 'slot', 'args': {}}
@@ -217,23 +242,29 @@ class Teensy4:
         """ Version
         :return: success = True/False, method = version, version = version#
         """
-        answer = self.rpc.call_method('version')
-        return json.loads(answer)
+        with self._lock:
+            self.logger.info(f"version")
+            answer = self.rpc.call_method('version')
+            return self._rpc_validate(answer)
 
     def reset(self):
         """ reset
         :return: success = True/False, method = reset
         """
-        answer = self.rpc.call_method('reset')
-        return json.loads(answer)
+        with self._lock:
+            self.logger.info(f"reset")
+            answer = self.rpc.call_method('reset')
+            return self._rpc_validate(answer)
 
     def reboot_to_bootloader(self):
         """ reboot
         :return: success = True/False, method = reset
         """
         try:
-            self.rpc.call_method('reboot_to_bootloader')
-            # reboot will not return, expect SerialException exception, fake the return success
+            with self._lock:
+                self.logger.info(f"reboot_to_bootloader")
+                self.rpc.call_method('reboot_to_bootloader')
+                # reboot will not return, expect SerialException exception, fake the return success
 
         except SerialException:
             pass
@@ -249,8 +280,10 @@ class Teensy4:
         :param set: True/False
         :return: success = True/False, method = set_led, result = state = ON/OFF
         """
-        answer = self.rpc.call_method('set_led', set)
-        return json.loads(answer)
+        with self._lock:
+            self.logger.info(f"set_led {set}")
+            answer = self.rpc.call_method('set_led', set)
+            return self._rpc_validate(answer)
 
     # def led_toggle(self, led, on_ms=500, off_ms=500, once=False):
     #     """ toggle and LED ON and then OFF
@@ -264,18 +297,20 @@ class Teensy4:
     #     # FIXME: put SimpleRPC call here, and return the result JSON
     #     return {"success": False, "result": {}}
 
-    def read_adc(self, pin_number, sample_num=1, sample_rate=1):
+    def read_adc(self, pin_number, sample_num=1, sample_rate_ms=1):
         """ Read an ADC pin
         - This is a BLOCKING function
         - result is raw ADC value, client needs to scale to VREF (3.3V)
 
         :param pin_number: (0 - 41)
         :param sample_num: Number of samples to average over
-        :param sample_rate: Millisecond delay between samples
+        :param sample_rate_ms: Millisecond delay between samples
         :return: success = True/False, method = read_adc, result = reading = *
         """
-        answer = self.rpc.call_method('read_adc', pin_number, sample_num, sample_rate)
-        return json.loads(answer)
+        with self._lock:
+            self.logger.info(f"read_adc {pin_number} {sample_num} {sample_rate_ms}")
+            answer = self.rpc.call_method('read_adc', pin_number, sample_num, sample_rate_ms)
+            return self._rpc_validate(answer)
 
     def init_gpio(self, pin_number, mode):
         """ Init GPIO
@@ -289,54 +324,71 @@ class Teensy4:
             return {'success': False, 'value': {'err': err}}
 
         mode_b = mode.encode()
-        answer = self.rpc.call_method('init_gpio', pin_number, mode_b)
-        return json.loads(answer)
+        with self._lock:
+            self.logger.info(f"init_gpio {pin_number} {mode_b}")
+            answer = self.rpc.call_method('init_gpio', pin_number, mode_b)
+            return self._rpc_validate(answer)
 
     def read_gpio(self, pin_number):
         """ Get GPIO
         :param pin_number: (0 - 41)
         :return: success = True/False, method = read_gpio, result = state = 1/0
         """
-        answer = self.rpc.call_method('read_gpio', pin_number)
-        return json.loads(answer)
+        with self._lock:
+            self.logger.info(f"read_gpio {pin_number}")
+            answer = self.rpc.call_method('read_gpio', pin_number)
+            return self._rpc_validate(answer)
 
-    def write_gpio(self, pin_number, state):
+    def write_gpio(self, pin_number, state: bool):
         """ Set GPIO
         :param pin_number: (0 - 41)
         :param state: 1/0
         :return: success = True/False, method = write_gpio, result = state = 1/0
         """
-        answer = self.rpc.call_method('write_gpio', pin_number, state)
-        return json.loads(answer)
+        with self._lock:
+            self.logger.info(f"write_gpio {pin_number} {state}")
+            answer = self.rpc.call_method('write_gpio', pin_number, state)
+            return self._rpc_validate(answer)
 
     #
     # API (wrapper functions)
     # ---------------------------------------------------------------------------------------------
     # ---------------------------------------------------------------------------------------------
-    # Prism Player functions
+    # Prism Player Callback functions
     #
 
     def jig_closed_detect(self):
         """ Read Jig Closed feature on Teensy
         This is used by Prism Player logic, and can only return True|False
+        True - Jig Closed (testing will start)
+        False - Jig Open
+        None - Not implemented, or error
 
-        return: <True|False>
+        # NOTE: !! if not using jig_closed_detect the play function should be None
+        #          See hwdrv_teensy4.py:discover_channels():line 108
+
+        return: <True|False|None>
         """
         if self.JIG_CLOSE_GPIO is None:
-            self.logger.info("Jig Closed Detector not defined (None), returning True")
-            return True
+            self.logger.error("Jig Closed JIG_CLOSE_GPIO Detector not defined (None), returning None")
+            # if not using jig_closed_detect feature see note above
+            return None
+
+        if self.rpc is None:
+            self.logger.error("No rpc handler returning None")
+            return None
 
         answer = json.loads(self.rpc.call_method('read_gpio', self.JIG_CLOSE_GPIO))
-        success = answer['success']
-
-        if not success:
+        if not answer['success']:
             self.logger.error("Failed to detect Jig Close GPIO")
-            return False
+            return None
 
+        # Example uses an Active LOW for indicating jig is closed
         if answer['result']['state'] != 1:
             self.logger.info("Jig close detected")
         else:
-            self.logger.info("Jig close NOT detected")
+            # squelched log line to avoid flooding log
+            self.logger.debug("Jig close NOT detected")
 
         return not answer['result']['state']
 
@@ -348,22 +400,44 @@ class Teensy4:
         :param o: <True|False>  "other" is set
         :return: None
         """
+        self.logger.info(f"pass: {p}, fail: {f}, other: {o}")
         if self.rpc is None:
             return
 
-        for k in self.TEST_INDICATORS.keys():
-            self.rpc.call_method('write_gpio', self.TEST_INDICATORS[k]['gpio'], not self.TEST_INDICATORS[k]['active_high'])
+        with self._lock:
+            for k in self.TEST_INDICATORS.keys():
+                self.rpc.call_method('write_gpio',
+                                     self.TEST_INDICATORS[k]['gpio'],
+                                     not self.TEST_INDICATORS[k]['active_high'])
 
-        if p and self.TEST_INDICATORS.get('pass', False):
-            self.rpc.call_method('write_gpio', self.TEST_INDICATORS["pass"]["gpio"], self.TEST_INDICATORS["pass"]["active_high"])
+            if p and self.TEST_INDICATORS.get('pass', False):
+                self.rpc.call_method('write_gpio',
+                                     self.TEST_INDICATORS["pass"]["gpio"],
+                                     self.TEST_INDICATORS["pass"]["active_high"])
 
-        if f and self.TEST_INDICATORS.get('fail', False):
-            self.rpc.call_method('write_gpio', self.TEST_INDICATORS["fail"]["gpio"], self.TEST_INDICATORS["fail"]["active_high"])
+            if f and self.TEST_INDICATORS.get('fail', False):
+                self.rpc.call_method('write_gpio',
+                                     self.TEST_INDICATORS["fail"]["gpio"],
+                                     self.TEST_INDICATORS["fail"]["active_high"])
 
-        if o and self.TEST_INDICATORS.get('other', False):
-            self.rpc.call_method('write_gpio', self.TEST_INDICATORS["other"]["gpio"], self.TEST_INDICATORS["other"]["active_high"])
+            if o and self.TEST_INDICATORS.get('other', False):
+                self.rpc.call_method('write_gpio',
+                                     self.TEST_INDICATORS["other"]["gpio"],
+                                     self.TEST_INDICATORS["other"]["active_high"])
 
-        return None
+        return
+
+    def jig_reset(self):
+        """ Called by Prism at the start and end of testing
+        - use this callback to set the hardware to a known good reset state
+        - should also be called on hardware discovery
+
+        :return:
+        """
+        with self._lock:
+            self.logger.info(f"reset")
+            answer = self.rpc.call_method('reset')
+            self._rpc_validate(answer)
 
     #
     # Prism Player functions
@@ -373,5 +447,5 @@ class Teensy4:
     #
     # - APIs to features that are off the Teensy module
     # - for example, I2C component APIs, etc
-
+    #
 

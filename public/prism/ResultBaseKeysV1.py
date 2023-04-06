@@ -125,7 +125,8 @@ class ResultBaseKeysV1(ResultBaseClass):
             self.logger.error(msg)
             return False, msg
 
-        lname = "{}.{}".format(self._item["name"], name)
+        _name = self._item["name"].removeprefix('public.prism.scripts.')
+        lname = "{}.{}".format(_name, name)
         # check for duplicate name
         for b in self._item["blobs"]:
             if b["name"] == lname:
@@ -150,6 +151,7 @@ class ResultBaseKeysV1(ResultBaseClass):
         """ Check and store a measurement
         - performs a check on the value, returning one of ResultAPI.RECORD_RESULT_*
         - all values are stored as strings in the dB, converted here
+        - min/max/value should match types
 
         :param name: must be unique per test item
         :param force_fail: when set, forces measurement to fail
@@ -165,10 +167,11 @@ class ResultBaseKeysV1(ResultBaseClass):
             msg: if not success, this is error message
                  if success, this is human friendly message of the measurment
         """
+        _name = self._item["name"].removeprefix('public.prism.scripts.')
         if name is None:
-            lname = "{}".format(self._item["name"])
+            lname = "{}".format(_name)
         else:
-            lname = "{}.{}".format(self._item["name"], name)
+            lname = "{}.{}".format(_name, name)
 
         # check for duplicate name
         for m in self._item["measurements"]:
@@ -261,8 +264,11 @@ class ResultBaseKeysV1(ResultBaseClass):
         else:
             if force_fail: _pass = ResultAPI.RECORD_RESULT_FAIL
             else: _pass = ResultAPI.RECORD_RESULT_INTERNAL_ERROR
-            _bullet = "{}: {} <= {} <= {} {} ??".format(name, min, value, max, unit)
+            _bullet = "{}: {} <= {} <= {} {} ERR".format(name, min, value, max, unit)
             self.logger.error(_bullet)
+            self.logger.error(f"types: min {type(min)}, value {type(value)}, max {type(max)}")
+            if not (type(min) == type(value) == type(max)):
+                self.logger.error("Types are not all the same.")
             return False, _pass, _bullet
 
         d["result"] = _pass

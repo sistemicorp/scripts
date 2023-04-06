@@ -26,7 +26,6 @@
         {"id": "T040_write_gpio",     "enable": false, "pin_number": 0, "state": 1},
         {"id": "T030_read_gpio",      "enable": false, "pin_number": 0},
         {"id": "T050_read_adc",       "enable": false, "pin_number": 0, "sample_num": 12, "sample_rate": 3},
-        {"id": "T0xxTRDN",            "enable": true }
       ]
     }
   ]

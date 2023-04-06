@@ -50,19 +50,6 @@ class teensy400xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def T0xxTRDN(self):
-        ctx = self.item_start()  # always first line of test
-
-        answer = self.teensy.reset()
-        success = answer["success"]
-
-        if not success:
-            self.logger.error("failed to reset teensy")
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
-
-        self.item_end()  # always last line of test
-
     def T010_led(self):
         """ In this test the user confirms if the LED under test is ON or OFF
         (this is also an example of one test item being run multiple times
@@ -79,6 +66,7 @@ class teensy400xx(TestItem):
         self.log_bullet("Setting LED {}".format(set))
 
         answer = self.teensy.led(set)
+        self.logger.info(answer)
         success = answer["success"]
         result = answer["result"]["state"]
 
@@ -133,6 +121,7 @@ class teensy400xx(TestItem):
         self.log_bullet("Initializing GPIO {} as {}".format(pin_number, mode))
 
         answer = self.teensy.init_gpio(pin_number, mode)
+        self.logger.info(answer)
         success = answer["success"]
         result = answer["result"]["mode"]
 
@@ -166,6 +155,7 @@ class teensy400xx(TestItem):
         self.log_bullet("Reading GPIO {} ".format(pin_number))
 
         answer = self.teensy.read_gpio(pin_number)
+        self.logger.info(answer)
         success = answer["success"]
         result = answer["result"]["state"]
 
@@ -207,6 +197,7 @@ class teensy400xx(TestItem):
         self.log_bullet("Writing GPIO {} as {}".format(pin_number, state))
 
         answer = self.teensy.write_gpio(pin_number, state)
+        self.logger.info(answer)
         success = answer["success"]
         result = answer["result"]["state"]
 
@@ -256,6 +247,7 @@ class teensy400xx(TestItem):
         self.log_bullet("Reading Analog Pin {}, {} times with an interval of {} ms".format(pin_number, sample_num, sample_rate))
 
         answer = self.teensy.read_adc(pin_number, sample_num, sample_rate)
+        self.logger.info(answer)
         success = answer["success"]
         result = answer["result"]["reading"]
 

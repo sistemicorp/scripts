@@ -1,10 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2019
+Sistemi Corporation, copyright, all rights reserved, 2019-2023
 Martin Guthrie
 
-bump master version
 """
 import os
 import sys
@@ -18,8 +17,10 @@ import time
 from public.prism.api import ResultAPI
 from public.prism.ResultBaseKeysV1 import ResultBaseKeysV1
 from core.shared_state import SharedState
+from prism_result_scan import scan_result_file
 
 logger = None
+
 
 class attrdict(dict):
     """
@@ -106,12 +107,13 @@ class ChanCon(object):
         self.record.record_record_meta_init()
 
     def item_start(self):
-        d = {"item": self._item,             # item dict from the script, ex {"id": "TST000", "enable": true,  "args": {"min": 0, "max": 2}}
-             "options": self._options,       # options dict from the script, ex { "fail_fast": false }
+        d = {"item": self._item,
+             # item dict from the script, ex {"id": "TST000", "enable": true,  "args": {"min": 0, "max": 2}}
+             "options": self._options,  # options dict from the script, ex { "fail_fast": false }
              "record": self.record,
 
              # TODO: add more stuff as needed
-            }
+             }
         self.record.record_item_create(d["item"]["id"])
         return attrdict(d)
 
@@ -140,6 +142,8 @@ class ChanCon(object):
         self.logger.info("BULLET: {}".format(text))
 
     def run(self):
+        show_pass_fail = None
+
         # process HW drivers
         num_channels = -1
         for hwdrv in self.script["config"]["drivers"]:
@@ -165,8 +169,10 @@ class ChanCon(object):
                             self.logger.info("player: {}".format(play))
                             if not play: time.sleep(1)
 
-                    show_pass_fail = drivers[0].get("show_pass_fail", None)
-                    if show_pass_fail: show_pass_fail(False, False, False)
+                    if show_pass_fail is None:
+                        show_pass_fail = drivers[0].get("show_pass_fail", None)
+                        if show_pass_fail:
+                            show_pass_fail(False, False, False)
 
             self.logger.info("{} - number channels {}".format(hwdrv_sname, _num_channels))
             if _num_channels == 0:
@@ -177,7 +183,8 @@ class ChanCon(object):
             elif num_channels == -1:
                 num_channels = _num_channels
             elif num_channels != _num_channels:
-                self.logger.error("{} - number channels {} does not match previous HWDRV".format(hwdriver, _num_channels))
+                self.logger.error(
+                    "{} - number channels {} does not match previous HWDRV".format(hwdriver, _num_channels))
                 raise ValueError('Mismatch number of channels between HW Drivers')
 
         self.num_channels = num_channels
@@ -185,6 +192,8 @@ class ChanCon(object):
         if self.num_channels < 1:
             self.logger.error("Invalid number of channels, must be >0")
             raise ValueError('Invalid number of channels')
+
+        fail_fast = self.script["config"].get("fail_fast", True)
 
         for test in self.script["tests"]:
 
@@ -210,15 +219,43 @@ class ChanCon(object):
                     func = getattr(test_klass, item["id"])
                     func()
 
+                    if fail_fast and self.record.record_meta_get_result() != ResultAPI.RECORD_RESULT_PASS:
+                        break
+
+            # run teardown if not done so already
+            if item != test["items"][-1]:
+                item = test["items"][-1]
+                logger.info("ITEM: {}".format(item))
+                if item.get("enable", True):
+                    self._item = item
+                    if not getattr(test_klass, item["id"], False):
+                        msg = "method {} is not in module {}".format(item["id"], test_klass)
+                        logger.error(msg)
+                        raise ValueError(msg)
+
+                    func = getattr(test_klass, item["id"])
+                    func()
+
+                else:
+                    logger.error("teardown (last item) script should not be disabled")
+
+            if fail_fast and self.record.record_meta_get_result() != ResultAPI.RECORD_RESULT_PASS:
+                break
+
         self.record.record_record_meta_fini()
-        self.record.record_publish()
+        result_file = self.record.record_publish()
 
         if show_pass_fail is not None:
             p = f = o = False
-            if self.record.record_meta_get_result() == ResultAPI.RECORD_RESULT_PASS: p = True
-            elif self.record.record_meta_get_result() == ResultAPI.RECORD_RESULT_FAIL: f = True
-            else: o = True
+            if self.record.record_meta_get_result() == ResultAPI.RECORD_RESULT_PASS:
+                p = True
+            elif self.record.record_meta_get_result() == ResultAPI.RECORD_RESULT_FAIL:
+                f = True
+            else:
+                o = True
             show_pass_fail(p, f, o)
+
+        return result_file
 
 
 def setup_logging(log_file_name_prefix="log", level=logging.INFO, path="./log"):
@@ -273,7 +310,7 @@ def parse_args():
 Usage examples:
     python3 prism_dev.py --script ./public/prism/scripts/example/prod_v0/prod_0.scr 
     python3 prism_dev.py --script ./public/prism/scripts/example/pybrd_v0/pybrd_0.scr 
-    
+
 Sistemi Corporation, copyright, all rights reserved, 2019
     """
     parser = argparse.ArgumentParser(description='prism_dev',
@@ -285,6 +322,11 @@ Sistemi Corporation, copyright, all rights reserved, 2019
                         action="store",
                         required=True,
                         help="Path to script file to run")
+
+    parser.add_argument("--result-scan",
+                        dest="result_scan",
+                        action="store_true",
+                        help="Scan result file for correctness")
 
     args = parser.parse_args()
     args_dict = vars(args)
@@ -338,7 +380,7 @@ def main():
     shared_state = SharedState()
 
     con = ChanCon(0, script, shared_state, args["script"])
-    con.run()
+    result_file = con.run()
 
     # close any drivers
     drivers = shared_state.get_drivers(0)
@@ -347,6 +389,10 @@ def main():
             d["obj"]["close"]()
 
     # TODO: publish shutdown
+
+    if args["result_scan"]:
+        logger.info(f"Running result record scan on {result_file}")
+        scan_result_file(result_file)
 
     return 0
 

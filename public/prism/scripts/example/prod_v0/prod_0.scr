@@ -10,7 +10,7 @@
   },
   "config": {
     // fail_fast: if true (default), testing will stop on first failed test
-    "fail_fast": false,
+    "fail_fast": true,
     // channel_hw_driver: list of code to initialize the test environment, must be specified
     "drivers": ["public.prism.drivers.fake.hwdrv_fake"]
   },
@@ -20,7 +20,7 @@
       "module": "public.prism.scripts.example.prod_v0.tst00xx",
       "options": {
         // fail_fast: if true (default), testing will stop on first failed test, overrides config section
-        "fail_fast": false
+        "fail_fast": true
         // timeout: defaults to 10 seconds, but can be overridden here, or in a test item (below)
         //"timeout": 20
         //
@@ -30,25 +30,28 @@
       },
       "items": [
         {"id": "TST0xxSETUP",           "enable": true },
-        {"id": "TST000_Meas",           "enable": true, "args": {"min": 0, "max": 10},
+        {"id": "TST000_Meas",           "enable": true, "args": {"min": 0, "max": 10}},
+        {"id": "TST001_Meas",           "enable": true, "args": {"min": 0, "max": 10},
                                         // fail: this is a list of 'fid' and 'msg' that get displayed and
                                         //       recorded with the test record.  The python code for this
                                         //       test item assigns which item in the list best represents
                                         //       the failure mode.  This information is to assist repair.
                                         "fail": [ {"fid": "TST000-0", "msg": "Component apple R1"},
                                                   {"fid": "TST000-1", "msg": "Component banana R1"}] },
-        {"id": "TST001_Skip",           "enable": false },
-        {"id": "TST002_Buttons",        "enable": true, "timeout": 10 },
-        {"id": "TST003_KeyAdd",         "enable": true },
-        {"id": "TST004_KeyGet",         "enable": true },
-        {"id": "TST005_RsrcLock",       "enable": true, "args": {"holdTime": 1}, "timeout": 60 },
-        {"id": "TST006_HWDriver",       "enable": true },
+        {"id": "TST002_Skip",           "enable": false },
+        {"id": "TST003_Buttons",        "enable": true, "timeout": 10 },
+        {"id": "TST004_KeyAdd",         "enable": true },
+        {"id": "TST005_KeyGet",         "enable": true },
+        {"id": "TST006_RsrcLock",       "enable": true, "args": {"holdTime": 1}, "timeout": 60 },
+        {"id": "TST007_HWDriver",       "enable": true },
         {"id": "TST008_TextInput",      "enable": true, "timeout": 10 },
-        {"id": "TST007_LogPctProgress", "enable": true, "timeout": 15 },
-        {"id": "TST009_BlobUnknown",    "enable": true },
-        {"id": "TST010_BlobXY",         "enable": true },
-        {"id": "TST011_JSONB",          "enable": true },
-        {"id": "TST0xxTRDN",            "enable": true }
+        {"id": "TST009_LogPctProgress", "enable": true, "timeout": 15 },
+        {"id": "TST010_BlobUnknown",    "enable": true },
+        {"id": "TST011_BlobXY",         "enable": true },
+        {"id": "TST012_JSONB",          "enable": true },
+
+        // always called, no matter if test fails above
+        {"id": "TST0xxTEARDOWN",        "enable": true },
       ]
     }
   ]

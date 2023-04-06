@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2021
+Sistemi Corporation, copyright, all rights reserved, 2021-2023
 Martin Guthrie
 
 """
@@ -14,7 +14,7 @@ import time
 import glob
 import pyudev
 
-from public.prism.drivers.iba01.list_serial import serial_ports
+from public.prism.drivers.common.list_serial import serial_ports
 from public.prism.drivers.teensy4.Teensy4 import Teensy4
 
 DRIVER_TYPE = "TEENSY4_PROG"
@@ -69,11 +69,6 @@ class teensy4_P00xx(TestItem):
         msg = "teensy4: {} {}, chan {}".format(driver, id, self.chan)
         self.log_bullet(msg)
         self.logger.info(msg)
-
-        self.item_end()  # always last line of test
-
-    def P0xxTRDN(self):
-        ctx = self.item_start()  # always first line of test
 
         self.item_end()  # always last line of test
 
@@ -360,10 +355,11 @@ class teensy4_P00xx(TestItem):
             _node = str(device.device_node)
             if "ttyACM" in _node:
                 device_path = device.device_path
+                self.logger.info(f"{_node}, {device_path}")
                 # compare strings to find longest matching
                 _idx = 0
                 while _idx < len(self._teensy_usb_path):
-                    if device_path[_idx] != self._teensy_usb_path[_idx]:
+                    if device_path[_idx] == self._teensy_usb_path[_idx]:
                         if _idx > match_len:
                             port = _node
                             match_len = _idx
