@@ -48,12 +48,16 @@ class tst00xx(TestItem):
         #    - ctx.record.measurement(name, value, unit, min=None, max=None)
         #      - name: name of the measurement, should be unique per test item
         #      - unit: from ResultAPI.UNIT_*
-        #    - result extensions
-        #      - the result base class can be extended, as it has in this example
-        #      - class ResultBaseKeysV1(ResultBaseClass)
-        #      - two functions were added, and used in this example,
-        #        - add_key(key, value, slot=None)
-        #        - get_keys()
+        #
+        #    - ctx.record.add_key("name", value, slot=0)
+        #      - slot is 0-4, Lente shows slot 0 in summary results
+        #      - keys become (additional) indexes in the Lente database
+        #      - key assignment to slot number should be standardized within organization
+        #    - ctx.record.get_keys()
+        #      - get all previously stored keys
+        #
+        #    - ctx.record.fail_msg(msg)
+        #      - add a fail message to the record
         #
         # self.chan  # this channel (0,1,2,3)
         #
