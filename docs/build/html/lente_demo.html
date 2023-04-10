@@ -88,7 +88,7 @@ to worry about python packages, versions of modules, etc</p>
 <ul>
 <li><p>The system was developed on both Windows 10 and Ubuntu 18.04</p></li>
 <li><p>Most testing occurs on Ubuntu given its the expected OS used in the factory because of cost (its free)</p></li>
-<li><p>All these instructions are for Ubuntu 18.04</p></li>
+<li><p>All these instructions are for Ubuntu 22.04</p></li>
 </ul>
 </li>
 <li><p>Outside Software Requirements</p>
@@ -101,30 +101,18 @@ to worry about python packages, versions of modules, etc</p>
 </section>
 <section id="postgres">
 <h2><a class="toc-backref" href="#id4">Postgres</a><a class="headerlink" href="#postgres" title="Permalink to this headline">¶</a></h2>
-<p>Lente needs a postgresql backend to be running in order to work, which will be installed first.</p>
-<ul class="simple">
-<li><p>postgresql server</p>
-<ul>
-<li><p>make a new directory in your home directory, change into it, create a data directory, and run Docker
-postgres command (this will pull postgres container)</p></li>
-</ul>
-</li>
-</ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>  mkdir ~/postgres
-  cd ~/postgres
-  mkdir datadir
-  docker network create lentenet
-  docker run --net lentenet --name lentedb -v $(pwd)/datadir:/var/lib/postgresql/data -e POSTGRES_PASSWORD=qwerty -d postgres:11
+<p>Lente needs a postgresql backend to be running in order to work, which will be installed first.
+Instructions for setting up Postgres on Ubuntu are given as an example.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo apt install postgresql postgresql-contrib
+$ sudo systemctl start postgresql.service
+$ sudo -u postgres psql
+psql (14.7 (Ubuntu 14.7-0ubuntu0.22.04.1))
+Type &quot;help&quot; for help.
 
-* add `--restart=always` to the docker run command to have this container run every time the computer boots up;
-  only do this if you plan on using/evaluating Sistemi Lente/Prism for an extended time, otherwise remember to issue the above docker run
-  command
-</pre></div>
-</div>
-<ul class="simple">
-<li><p>now create the required databases - you only need to do this <strong>ONCE</strong></p></li>
-</ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">exec</span> <span class="o">-</span><span class="n">it</span> <span class="n">lentedb</span> <span class="n">createdb</span> <span class="o">-</span><span class="n">U</span> <span class="n">postgres</span> <span class="n">resultbasekeysv1</span>
+postgres=# ALTER USER postgres PASSWORD &#39;qwerty&#39;;
+ALTER ROLE
+postgres=# \q
+$ sudo -u postgres createdb resultbasekeysv1
 </pre></div>
 </div>
 </section>
@@ -139,9 +127,14 @@ postgres command (this will pull postgres container)</p></li>
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>Run <strong>Lente</strong> container - it doesn’t matter which directory you are in</p></li>
+<li><p>Run <strong>Lente</strong> container</p>
+<ul>
+<li><p>it doesn’t matter which directory you are in.</p></li>
+<li><p>it is assumed Postgres is running on the same computer per above install</p></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">d</span> <span class="o">--</span><span class="n">net</span> <span class="n">lentenet</span> <span class="o">-</span><span class="n">p</span> <span class="mi">6595</span><span class="p">:</span><span class="mi">6595</span> <span class="n">sistemicorp</span><span class="o">/</span><span class="n">lente</span>
+</li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">d</span> <span class="o">-</span><span class="n">p</span> <span class="mi">6595</span><span class="p">:</span><span class="mi">6595</span> <span class="n">sistemicorp</span><span class="o">/</span><span class="n">lente</span>
 </pre></div>
 </div>
 <ul>
@@ -151,9 +144,8 @@ postgres command (this will pull postgres container)</p></li>
 </div></blockquote>
 <ul class="simple">
 <li><p>Note on slower computers, it may take 5-15 seconds for the Lente window to display</p></li>
-<li><p>Lente login user/password is admin/admin</p></li>
-<li><p>Other users passwords are <cite>qwerty</cite></p></li>
-<li><p>To <strong>update</strong> lente use <cite>docker pull sistemicorp/lente</cite> before running it.</p></li>
+<li><p>Lente login user/password is <cite>admin&#64;here.com</cite>/<cite>password</cite></p></li>
+<li><p>Other users passwords are <cite>password</cite></p></li>
 </ul>
 </li>
 </ul>
@@ -209,6 +201,7 @@ local file system.  This requires a more advanced <cite>docker run</cite> comman
 </div></blockquote>
 </li>
 </ul>
+<p>The file <cite>lente.json</cite> can be edited to alter the Postgres location and password.</p>
 <dl class="footnote brackets">
 <dt class="label" id="id2"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
 <dd><p>This is covered in section TBD</p>

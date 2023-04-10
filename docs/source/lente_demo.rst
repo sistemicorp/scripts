@@ -32,7 +32,7 @@ Requirements
 
   * The system was developed on both Windows 10 and Ubuntu 18.04
   * Most testing occurs on Ubuntu given its the expected OS used in the factory because of cost (its free)
-  * All these instructions are for Ubuntu 18.04
+  * All these instructions are for Ubuntu 22.04
 
 * Outside Software Requirements
 
@@ -44,29 +44,22 @@ Postgres
 ********
 
 Lente needs a postgresql backend to be running in order to work, which will be installed first.
-
-* postgresql server
-
-  * make a new directory in your home directory, change into it, create a data directory, and run Docker
-    postgres command (this will pull postgres container)
+Instructions for setting up Postgres on Ubuntu are given as an example.
 
 ::
 
-    mkdir ~/postgres
-    cd ~/postgres
-    mkdir datadir
-    docker network create lentenet
-    docker run --net lentenet --name lentedb -v $(pwd)/datadir:/var/lib/postgresql/data -e POSTGRES_PASSWORD=qwerty -d postgres:11
+    $ sudo apt install postgresql postgresql-contrib
+    $ sudo systemctl start postgresql.service
+    $ sudo -u postgres psql
+    psql (14.7 (Ubuntu 14.7-0ubuntu0.22.04.1))
+    Type "help" for help.
 
-  * add `--restart=always` to the docker run command to have this container run every time the computer boots up;
-    only do this if you plan on using/evaluating Sistemi Lente/Prism for an extended time, otherwise remember to issue the above docker run
-    command
+    postgres=# ALTER USER postgres PASSWORD 'qwerty';
+    ALTER ROLE
+    postgres=# \q
+    $ sudo -u postgres createdb resultbasekeysv1
 
-* now create the required databases - you only need to do this **ONCE**
 
-::
-
-    docker exec -it lentedb createdb -U postgres resultbasekeysv1
 
 
 Basic
@@ -82,11 +75,14 @@ Run Basic
     docker pull sistemicorp/lente
 
 
-* Run **Lente** container - it doesn't matter which directory you are in
+* Run **Lente** container
+
+  * it doesn't matter which directory you are in.
+  * it is assumed Postgres is running on the same computer per above install
 
 ::
 
-    docker run -d --net lentenet -p 6595:6595 sistemicorp/lente
+    docker run -d -p 6595:6595 sistemicorp/lente
 
 
 * Open Google Chrome to
@@ -94,9 +90,8 @@ Run Basic
            http://127.0.0.1:6595
 
   * Note on slower computers, it may take 5-15 seconds for the Lente window to display
-  * Lente login user/password is admin/admin
-  * Other users passwords are `qwerty`
-  * To **update** lente use `docker pull sistemicorp/lente` before running it.
+  * Lente login user/password is `admin@here.com`/`password`
+  * Other users passwords are `password`
 
 
 Full
@@ -146,6 +141,9 @@ Run Full
 * Open Google Chrome to
 
         http://127.0.0.1:6595
+
+
+The file `lente.json` can be edited to alter the Postgres location and password.
 
 
 .. [1] This is covered in section TBD
