@@ -74,6 +74,7 @@ start () {
     docker rm prism 2> /dev/null
     if [[ $flag_restart == "always" ]]; then
         docker run -d \
+            --network=host \
             --restart=${flag_restart} \
             -e LENTEIP=${LENTEIP} \
             --hostname=${flag_hostname} \
@@ -86,6 +87,7 @@ start () {
             sistemicorp/prism
     elif [[ $flag_restart == "no" ]]; then
         docker run -d \
+            --network=host \
             -e LENTEIP=${LENTEIP} \
             --hostname=${flag_hostname} \
             -p 6590:6590 \

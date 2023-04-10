@@ -36,12 +36,11 @@ start () {
         echo "--restart= must be always or no"
         exit 1
     fi
-    docker network create lentenet 2> /dev/null
     docker stop lente 2> /dev/null
     docker rm lente 2> /dev/null
     if [[ $flag_restart == "always" ]]; then
         docker run -d \
-            --net lentenet \
+            --network=host \
             --hostname=${HOSTNAME} \
             --restart=${flag_restart} \
             -p 6595:6595 \
@@ -50,7 +49,7 @@ start () {
             sistemicorp/lente
     elif [[ $flag_restart == "no" ]]; then
         docker run -d \
-            --net lentenet \
+            --network=host \
             --hostname=${HOSTNAME} \
             -p 6595:6595 \
             -v $(pwd):/app/public \

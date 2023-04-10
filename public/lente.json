@@ -17,10 +17,8 @@
       // !! This pw must match your postgres deployment too
       "pw": "qwerty",
 
-      // ip address of the postgres database, if using postg.sh
-      // this should be set to "lentedb", the name of the docker postgres
-      // if using postgres in the cloud, this should be IP address (ex "32.123.43.100")
-      "ip": "lentedb"
+      // ip address of the postgres database, use `127.0.0.1` if locahost
+      "ip": "127.0.0.1"
     }
   }
 }
