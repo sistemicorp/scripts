@@ -78,7 +78,6 @@ start () {
             --restart=${flag_restart} \
             -e LENTEIP=${LENTEIP} \
             --hostname=${flag_hostname} \
-            -p 6590:6590 \
             -v $(pwd):/app/public \
             -v /dev:/dev \
             --device=/dev \
@@ -90,7 +89,6 @@ start () {
             --network=host \
             -e LENTEIP=${LENTEIP} \
             --hostname=${flag_hostname} \
-            -p 6590:6590 \
             -v $(pwd):/app/public \
             -v /dev:/dev \
             --device=/dev \

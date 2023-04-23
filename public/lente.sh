@@ -43,7 +43,6 @@ start () {
             --network=host \
             --hostname=${HOSTNAME} \
             --restart=${flag_restart} \
-            -p 6595:6595 \
             -v $(pwd):/app/public \
             --name lente \
             sistemicorp/lente
@@ -51,7 +50,6 @@ start () {
         docker run -d \
             --network=host \
             --hostname=${HOSTNAME} \
-            -p 6595:6595 \
             -v $(pwd):/app/public \
             --name lente \
             --rm \
