@@ -60,7 +60,7 @@ class ResultBaseClass(object):
 
     def record_item_create(self, name):
         self._item = {
-            "name": name,
+            "name": name.removeprefix("public.prism.scripts."),
             "result": ResultAPI.RECORD_RESULT_UNKNOWN,
             "timestamp_start": round(time.time(), self.EPOCH_DECIMAL_PLACES),
             "timestamp_end": 0,
