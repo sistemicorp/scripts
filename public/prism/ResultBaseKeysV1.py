@@ -206,7 +206,7 @@ class ResultBaseKeysV1(ResultBaseClass):
         elif isinstance(value, str):
             value = value.rstrip()
 
-        self.logger.info("{}: {} <= {} <= {} {} ??".format(name, min, value, max, unit))
+        self.logger.debug("{}: {} <= {} <= {} {} ??".format(name, min, value, max, unit))
 
         _pass = ResultAPI.RECORD_RESULT_UNKNOWN
 
@@ -216,9 +216,9 @@ class ResultBaseKeysV1(ResultBaseClass):
             if force_fail: _pass = ResultAPI.RECORD_RESULT_FAIL
             elif min <= value <= max: _pass = ResultAPI.RECORD_RESULT_PASS
             else: _pass = ResultAPI.RECORD_RESULT_FAIL
-            d["min"] = "{:32.16}".format(str(min)).rstrip()
-            d["max"] = "{:32.16}".format(str(max)).rstrip()
-            d["value"] = "{:64.16}".format(str(value)).rstrip()
+            d["min"] = "{:.9g}".format(min)
+            d["max"] = "{:.9g}".format(max)
+            d["value"] = "{:.9g}".format(value)
             _bullet = "{}: {} <= {} <= {} {} :: {}".format(name, d["min"], d["value"], d["max"], unit, _pass)
             self.logger.info(_bullet)
 
@@ -226,9 +226,9 @@ class ResultBaseKeysV1(ResultBaseClass):
             if force_fail: _pass = ResultAPI.RECORD_RESULT_FAIL
             elif min <= value <= max: _pass = ResultAPI.RECORD_RESULT_PASS
             else: _pass = ResultAPI.RECORD_RESULT_FAIL
-            d["min"] = "{}".format(str(min)).rstrip()
-            d["max"] = "{}".format(str(max)).rstrip()
-            d["value"] = "{}".format(str(value)).rstrip()
+            d["min"] = "{}".format(str(min))
+            d["max"] = "{}".format(str(max))
+            d["value"] = "{}".format(str(value))
             _bullet = "{}: {} <= {} <= {} {} :: {}".format(name, d["min"], d["value"], d["max"], unit, _pass)
             self.logger.info(_bullet)
 
@@ -255,9 +255,9 @@ class ResultBaseKeysV1(ResultBaseClass):
             elif isinstance(value, (int, )):
                 d["value"] = "{}".format(int(value))
             elif isinstance(value, (float, )):
-                d["value"] = "{:64.16}".format(str(float(value))).rstrip()
+                d["value"] = "{:.9g}".format(value)
             elif isinstance(value, str):
-                d["value"] = "{:64}".format(value).rstrip()
+                d["value"] = "{}".format(value).rstrip()
             _bullet = "{}: {} {} :: {}".format(name, d["value"], unit, _pass)
             self.logger.info(_bullet)
 
