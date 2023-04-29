@@ -1,0 +1,29 @@
+// Example: For BLE
+{
+  "info": {
+    "product": "widget_5",
+    "bom": "B00012-001",
+    "lot": "95035",
+    "location": "canada/ontario/milton"
+  },
+  "config": {
+    "fail_fast": true,
+    // channel_hw_driver: list of code to initialize the test environment, must be specified
+    "drivers": ["public.prism.drivers.fake.hwdrv_fake",
+                "public.prism.drivers.ble_listener.hwdrv_blelistener" ]
+  },
+  "tests": [
+    {
+      // module is path to python code supporting this test
+      "module": "public.prism.scripts.example.prod_v0.tstBLExx",
+      "options": { "fail_fast": true },
+      "items": [
+        {"id": "TST0xxSETUP",           "enable": true },
+        {"id": "TST000_ble",            "enable": true, "rssi": {"min": -90, "max": 0}},
+
+        // always called, no matter if test fails above
+        {"id": "TST0xxTEARDOWN",        "enable": true },
+      ]
+    }
+  ]
+}
