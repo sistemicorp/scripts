@@ -73,9 +73,9 @@ class BLEListener(object):
     def _device_found(self, device: BLEDevice, advertisement_data: AdvertisementData):
         """ Decode iBeacon.
         """
-        self.logger.info(f"manu  : {advertisement_data.manufacturer_data}")
-        self.logger.info(f" data : {advertisement_data.service_data}")
-        self.logger.info(f" uids : {advertisement_data.service_uuids}")
+        self.logger.debug(f"manu  : {advertisement_data.manufacturer_data}")
+        self.logger.debug(f" data : {advertisement_data.service_data}")
+        self.logger.debug(f" uids : {advertisement_data.service_uuids}")
 
         if not advertisement_data.service_uuids: return
 
