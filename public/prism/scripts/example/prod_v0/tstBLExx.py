@@ -74,7 +74,7 @@ class tstBLExx(TestItem):
         polling, found = 20, False
         while polling and not found:
             polling -= 1  # limit polling
-            self.logger.info(f"polling for {uid_to_find}, attempts left {polling}...")
+            self.logger.debug(f"polling for {uid_to_find}, attempts left {polling}...")
 
             success, ad = self.hw_ble.is_uid_present(uid_to_find)
             if not success:
@@ -90,9 +90,11 @@ class tstBLExx(TestItem):
             time.sleep(1.0)
 
         if not found:
+            self.logger.info("BLE device not found")
             self.item_end(ResultAPI.RECORD_RESULT_FAIL)  # always last line of test
             return
 
+        self.logger.info(ad)
         success, _result, _bullet = ctx.record.measurement(None,
                                                            ad["rssi"],
                                                            ResultAPI.UNIT_DB,
