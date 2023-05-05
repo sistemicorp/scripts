@@ -247,7 +247,7 @@ class ResultBaseKeysV1(ResultBaseClass):
             _pass = ResultAPI.RECORD_RESULT_PASS
             if force_fail: _pass = ResultAPI.RECORD_RESULT_FAIL
             elif not value: _pass = ResultAPI.RECORD_RESULT_FAIL
-            d["value"] = value
+            d["value"] = f"{value}"
             _bullet = "{}: {} {} :: {}".format(name, d["value"], unit, _pass)
             self.logger.info(_bullet)
 
