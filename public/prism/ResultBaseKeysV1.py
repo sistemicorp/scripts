@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2019-2022
+Sistemi Corporation, copyright, all rights reserved, 2019-2023
 Martin Guthrie
 
 """
@@ -134,6 +134,11 @@ class ResultBaseKeysV1(ResultBaseClass):
                 self.logger.error(msg)
                 return False, msg
 
+        if len(lname) > 128:
+            msg = f"blob name {lname} exceeds maximum len of 128"
+            self.logger.error(msg)
+            return False, msg
+
         d = {"name": lname}
         d.update(blob)
 
@@ -178,27 +183,32 @@ class ResultBaseKeysV1(ResultBaseClass):
             if m["name"] == lname:
                 msg = "Duplicate measurement name {}".format(m["name"])
                 self.logger.error(msg)
-                return False, ResultAPI.RECORD_RESULT_UNKNOWN, msg
+                return False, ResultAPI.RECORD_RESULT_INTERNAL_ERROR, msg
+
+        if len(lname) > 128:
+            msg = f"measurement name {lname} exceeds maximum len of 128"
+            self.logger.error(msg)
+            return False, ResultAPI.RECORD_RESULT_INTERNAL_ERROR, msg
 
         if min is not None and not isinstance(min, (int, float)):
             msg = "min must be of type int, float, got {}".format(type(min))
             self.logger.error(msg)
-            return False, ResultAPI.RECORD_RESULT_UNKNOWN, msg
+            return False, ResultAPI.RECORD_RESULT_INTERNAL_ERROR, msg
 
         if max is not None and not isinstance(max, (int, float)):
             msg = "max must be of type int, float, got {}".format(type(max))
             self.logger.error(msg)
-            return False, ResultAPI.RECORD_RESULT_UNKNOWN, msg
+            return False, ResultAPI.RECORD_RESULT_INTERNAL_ERROR, msg
 
         if unit not in ResultAPI.UNIT_ALL:
             msg = "Unknown unit {}, must be one of {}".format(unit, ResultAPI.UNIT_ALL)
             self.logger.error(msg)
-            return False, ResultAPI.RECORD_RESULT_UNKNOWN, msg
+            return False, ResultAPI.RECORD_RESULT_INTERNAL_ERROR, msg
 
         if not isinstance(value, (int, float, bool, str)):
             msg = "Unsupported value type {}".format(type(value))
             self.logger.error(msg)
-            return False, ResultAPI.RECORD_RESULT_UNKNOWN, msg
+            return False, ResultAPI.RECORD_RESULT_INTERNAL_ERROR, msg
 
         if isinstance(value, float):
             if min is not None: min = float(min)
@@ -270,6 +280,16 @@ class ResultBaseKeysV1(ResultBaseClass):
             if not (type(min) == type(value) == type(max)):
                 self.logger.error("Types are not all the same.")
             return False, _pass, _bullet
+
+        if len(d["value"]) > 128:
+            msg = f"value {d['value']} length exceeds 128"
+            self.logger.error(msg)
+            return False, ResultAPI.RECORD_RESULT_INTERNAL_ERROR, "INTERNAL ERROR"
+
+        if len(d["unit"]) > 16:
+            msg = f"unit {d['unit']} length exceeds 16"
+            self.logger.error(msg)
+            return False, ResultAPI.RECORD_RESULT_INTERNAL_ERROR, "INTERNAL ERROR"
 
         d["result"] = _pass
         self._item["measurements"].append(d)

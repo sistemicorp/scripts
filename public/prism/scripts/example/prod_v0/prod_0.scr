@@ -1,12 +1,13 @@
 // Example: Shows most of all the features of test portal UI (except subs)
 {
   "info": {
-    // info is captured in the result record and can be searched/filtered
+    // info is captured in the result record and can be searched/filtered in dB
     // Cannot add fields here without updating the result record handler and backend database
     "product": "widget_1",
     "bom": "B00012-001",
     "lot": "95035",
     "location": "canada/ontario/milton"
+    // "config": "something"  (optional)
   },
   "config": {
     // fail_fast: if true (default), testing will stop on first failed test

@@ -338,6 +338,30 @@ def script_validated(script):
         logger.error("Script is missing 'info' section")
         return False
 
+    INFO_PRODUCT_LEN = 32
+    INFO_BOM_LEN = 32
+    INFO_LOT_LEN = 16
+    INFO_LOCATION_LEN = 128
+    INFO_CONFIG_LEN = 16
+
+    info = script["info"]
+    items = [("product", INFO_PRODUCT_LEN),
+             ("bom", INFO_BOM_LEN),
+             ("lot", INFO_LOT_LEN),
+             ("location", INFO_LOCATION_LEN)]
+    for i in items:
+        if not info.get(i[0], False):
+            logger.error(f"Script 'info' section missing {i[0]}")
+            return False
+        if len(info[i[0]]) > i[1]:
+            logger.error(f"Script 'info' section {i[0]} exceeds max length {i[1]}")
+            return False
+
+    if info.get("config", False):
+        if len(info["config"]) > INFO_CONFIG_LEN:
+            logger.error(f"Script 'info' section config exceeds max length {INFO_CONFIG_LEN}")
+            return False
+
     if not script.get("config", False):
         logger.error("Script is missing 'config' section")
         return False
