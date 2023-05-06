@@ -3,14 +3,22 @@
 {
   "subs": {
     // Each item here is described by,
-    // "key":
+    // "<subs_name>":
     //   "title": "<title>",
-    //   "type" : "<str|num>", "widget": "<textinput|select>",
-    //   "regex": <"regex"|null|omit>, "default": <default>
+    //   "type" : "<str|num>",
+    //   "widget": "<textinput|select>",
+    //   "regex": <"regex">,  // only for widget == textinput,
+    //                           when regex is satisfied widget turns green
+    //   "choices": [<choice1>, <choice2>, ...],  // only for widget == select
+    //   "default": <default>,
+    //   "subs": // inner dependant subs
+    //           { <key1> : { "subs_name1": {"val": <>, "type": "<str|num>" }, ...},
+    //             <key2> : { "subs_name1": {"val": <>, "type": "<str|num>" }, ...}
+    //           }
+    // }
     //
     // Rules:
     // 1. key must not have any spaces or special characters
-    // 2. regex can be omitted if not applicable
     //
     "Lot": {
       "title": "Lot (format #####)",
@@ -19,19 +27,22 @@
     "Loc": {
       "title": "Location",
       "type" : "str", "widget": "select", "choices": ["canada/ontario/milton",
-                                                      "us/newyork/bufalo"]
+                                                      "us/newyork/buffalo"],
+      // inner dependant substitutions based on user input
+      "subs" : {"canada/ontario/milton": { "TST000Min": { "val": 0.1, "type": "num" }},
+                "us/newyork/buffalo":    { "TST000Min": { "val": 0.2, "type": "num" }}
+      }
     },
     "TST000Max": {
       "title": "TST000 Max Attenuation (db)",
-      "type" : "num", "widget": "select", "choices": [9, 10, 11]
-    }
+      "type" : "num", "widget": "select", "choices": [9.0, 10.0, 11.0]
+    },
   },
   "info": {
     "product": "widget_1",
     "bom": "B00012-002",
-    // list fields present user choice or fill in
-    "lot": "%%Lot",
-    "location": "%%Loc"
+    "lot": "%%Lot",         // GUI substitution
+    "location": "%%Loc"     // GUI substitution
   },
   "config": {
     "fail_fast": false,
@@ -45,12 +56,8 @@
         // add more key/value as required
       },
       "items": [
-        {"id": "TST0xxSETUP",      "enable": true },
-        {"id": "TST001_Meas",      "enable": true, "args": {"min": 0, "max": "%%TST000Max"},
-                                   "fail": [
-                                     {"fid": "TST000-0", "msg": "Component apple R1"},
-                                     {"fid": "TST000-1", "msg": "Component banana R1"}] },
-        {"id": "TST002_Skip",      "enable": false },
+        {"id": "TST0xxSETUP",        "enable": true },
+        {"id": "TST000_Meas",        "enable": true, "args": {"min": "%%TST000Min", "max": "%%TST000Max"}},
 
         // always called, no matter if test fails above
         {"id": "TST0xxTEARDOWN",        "enable": true },

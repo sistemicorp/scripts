@@ -136,7 +136,7 @@ class tst00xx(TestItem):
     def TST001_Meas(self):
         """ Measurement example, with multiple failure messages
         - example of taking multiple measurements, and sending as a list of results
-        - if any test fails, this test item fails
+        - example of measurement indicating possible failed components
 
         {"id": "TST001_Meas",    "enable": true, "args": {"min": 0, "max": 10},
                                  "fail": [ {"fid": "TST000-0", "msg": "Component apple R1"},
