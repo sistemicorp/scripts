@@ -80,9 +80,9 @@ class Fake(object):
     def adc_read(self):
         """ Example of reading an ADC
 
-        :return: Int
+        :return: float
         """
-        return random.randint(0, 10)
+        return round(float(random.uniform(0, 10)), 3)
 
     # ---------------------------------------------------------------------------------------------
     # Prism Player functions
