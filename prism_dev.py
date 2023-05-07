@@ -372,7 +372,7 @@ def script_validated(script):
 
     if script.get("subs", False):
         logger.error("'subs' are not supported in console development")
-        logger.error("Rename 'subs' to something else, make the substitutions manually, and retry")
+        logger.error("Use prism_subs.py to process script substitutions.")
         return False
 
     # TODO: add more stuff, check imports....
