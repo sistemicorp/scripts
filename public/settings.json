@@ -1,6 +1,5 @@
-// NOTE: ANY changes made to this file requires the manifest to be regenerated.
-// Lente regenerates the manifest from the Station Management menu, and then sync scripts
-// to deploy to Prism stations.
+// This file is NOT propagated by Lente to Prism stations.
+// For each Prism/Lente install, this file should be modified as required.
 {
   // turn on demo mode.  Creates test user accounts, ...
   // remove line, or set to false to disable demo mode
@@ -9,9 +8,9 @@
   // How often to check for Lente connection
   "result_server_retry_timer_sec": 60,
 
-  // set result encryption, <false|password string>
+  // Result JSON file encryption
   // - a valid license file is required to encrypt results
-  // - must be         | 16 bytes long  |
+  // - passwrd must be |<-  16  long  ->|
   "result_encrypt_pw": "mysecretkey01234",
   "result_encrypt": false,
 
@@ -23,15 +22,17 @@
   // If the results were not encrypted by Prism, they won't be ecrypted by Lente
   "results_bkup_encrypted": false,
 
-  // enter IP Address:port for upstream server, example "http://35.123.432.190:6595"
-  // else use null to disable upstream sending
+  // Only used by Lente, can be removed for Prism stations
+  // Enter IP Address:port, example "http://35.123.432.190:6595"
+  // Use null to disable upstream sending.
   "result_server_url": null,
 
+  // Only used by Lente, can be removed for Prism stations
   "postgres": {
     "resultbasekeysv1": {
+      // !! Change "pw" to a real password for a real deployment,
+      // !! This user/pw must match your postgres deployment too,
       "user": "postgres",
-      // !! Change "pw" to a real password for a real deployment
-      // !! This pw must match your postgres deployment too
       "pw": "qwerty",
 
       // ip address of the postgres database, use `127.0.0.1` if locahost
