@@ -30,7 +30,6 @@ The following are further suggestions to improve security,
 
 * encrypt the hard disk by the OS
 * strong admin password
-* enable Sistemi Manifest locking, see :ref:`prism_manifest:Manifest`
 * enable result encryption
 * regularly purge the backups from the disk, (or disable backups, not recommended)
 * use Lente Account Roles for users
@@ -41,6 +40,4 @@ Postgres DB
 
 * Change the default password!
 
-  * See the pstgres starter script `public\postg.sh --help`
-  * Also remember to use the same password in the Lente config json, `public\lente.json`
-  * `public\lente.json` is not deployed to Prism by Lente
+  * Also remember to use the same password in the settings.json, see `here <_deployment.html#_Settings File>`__.

@@ -362,15 +362,16 @@ class tst00xx(TestItem):
 
     def TST010_BlobUnknown(self):
         """ Blob Unknown
+        - create a string of random characters using BLOB_UNKNOWN
 
-        {"id": "TST010_BlobUnknown",    "enable": true },
-
+            {"id": "TST010_BlobUnknown",    "enable": true },
         """
         ctx = self.item_start()   # always first line of test
 
-        # create a string of random characters to represent a blob
         myBlob = ResultAPI.BLOB_UNKNOWN
+        # key 'data' is automatically created, or you may add your own keys
         myBlob["data"] = ''.join(random.choice(string.ascii_lowercase) for x in range(1000))
+        #myBlob["my_other_key"] = json.dumps(dict(k1="data1", k2=1.23))
         success, msg = ctx.record.blob("random", myBlob)
         if not success:
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)

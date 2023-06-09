@@ -1,6 +1,8 @@
 System
 ######
 
+.. _system_arch:
+
 This section describes system related considerations to building your test system with
 Prism and Lente.
 
@@ -141,9 +143,10 @@ To determine what docker images are running,
   * STATUS: how long has the image been running.  If there has been a reset/crash, the running time will be less than
     what you expect.
 
+.. _system-helper-docker:
 
-Prism Docker Script
--------------------
+Helper Docker Scripts
+---------------------
 
 Prism and Lente each have a helper script for simplifying working with Docker.
 
@@ -151,21 +154,15 @@ The scripts can be found here:
 
 ::
 
-
-        ~/git/scripts/public$ ll
-        total 76
-        drwxr-xr-x 5 martin martin  4096 Dec 13 20:48 ./
-        drwxrwxr-x 9 martin martin  4096 Dec 14 16:26 ../
-        -rw-r--r-- 1 martin martin     0 Dec  9 10:30 __init__.py
-        -rw-r--r-- 1 martin martin   903 Dec  9 10:30 lente.json
-        -rwxr-xr-x 1 martin martin  3056 Dec  9 10:30 lente.sh*    <---- Lente helper
-        drwxr-xr-x 2 root   root    4096 Dec 19 09:40 log/
-        -rwxr-xr-x 1 martin martin  2868 Dec  9 10:30 postg.sh*    <---- Postgres helper
-        drwxr-xr-x 4 martin martin  4096 Dec 13 20:48 prism/
-        -rwxr-xr-x 1 martin martin  4405 Dec  9 10:30 prism.sh*    <---- Prism helper
-        drwxr-xr-x 3 root   root    4096 Dec  9 14:03 result/
-        -rw-r--r-- 1 root   root   28672 Dec  9 14:03 users.sqlite
-        -rw-r--r-- 1 martin martin   121 Dec 17 15:46 VERSION
+    ~/git/scripts/public$ ll
+    total 36
+    drwxr-xr-x  4 martin martin 4096 Jun  7 17:21 ./
+    drwxrwxr-x 10 martin martin 4096 Jun  7 16:13 ../
+    -rwxr-xr-x  1 martin martin 2954 Apr 29 13:11 lente.sh*        <---- Lente helper
+    drwxr-xr-x  5 martin martin 4096 Jun  7 16:09 prism/
+    -rwxr-xr-x  1 martin martin 4409 Apr 29 13:11 prism.sh*        <---- Prism helper
+    -rw-r--r--  1 martin martin 1619 Jun  7 17:21 settings.json
+    -rw-r--r--  1 martin martin  121 Jun  7 16:56 VERSION
 
 
 Each script will display a help if run with no arguments,
@@ -192,5 +189,5 @@ Each script will display a help if run with no arguments,
           stop                      Stop Prism
 
 
-How to use these scripts in detail is covered in Deployment section.
+How to use these scripts in detail is covered in :ref:`_deployment:Deployment` section.
 

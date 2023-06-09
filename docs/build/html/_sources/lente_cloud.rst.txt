@@ -85,12 +85,7 @@ Run these commands to install `scripts`,
     git clone https://github.com/sistemicorp/scripts.git
 
 
-Run Sistemi postgres script to start a local Postgres DB,
-
-::
-
-    cd ~/git/scripts/public
-    ./postg.sh --restart=always start
+Follow `these <lente_demo.html#Postgres>`__ instructions to start postgres server.
 
 
 Run the Lente start script

@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Deployment &#8212; Sistemi Lente/Prism Test System 0.2.0 documentation</title>
+    <title>Deployment &#8212; Sistemi Lente/Prism Test System 0.4.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -28,7 +28,7 @@
         <li class="right" >
           <a href="_security.html" title="Security"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.2.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.4.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Deployment</a></li> 
       </ul>
     </div>  
@@ -40,7 +40,76 @@
             
   <section id="deployment">
 <h1>Deployment<a class="headerlink" href="#deployment" title="Permalink to this headline">¶</a></h1>
-<p>Coming soon….</p>
+<p>Prism/Lente allows for various deployment strategies, and some diagrams
+are shown <a class="reference external" href="_system.html#_system_arch">here</a>.</p>
+<p>Prism deployment is straight foward.</p>
+<p>Lente deployment depends on your dashboarding and Prism station management strategy.
+A Lente station can manage Prism stations directly below it, in the connection
+hierarchy.</p>
+<section id="settings-file">
+<span id="index-0"></span><h2>Settings File<a class="headerlink" href="#settings-file" title="Permalink to this headline">¶</a></h2>
+<p>Each Lente/Prism station instillation will have a local settings file, as
+shown below and documented inline,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>// This file is NOT propagated by Lente to Prism stations.
+// For each Prism/Lente install, this file should be modified as required.
+{
+  // turn on demo mode.  Creates test user accounts, ...
+  // remove line, or set to false to disable demo mode
+  &quot;demo&quot;: true,
+
+  // How often to check for Lente connection
+  &quot;result_server_retry_timer_sec&quot;: 60,
+
+  // Result JSON file encryption
+  // - a valid license file is required to encrypt results
+  // - passwrd must be |&lt;-  16  long  -&gt;|
+  &quot;result_encrypt_pw&quot;: &quot;mysecretkey01234&quot;,
+  &quot;result_encrypt&quot;: false,
+
+  // By default results that are sent to Lente are backed up
+  // locally, to disable this backup uncomment
+  //&quot;result_bkup_dir&quot;: null,
+
+  // Result JSON files be backed up as encrypted, &lt;true|false&gt;,
+  // If the results were not encrypted by Prism, they won&#39;t be ecrypted by Lente
+  &quot;results_bkup_encrypted&quot;: false,
+
+  // Use https secure transport, requires public/cert/key.pem files
+  // For Lente &amp; Prism stations, all must be configured the same
+  &quot;use_https&quot;: false,
+
+  // ------------------------------------------------------------------
+  // Below are only used by Lente and can be removed for Prism stations
+
+  // Enter IP Address:port, example &quot;http://35.123.432.190:6595&quot;
+  // Use null to disable upstream sending.
+  &quot;result_server_url&quot;: null,
+
+  &quot;postgres&quot;: {
+    &quot;resultbasekeysv1&quot;: {
+      // !! Change &quot;pw&quot; to a real password for a real deployment,
+      // !! This user/pw must match your postgres deployment too,
+      &quot;user&quot;: &quot;postgres&quot;,
+      &quot;pw&quot;: &quot;qwerty&quot;,
+
+      // ip address of the postgres database, use `127.0.0.1` if locahost
+      &quot;ip&quot;: &quot;127.0.0.1&quot;
+    }
+  }
+}
+</pre></div>
+</div>
+<p>For Prism stations, a number of items can be removed per the comments, which will make
+the file smaller and easier to manage.</p>
+</section>
+<section id="prism-lente-docker-images">
+<h2>Prism/Lente Docker Images<a class="headerlink" href="#prism-lente-docker-images" title="Permalink to this headline">¶</a></h2>
+<p>On computers that are deployed, you will want the Docker images to run (and restart)
+every time the computer boots up.</p>
+<p>The helper scripts to start Prism/Lente (see <a class="reference internal" href="_system.html#system-helper-docker"><span class="std std-ref">Helpers</span></a>),
+have a <cite>restart=always</cite> option that should be used.  Once that is done, Prism/Lente will forever
+startup.</p>
+</section>
 </section>
 
 
@@ -76,12 +145,12 @@
         <li class="right" >
           <a href="_security.html" title="Security"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.2.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.4.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Deployment</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2019, Sistemi Corp..
+        &#169; Copyright 2019-2023, Sistemi Corp..
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
   </body>

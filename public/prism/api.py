@@ -61,11 +61,11 @@ class ResultAPI(Const):
     # BLOB data types
     #
     # BLOB_UNKNOWN
-    # - unknown type of blob
-    # - Lente will not try and plot/analyse blobs of this type, they are unknown
+    # - general purpose JSON blob
     BLOB_UNKNOWN = {
-        "type": "BLOB_UNKNOWN",
+        "type": "BLOB_UNKNOWN",    # do not change
         "data": None,              # replace with your data, must be JSON serializable
+        # you may add your own keys
     }
 
     # Blobs that can be plotted
@@ -73,6 +73,7 @@ class ResultAPI(Const):
     # - blobs that can be plotted, use BLOB_BOKEH_* dicts to define the plot
     # - there are a billion options to plotting with Bokeh, Lente only does bare minimum
     BLOB_BOKEH_FIGURE = {
+        "type": "BLOB_BOKEH_FIGURE",    # do not change
         "title": "Title",
         "x_axis_type": "auto",  # auto, linear, log, datetime, mercator
         "x_axis_label": "X-Axis",
@@ -85,6 +86,7 @@ class ResultAPI(Const):
     # - 1 or more lines can be plotted
     # - use this type for plotting waves that fit a template (for example)
     BLOB_PLOTXY_PLOT = {
+        "type": "BLOB_PLOTXY_PLOT",    # do not change
         "legend": None,  # change to string
         "line_width": 1,
         "x": [],         # x/y list lengths must be the same

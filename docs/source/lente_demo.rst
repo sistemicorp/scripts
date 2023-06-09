@@ -60,6 +60,13 @@ Instructions for setting up Postgres on Ubuntu are given as an example.
     $ sudo -u postgres createdb resultbasekeysv1
 
 
+Note that the postgres service is not `enabled`, only started.  If you want the service to start
+every time the computer is booted, also run,
+
+::
+
+    $ sudo systemctl enable postgresql.service
+
 
 
 Basic
@@ -128,11 +135,7 @@ Clone Sistemi Scripts
 Run Full
 ========
 
-* Run postgres::
-
-    cd ~/git/scripts/public
-    ./postg.sh start
-
+* start postgres as described above.
 * Run Lente::
 
     cd ~/git/scripts/public

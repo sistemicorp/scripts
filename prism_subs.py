@@ -10,6 +10,7 @@ Use this script to process a script that has substitutions and save
 a new script that has processed substitutions.
 
 NOTE: the substitutions must be "set" within this script below.
+      See the # !! MODIFY !! section line ~150
 
 """
 import os

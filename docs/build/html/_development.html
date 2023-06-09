@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Development &#8212; Sistemi Lente/Prism Test System 0.2.0 documentation</title>
+    <title>Development &#8212; Sistemi Lente/Prism Test System 0.4.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -32,7 +32,7 @@
         <li class="right" >
           <a href="_prodplan.html" title="Production Planning"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.2.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.4.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Development</a></li> 
       </ul>
     </div>  
@@ -150,6 +150,7 @@ examples, drivers, etc.</p></li>
 <p>Additional steps.</p>
 <section id="install-git-hooks">
 <h3><a class="toc-backref" href="#id3">Install Git Hooks</a><a class="headerlink" href="#install-git-hooks" title="Permalink to this headline">¶</a></h3>
+<p><em>Git Hooks are generally replaced by Git Actions and are beyond the scope of these instructions</em></p>
 <p>In the <cite>scripts</cite> repo, there is a folder called <cite>hooks</cite>.  The contents of this folder
 needs to be copied to <cite>./.git/hooks</cite> folder of your repository.</p>
 <p>Depending on your directory structure, this example command may work,</p>
@@ -219,7 +220,9 @@ Usage examples:
 <ul class="simple">
 <li><p>parallel, multi-threaded, multiple test jigs are not supported</p></li>
 <li><p>script is run as a single thread</p></li>
-<li><p>NO results are sent to the Lente Server</p></li>
+<li><p>NO results are sent to the Lente Server, however a local file with the results
+will be created for inspection purposes.</p></li>
+<li><p>script substitutions are not supported, use helper script <cite>prism_subs.py</cite></p></li>
 </ul>
 <p>After your script is running in the command line mode, you can try it in the Prism GUI.</p>
 </section>
@@ -264,12 +267,12 @@ Usage examples:
         <li class="right" >
           <a href="_prodplan.html" title="Production Planning"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.2.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.4.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Development</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2019, Sistemi Corp..
+        &#169; Copyright 2019-2023, Sistemi Corp..
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
   </body>

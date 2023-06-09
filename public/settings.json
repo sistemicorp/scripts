@@ -22,12 +22,17 @@
   // If the results were not encrypted by Prism, they won't be ecrypted by Lente
   "results_bkup_encrypted": false,
 
-  // Only used by Lente, can be removed for Prism stations
+  // Use https secure transport, requires public/cert/key.pem files
+  // For Lente & Prism stations, all must be configured the same
+  "use_https": false,
+
+  // ------------------------------------------------------------------
+  // Below are only used by Lente and can be removed for Prism stations
+
   // Enter IP Address:port, example "http://35.123.432.190:6595"
   // Use null to disable upstream sending.
   "result_server_url": null,
 
-  // Only used by Lente, can be removed for Prism stations
   "postgres": {
     "resultbasekeysv1": {
       // !! Change "pw" to a real password for a real deployment,

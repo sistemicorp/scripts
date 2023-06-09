@@ -110,6 +110,8 @@ Additional steps.
 Install Git Hooks
 =================
 
+*Git Hooks are generally replaced by Git Actions and are beyond the scope of these instructions*
+
 In the `scripts` repo, there is a folder called `hooks`.  The contents of this folder
 needs to be copied to `./.git/hooks` folder of your repository.
 
@@ -198,7 +200,9 @@ Notes about the command line development environment,
 
 * parallel, multi-threaded, multiple test jigs are not supported
 * script is run as a single thread
-* NO results are sent to the Lente Server
+* NO results are sent to the Lente Server, however a local file with the results
+  will be created for inspection purposes.
+* script substitutions are not supported, use helper script `prism_subs.py`
 
 After your script is running in the command line mode, you can try it in the Prism GUI.
 
