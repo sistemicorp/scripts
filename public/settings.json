@@ -5,9 +5,6 @@
   // remove line, or set to false to disable demo mode
   "demo": true,
 
-  // How often to check for Lente connection
-  "result_server_retry_timer_sec": 60,
-
   // Result JSON file encryption
   // - a valid license file is required to encrypt results
   // - passwrd must be |<-  16  long  ->|
@@ -25,6 +22,9 @@
   // Use https secure transport, requires public/cert/key.pem files
   // For Lente & Prism stations, all must be configured the same
   "use_https": false,
+
+  // Prism/Lente internal connection password
+  "prism_lente_pw": "mysecret",
 
   // ------------------------------------------------------------------
   // Below are only used by Lente and can be removed for Prism stations

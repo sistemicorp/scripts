@@ -12,6 +12,25 @@ hierarchy.
 
 .. index:: Settings
 
+
+Installing Prism/Lente Stations
+*******************************
+
+For Prism/Lente stations, follow the Full "Demo" instructions.
+
+* Prism
+
+  * install "full" per :ref:`Prism Full Install <prism-full-install>`
+
+* Lente
+
+  * install "full" per :ref:`Lente Full Install <lente-full-install>` HOWEVER,
+    change the git source to be your repo.
+  * Use Lente Station management to push your repo to downstream Prism (and/or
+    Lente) computers.
+
+
+
 Settings File
 *************
 
@@ -26,9 +45,6 @@ shown below and documented inline,
       // turn on demo mode.  Creates test user accounts, ...
       // remove line, or set to false to disable demo mode
       "demo": true,
-
-      // How often to check for Lente connection
-      "result_server_retry_timer_sec": 60,
 
       // Result JSON file encryption
       // - a valid license file is required to encrypt results
@@ -47,6 +63,9 @@ shown below and documented inline,
       // Use https secure transport, requires public/cert/key.pem files
       // For Lente & Prism stations, all must be configured the same
       "use_https": false,
+
+      // Prism/Lente internal connection password
+      "prism_lente_pw": "mysecret",
 
       // ------------------------------------------------------------------
       // Below are only used by Lente and can be removed for Prism stations
@@ -71,6 +90,7 @@ shown below and documented inline,
 
 For Prism stations, a number of items can be removed per the comments, which will make
 the file smaller and easier to manage.
+
 
 
 Prism/Lente Docker Images

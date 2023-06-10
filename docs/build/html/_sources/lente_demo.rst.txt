@@ -100,6 +100,7 @@ Run Basic
   * Lente login user/password is `admin@here.com`/`password`
   * Other users passwords are `password`
 
+.. _lente-full-install:
 
 Full
 ****

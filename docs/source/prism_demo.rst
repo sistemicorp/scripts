@@ -145,6 +145,7 @@ edit or create new scripts, or send results to the Lente server.
 
     docker stop prism
 
+.. _prism-full-install:
 
 Full Demo and/or Instillation
 *****************************

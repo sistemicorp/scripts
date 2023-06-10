@@ -46,8 +46,27 @@ are shown <a class="reference external" href="_system.html#_system_arch">here</a
 <p>Lente deployment depends on your dashboarding and Prism station management strategy.
 A Lente station can manage Prism stations directly below it, in the connection
 hierarchy.</p>
+<section id="installing-prism-lente-stations">
+<span id="index-0"></span><h2>Installing Prism/Lente Stations<a class="headerlink" href="#installing-prism-lente-stations" title="Permalink to this headline">¶</a></h2>
+<p>For Prism/Lente stations, follow the Full “Demo” instructions.</p>
+<ul class="simple">
+<li><p>Prism</p>
+<ul>
+<li><p>install “full” per <a class="reference internal" href="prism_demo.html#prism-full-install"><span class="std std-ref">Prism Full Install</span></a></p></li>
+</ul>
+</li>
+<li><p>Lente</p>
+<ul>
+<li><p>install “full” per <a class="reference internal" href="lente_demo.html#lente-full-install"><span class="std std-ref">Lente Full Install</span></a> HOWEVER,
+change the git source to be your repo.</p></li>
+<li><p>Use Lente Station management to push your repo to downstream Prism (and/or
+Lente) computers.</p></li>
+</ul>
+</li>
+</ul>
+</section>
 <section id="settings-file">
-<span id="index-0"></span><h2>Settings File<a class="headerlink" href="#settings-file" title="Permalink to this headline">¶</a></h2>
+<h2>Settings File<a class="headerlink" href="#settings-file" title="Permalink to this headline">¶</a></h2>
 <p>Each Lente/Prism station instillation will have a local settings file, as
 shown below and documented inline,</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>// This file is NOT propagated by Lente to Prism stations.
@@ -56,9 +75,6 @@ shown below and documented inline,</p>
   // turn on demo mode.  Creates test user accounts, ...
   // remove line, or set to false to disable demo mode
   &quot;demo&quot;: true,
-
-  // How often to check for Lente connection
-  &quot;result_server_retry_timer_sec&quot;: 60,
 
   // Result JSON file encryption
   // - a valid license file is required to encrypt results
@@ -77,6 +93,9 @@ shown below and documented inline,</p>
   // Use https secure transport, requires public/cert/key.pem files
   // For Lente &amp; Prism stations, all must be configured the same
   &quot;use_https&quot;: false,
+
+  // Prism/Lente internal connection password
+  &quot;prism_lente_pw&quot;: &quot;mysecret&quot;,
 
   // ------------------------------------------------------------------
   // Below are only used by Lente and can be removed for Prism stations
