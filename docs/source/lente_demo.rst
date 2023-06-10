@@ -119,12 +119,15 @@ local file system.  This requires a more advanced `docker run` command.
 Clone Sistemi Scripts
 =====================
 
-* If you have already cloned ``scripts`` from the Prism instructions, you do not need to do this again here.
+* If you are using the same computer for Lente as you did for Prism and have already cloned ``scripts`` from
+  the Prism instructions, you do not need to do this again here.
 * There is a prescriptive directory structure to use, and that is stored on `github` in a project called ``scripts``
 * This `github` repo is where you would ultimately store and version control your own scripts
 
   * Instead of cloning the repo, you would *fork* [1]_ (copy) it, making it your own, and then add your own code
+
 * The instructions below will create a folder called *git/scripts* which `git` will copy the required files into
+* If this is a Lente deployment, on a dedicated computer, then you want to clone the scripts repo you created.
 
 * Clone ``scripts``::
 
