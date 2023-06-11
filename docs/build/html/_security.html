@@ -50,6 +50,7 @@
 <li><p><a class="reference internal" href="#lente" id="id1">Lente</a></p></li>
 <li><p><a class="reference internal" href="#prism" id="id2">Prism</a></p></li>
 <li><p><a class="reference internal" href="#postgres-db" id="id3">Postgres DB</a></p></li>
+<li><p><a class="reference internal" href="#https" id="id4">HTTPS</a></p></li>
 </ul>
 </div>
 <section id="lente">
@@ -84,6 +85,52 @@ Often login names and passwords are common to a group of people, or shared amoun
 <li><p>Also remember to use the same password in the settings.json, see <a class="reference external" href="_deployment.html#_SettingsFile">here</a>.</p></li>
 </ul>
 </li>
+</ul>
+</section>
+<section id="https">
+<h2><a class="toc-backref" href="#id4">HTTPS</a><a class="headerlink" href="#https" title="Permalink to this headline">¶</a></h2>
+<p>Please read this article: <a class="reference external" href="https://blog.miguelgrinberg.com/post/running-your-flask-application-over-https">https://blog.miguelgrinberg.com/post/running-your-flask-application-over-https</a></p>
+<p>The coles notes version is that Prism/Lente are not public domain servers and are considered private
+internal servers.  Therefore we can avoid cost and complexity by using our own generated/signed keys.
+These keys will still be using the same TLS protocol over the connection and are therefore just as secure.</p>
+<p>However, since the (Chrome) browser is not able to authenticate the self signed keys/certificate it
+will indicate that the connection is “untrusted” and will prompt the user to validate the connection.</p>
+<p>With HTTPS the connection between Prism/Lente is now encrypted.  The <a class="reference internal" href="_deployment.html#deploy-settings-file"><span class="std std-ref">settings.json file</span></a>
+has <cite>prism_lente_pw</cite> which should also be set to something unique.  This setting needs to be the same
+across all the Prism/Lente computers.</p>
+<p>On deployed Prism/Lente computers the user account is presumed to be secure.  The Ubuntu filesystem should
+be encrypted, and the user account that hosts the files for Prism/Lente should be password protected.  Operator
+accounts do not need access to the Prism/Lente files. See <a class="reference internal" href="_deployment.html#deployment-ubuntu-filesystem"><span class="std std-ref">Ubuntu File System</span></a></p>
+<p>To generate the certificate and key,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>~/git/scripts/public$ openssl req -x509 -newkey rsa:4096 -nodes -out cert.pem -keyout key.pem -days 3650
+... you will be promoted to answer some questions, the answers are not important
+~/git/scripts/public$ ls -al
+total 84
+drwxrwxr-x 6 martin martin  4096 Jun 10 09:42 ./
+drwxrwxr-x 7 martin martin  4096 Jun 10 09:06 ../
+-rw-rw-r-- 1 martin martin  1968 Jun 10 09:42 cert.pem              &lt;-- created
+-rw------- 1 martin martin  3272 Jun 10 09:41 key.pem               &lt;-- created
+-rwxrwxr-x 1 martin martin  2954 May 28 11:35 lente.sh*
+drwxr-xr-x 2 root   root    4096 Jun  4 15:32 log/
+drwxrwxr-x 4 martin martin  4096 Jun 10 09:13 prism/
+-rwxrwxr-x 1 martin martin  4409 May 28 11:35 prism.sh*
+drwxr-xr-x 5 root   root    4096 May 29 16:11 result/
+-rw-rw-r-- 1 martin martin  1646 Jun 10 09:06 settings.json
+drwxr-xr-x 2 root   root    4096 May 29 16:18 traveller/
+-rw-r--r-- 1 root   root   28672 May 28 11:37 users.sqlite
+-rw-rw-r-- 1 martin martin   121 Jun 10 09:06 VERSION
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Generate the cert/key file on each Prism/Lente computer.</p></li>
+<li><p>See the <a class="reference internal" href="_deployment.html#deploy-settings-file"><span class="std std-ref">settings.json file</span></a> to enable HTTPS and set the Prism/Lente password.</p></li>
+<li><p>In the browser, connect over HTTPs,</p>
+<ul>
+<li><p>for Prism use <cite>https://127.0.0.1:6590</cite></p></li>
+<li><p>for Lente use <cite>https://127.0.0.1:6595</cite></p></li>
+</ul>
+</li>
+<li><p>Prism/Lente docker images will have to be restarted to use HTTPS.</p></li>
 </ul>
 </section>
 </section>

@@ -12,6 +12,33 @@ hierarchy.
 
 .. index:: Settings
 
+.. _deployment-ubuntu-filesystem:
+
+Ubuntu File System and Users
+****************************
+
+* Install Ubuntu onto the computers and enable file system encryption
+
+  * Note that enabling encryption will require a password to be entered for
+    the computer to boot up.  Consider this for remote sites.
+
+    * Alternatively the home directory of the Prism/Lente account could be encrypted,
+      which is where the Prism/Lente files will be hosted.  The benefit of this
+      approach is a password is not required to boot the computer.  And the Prism/Lente
+      files are still protected.
+
+* Set up at least two user accounts
+
+  * Operator account,
+
+    * should have very limited access
+    * able to run Chrome
+
+
+  * Prism/Lente setup account
+
+    * hosts the Prism/Lente files
+
 
 Installing Prism/Lente Stations
 *******************************
@@ -21,6 +48,7 @@ For Prism/Lente stations, follow the Full "Demo" instructions.
 * Prism
 
   * install "full" per :ref:`Prism Full Install <prism-full-install>`
+  * use the helper script `restart=always`
 
 * Lente
 
@@ -28,7 +56,10 @@ For Prism/Lente stations, follow the Full "Demo" instructions.
     change the git source to be your repo.
   * Use Lente Station management to push your repo to downstream Prism (and/or
     Lente) computers.
+  * use the helper script `restart=always`
 
+
+.. _deploy-settings-file:
 
 
 Settings File
