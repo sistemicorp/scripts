@@ -80,6 +80,7 @@ start () {
             --hostname=${flag_hostname} \
             -v $(pwd):/app/public \
             -v /dev:/dev \
+            -v /var/run/dbus/:/var/run/dbus/:z \
             --device=/dev \
             --privileged \
             --name prism \
@@ -91,6 +92,7 @@ start () {
             --hostname=${flag_hostname} \
             -v $(pwd):/app/public \
             -v /dev:/dev \
+            -v /var/run/dbus/:/var/run/dbus/:z \
             --device=/dev \
             --privileged \
             --name prism \
