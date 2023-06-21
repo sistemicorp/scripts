@@ -60,7 +60,7 @@ class HWDriver(object):
         1) The hw driver objects are expected to have an 'slot' field, the lowest
            id is assigned to channel 0, the next highest to channel 1, etc
 
-        :return: <#>, <list>
+        :return: <#>, <list> (use Zero for a device shared across all channels)
             where #: >0 number of channels,
                       0 does not indicate num channels, like a shared hardware driver
                      <0 error
