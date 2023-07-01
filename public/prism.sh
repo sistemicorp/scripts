@@ -30,6 +30,7 @@ fi
 flag_server_ip=not_specified
 flag_hostname=$(hostname)
 flag_restart=no
+IP4=$(ip route get 1 | sed -n 's/^.*src \([0-9.]*\) .*$/\1/p')
 
 function valid_ip() {
     local  ip=$1
@@ -77,6 +78,7 @@ start () {
             --network=host \
             --restart=${flag_restart} \
             -e LENTEIP=${LENTEIP} \
+            -e HOSTIP=${IP4} \
             --hostname=${flag_hostname} \
             -v $(pwd):/app/public \
             -v /dev:/dev \
@@ -89,6 +91,7 @@ start () {
         docker run -d \
             --network=host \
             -e LENTEIP=${LENTEIP} \
+            -e HOSTIP=${IP4} \
             --hostname=${flag_hostname} \
             -v $(pwd):/app/public \
             -v /dev:/dev \
@@ -160,4 +163,3 @@ while [ "$#" -gt 0 ]; do
     *) handle_command "$1"; shift 1;;
   esac
 done
-
