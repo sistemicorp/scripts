@@ -97,7 +97,7 @@ class ResultBaseClass(object):
             self.record_meta_set_result(_result)
 
     def record_test_get_result(self):
-        return self._item["result"]
+        return self._item.get("result", ResultAPI.RECORD_RESULT_UNKNOWN)
 
     def record_test_get_duration(self):
         return self._item["timestamp_end"] - self._item["timestamp_start"]
