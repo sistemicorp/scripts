@@ -63,42 +63,48 @@ class ResultAPI(Const):
     # BLOB_UNKNOWN
     # - general purpose JSON blob
     BLOB_UNKNOWN = {
-        "type": "BLOB_UNKNOWN",    # do not change
+        "type": "BLOB_UNKNOWN",    # DO NOT CHANGE
         "data": None,              # replace with your data, must be JSON serializable
-        # you may add your own keys
+        # you may add your own additional keys
     }
 
-    # Blobs that can be plotted
-    # - Lente can plot blob data given the blob data type
+    # Blobs that can be plotted when Lente feature is implemented
+    # - Lente MAY plot blob data given the blob data type (plotting not implemented)
     # - blobs that can be plotted, use BLOB_BOKEH_* dicts to define the plot
-    # - there are a billion options to plotting with Bokeh, Lente only does bare minimum
+    # - there are a billion options to plotting with Bokeh,
+    #   Lente only does bare minimum, if the plotting feature is implemented
     BLOB_BOKEH_FIGURE = {
-        "type": "BLOB_BOKEH_FIGURE",    # do not change
+        "type": "BLOB_BOKEH_FIGURE",    # DO NOT CHANGE
         "title": "Title",
         "x_axis_type": "auto",  # auto, linear, log, datetime, mercator
         "x_axis_label": "X-Axis",
         "y_axis_type": "auto",  # auto, linear, log, datetime, mercator
         "y_axis_label": "Y-Axis",
+        # you may add your own additional keys
     }
-
     # BLOB_PLOTXY
     # - XY plots
     # - 1 or more lines can be plotted
     # - use this type for plotting waves that fit a template (for example)
     BLOB_PLOTXY_PLOT = {
-        "type": "BLOB_PLOTXY_PLOT",    # do not change
+        "type": "BLOB_PLOTXY_PLOT",    # DO NOT CHANGE
         "legend": None,  # change to string
         "line_width": 1,
         "x": [],         # x/y list lengths must be the same
         "y": [],
+        # you may add your own additional keys
     }
     BLOB_PLOTXY = {
-        "type": "BLOB_DICTXY",
+        "type": "BLOB_DICTXY",     # DO NOT CHANGE
         "BLOB_BOKEH_FIGURE": BLOB_BOKEH_FIGURE,
-        "plots": [],   # append BLOB_DICTXY_PLOTs here as required...
+        "plots": [],   # append BLOB_PLOTXY_PLOT here as required...
+        # you may add your own additional keys
     }
 
     # add any new types created here for the purposes of validating
-    BLOB_TYPES = [BLOB_UNKNOWN["type"], BLOB_PLOTXY["type"]]
+    BLOB_TYPES = [BLOB_UNKNOWN["type"],
+                  BLOB_PLOTXY["type"],
+                  BLOB_PLOTXY_PLOT["type"],
+                  BLOB_BOKEH_FIGURE["type"]]
 
     # TODO: add histogram plot next

@@ -391,28 +391,37 @@ class tst00xx(TestItem):
         ctx = self.item_start()   # always first line of test
         from numpy import sin, arange
 
-        myBlob = ResultAPI.BLOB_PLOTXY
+        myPlotFigure = ResultAPI.BLOB_BOKEH_FIGURE
+        myPlotFigure["title"] = "Voltage vs Current"
+        myPlotFigure["x_axis_label"] = "Current"
+        myPlotFigure["y_axis_label"] = "Voltage"
+
+        myPlotBlob = ResultAPI.BLOB_PLOTXY
+        myPlotBlob["BLOB_BOKEH_FIGURE"] = myPlotFigure
 
         # this is the waveform, could come from a scope, artificially generated example
         myPlot = ResultAPI.BLOB_PLOTXY_PLOT
+        myPlot["legend"] = "sin wave"
         myPlot["x"] = arange(0, 3.2, 0.05).tolist()  # hundreds of data points...
         myPlot["y"] = sin(myPlot["x"]).tolist()
-        myBlob["plots"].append(copy.deepcopy(myPlot))
+        myPlotBlob["plots"].append(copy.deepcopy(myPlot))
 
         # upper template
         myPlot = ResultAPI.BLOB_PLOTXY_PLOT
+        myPlot["legend"] = "upper"
         myPlot["x"] = [0.0, 1.0, 2.2, 3.2]
         myPlot["y"] = [0.1, 1.1, 1.1, 0.1]
-        myBlob["plots"].append(copy.deepcopy(myPlot))
+        myPlotBlob["plots"].append(copy.deepcopy(myPlot))
 
         # lower template
         myPlot = ResultAPI.BLOB_PLOTXY_PLOT
+        myPlot["legend"] = "lower"
         myPlot["x"] = [0.1, 1.3, 1.8, 3.0]
         myPlot["y"] = [0.0, 0.9, 0.9, 0.0]
-        myBlob["plots"].append(copy.deepcopy(myPlot))
+        myPlotBlob["plots"].append(copy.deepcopy(myPlot))
 
         # save the blob of data
-        success, msg = ctx.record.blob("sin", myBlob)
+        success, msg = ctx.record.blob("sin", myPlotBlob)
         if not success:
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
