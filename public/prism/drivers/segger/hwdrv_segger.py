@@ -41,12 +41,13 @@ class HWDriver(object):
 
         [ {"id": i,                    # ~slot number of the channel (see Note 1)
            "version": <VERSION>,       # version of the driver
-           "hwdrv": <foobar>,          # instance of your hardware driver
+           "hwdrv": <object>,          # instance of your hardware driver
 
            # optional
-           "close": None},             # register a callback on closing the channel, or None
+           "close": None,              # register a callback on closing the channel, or None
            "play": jig_closed_detect   # function for detecting jig closed
            "show_pass_fail": jig_led   # function for indicating pass/fail (like LED)
+           "show_msg": jig_display     # function for indicating test status (like display)
 
            # not part of the required block
            "unique_id": <unique_id>,   # unique id of the hardware (for tracking purposes)
@@ -72,9 +73,12 @@ class HWDriver(object):
             if device.properties.get("ID_SERIAL", False):
                 if "SEGGER_J-Link_" in device.properties["ID_SERIAL"]:
                     _segger = {"id": device.properties["ID_SERIAL"]}
-                    _segger['usb_path'] = device.device_path
                     _segger['version'] = self.VERSION
-
+                    _segger['close'] = None
+                    _segger['play'] = None
+                    _segger['show_pass_fail'] = None
+                    _segger['show_msg'] = None
+                    _segger['usb_path'] = device.device_path
                     self.seggers.append(_segger)
 
         # sort based on USB path, slot 0, 1, 2, etc

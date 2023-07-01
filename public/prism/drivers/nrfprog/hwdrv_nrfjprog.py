@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2022
+Sistemi Corporation, copyright, all rights reserved, 2022-2023
 Martin guthrie
 
 """
@@ -48,12 +48,13 @@ class HWDriver(object):
 
         [ {"id": i,                    # ~slot number of the channel (see Note 1)
            "version": <VERSION>,       # version of the driver
-           "hwdrv": <foobar>,          # instance of your hardware driver
+           "hwdrv": <object>,          # instance of your hardware driver
 
            # optional
-           "close": None},             # register a callback on closing the channel, or None
+           "close": None,              # register a callback on closing the channel, or None
            "play": jig_closed_detect   # function for detecting jig closed
            "show_pass_fail": jig_led   # function for indicating pass/fail (like LED)
+           "show_msg": jig_display     # function for indicating test status (like display)
 
            # not part of the required block
            "unique_id": <unique_id>,   # unique id of the hardware (for tracking purposes)
@@ -83,10 +84,14 @@ class HWDriver(object):
                     sn = device.attributes.get("serial").decode("utf-8").lstrip("0")
                     if sn not in found_serial_nums:
                         _segger = {"id": 0}  # this will get re-indexed below
+                        _segger['hwdrv'] = NRFProg(sn)
+                        _segger['close'] = None
+                        _segger['play'] = None
+                        _segger['show_pass_fail'] = None
+                        _segger['show_msg'] = None
+                        _segger['unique_id'] = sn
                         _segger['usb_path'] = device.device_path
                         _segger['version'] = self.VERSION
-                        _segger['hwdrv'] = NRFProg(sn)
-                        _segger['unique_id'] = sn
                         self.seggers.append(_segger)
                         found_serial_nums.append(sn)
 

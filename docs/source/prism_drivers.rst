@@ -52,6 +52,7 @@ Per the code documentation, `discover_channels` must return a dictionary with pr
            "close": None,              # register a callback on closing the channel, or None
            "play": jig_closed_detect   # function for detecting jig closed
            "show_pass_fail": jig_led   # function for indicating pass/fail (like LED)
+           "show_msg": jig_display     # function for indicating test status (like display)
 
            # not part of the required block
            "unique_id": <unique_id>,   # unique id of the hardware (for tracking purposes)
