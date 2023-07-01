@@ -408,6 +408,7 @@ def main():
 
     # close any drivers
     drivers = shared_state.get_drivers(0)
+    drivers.extend(shared_state.get_drivers(None))
     for d in drivers:
         if d['obj'].get("close", False):
             d["obj"]["close"]()

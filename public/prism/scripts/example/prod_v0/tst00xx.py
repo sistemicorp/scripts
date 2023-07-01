@@ -374,6 +374,7 @@ class tst00xx(TestItem):
         #myBlob["my_other_key"] = json.dumps(dict(k1="data1", k2=1.23))
         success, msg = ctx.record.blob("random", myBlob)
         if not success:
+            self.logger.error(msg)
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 

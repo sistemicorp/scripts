@@ -86,14 +86,18 @@ class BLEListener(object):
                 self._uids[uid] = {"rssi": advertisement_data.rssi,
                                    "tx": advertisement_data.tx_power,
                                    "ad": advertisement_data,  # store everything, dups rssi and tx
-                                   "timestamp": datetime.datetime.now()
+                                   "timestamp": datetime.datetime.now(),
+                                   "_remove": False,
                                    }
 
             # prune any old entries
             past = datetime.datetime.now() - datetime.timedelta(seconds=self._expire_time)
             if past > self._last_prune:
-                self._uids = [i for i in self._uids if i["timestamp"] > past]
+                self._uids = {k: v for k, v in self._uids.items() if v["timestamp"] > past}
                 self._last_prune = datetime.datetime.now()
+
+            # prune any devices that have been flagged for removal
+            self._uids = {k: v for k, v in self._uids.items() if not v["_remove"]}
 
             self.logger.info(f"{len(self._uids)} items")
 
@@ -149,7 +153,7 @@ class BLEListener(object):
         self._running = True
         Timer(0.1, self._timer_start_scan).start()
 
-    def is_uid_present(self, uid: str):
+    def is_uid_present(self, uid: str, remove: bool=True):
         """ Determine if BLE Advertisement was received
         - DUT advertised UID must be known
         - this function likely needs to be polled until your
@@ -186,6 +190,7 @@ class BLEListener(object):
 
         with self._lock:
             if uid in self._uids:
+                self._uids[uid]["_remove"] = remove  # mark for deletion
                 return True, self._uids[uid]
 
         return True, None
