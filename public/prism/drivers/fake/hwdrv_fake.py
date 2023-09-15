@@ -95,7 +95,7 @@ class HWDriver(object):
                   "version": _driver.version(),
                   "play": None,  # _driver.jig_closed_detect,
                   "show_pass_fail": _driver.show_pass_fail,
-                  "show_msg": _driver.show_test,
+
                   "close": _driver.close}  # good practice to have in place
 
             #

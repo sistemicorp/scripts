@@ -63,6 +63,10 @@ class tst00xx(TestItem):
         #
         # self.shared_state  # instance of the shared state across all running test jigs
         #
+        # self.timeout
+        #   - boolean indicating if a timeout has occurred
+        #   - use in while/for loops to check if a timeout has ocurred
+        #
         # self.item_end([result[s]]) # always last line of test
         #  - result is one of ResultAPI.RECORD_* constants
         #  - result may be a list or a single instance
