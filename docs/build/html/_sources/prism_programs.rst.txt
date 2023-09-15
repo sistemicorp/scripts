@@ -188,11 +188,17 @@ example program is distributed with the system, and may be more up to date than 
 
     #! /usr/bin/env python
     # -*- coding: utf-8 -*-
+
     import logging
     from core.test_item import TestItem
-    from public.prims.api import ResultAPI
+    from public.prism.api import ResultAPI
     import time
-    from random import randint, random
+    import random
+    import string
+    import copy
+
+
+    from public.prism.drivers.fake.Fake import DRIVER_TYPE
 
 
     # file and class name must match
@@ -203,7 +209,7 @@ example program is distributed with the system, and may be more up to date than 
 
         def __init__(self, controller, chan, shared_state):
             super().__init__(controller, chan, shared_state)
-            self.logger = logging.getLogger("SC.{}.{}".format(__name__, self.chan))
+            self.logger = logging.getLogger("{}.{}".format(__name__, self.chan))
 
             # ------------------------------------------------------------------------
             # API Reference:
@@ -226,52 +232,108 @@ example program is distributed with the system, and may be more up to date than 
             #    - ctx.record.measurement(name, value, unit, min=None, max=None)
             #      - name: name of the measurement, should be unique per test item
             #      - unit: from ResultAPI.UNIT_*
-            #    - result extensions
-            #      - the result base class can be extended, as it has in this example
-            #      - class ResultBaseClassKeysV1(ResultBaseClass)
-            #      - two functions were added, and used in this example,
-            #        - add_key(key, value, slot=None)
-            #        - get_keys()
             #
-            # self.chan  # this channel
+            #    - ctx.record.add_key("name", value, slot=0)
+            #      - slot is 0-4, Lente shows slot 0 in summary results
+            #      - keys become (additional) indexes in the Lente database
+            #      - key assignment to slot number should be standardized within organization
+            #    - ctx.record.get_keys()
+            #      - get all previously stored keys
+            #
+            #    - ctx.record.fail_msg(msg)
+            #      - add a fail message to the record
+            #
+            # self.chan  # this channel (0,1,2,3)
+            #
+            # self.shared_state  # instance of the shared state across all running test jigs
+            #
+            # self.timeout
+            #   - boolean indicating if a timeout has occurred
+            #   - use in while/for loops to check if a timeout has occurred
             #
             # self.item_end([result[s]]) # always last line of test
             #  - result is one of ResultAPI.RECORD_* constants
             #  - result may be a list or a single instance
             #  - called without arguments, the result is ResultAPI.RECORD_RESULT_PASS
             #
-            # Usage Reference
+            # Notes
             #
             # 1) Test Item Timeout
             #    - every test time is guarded by a timeout which has a default of ResultAPI.TESTITEM_TIMEOUT Sec.
             #    - this value can be overridden by adding '"timeout": <value>' to the test item in the script
             #    - if the timeout expires, it is considered a Fail, even if it is
             #      on a user input item.  The test script will fail.
+            #    - when using loops (while/for) for long running tasks, use self.timeout to check
             #
+            self.hw_fake = None
 
         def TST0xxSETUP(self):
-            ctx = self.item_start()  # always first line of test
-            time.sleep(self.DEMO_TIME_DELAY * random() * self.DEMO_TIME_RND_ENABLE)
+            """  Setup up for testing
+            - main purpose is to get a local handle to the connected hardware
+            - store the ID of the hardware for tracking purposes
 
-            self.item_end()  # always last line of test
+                {"id": "TST0xxSETUP",           "enable": true },
 
-        def TST0xxTRDN(self):
+            """
             ctx = self.item_start()  # always first line of test
-            time.sleep(self.DEMO_TIME_DELAY * random() * self.DEMO_TIME_RND_ENABLE)
+
+            # get instance of the hardware created by HWDriver:discover_channels()
+            # per the script, the fake hw driver is used (see script config:drivers section)
+            # drivers are stored in the shared_state and are retrieved as,
+            drivers = self.shared_state.get_drivers(self.chan, type=DRIVER_TYPE)
+            self.logger.info(drivers)  # review this output to see HW attributes
+            self.hw_fake = drivers[0]["obj"]["hwdrv"]  # instance of ./drivers/fake/Fake.py:Fake
+
+            # record the (unique) ID of the (Fake) hardware.
+            success, _result, _bullet = ctx.record.measurement("id",
+                                                               self.hw_fake.unique_id(),
+                                                               ResultAPI.UNIT_STRING,
+                                                               None,
+                                                               None)
+
+            self.log_bullet(_bullet)
+            self.item_end(_result)  # always last line of test
+
+        def TST0xxTEARDOWN(self):
+            """  Always called at the end of testing
+            - process any cleanup, closing, etc
+
+                {"id": "TST0xxTEARDOWN",        "enable": true },
+
+            """
+            ctx = self.item_start()  # always first line of test
             self.item_end()  # always last line of test
 
         def TST000_Meas(self):
-            """ Measurement example, with multiple failure messages
-            - example of taking multiple measurements, and sending as a list of results
-            - if any test fails, this test item fails
+            """ Measurement example, simplest example
 
-                {"id": "TST000_Meas",    "enable": true, "args": {"min": 0, "max": 10},
-                                         "fail": [ {"fid": "TST000-0", "msg": "Component apple R1"},
-                                                   {"fid": "TST000-1", "msg": "Component banana R1"}] },
+            {"id": "TST000_Meas",    "enable": true, "args": {"min": 0, "max": 10},
+
             """
             ctx = self.item_start()   # always first line of test
 
-            time.sleep(self.DEMO_TIME_DELAY * random() * self.DEMO_TIME_RND_ENABLE)
+            adc_measurement = self.hw_fake.adc_read()
+            success, _result, _bullet = ctx.record.measurement("apples",
+                                                               adc_measurement,
+                                                               ResultAPI.UNIT_DB,
+                                                               ctx.item.args.min,
+                                                               ctx.item.args.max)
+
+            self.log_bullet(_bullet)
+            self.item_end(_result)  # always last line of test
+
+        def TST001_Meas(self):
+            """ Measurement example, with multiple failure messages
+            - example of taking multiple measurements, and sending as a list of results
+            - example of measurement indicating possible failed components
+
+            {"id": "TST001_Meas",    "enable": true, "args": {"min": 0, "max": 10},
+                                     "fail": [ {"fid": "TST000-0", "msg": "Component apple R1"},
+                                               {"fid": "TST000-1", "msg": "Component banana R1"}] },
+            """
+            ctx = self.item_start()   # always first line of test
+
+            time.sleep(self.DEMO_TIME_DELAY * random.random() * self.DEMO_TIME_RND_ENABLE)
 
             FAIL_APPLE   = 0  # indexes into the "fail" list, just for code readability
             FAIL_BANANNA = 1
@@ -279,11 +341,16 @@ example program is distributed with the system, and may be more up to date than 
             measurement_results = []  # list for all the coming measurements...
 
             # Apples measurement...
-            _result, _bullet = ctx.record.measurement("apples",
-                                                      randint(0, 10),
-                                                      ResultAPI.UNIT_DB,
-                                                      ctx.item.args.min,
-                                                      ctx.item.args.max)
+            adc_measurement = self.hw_fake.adc_read()
+            success, _result, _bullet = ctx.record.measurement("apples",
+                                                               adc_measurement,
+                                                               ResultAPI.UNIT_DB,
+                                                               ctx.item.args.min,
+                                                               ctx.item.args.max)
+            if not success:
+                self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+                return
+
             # if failed, there is a msg in script to attach to the record, for repair purposes
             if _result == ResultAPI.RECORD_RESULT_FAIL:
                 msg = ctx.item.fail[FAIL_APPLE]
@@ -293,11 +360,15 @@ example program is distributed with the system, and may be more up to date than 
             measurement_results.append(_result)
 
             # Bananas measurement...
-            _result, _bullet = ctx.record.measurement("bananas",
-                                                      randint(0, 10),
-                                                      ResultAPI.UNIT_DB,
-                                                      ctx.item.args.min,
-                                                      ctx.item.args.max)
+            adc_measurement = self.hw_fake.adc_read()
+            success, _result, _bullet = ctx.record.measurement("bananas",
+                                                               adc_measurement,
+                                                               ResultAPI.UNIT_DB,
+                                                               ctx.item.args.min,
+                                                               ctx.item.args.max)
+            if not success:
+                self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+                return
 
             # if failed, there is a msg in script to attach to the record, for repair purposes
             if _result == ResultAPI.RECORD_RESULT_FAIL:
@@ -310,36 +381,39 @@ example program is distributed with the system, and may be more up to date than 
             # Note that we can send a list of measurements
             self.item_end(item_result_state=measurement_results)  # always last line of test
 
-        def TST001_Skip(self):
+        def TST002_Skip(self):
             """ Example of an item that is skipped
 
-                {"id": "TST001_Skip",           "enable": false },
+            {"id": "TST002_Skip",           "enable": false },
             """
             ctx = self.item_start()   # always first line of test
             # this is a skipped test for testing, in some scripts
 
             self.log_bullet("Was I skipped?")
 
-            time.sleep(self.DEMO_TIME_DELAY * random() * self.DEMO_TIME_RND_ENABLE)
+            time.sleep(self.DEMO_TIME_DELAY * random.random() * self.DEMO_TIME_RND_ENABLE)
 
             self.item_end()  # always last line of test
 
-        def TST002_Buttons(self):
+        def TST003_Buttons(self):
             """ Select one of three buttons
             - capture the button index in the test record
 
-                {"id": "TST002_Buttons",        "enable": true, "timeout": 10 },
+            {"id": "TST003_Buttons",        "enable": true, "timeout": 10 },
             """
             ctx = self.item_start()   # always first line of test
 
             self.log_bullet("Please press a button!")
 
-            buttons = ["one", "two", "three"]
+            # make two random to confirm GUI button label is updated
+            _two = "two {:3.2f}".format(random.random())
+            self.log_bullet(_two)
+            buttons = ["one", _two, "three"]
             user_select = self.input_button(buttons)
             if user_select["success"]:
                 b_idx = user_select["button"]
                 self.log_bullet("{} was pressed!".format(buttons[b_idx]))
-                _result, _bullet = ctx.record.measurement("button", b_idx, ResultAPI.UNIT_INT)
+                _, _result, _bullet = ctx.record.measurement("button", b_idx, ResultAPI.UNIT_INT)
                 self.log_bullet(_bullet)
             else:
                 _result = ResultAPI.RECORD_RESULT_FAIL
@@ -347,34 +421,34 @@ example program is distributed with the system, and may be more up to date than 
 
             self.item_end(_result)  # always last line of test
 
-        def TST003_KeyAdd(self):
+        def TST004_KeyAdd(self):
             """ How use of keys: keys are things like serial numbers.
             - every call to self.add_key(k,v) adds the "k:v" to the next available
               key# in the record, you can force the slot though.  It depends how you will
               manage the keys in the final database; either by convention force every slot
               to represent a specific thing (preferred), or search all keys for the 'k' you want.
 
-                {"id": "TST003_KeyAdd",         "enable": true },
+            {"id": "TST004_KeyAdd",         "enable": true },
             """
             ctx = self.item_start()   # always first line of test
 
-            time.sleep(self.DEMO_TIME_DELAY * random() * self.DEMO_TIME_RND_ENABLE)
+            time.sleep(self.DEMO_TIME_DELAY * random.random() * self.DEMO_TIME_RND_ENABLE)
 
-            value = randint(0, 100)
+            value = random.randint(0, 100)
             ctx.record.add_key("value", value, slot=0)
             self.log_bullet("added key value: {}".format(value))
 
             self.item_end()  # always last line of test
 
-        def TST004_KeyGet(self):
+        def TST005_KeyGet(self):
             """ How use of keys works
             - retrieve a previous key, otherwise fail test
 
-                {"id": "TST004_KeyGet",         "enable": true },
+            {"id": "TST005_KeyGet",         "enable": true },
             """
             ctx = self.item_start()  # always first line of test
 
-            time.sleep(self.DEMO_TIME_DELAY * random() * self.DEMO_TIME_RND_ENABLE)
+            time.sleep(self.DEMO_TIME_DELAY * random.random() * self.DEMO_TIME_RND_ENABLE)
 
             keys = ctx.record.get_keys()
             if not keys.get("key0", False):
@@ -385,13 +459,13 @@ example program is distributed with the system, and may be more up to date than 
             self.log_bullet("got key[0]: {}".format(keys.get("key0", "NOT FOUND!")))
             self.item_end()  # always last line of test
 
-        def TST005_RsrcLock(self):
+        def TST006_RsrcLock(self):
             """ Demonstrate locking of a resource in shared_state
             - lock a resource for some time, and then release
             - note the hold time comes from the test script
             - this is useful for a piece of test equipment that is shared across channels
 
-                {"id": "TST005_RsrcLock",       "enable": true, "args": {"holdTime": 1}, "timeout": 60 },
+            {"id": "TST006_RsrcLock",       "enable": true, "args": {"holdTime": 1}, "timeout": 60 },
             """
             ctx = self.item_start()  # always first line of test
 
@@ -408,7 +482,7 @@ example program is distributed with the system, and may be more up to date than 
 
             self.item_end()  # always last line of test
 
-        def TST006_HWDriver(self):
+        def TST007_HWDriver(self):
             """ How to get a driver that was initialized when script was loaded
             - when the script is loaded, HW driver are initialized and stored in the shared
               state.  The format of the return data is,
@@ -420,7 +494,7 @@ example program is distributed with the system, and may be more up to date than 
             """
             ctx = self.item_start()  # always first line of test
 
-            time.sleep(self.DEMO_TIME_DELAY * random() * self.DEMO_TIME_RND_ENABLE)
+            time.sleep(self.DEMO_TIME_DELAY * random.random() * self.DEMO_TIME_RND_ENABLE)
 
             drivers = self.shared_get_drivers()
             for driver in drivers:
@@ -430,25 +504,14 @@ example program is distributed with the system, and may be more up to date than 
 
             self.item_end()  # always last line of test
 
-        def TST007_LogPctProgress(self):
-            """ Demo a log bullet with increasing percent
-            """
-            ctx = self.item_start()  # always first line of test
-
-            percent = 0
-            while percent <= 100:
-                bar = "#" * int(40 * percent / 100)
-                msg = "Completed {:3d}% {}".format(percent, bar)
-                self.log_bullet(msg, ovrwrite_last_line=True)
-                time.sleep(self.DEMO_TIME_DELAY * random() * self.DEMO_TIME_RND_ENABLE)
-                percent += 10
-
-            self.item_end()  # always last line of test
-
         def TST008_TextInput(self):
             """ Text Input Box
+            - input text boxes in production are probably a bad idea unless the data
+              is coming from a scanner.  User input error correction is not something
+              scalable in production setting.
 
-                {"id": "TST008_TextInput",      "enable": true, "timeout": 10 },
+            {"id": "TST008_TextInput",      "enable": true, "timeout": 10 },
+
             """
             ctx = self.item_start()   # always first line of test
 
@@ -457,11 +520,10 @@ example program is distributed with the system, and may be more up to date than 
             user_text = self.input_textbox("Enter Some Text:", "change")
             if user_text["success"]:
                 self.log_bullet("Text: {}".format(user_text["textbox"]))
-
-                # qualify the text here, and either if the text is invalid, re-ask
                 # Note: ResultAPI.UNIT_STRING is used to format the measurement correctly in JSON
-                ctx.record.measurement("input", user_text["textbox"], ResultAPI.UNIT_STRING)
-                _result = ResultAPI.RECORD_RESULT_PASS
+                _, _result, _bullet = ctx.record.measurement("input", user_text["textbox"], ResultAPI.UNIT_STRING)
+                # qualify the text here, and override _result if required
+
             else:
                 # operator probably times out...
                 _result = ResultAPI.RECORD_RESULT_FAIL
@@ -469,72 +531,183 @@ example program is distributed with the system, and may be more up to date than 
 
             self.item_end(_result)  # always last line of test
 
+        def TST009_LogPctProgress(self):
+            """ Demo a log bullet with increasing percent
+
+            {"id": "TST008_TextInput",      "enable": true, "timeout": 10 },
+
+            """
+            ctx = self.item_start()  # always first line of test
+
+            percent = 0
+            while percent <= 100:
+                bar = "#" * int(40 * percent / 100)
+                msg = "Completed {:3d}% {}".format(percent, bar)
+                self.log_bullet(msg, ovrwrite_last_line=True)
+                time.sleep(self.DEMO_TIME_DELAY * random.random() * self.DEMO_TIME_RND_ENABLE)
+                percent += 10
+
+            self.item_end()  # always last line of test
+
+        def TST010_BlobUnknown(self):
+            """ Blob Unknown
+            - create a string of random characters using BLOB_UNKNOWN
+
+                {"id": "TST010_BlobUnknown",    "enable": true },
+            """
+            ctx = self.item_start()   # always first line of test
+
+            myBlob = ResultAPI.BLOB_UNKNOWN
+            # key 'data' is automatically created, or you may add your own keys
+            myBlob["data"] = ''.join(random.choice(string.ascii_lowercase) for x in range(1000))
+            #myBlob["my_other_key"] = json.dumps(dict(k1="data1", k2=1.23))
+            success, msg = ctx.record.blob("random", myBlob)
+            if not success:
+                self.logger.error(msg)
+                self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+                return
+
+            self.item_end()  # always last line of test
+
+        def TST011_BlobXY(self):
+            """ Blob XY Plots
+
+            An example of creating a waveform, with a template to fit
+            - testing wave fitting the template is beyond the scope of this example
+
+            {"id": "TST011_BlobXY",    "enable": true },
+            """
+            ctx = self.item_start()   # always first line of test
+            from numpy import sin, arange
+
+            myPlotFigure = ResultAPI.BLOB_BOKEH_FIGURE
+            myPlotFigure["title"] = "Voltage vs Current"
+            myPlotFigure["x_axis_label"] = "Current"
+            myPlotFigure["y_axis_label"] = "Voltage"
+
+            myPlotBlob = ResultAPI.BLOB_PLOTXY
+            myPlotBlob["BLOB_BOKEH_FIGURE"] = myPlotFigure
+
+            # this is the waveform, could come from a scope, artificially generated example
+            myPlot = ResultAPI.BLOB_PLOTXY_PLOT
+            myPlot["legend"] = "sin wave"
+            myPlot["x"] = arange(0, 3.2, 0.05).tolist()  # hundreds of data points...
+            myPlot["y"] = sin(myPlot["x"]).tolist()
+            myPlotBlob["plots"].append(copy.deepcopy(myPlot))
+
+            # upper template
+            myPlot = ResultAPI.BLOB_PLOTXY_PLOT
+            myPlot["legend"] = "upper"
+            myPlot["x"] = [0.0, 1.0, 2.2, 3.2]
+            myPlot["y"] = [0.1, 1.1, 1.1, 0.1]
+            myPlotBlob["plots"].append(copy.deepcopy(myPlot))
+
+            # lower template
+            myPlot = ResultAPI.BLOB_PLOTXY_PLOT
+            myPlot["legend"] = "lower"
+            myPlot["x"] = [0.1, 1.3, 1.8, 3.0]
+            myPlot["y"] = [0.0, 0.9, 0.9, 0.0]
+            myPlotBlob["plots"].append(copy.deepcopy(myPlot))
+
+            # save the blob of data
+            success, msg = ctx.record.blob("sin", myPlotBlob)
+            if not success:
+                self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+                return
+
+            # here (the measurement) would be code to determine if waveform fits into template
+            within_template = True  # or False
+
+            # store measurement result
+            success, _result, _bullet = ctx.record.measurement("template", within_template, ResultAPI.UNIT_BOOLEAN)
+            self.log_bullet(_bullet)
+            if not success:
+                self.item_end(_result)
+                return
+
+            self.item_end()  # always last line of test
+
+        def TST012_JSONB(self):
+            """ postgres JSONB object example
+
+            {"id": "TST012_JSONB",          "enable": true },
+            """
+            ctx = self.item_start()   # always first line of test
+
+            my_jsonb = {"serialNum": 123456789}
+            jsonb = ctx.record.getCustomJSONB()
+            jsonb.update(my_jsonb)
+            success, msg = ctx.record.setCustomJSONB(jsonb)
+            if not success:
+                self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+                return
+
+            self.item_end()  # always last line of test
+
+
 And here is the script that drives the program,
 
 ::
 
-    # Example: Shows most of all the features of test portal UI
+    // Example: Shows most of all the features of test portal UI (except subs)
     {
       "info": {
-        # info is captured in the result record and can be searched/filtered
-        # Cannot add fields here without updating the result record handler and backend database
+        // info is captured in the result record and can be searched/filtered in dB
+        // Cannot add fields here without updating the result record handler and backend database
         "product": "widget_1",
         "bom": "B00012-001",
         "lot": "95035",
         "location": "canada/ontario/milton"
+        // "config": "something"  (optional)
       },
       "config": {
-        # -- These items can override those from prism.json, defaults are shown as example
-        # result_*_dir - the 'stage' directory MUST be named stage.
-        #              - any path must be under 'public'
-        #"result_stage_dir": "public/result/stage",
-        #"result_bkup_dir" : "public/result/bkup",
-        #"result_server_url": "http://127.0.0.1:6600",
-        #"result_server_retry_timer_sec": 10,
-        #"result_encrypt": false,
-        # --
-        # fail_fast: if true (default), testing will stop on first failed test
-        "fail_fast": false,
-        # channel_hw_driver: list of code to initialize the test environment, must be specified
-        "drivers": ["public.prism.drivers.fake.fake"]
+        // fail_fast: if true (default), testing will stop on first failed test
+        "fail_fast": true,
+        // channel_hw_driver: list of code to initialize the test environment, must be specified
+        "drivers": ["public.prism.drivers.fake.hwdrv_fake"]
       },
       "tests": [
         {
-          # module is path to python code supporting this test
-          "module": "public.prism.scripts.prod_v0.tst00xx",
+          // module is path to python code supporting this test
+          "module": "public.prism.scripts.example.prod_v0.tst00xx",
           "options": {
-            # fail_fast: if true (default), testing will stop on first failed test, overrides config section
-            "fail_fast": false
-            # timeout: defaults to 10 seconds, but can be overridden here, or in a test item (below)
-            #"timeout": 20
-            #
-            # Other options may be added here for your specific use cases.
-            # Options here are available to each item python coded implementation.
-            # Think of these options like global variable to all test items in this module.
+            // fail_fast: if true (default), testing will stop on first failed test, overrides config section
+            "fail_fast": true
+            // timeout: defaults to 10 seconds, but can be overridden here, or in a test item (below)
+            //"timeout": 20
+            //
+            // Other options may be added here for your specific use cases.
+            // Options here are available to each item python coded implementation.
+            // Think of these options like global variable to all test items in this module.
           },
           "items": [
             {"id": "TST0xxSETUP",           "enable": true },
-            {"id": "TST000_Meas",           "enable": true, "args": {"min": 0, "max": 10},
-                                            # fail: this is a list of 'fid' and 'msg' that get displayed and
-                                            #       recorded with the test record.  The python code for this
-                                            #       test item assigns which item in the list best represents
-                                            #       the failure mode.  This information is to assist repair.
+            {"id": "TST000_Meas",           "enable": true, "args": {"min": 0, "max": 10}},
+            {"id": "TST001_Meas",           "enable": true, "args": {"min": 0, "max": 10},
+                                            // fail: this is a list of 'fid' and 'msg' that get displayed and
+                                            //       recorded with the test record.  The python code for this
+                                            //       test item assigns which item in the list best represents
+                                            //       the failure mode.  This information is to assist repair.
                                             "fail": [ {"fid": "TST000-0", "msg": "Component apple R1"},
                                                       {"fid": "TST000-1", "msg": "Component banana R1"}] },
-            {"id": "TST001_Skip",           "enable": false },
-            {"id": "TST002_Buttons",        "enable": true, "timeout": 10 },
-            {"id": "TST003_KeyAdd",         "enable": true },
-            {"id": "TST004_KeyGet",         "enable": true },
-            {"id": "TST005_RsrcLock",       "enable": true, "args": {"holdTime": 1}, "timeout": 60 },
-            {"id": "TST006_HWDriver",       "enable": true },
+            {"id": "TST002_Skip",           "enable": false },
+            {"id": "TST003_Buttons",        "enable": true, "timeout": 10 },
+            {"id": "TST004_KeyAdd",         "enable": true },
+            {"id": "TST005_KeyGet",         "enable": true },
+            {"id": "TST006_RsrcLock",       "enable": true, "args": {"holdTime": 1}, "timeout": 60 },
+            {"id": "TST007_HWDriver",       "enable": true },
             {"id": "TST008_TextInput",      "enable": true, "timeout": 10 },
-            {"id": "TST007_LogPctProgress", "enable": true, "timeout": 15 },
-            {"id": "TST0xxTRDN",            "enable": true }
+            {"id": "TST009_LogPctProgress", "enable": true, "timeout": 15 },
+            {"id": "TST010_BlobUnknown",    "enable": true },
+            {"id": "TST011_BlobXY",         "enable": true },
+            {"id": "TST012_JSONB",          "enable": true },
+
+            // always called, no matter if test fails above
+            {"id": "TST0xxTEARDOWN",        "enable": true },
           ]
         }
       ]
     }
-
 
 
 Measurements

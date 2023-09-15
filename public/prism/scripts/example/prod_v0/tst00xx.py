@@ -65,20 +65,21 @@ class tst00xx(TestItem):
         #
         # self.timeout
         #   - boolean indicating if a timeout has occurred
-        #   - use in while/for loops to check if a timeout has ocurred
+        #   - use in while/for loops to check if a timeout has occurred
         #
         # self.item_end([result[s]]) # always last line of test
         #  - result is one of ResultAPI.RECORD_* constants
         #  - result may be a list or a single instance
         #  - called without arguments, the result is ResultAPI.RECORD_RESULT_PASS
         #
-        # Usage Reference
+        # Notes
         #
         # 1) Test Item Timeout
         #    - every test time is guarded by a timeout which has a default of ResultAPI.TESTITEM_TIMEOUT Sec.
         #    - this value can be overridden by adding '"timeout": <value>' to the test item in the script
         #    - if the timeout expires, it is considered a Fail, even if it is
         #      on a user input item.  The test script will fail.
+        #    - when using loops (while/for) for long running tasks, use self.timeout to check
         #
         self.hw_fake = None
 
