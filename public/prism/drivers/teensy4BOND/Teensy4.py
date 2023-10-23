@@ -350,6 +350,18 @@ class Teensy4:
             answer = self.rpc.call_method('write_gpio', pin_number, state)
             return self._rpc_validate(answer)
 
+    def bist_voltage(self, name):
+        """ Read BIST voltage
+
+        :param name: one of V6V, V5V, V3V3A, V3V3D
+        :return: {'success': True, 'method': 'bist_voltage', 'result': {'name': 'V5V', 'mv': 0}}
+        """
+        with self._lock:
+            self.logger.info(f"bist_voltage {name}")
+            answer = self.rpc.call_method('bist_voltage', name.encode())
+            return self._rpc_validate(answer)
+
+
     #
     # API (wrapper functions)
     # ---------------------------------------------------------------------------------------------

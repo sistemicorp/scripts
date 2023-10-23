@@ -114,6 +114,14 @@ def parse_args():
                            help='Sample rate in milli-seconds, 0-#',
                            default=None, required=True)
 
+    bist_voltage = subp.add_parser('bist_voltage')
+    bist_voltage.add_argument('--name',
+                           dest="_name",
+                           action='store',
+                           type=str,
+                           help='name (V6V, V5V, V3V3A, V3V3D)',
+                           default=None, required=True)
+
     # add new commands here...
 
     args = parser.parse_args()
@@ -184,6 +192,15 @@ def read_adc(args):
     return response["success"]
 
 
+def bist_voltage(args):
+    _success = True
+    logging.info("bist_voltage: {}".format(args))
+
+    response = teensy.bist_voltage(args._name)
+    logging.info("{}".format(response))
+    return response["success"]
+
+
 if __name__ == '__main__':
     args = parse_args()
     exit_code = 0
@@ -216,6 +233,9 @@ if __name__ == '__main__':
 
     elif args._cmd == 'read_adc':
         success = read_adc(args)
+
+    elif args._cmd == 'bist_voltage':
+        success = bist_voltage(args)
 
     if success:
         logging.info("Success")
