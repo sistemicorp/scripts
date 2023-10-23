@@ -43,12 +43,19 @@ Ubuntu File System and Users
 Installing Prism/Lente Stations
 *******************************
 
-For Prism/Lente stations, follow the Full "Demo" instructions.
+For Prism/Lente stations, follow the Full "Demo" instructions, but note the following
+changes,
 
 * Prism
 
   * install "full" per :ref:`Prism Full Install <prism-full-install>`
-  * use the helper script `restart=always`
+  * git clone your "scripts" repo instead of the demo repo
+  * modify `public/settings.json` to suite the deployment
+
+    * see `settings.json` details below
+  * use the Prism helper script at `public/prism.sh` to start Prism,
+
+    * in order for Prism to run every time the computer is turned on use option `restart=always`
 
 * Lente
 
@@ -56,14 +63,15 @@ For Prism/Lente stations, follow the Full "Demo" instructions.
     change the git source to be your repo.
   * Use Lente Station management to push your repo to downstream Prism (and/or
     Lente) computers.
-  * use the helper script `restart=always`
+  * use the helper script `public/lente.sh` and option `restart=always` so that
+    Lente will automatically start on every computer boot up.
 
 
 .. _deploy-settings-file:
 
 
-Settings File
-*************
+Settings.JSON File
+******************
 
 Each Lente/Prism station instillation will have a local settings file, as
 shown below and documented inline,
@@ -98,12 +106,12 @@ shown below and documented inline,
       // Prism/Lente internal connection password
       "prism_lente_pw": "mysecret",
 
-      // ------------------------------------------------------------------
-      // Below are only used by Lente and can be removed for Prism stations
-
       // Enter IP Address:port, example "http://35.123.432.190:6595"
       // Use null to disable upstream sending.
       "result_server_url": null,
+
+      // ------------------------------------------------------------------
+      // Below are only used by Lente and can be removed for Prism stations
 
       "postgres": {
         "resultbasekeysv1": {
@@ -122,6 +130,12 @@ shown below and documented inline,
 For Prism stations, a number of items can be removed per the comments, which will make
 the file smaller and easier to manage.
 
+* see :ref:`HTTPS <https>` for creating necessary files if using HTTPS feature
+
+
+As noted in the comments of the settings file, this file is NOT deployed as part of the
+scripts synchronization that Lente does through station management.  The settings file is
+to be configured for each computer (Lente or Prism) in the deployment.
 
 
 Prism/Lente Docker Images

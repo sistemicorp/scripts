@@ -10,6 +10,5 @@ Lente is the management dashboard and backend database processor.
 
    lente_demo
    lente_screenshots
-   lente_config
    lente_accounts
    lente_cloud

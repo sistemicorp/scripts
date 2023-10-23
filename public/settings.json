@@ -26,12 +26,12 @@
   // Prism/Lente internal connection password
   "prism_lente_pw": "mysecret",
 
-  // ------------------------------------------------------------------
-  // Below are only used by Lente and can be removed for Prism stations
-
   // Enter IP Address:port, example "http://35.123.432.190:6595"
   // Use null to disable upstream sending.
   "result_server_url": null,
+
+  // ------------------------------------------------------------------
+  // Below are only used by Lente and can be removed for Prism stations
 
   "postgres": {
     "resultbasekeysv1": {

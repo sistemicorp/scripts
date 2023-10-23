@@ -47,14 +47,14 @@
 <p>Production security is important.  Sistemi Lente/Prism have features and suggestions to improve security.</p>
 <div class="contents local topic" id="contents">
 <ul class="simple">
-<li><p><a class="reference internal" href="#lente" id="id1">Lente</a></p></li>
-<li><p><a class="reference internal" href="#prism" id="id2">Prism</a></p></li>
-<li><p><a class="reference internal" href="#postgres-db" id="id3">Postgres DB</a></p></li>
-<li><p><a class="reference internal" href="#https" id="id4">HTTPS</a></p></li>
+<li><p><a class="reference internal" href="#lente" id="id2">Lente</a></p></li>
+<li><p><a class="reference internal" href="#prism" id="id3">Prism</a></p></li>
+<li><p><a class="reference internal" href="#postgres-db" id="id4">Postgres DB</a></p></li>
+<li><p><a class="reference internal" href="#https" id="id5">HTTPS</a></p></li>
 </ul>
 </div>
 <section id="lente">
-<h2><a class="toc-backref" href="#id1">Lente</a><a class="headerlink" href="#lente" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id2">Lente</a><a class="headerlink" href="#lente" title="Permalink to this headline">¶</a></h2>
 <p>It is assumed that Lente are “physically secure”, which means physical access to the computers is
 restricted in some way, for example, locked in a secure room.</p>
 <p>The following are further suggestions to improve security,</p>
@@ -65,7 +65,7 @@ restricted in some way, for example, locked in a secure room.</p>
 </ul>
 </section>
 <section id="prism">
-<h2><a class="toc-backref" href="#id2">Prism</a><a class="headerlink" href="#prism" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id3">Prism</a><a class="headerlink" href="#prism" title="Permalink to this headline">¶</a></h2>
 <p>Prism stations are considered insecure.  Presumably anyone on the production floor can access a Prism.
 Often login names and passwords are common to a group of people, or shared amoung them to access the computer.</p>
 <p>The following are further suggestions to improve security,</p>
@@ -78,7 +78,7 @@ Often login names and passwords are common to a group of people, or shared amoun
 </ul>
 </section>
 <section id="postgres-db">
-<h2><a class="toc-backref" href="#id3">Postgres DB</a><a class="headerlink" href="#postgres-db" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id4">Postgres DB</a><a class="headerlink" href="#postgres-db" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Change the default password!</p>
 <ul>
@@ -88,7 +88,7 @@ Often login names and passwords are common to a group of people, or shared amoun
 </ul>
 </section>
 <section id="https">
-<h2><a class="toc-backref" href="#id4">HTTPS</a><a class="headerlink" href="#https" title="Permalink to this headline">¶</a></h2>
+<span id="id1"></span><h2><a class="toc-backref" href="#id5">HTTPS</a><a class="headerlink" href="#https" title="Permalink to this headline">¶</a></h2>
 <p>Please read this article: <a class="reference external" href="https://blog.miguelgrinberg.com/post/running-your-flask-application-over-https">https://blog.miguelgrinberg.com/post/running-your-flask-application-over-https</a></p>
 <p>The coles notes version is that Prism/Lente are not public domain servers and are considered private
 internal servers.  Therefore we can avoid cost and complexity by using our own generated/signed keys.

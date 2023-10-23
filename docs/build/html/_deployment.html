@@ -81,12 +81,23 @@ files are still protected.</p></li>
 </section>
 <section id="installing-prism-lente-stations">
 <h2>Installing Prism/Lente Stations<a class="headerlink" href="#installing-prism-lente-stations" title="Permalink to this headline">¶</a></h2>
-<p>For Prism/Lente stations, follow the Full “Demo” instructions.</p>
+<p>For Prism/Lente stations, follow the Full “Demo” instructions, but note the following
+changes,</p>
 <ul class="simple">
 <li><p>Prism</p>
 <ul>
 <li><p>install “full” per <a class="reference internal" href="prism_demo.html#prism-full-install"><span class="std std-ref">Prism Full Install</span></a></p></li>
-<li><p>use the helper script <cite>restart=always</cite></p></li>
+<li><p>git clone your “scripts” repo instead of the demo repo</p></li>
+<li><p>modify <cite>public/settings.json</cite> to suite the deployment</p>
+<ul>
+<li><p>see <cite>settings.json</cite> details below</p></li>
+</ul>
+</li>
+<li><p>use the Prism helper script at <cite>public/prism.sh</cite> to start Prism,</p>
+<ul>
+<li><p>in order for Prism to run every time the computer is turned on use option <cite>restart=always</cite></p></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><p>Lente</p>
@@ -95,13 +106,14 @@ files are still protected.</p></li>
 change the git source to be your repo.</p></li>
 <li><p>Use Lente Station management to push your repo to downstream Prism (and/or
 Lente) computers.</p></li>
-<li><p>use the helper script <cite>restart=always</cite></p></li>
+<li><p>use the helper script <cite>public/lente.sh</cite> and option <cite>restart=always</cite> so that
+Lente will automatically start on every computer boot up.</p></li>
 </ul>
 </li>
 </ul>
 </section>
-<section id="settings-file">
-<span id="deploy-settings-file"></span><h2>Settings File<a class="headerlink" href="#settings-file" title="Permalink to this headline">¶</a></h2>
+<section id="settings-json-file">
+<span id="deploy-settings-file"></span><h2>Settings.JSON File<a class="headerlink" href="#settings-json-file" title="Permalink to this headline">¶</a></h2>
 <p>Each Lente/Prism station instillation will have a local settings file, as
 shown below and documented inline,</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>// This file is NOT propagated by Lente to Prism stations.
@@ -132,12 +144,12 @@ shown below and documented inline,</p>
   // Prism/Lente internal connection password
   &quot;prism_lente_pw&quot;: &quot;mysecret&quot;,
 
-  // ------------------------------------------------------------------
-  // Below are only used by Lente and can be removed for Prism stations
-
   // Enter IP Address:port, example &quot;http://35.123.432.190:6595&quot;
   // Use null to disable upstream sending.
   &quot;result_server_url&quot;: null,
+
+  // ------------------------------------------------------------------
+  // Below are only used by Lente and can be removed for Prism stations
 
   &quot;postgres&quot;: {
     &quot;resultbasekeysv1&quot;: {
@@ -155,6 +167,12 @@ shown below and documented inline,</p>
 </div>
 <p>For Prism stations, a number of items can be removed per the comments, which will make
 the file smaller and easier to manage.</p>
+<ul class="simple">
+<li><p>see <a class="reference internal" href="_security.html#https"><span class="std std-ref">HTTPS</span></a> for creating necessary files if using HTTPS feature</p></li>
+</ul>
+<p>As noted in the comments of the settings file, this file is NOT deployed as part of the
+scripts synchronization that Lente does through station management.  The settings file is
+to be configured for each computer (Lente or Prism) in the deployment.</p>
 </section>
 <section id="prism-lente-docker-images">
 <h2>Prism/Lente Docker Images<a class="headerlink" href="#prism-lente-docker-images" title="Permalink to this headline">¶</a></h2>
