@@ -1,0 +1,141 @@
+Instructions for Teensy 4.x development:
+
+1) Follow setup instructions here, https://www.pjrc.com/teensy/td_download.html
+
+   ![A test image](readme_images/rm_install_arduino_01.png)
+
+   Do not use the AppImage version, use the Linux Zip file.
+   
+   Download and install the Linux UDEV rules: https://www.pjrc.com/teensy/00-teensy.rules
+
+   The teensy CLI loader is used by Prism scripts to load teensy, and that binary
+   is stored in `scripts` repo. libusb-dev is required to use it.
+
+        sudo apt-get install libusb-dev
+   
+   Optional CLI loader source and information:
+      https://www.pjrc.com/teensy/loader_cli.html
+      https://github.com/PaulStoffregen/teensy_loader_cli
+
+2) Start the Arduino IDE
+   - Select the board, Tools->Board->TeensyArduino->Teensy41
+
+![A test image](readme_images/rm_install_arduino_02.png)
+
+3) Set the Prism Sketch folder
+   - File->Preferences->Sketchbook Location
+   - Set the path appropriately, for example,
+     /home/martin/git/scripts/public/prism/drivers/teensy4BOND/server
+
+4) Open teensy4_server.ino with the Arduino IDE.
+
+5) Go to the top ribbon menu and select 'Sketch'.
+
+6) In the drop down menu select 'Include Library' then 'Manage Libraries' to open the Library Manager.
+
+7) In the Library Manager put simpleRPC (ver 3.2.0) in the search bar. Install the library.
+
+8) In the Library Manager put ArduinoJson (ver 6.21.3) in the search bar. Install the library.
+
+9) Generating a Hex file from Arduino
+    - In Arduino IDE, File->Preferences, turn on Show Verbose Output During: Compilation
+    - Compile the sketch by pressing the Arduino IDE Verify (check mark) icon
+    - Note the panel output for the location of the compiled files,
+
+
+    /home/martin/Downloads/arduino-1.8.19-linux64/arduino-1.8.19/hardware/teensy/../tools/teensy_size /tmp/arduino_build_864038/teensy4_server.ino.elf
+
+10) Plug your Teensy into your computer.
+
+11) Go to Arduino IDE and upload the sketch onto the Teensy.
+
+12) Program Teensy with command line tool,
+
+
+    martin@martin-staric2:~/git/scripts/public/prism/drivers/teensy4/server$ ./teensy_loader_cli --mcu=TEENSY41 -w -v ../../../../prism/scripts/example/teensy4_v0/assets/teensy4_server.ino.hex 
+    Teensy Loader, Command Line, Version 2.2
+    Read "../../../../prism/scripts/example/teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
+    Found HalfKay Bootloader
+    Programming..................................................................
+    Booting
+
+
+
+13) Showing Teensy devices with lsusb,
+
+
+    martin@martin-virtual-machine:~/git/scripts/public/prism/drivers/teensy4/server$ lsusb
+    Bus 001 Device 050: ID 16c0:0486 Van Ooijen Technische Informatica Teensyduino RawHID
+    Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+    Bus 002 Device 004: ID 0e0f:0008 VMware, Inc. Virtual Bluetooth Adapter
+    Bus 002 Device 003: ID 0e0f:0002 VMware, Inc. Virtual USB Hub
+    Bus 002 Device 002: ID 0e0f:0003 VMware, Inc. Virtual Mouse
+    Bus 002 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+
+
+After programming, the teensy will show up as a serial, like so,
+
+    martin@martin-virtual-machine:~/git/scripts/public/prism/drivers/teensy4/server$ lsusb
+    Bus 001 Device 053: ID 16c0:0483 Van Ooijen Technische Informatica Teensyduino Serial
+
+
+
+14) Teensy RPC Development
+
+    - Prism calls Teensy's RPC server from Python, and there is a way to test that API from Python using 
+      a command line (CLI) interface.
+    - Using the Teensy_cli.py program is how you will be testing/developing new APIs to the Teensy4 server.
+
+--Teensy4 CLI Examples--
+
+
+    (venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/teensy4BOND$ python3 Teensy4_cli.py -p /dev/ttyACM1 version
+              Teensy4.py   INFO   79 version 0.1.0
+              Teensy4.py   INFO   88 attempting to install Teensy on port /dev/ttyACM1
+              Teensy4.py   INFO  246 version
+              Teensy4.py   INFO  191 {'success': True, 'method': 'version', 'result': {'version': '0.1.0'}}
+              Teensy4.py   INFO  177 Jig Closed Detector not defined (None)
+              Teensy4.py   INFO  114 Installed Teensy on port /dev/ttyACM1
+          Teensy4_cli.py   INFO  150 version: Namespace(port='/dev/ttyACM1', verbose=0, _cmd='version')
+              Teensy4.py   INFO  246 version
+              Teensy4.py   INFO  191 {'success': True, 'method': 'version', 'result': {'version': '0.1.0'}}
+          Teensy4_cli.py   INFO  153 {'success': True, 'method': 'version', 'result': {'version': '0.1.0'}}
+          Teensy4_cli.py   INFO  221 Success
+              Teensy4.py   INFO  125 closing /dev/ttyACM1
+    (venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/teensy4BOND$ python3 Teensy4_cli.py -p /dev/ttyACM1 led --on
+              Teensy4.py   INFO   79 version 0.1.0
+              Teensy4.py   INFO   88 attempting to install Teensy on port /dev/ttyACM1
+              Teensy4.py   INFO  246 version
+              Teensy4.py   INFO  191 {'success': True, 'method': 'version', 'result': {'version': '0.1.0'}}
+              Teensy4.py   INFO  177 Jig Closed Detector not defined (None)
+              Teensy4.py   INFO  114 Installed Teensy on port /dev/ttyACM1
+          Teensy4_cli.py   INFO  125 led: Namespace(port='/dev/ttyACM1', verbose=0, _cmd='led', _on=True, _off=False)
+          Teensy4_cli.py   INFO  128 ON: turn on LED
+              Teensy4.py   INFO  284 set_led True
+              Teensy4.py   INFO  191 {'success': True, 'method': 'set_led', 'result': {'state': 'on'}}
+          Teensy4_cli.py   INFO  135 {'success': True, 'method': 'set_led', 'result': {'state': 'on'}}
+          Teensy4_cli.py   INFO  221 Success
+              Teensy4.py   INFO  125 closing /dev/ttyACM1
+    (venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/teensy4BOND$ python3 Teensy4_cli.py -p /dev/ttyACM1 led --off
+              Teensy4.py   INFO   79 version 0.1.0
+              Teensy4.py   INFO   88 attempting to install Teensy on port /dev/ttyACM1
+              Teensy4.py   INFO  246 version
+              Teensy4.py   INFO  191 {'success': True, 'method': 'version', 'result': {'version': '0.1.0'}}
+              Teensy4.py   INFO  177 Jig Closed Detector not defined (None)
+              Teensy4.py   INFO  114 Installed Teensy on port /dev/ttyACM1
+          Teensy4_cli.py   INFO  125 led: Namespace(port='/dev/ttyACM1', verbose=0, _cmd='led', _on=False, _off=True)
+          Teensy4_cli.py   INFO  132 OFF: turn off LED
+              Teensy4.py   INFO  284 set_led False
+              Teensy4.py   INFO  191 {'success': True, 'method': 'set_led', 'result': {'state': 'off'}}
+          Teensy4_cli.py   INFO  135 {'success': True, 'method': 'set_led', 'result': {'state': 'off'}}
+          Teensy4_cli.py   INFO  221 Success
+              Teensy4.py   INFO  125 closing /dev/ttyACM1
+    (venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/teensy4BOND$
+
+
+15) Your own Teensy Development
+
+   - the code here (~/public/prism/drivers/teensy4) is a starting point (template) for creating
+     your own Teensy4 code.
+   - copy ~/public/prism/drivers/teensy4 to your own driver folder, for example, ~/public/prism/drivers/company_teensy4
+
