@@ -23,7 +23,7 @@ martin@martin-staric2:~/git/scripts/public/prism/drivers/teensy4$ python3 Teensy
 import logging
 import argparse
 
-from Teensy4 import Teensy4
+from A4401_BOND import A4401_BOND
 
 # global teensy object
 teensy = None
@@ -210,7 +210,7 @@ if __name__ == '__main__':
     else:
         logging.basicConfig(level=logging.DEBUG, format='%(filename)20s %(levelname)6s %(lineno)4s %(message)s')
 
-    teensy = Teensy4(args.port, loggerIn=logging)
+    teensy = A4401_BOND(args.port, loggerIn=logging)
     success = teensy.init()
     if not success:
         logging.error("Failed to create teensy instance")

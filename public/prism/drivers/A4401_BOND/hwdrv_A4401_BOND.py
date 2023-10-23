@@ -11,7 +11,7 @@ import pyudev
 from core.sys_log import pub_notice
 from public.prism.drivers.common.list_serial import serial_ports
 
-from public.prism.drivers.teensy4.Teensy4 import Teensy4, DRIVER_TYPE
+from public.prism.drivers.A4401_BOND.A4401_BOND import A4401_BOND, DRIVER_TYPE
 
 
 class HWDriver(object):
@@ -83,7 +83,7 @@ class HWDriver(object):
             #https: // stackoverflow.com / questions / 21050671 / how - to - check - if -device - is -connected - pyserial / 49450813
             # test if this COM port is really a Teensy
             # create an instance of Teensy()
-            _teensy['hwdrv'] = Teensy4(port, loggerIn=logging.getLogger("teensy.try"))
+            _teensy['hwdrv'] = A4401_BOND(port, loggerIn=logging.getLogger("teensy.try"))
             success = _teensy['hwdrv'].init()
             if not success:
                 self.logger.error("failed on {}...".format(port))

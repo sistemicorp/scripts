@@ -20,10 +20,10 @@ except:
     from public.prism.drivers.common.stublogger import StubLogger
 
 
-DRIVER_TYPE = "TEENSY4"
+DRIVER_TYPE = "A4401_BOND"
 
 
-class Teensy4:
+class A4401_BOND:
     """ teensy4 SimpleRPC based driver
 
     Adding new RPC calls...

@@ -1,14 +1,15 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2021-2022
+Sistemi Corporation, copyright, all rights reserved, 2023
 Martin Guthrie
 
 """
 import os
 import logging
 from core.sys_log import pub_notice
-from public.prism.drivers.iba01.list_serial import serial_ports
+from public.prism.drivers.common.list_serial import serial_ports
+from public.prism.drivers.A4401_BOND.A4401_BOND import A4401_BOND
 
 DRIVER_TYPE = "TEENSY4_PROG"
 
