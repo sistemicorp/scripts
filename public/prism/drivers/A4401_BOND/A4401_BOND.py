@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2021-2023
+Sistemi Corporation, copyright, all rights reserved, 2023
 Owen Li, Martin Guthrie
 
 """
@@ -48,7 +48,7 @@ class A4401_BOND:
     GPIO_MODE_INPUT_PULLUP = "INPUT_PULLUP"
     GPIO_MODE_LIST = [GPIO_MODE_INPUT, GPIO_MODE_OUTPUT, GPIO_MODE_INPUT_PULLUP]
 
-    JIG_CLOSE_GPIO = None  # GPIO number for Jig Closed detect, set to None if not using (Active-Low)
+    JIG_CLOSE_GPIO = 7  # GPIO number for Jig Closed detect, set to None if not using (Active-Low)
 
     GPIO_NUMBER_MIN = 0
     GPIO_NUMBER_MAX = 41

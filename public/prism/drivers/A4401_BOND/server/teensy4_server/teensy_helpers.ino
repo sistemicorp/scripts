@@ -142,11 +142,11 @@ String bist_voltage(String name) {
   } else {
     doc["result"]["error"] = "Unknown name";
     doc["success"] = false;
-    doc["result"]["mv"] = mv;
     return _response(doc);
   }
 
   mv = _read_adc(pin, BIST_VOLTAGE_ADC_SAMPLES, BIST_VOLTAGE_ADC_SAMPLE_RATE_MS);
+  mv *= 3;  // see sch for resistor divider, 10k / (10k + 20k)
   doc["result"]["mv"] = mv;
 
   return _response(doc);  // always the last line of RPC API
