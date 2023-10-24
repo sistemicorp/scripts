@@ -7,15 +7,24 @@
  *  1) functions begining with "_" are considered "private" and should not
  *     be called thru the RPC API.  These are "supporting" functions.
 */
-
+#include <Wire.h>
 #include <simpleRPC.h>
 #include <ArduinoJson.h>
 #include "version.h"  // holds the "version" of this code, !update when code is changed!
+#include <INA219_WE.h>
+#define INA220_VBAT_I2C_ADDRESS 0x40
+#define INA220_VBUS_I2C_ADDRESS 0x41
 
-#define BIST_VOLTAGE_V3V3A_PIN  44
-#define BIST_VOLTAGE_V3V3D_PIN  43
-#define BIST_VOLTAGE_V5V_PIN    16
-#define BIST_VOLTAGE_V6V_PIN    15
+#define VSYS_EN_PIN             41
+#define VSYS_PG_PIN             40
+
+#define BIST_VOLTAGE_V3V3A_PIN  23
+#define BIST_VOLTAGE_V3V3D_PIN  22
+#define BIST_VOLTAGE_V5V_PIN    25
+#define BIST_VOLTAGE_V6V_PIN    24
+
+INA219_WE ina219_vbat = INA219_WE(INA220_VBAT_I2C_ADDRESS);
+INA219_WE ina219_vbus = INA219_WE(INA220_VBAT_I2C_ADDRESS);
 
 //-------------------------------------------------------------------------------------------------------------
 // Teensy "on board" RPC functions
@@ -114,25 +123,67 @@ String reset(){
 //set-up/loop Functions
 
 void setup(void) {
+  bool all_good = true;
+  unsigned int blink_delay_ms = 100;
+
   Serial.begin(115200);
+  Wire.begin();
   pinMode(LED_BUILTIN, OUTPUT);
 
   // blink the LED to let people know we are good
   digitalWrite(LED_BUILTIN, HIGH);
-  delay(100);
+  delay(blink_delay_ms);
   digitalWrite(LED_BUILTIN, LOW);
-  delay(100);
+  delay(blink_delay_ms);
   digitalWrite(LED_BUILTIN, HIGH);
-  delay(100);
+  delay(blink_delay_ms);
   digitalWrite(LED_BUILTIN, LOW);
 
-  // set BOND ADC pins
-  pinMode(BIST_VOLTAGE_V3V3A_PIN, INPUT_DISABLE);  // analog input
-  pinMode(BIST_VOLTAGE_V3V3D_PIN, INPUT_DISABLE);  // analog input
-  pinMode(BIST_VOLTAGE_V5V_PIN, INPUT_DISABLE);    // analog input
-  pinMode(BIST_VOLTAGE_V6V_PIN, INPUT_DISABLE);    // analog input
+  // set BOND pins
+  pinMode(VSYS_EN_PIN, OUTPUT);
+  pinMode(VSYS_PG_PIN, INPUT);
 
-  // add hardware specific setup here
+  // ADC
+  pinMode(BIST_VOLTAGE_V3V3A_PIN, INPUT);  // analog input
+  pinMode(BIST_VOLTAGE_V3V3D_PIN, INPUT);  // analog input
+  pinMode(BIST_VOLTAGE_V5V_PIN, INPUT);    // analog input
+  pinMode(BIST_VOLTAGE_V6V_PIN, INPUT);    // analog input
+
+  // run tests here... blink LED if problem
+  digitalWrite(VSYS_EN_PIN, HIGH);
+  delay(100);
+  // check VSYS_PG_PIN
+  uint8_t vsys_pg_pin = digitalRead(VSYS_PG_PIN);
+  if (vsys_pg_pin == 0) {
+    all_good = false;
+  }
+
+  if (!ina219_vbat.init()) {
+    all_good = false;
+  }
+  if (!ina219_vbus.init()) {
+    all_good = false;
+  }
+
+
+  delay(blink_delay_ms);
+
+  if (!all_good) {
+    // long blinks if things are bad
+    blink_delay_ms = 400;
+
+    // shutdown for safety
+    //digitalWrite(VSYS_EN_PIN, LOW);
+  }
+    
+  // TODO: blink error code based on fault
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(blink_delay_ms);
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(blink_delay_ms);
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(blink_delay_ms);
+  digitalWrite(LED_BUILTIN, LOW);
   
 }
 
