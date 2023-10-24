@@ -361,6 +361,25 @@ class A4401_BOND:
             answer = self.rpc.call_method('bist_voltage', name.encode())
             return self._rpc_validate(answer)
 
+    def vbus_read(self):
+        """ Read INA220 for VBUS
+
+        :return: {'success': True, 'method': 'bist_voltage', 'result': {'name': 'V5V', 'mv': 0}}
+        """
+        with self._lock:
+            self.logger.info(f"vbus_read")
+            answer = self.rpc.call_method('vbus_read')
+            return self._rpc_validate(answer)
+
+    def vbat_read(self):
+        """ Read INA220 for VBAT
+
+        :return: {'success': True, 'method': 'bist_voltage', 'result': {'name': 'V5V', 'mv': 0}}
+        """
+        with self._lock:
+            self.logger.info(f"vbat_read")
+            answer = self.rpc.call_method('vbat_read')
+            return self._rpc_validate(answer)
 
     #
     # API (wrapper functions)

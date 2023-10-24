@@ -122,6 +122,9 @@ def parse_args():
                            help='name (V6V, V5V, V3V3A, V3V3D)',
                            default=None, required=True)
 
+    vbat_read = subp.add_parser('vbat_read')
+    vbus_read = subp.add_parser('vbus_read')
+
     # add new commands here...
 
     args = parser.parse_args()
@@ -201,6 +204,24 @@ def bist_voltage(args):
     return response["success"]
 
 
+def vbus_read(args):
+    _success = True
+    logging.info("vbus_read: {}".format(args))
+
+    response = teensy.vbus_read()
+    logging.info("{}".format(response))
+    return response["success"]
+
+
+def vbat_read(args):
+    _success = True
+    logging.info("vbat_read: {}".format(args))
+
+    response = teensy.vbat_read()
+    logging.info("{}".format(response))
+    return response["success"]
+
+
 if __name__ == '__main__':
     args = parse_args()
     exit_code = 0
@@ -236,6 +257,12 @@ if __name__ == '__main__':
 
     elif args._cmd == 'bist_voltage':
         success = bist_voltage(args)
+
+    elif args._cmd == 'vbat_read':
+        success = vbat_read(args)
+
+    elif args._cmd == 'vbus_read':
+        success = vbus_read(args)
 
     if success:
         logging.info("Success")

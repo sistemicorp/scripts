@@ -12,8 +12,11 @@
 #include <ArduinoJson.h>
 #include "version.h"  // holds the "version" of this code, !update when code is changed!
 #include <INA219_WE.h>
+
 #define INA220_VBAT_I2C_ADDRESS 0x40
 #define INA220_VBUS_I2C_ADDRESS 0x41
+#define INA220_VBAT_SHUNT_OHMS  0.2f
+#define INA220_VBUS_SHUNT_OHMS  0.2f
 
 #define VSYS_EN_PIN             41
 #define VSYS_PG_PIN             40
@@ -24,7 +27,7 @@
 #define BIST_VOLTAGE_V6V_PIN    24
 
 INA219_WE ina219_vbat = INA219_WE(INA220_VBAT_I2C_ADDRESS);
-INA219_WE ina219_vbus = INA219_WE(INA220_VBAT_I2C_ADDRESS);
+INA219_WE ina219_vbus = INA219_WE(INA220_VBUS_I2C_ADDRESS);
 
 //-------------------------------------------------------------------------------------------------------------
 // Teensy "on board" RPC functions
@@ -118,7 +121,6 @@ String reset(){
   return _response(doc);  // always the last line of RPC API
 }
 
-
 //-------------------------------------------------------------------------------------------------------------
 //set-up/loop Functions
 
@@ -149,7 +151,7 @@ void setup(void) {
   pinMode(BIST_VOLTAGE_V5V_PIN, INPUT);    // analog input
   pinMode(BIST_VOLTAGE_V6V_PIN, INPUT);    // analog input
 
-  // run tests here... blink LED if problem
+  // turn on VSYS (~6V) - powers rest of system
   digitalWrite(VSYS_EN_PIN, HIGH);
   delay(100);
   // check VSYS_PG_PIN
@@ -158,16 +160,23 @@ void setup(void) {
     all_good = false;
   }
 
+  // configure INA220s
   if (!ina219_vbat.init()) {
     all_good = false;
+  } else {
+    ina219_vbat.setShuntSizeInOhms(INA220_VBAT_SHUNT_OHMS);
+    ina219_vbat.setBusRange(BRNG_16);
+    ina219_vbat.setMeasureMode(TRIGGERED);
   }
   if (!ina219_vbus.init()) {
     all_good = false;
+  } else {
+    ina219_vbus.setShuntSizeInOhms(INA220_VBUS_SHUNT_OHMS);
+    ina219_vbus.setBusRange(BRNG_16);
+    ina219_vbus.setMeasureMode(TRIGGERED);
   }
 
-
   delay(blink_delay_ms);
-
   if (!all_good) {
     // long blinks if things are bad
     blink_delay_ms = 400;
@@ -184,7 +193,6 @@ void setup(void) {
   digitalWrite(LED_BUILTIN, HIGH);
   delay(blink_delay_ms);
   digitalWrite(LED_BUILTIN, LOW);
-  
 }
 
 void loop(void) {
@@ -204,6 +212,8 @@ void loop(void) {
     write_gpio, "write_gpio: Writes GPIO (HIGH or LOW).",
     reset, "reset: Resets Teensy.",
 
-    bist_voltage, "bist_voltage: Reads internal voltage"
+    bist_voltage, "bist_voltage: Reads internal voltage",
+    vbus_read, "vbus_read: Read VBUS current and voltage",
+    vbat_read, "vbat_read: Read VBAT current and voltage"
     );
 }
