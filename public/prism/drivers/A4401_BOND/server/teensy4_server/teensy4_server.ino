@@ -8,10 +8,12 @@
  *     be called thru the RPC API.  These are "supporting" functions.
 */
 #include <Wire.h>
+#include "SPI.h"
 #include <simpleRPC.h>
 #include <ArduinoJson.h>
 #include "version.h"  // holds the "version" of this code, !update when code is changed!
 #include <INA219_WE.h>
+#include "src/MAX11311/MAX11300.h"
 
 #define INA220_VBAT_I2C_ADDRESS 0x40
 #define INA220_VBUS_I2C_ADDRESS 0x41
@@ -25,9 +27,23 @@
 #define BIST_VOLTAGE_V3V3D_PIN  22
 #define BIST_VOLTAGE_V5V_PIN    25
 #define BIST_VOLTAGE_V6V_PIN    24
+#define SPI_CS_IOX_Pin          33
+#define SPI_CS_HRD1_Pin         38
+#define SPI_CS_HDR2_Pin         37
+#define SPI_CS_HDR3_Pin         36
+#define SPI_CS_HDR4_Pin         35  
+#define SPI_CS2_HDR4_Pin        34 
+#define SPI_MOSI_Pin            26
+#define SPI_MISO_Pin            39
+#define SPI_SCLK_Pin            27
+#define MAX11311_COPNVERT_Pin   8
 
 INA219_WE ina219_vbat = INA219_WE(INA220_VBAT_I2C_ADDRESS);
 INA219_WE ina219_vbus = INA219_WE(INA220_VBUS_I2C_ADDRESS);
+
+// Original Repo: https://github.com/sistemicorp/MAX11300/tree/master
+// Clone the repo and documentation can be found in "extras"
+MAX11300 max_iox = MAX11300();
 
 //-------------------------------------------------------------------------------------------------------------
 // Teensy "on board" RPC functions
@@ -141,6 +157,24 @@ void setup(void) {
   delay(blink_delay_ms);
   digitalWrite(LED_BUILTIN, LOW);
 
+  digitalWrite(SPI_CS_IOX_Pin, HIGH); // SPI CS inactive high
+  pinMode (SPI_CS_IOX_Pin, OUTPUT);   // ensure SPI CS is driven output
+  digitalWrite(SPI_CS_HRD1_Pin, HIGH); 
+  pinMode (SPI_CS_HRD1_Pin, OUTPUT); 
+  digitalWrite(SPI_CS_HDR2_Pin, HIGH); 
+  pinMode (SPI_CS_HDR2_Pin, OUTPUT); 
+  digitalWrite(SPI_CS_HDR3_Pin, HIGH); 
+  pinMode (SPI_CS_HDR3_Pin, OUTPUT); 
+  digitalWrite(SPI_CS_HDR4_Pin, HIGH); 
+  pinMode (SPI_CS_HDR4_Pin, OUTPUT); 
+  digitalWrite(SPI_CS2_HDR4_Pin, HIGH); 
+  pinMode (SPI_CS2_HDR4_Pin, OUTPUT);          
+  digitalWrite(SPI_MOSI_Pin, LOW);
+  pinMode (SPI_MOSI_Pin, OUTPUT);
+  pinMode (SPI_MISO_Pin, INPUT);
+  digitalWrite(SPI_SCLK_Pin, LOW);
+  pinMode (SPI_SCLK_Pin, OUTPUT);
+
   // set BOND pins
   pinMode(VSYS_EN_PIN, OUTPUT);
   pinMode(VSYS_PG_PIN, INPUT);
@@ -175,6 +209,9 @@ void setup(void) {
     ina219_vbus.setBusRange(BRNG_16);
     ina219_vbus.setMeasureMode(TRIGGERED);
   }
+
+  max_iox.begin(SPI_MOSI_Pin, SPI_MISO_Pin, SPI_SCLK_Pin, SPI_CS_IOX_Pin, MAX11311_COPNVERT_Pin);
+  max_iox.
 
   delay(blink_delay_ms);
   if (!all_good) {
@@ -214,6 +251,7 @@ void loop(void) {
 
     bist_voltage, "bist_voltage: Reads internal voltage",
     vbus_read, "vbus_read: Read VBUS current and voltage",
-    vbat_read, "vbat_read: Read VBAT current and voltage"
+    vbat_read, "vbat_read: Read VBAT current and voltage",
+    iox_read, "iox_read: MAX11311 IOX"
     );
 }

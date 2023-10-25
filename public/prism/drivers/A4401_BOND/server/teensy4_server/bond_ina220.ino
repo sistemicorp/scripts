@@ -2,6 +2,7 @@
  *  Martin Guthrie
  *  
  *  INA220 for VBUS and VBAT
+ *  See https://github.com/wollewald/INA219_WE/blob/master/examples/Triggered/Triggered.ino
 */
 
 

@@ -125,6 +125,7 @@ def parse_args():
     vbat_read = subp.add_parser('vbat_read')
     vbus_read = subp.add_parser('vbus_read')
 
+    iox_read = subp.add_parser('iox_read')
     # add new commands here...
 
     args = parser.parse_args()
@@ -222,6 +223,15 @@ def vbat_read(args):
     return response["success"]
 
 
+def iox_read(args):
+    _success = True
+    logging.info("iox_read: {}".format(args))
+
+    response = teensy.iox_read()
+    logging.info("{}".format(response))
+    return response["success"]
+
+
 if __name__ == '__main__':
     args = parse_args()
     exit_code = 0
@@ -263,6 +273,9 @@ if __name__ == '__main__':
 
     elif args._cmd == 'vbus_read':
         success = vbus_read(args)
+
+    elif args._cmd == 'iox_read':
+        success = iox_read(args)
 
     if success:
         logging.info("Success")

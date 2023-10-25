@@ -364,7 +364,7 @@ class A4401_BOND:
     def vbus_read(self):
         """ Read INA220 for VBUS
 
-        :return: {'success': True, 'method': 'bist_voltage', 'result': {'name': 'V5V', 'mv': 0}}
+        :return: {'success': True, 'method': 'vbus_read', 'result': {'v': 0, 'ima': 0.050000001}}
         """
         with self._lock:
             self.logger.info(f"vbus_read")
@@ -374,11 +374,21 @@ class A4401_BOND:
     def vbat_read(self):
         """ Read INA220 for VBAT
 
-        :return: {'success': True, 'method': 'bist_voltage', 'result': {'name': 'V5V', 'mv': 0}}
+        :return: {'success': True, 'method': 'vbat_read', 'result': {'v': 0, 'ima': 0.050000001}}
         """
         with self._lock:
             self.logger.info(f"vbat_read")
             answer = self.rpc.call_method('vbat_read')
+            return self._rpc_validate(answer)
+
+    def iox_read(self):
+        """ MAX11311 IOX
+
+        :return: {'success': True, 'method': 'vbat_read', 'result': {'v': 0, 'ima': 0.050000001}}
+        """
+        with self._lock:
+            self.logger.info(f"iox_read")
+            answer = self.rpc.call_method('iox_read')
             return self._rpc_validate(answer)
 
     #
