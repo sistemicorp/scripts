@@ -211,7 +211,7 @@ void setup(void) {
   }
 
   max_iox.begin(SPI_MOSI_Pin, SPI_MISO_Pin, SPI_SCLK_Pin, SPI_CS_IOX_Pin, MAX11311_COPNVERT_Pin);
-  max_iox.
+  max_iox.write_register(port_cfg_00, MAX11300::MODE_3);
 
   delay(blink_delay_ms);
   if (!all_good) {
@@ -252,6 +252,6 @@ void loop(void) {
     bist_voltage, "bist_voltage: Reads internal voltage",
     vbus_read, "vbus_read: Read VBUS current and voltage",
     vbat_read, "vbat_read: Read VBAT current and voltage",
-    iox_read, "iox_read: MAX11311 IOX"
+    iox_reset, "iox_reset: IOX reset pin"
     );
 }

@@ -44,15 +44,7 @@ static const uint16_t port_config_design_vals[20] = {
     port_cfg_08_DESIGNVALUE,
     port_cfg_09_DESIGNVALUE,
     port_cfg_10_DESIGNVALUE,
-    port_cfg_11_DESIGNVALUE,
-    port_cfg_12_DESIGNVALUE,
-    port_cfg_13_DESIGNVALUE,
-    port_cfg_14_DESIGNVALUE,
-    port_cfg_15_DESIGNVALUE,
-    port_cfg_16_DESIGNVALUE,
-    port_cfg_17_DESIGNVALUE,
-    port_cfg_18_DESIGNVALUE,
-    port_cfg_19_DESIGNVALUE};
+    port_cfg_11_DESIGNVALUE};
 
 //*********************************************************************
 MAX11300::MAX11300()
@@ -136,10 +128,10 @@ MAX11300::CmdResult MAX11300::gpio_write(MAX11300_Ports port, uint8_t state)
     
     if(((port_config_design_vals[port] & 0xF000) >> 12) == MAX11300::MODE_3)
     {
-        if(port < MAX11300::PIXI_PORT16)
+        if(port < MAX11300::PIXI_PORT11)
         {
             port_mask = (1 << port);
-            temp = read_register(gpo_data_15_to_0);
+            temp = read_register(gpo_data_10_to_0);
             if(state & 0x01)
             {
                 temp |= port_mask;
@@ -148,12 +140,12 @@ MAX11300::CmdResult MAX11300::gpio_write(MAX11300_Ports port, uint8_t state)
             {
                 temp &= ~port_mask;
             }
-            write_register(gpo_data_15_to_0, temp);
+            write_register(gpo_data_10_to_0, temp);
         }
         else
         {
-            port_mask = (1 << (port - MAX11300::PIXI_PORT16));
-            temp = read_register(gpo_data_19_to_16);
+            port_mask = (1 << (port - MAX11300::PIXI_PORT11));
+            temp = read_register(gpo_data_11);
             if(state & 0x01)
             {
                 temp |= port_mask;
@@ -162,7 +154,7 @@ MAX11300::CmdResult MAX11300::gpio_write(MAX11300_Ports port, uint8_t state)
             {
                 temp &= ~port_mask;
             }
-            write_register(gpo_data_19_to_16, temp);
+            write_register(gpo_data_11, temp);
         }
         
         result = MAX11300::Success;
@@ -178,13 +170,13 @@ MAX11300::CmdResult MAX11300::gpio_read(MAX11300_Ports port, uint8_t & state)
     
     if(((port_config_design_vals[port] & 0xF000) >> 12) == MAX11300::MODE_1)
     {
-        if(port < MAX11300::PIXI_PORT16)
+        if(port < MAX11300::PIXI_PORT11)
         {
-            state = (read_register(gpi_data_15_to_0) >> port);
+            state = (read_register(gpi_data_10_to_0) >> port);
         }
         else
         {
-            state = (read_register(gpi_data_19_to_16) >> (port - MAX11300::PIXI_PORT16));
+            state = (read_register(gpi_data_11) >> (port - MAX11300::PIXI_PORT11));
         }
         
         result = MAX11300::Success;
@@ -315,15 +307,7 @@ void MAX11300::config_process_1(uint16_t & device_control_local)
         dac_data_port_08_DESIGNVALUE,
         dac_data_port_09_DESIGNVALUE,
         dac_data_port_10_DESIGNVALUE,
-        dac_data_port_11_DESIGNVALUE,
-        dac_data_port_12_DESIGNVALUE,
-        dac_data_port_13_DESIGNVALUE,
-        dac_data_port_14_DESIGNVALUE,
-        dac_data_port_15_DESIGNVALUE,
-        dac_data_port_16_DESIGNVALUE,
-        dac_data_port_17_DESIGNVALUE,
-        dac_data_port_18_DESIGNVALUE,
-        dac_data_port_19_DESIGNVALUE};
+        dac_data_port_11_DESIGNVALUE};
     
     device_control_local |= (device_control_DESIGNVALUE & (device_control_DACREF | device_control_DACCTL));
     write_register(device_control, device_control_local);
@@ -367,8 +351,8 @@ void MAX11300::config_process_1(uint16_t & device_control_local)
     delayMicroseconds(200 * num_ports_mode_1);
     
     //Config GPODAT[i] for ports in mode 3
-    write_register(gpo_data_15_to_0, gpo_data_15_to_0_DESIGNVALUE);
-    write_register(gpo_data_19_to_16, gpo_data_19_to_16_DESIGNVALUE);
+    write_register(gpo_data_10_to_0, gpo_data_10_to_0_DESIGNVALUE);
+    write_register(gpo_data_11, gpo_data_11_DESIGNVALUE);
     
     //Config FUNCID[i], FUNCPRM[i] for ports in mode 3, 4, 5, 6, or 10
     for(idx = 0; idx < 20; idx++)
@@ -384,9 +368,9 @@ void MAX11300::config_process_1(uint16_t & device_control_local)
     }
     
     //Config GPIMD[i] for ports in mode 1
-    write_register(gpi_irqmode_7_to_0, gpi_irqmode_7_to_0_DESIGNVALUE);
-    write_register(gpi_irqmode_15_to_8, gpi_irqmode_15_to_8_DESIGNVALUE);
-    write_register(gpi_irqmode_19_to_16, gpi_irqmode_19_to_16_DESIGNVALUE);   
+    write_register(gpi_irqmode_5_to_0, gpi_irqmode_5_to_0_DESIGNVALUE);
+    write_register(gpi_irqmode_10_to_6, gpi_irqmode_10_to_6_DESIGNVALUE);
+    write_register(gpi_irqmode_11, gpi_irqmode_11_DESIGNVALUE);
 }
 
 //*********************************************************************

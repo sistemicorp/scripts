@@ -7,15 +7,47 @@
 */
 
 
-/* vbus_read
- *  - return INA bus voltage and current
+/* iox_reset
+ *  - set reset pin, which is active (asserted) LOW
  */
-String iox_read() {
+String iox_reset(bool assert) {
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
-  
-  doc["result"]["id"] = max_iox.read_register(dev_id);
-
+  max_iox.gpio_write(MAX11300::PIXI_PORT6, (!assert ? 1 : 0));
   return _response(doc);  // always the last line of RPC API
 }
 
+/* iox_vbat_con
+ *  - set VBAT_CON pin, which is active (asserted) HIGH
+ */
+String iox_vbat_con(bool assert) {
+  DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
+  max_iox.gpio_write(MAX11300::PIXI_PORT2, (assert ? 1 : 0));
+  return _response(doc);  // always the last line of RPC API
+}
 
+/* iox_vbat_en
+ *  - set VBAT_EN pin, which is active (asserted) HIGH
+ */
+String iox_vbat_en(bool assert) {
+  DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
+  max_iox.gpio_write(MAX11300::PIXI_PORT3, (assert ? 1 : 0));
+  return _response(doc);  // always the last line of RPC API
+}
+
+/* iox_vbus_en
+ *  - set VBUS_EN pin, which is active (asserted) HIGH
+ */
+String iox_vbus_en(bool assert) {
+  DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
+  max_iox.gpio_write(MAX11300::PIXI_PORT4, (assert ? 1 : 0));
+  return _response(doc);  // always the last line of RPC API
+}
+
+/* iox_selftest
+ *  - set SELFTEST pin, which is active (asserted) HIGH
+ */
+String iox_selftest(bool assert) {
+  DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
+  max_iox.gpio_write(MAX11300::PIXI_PORT7, (assert ? 1 : 0));
+  return _response(doc);  // always the last line of RPC API
+}

@@ -63,26 +63,18 @@ class MAX11300
     ///MAX11300 Ports
     enum MAX11300_Ports
     {
-        PIXI_PORT0,
-        PIXI_PORT1,
-        PIXI_PORT2,
-        PIXI_PORT3,
-        PIXI_PORT4,
-        PIXI_PORT5,
-        PIXI_PORT6,
-        PIXI_PORT7,
-        PIXI_PORT8,
-        PIXI_PORT9,
-        PIXI_PORT10,
-        PIXI_PORT11,
-        PIXI_PORT12,
-        PIXI_PORT13,
-        PIXI_PORT14,
-        PIXI_PORT15,
-        PIXI_PORT16,
-        PIXI_PORT17,
-        PIXI_PORT18,
-        PIXI_PORT19
+        PIXI_PORT0 = 2,
+        PIXI_PORT1 = 3,
+        PIXI_PORT2 = 4,
+        PIXI_PORT3 = 5,
+        PIXI_PORT4 = 6,
+        PIXI_PORT5 = 7,
+        PIXI_PORT6 = 11,
+        PIXI_PORT7 = 12,
+        PIXI_PORT8 = 13,
+        PIXI_PORT9 = 14,
+        PIXI_PORT10 = 15,
+        PIXI_PORT11 = 1,
     };
     
     ///MAX11300 Port Modes
