@@ -9,8 +9,6 @@ import os
 import sys
 import argparse
 import jstyleson
-import logging
-import logging.handlers as handlers
 import importlib
 import time
 
@@ -19,7 +17,9 @@ from public.prism.ResultBaseKeysV1 import ResultBaseKeysV1
 from core.shared_state import SharedState
 from prism_result_scan import scan_result_file
 
-logger = None
+import logging
+import logging.handlers as handlers
+logger = logging.getLogger()
 
 
 class attrdict(dict):
@@ -147,7 +147,7 @@ class ChanCon(object):
         # process HW drivers
         num_channels = -1
         for hwdrv in self.script["config"]["drivers"]:
-            logger.info("HWDRV: {}".format(hwdrv))
+            self.logger.info("HWDRV: {}".format(hwdrv))
             hwdrv_sname = hwdrv.split(".")[-1]
             hwdrv_module = importlib.import_module(hwdrv)
             hwdrv_module_klass = getattr(hwdrv_module, "HWDriver")
@@ -193,27 +193,27 @@ class ChanCon(object):
             self.logger.error("Invalid number of channels, must be >0")
             raise ValueError('Invalid number of channels')
 
-        fail_fast = self.script["config"].get("fail_fast", True)
-
         for test in self.script["tests"]:
-
+            fail_fast = self.script["config"].get("fail_fast", True)
             self._options = test["options"]
+            if "fail_fast" in self._options:
+                fail_fast = self._options["fail_fast"]
 
-            logger.info("Module: {}".format(test["module"]))
+            self.logger.info("Module: {}, fail_fast: {}".format(test["module"], fail_fast))
             test_module = importlib.import_module(test["module"])
             klass = test["module"].split(".")[-1]
-            logger.debug("class: {}".format(klass))
+            self.logger.debug("class: {}".format(klass))
 
             test_module_klass = getattr(test_module, klass)
             test_klass = test_module_klass(controller=self, chan=self.ch, shared_state=self.shared_state)
 
             for item in test["items"]:
-                logger.info("ITEM: {}".format(item))
+                self.logger.info("ITEM: {}".format(item))
                 if item.get("enable", True):
                     self._item = item
                     if not getattr(test_klass, item["id"], False):
                         msg = "method {} is not in module {}".format(item["id"], test_klass)
-                        logger.error(msg)
+                        self.logger.error(msg)
                         raise ValueError(msg)
 
                     func = getattr(test_klass, item["id"])
@@ -225,12 +225,12 @@ class ChanCon(object):
             # run teardown if not done so already
             if item != test["items"][-1]:
                 item = test["items"][-1]
-                logger.info("ITEM: {}".format(item))
+                self.logger.info("ITEM: {}".format(item))
                 if item.get("enable", True):
                     self._item = item
                     if not getattr(test_klass, item["id"], False):
                         msg = "method {} is not in module {}".format(item["id"], test_klass)
-                        logger.error(msg)
+                        self.logger.error(msg)
                         raise ValueError(msg)
 
                     func = getattr(test_klass, item["id"])

@@ -5,10 +5,9 @@ Sistemi Corporation, copyright, all rights reserved, 2019-2023
 Martin Guthrie
 
 """
-from core.const import Const
 
 
-class ResultAPI(Const):
+class ResultAPI():
 
     TESTITEM_TIMEOUT = 10.0  # default test item timeout in seconds
                              # Note this can be overridden for any specific test item,
