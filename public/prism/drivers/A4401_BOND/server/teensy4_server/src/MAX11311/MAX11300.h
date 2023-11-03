@@ -63,6 +63,7 @@ class MAX11300
     ///MAX11300 Ports
     enum MAX11300_Ports
     {
+        PIXI_PORT11 = 1,
         PIXI_PORT0 = 2,
         PIXI_PORT1 = 3,
         PIXI_PORT2 = 4,
@@ -74,7 +75,7 @@ class MAX11300
         PIXI_PORT8 = 13,
         PIXI_PORT9 = 14,
         PIXI_PORT10 = 15,
-        PIXI_PORT11 = 1,
+        PIXI_PORT_MAX = 16,
     };
     
     ///MAX11300 Port Modes
@@ -113,7 +114,7 @@ class MAX11300
         ///Failed operation
         OpFailure, 
         ///Successful operation
-        Success 
+        Success,
     };
     
     static const uint16_t MODE_BITMASK_PROCESS_1 = 0x047A;
@@ -127,7 +128,9 @@ class MAX11300
     
     ///@brief MAX11300 begin mbr fx
     void begin(uint8_t mosi = 11, uint8_t miso = 12, uint8_t sclk = 13, uint8_t cs = 10, uint8_t cnvt = 9);
-    
+
+    void shiftOutMAX(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder, byte val);
+
     ///@brief Writes given register with data
     ///@param[in] reg - register to be written
     ///@param[in] data - data to write

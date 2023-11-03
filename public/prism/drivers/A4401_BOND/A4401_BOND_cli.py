@@ -125,7 +125,13 @@ def parse_args():
     vbat_read = subp.add_parser('vbat_read')
     vbus_read = subp.add_parser('vbus_read')
 
-    iox_read = subp.add_parser('iox_read')
+    iox_led_green = subp.add_parser('iox_led_green')
+    iox_led_green.add_argument('--enable',
+                           dest="_enable",
+                           action='store_true',
+                           help='Assert LED GREEN',
+                           default=False)
+
     # add new commands here...
 
     args = parser.parse_args()
@@ -223,11 +229,11 @@ def vbat_read(args):
     return response["success"]
 
 
-def iox_read(args):
+def iox_led_green(args):
     _success = True
-    logging.info("iox_read: {}".format(args))
+    logging.info("iox_led_green: {}".format(args))
 
-    response = teensy.iox_read()
+    response = teensy.iox_led_green(args._enable)
     logging.info("{}".format(response))
     return response["success"]
 
@@ -274,8 +280,8 @@ if __name__ == '__main__':
     elif args._cmd == 'vbus_read':
         success = vbus_read(args)
 
-    elif args._cmd == 'iox_read':
-        success = iox_read(args)
+    elif args._cmd == 'iox_led_green':
+        success = iox_led_green(args)
 
     if success:
         logging.info("Success")

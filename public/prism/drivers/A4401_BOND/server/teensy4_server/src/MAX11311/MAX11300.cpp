@@ -32,19 +32,25 @@
 
 #include "MAX11300.h"
 
-static const uint16_t port_config_design_vals[20] = {
+static const uint16_t port_config_design_vals[16] = {
+    // needs to match index from MAX11300_Ports
+    0x0,                        // 0
+    port_cfg_11_DESIGNVALUE,    // 1
     port_cfg_00_DESIGNVALUE,
     port_cfg_01_DESIGNVALUE,
     port_cfg_02_DESIGNVALUE,
     port_cfg_03_DESIGNVALUE,
     port_cfg_04_DESIGNVALUE,
-    port_cfg_05_DESIGNVALUE,
-    port_cfg_06_DESIGNVALUE,
+    port_cfg_05_DESIGNVALUE,    // 7
+    0x0,                        // 8
+    0x0,                        // 9
+    0x0,                        // 10
+    port_cfg_06_DESIGNVALUE,    // 11
     port_cfg_07_DESIGNVALUE,
     port_cfg_08_DESIGNVALUE,
     port_cfg_09_DESIGNVALUE,
-    port_cfg_10_DESIGNVALUE,
-    port_cfg_11_DESIGNVALUE};
+    port_cfg_10_DESIGNVALUE,    // 15
+};
 
 //*********************************************************************
 MAX11300::MAX11300()
@@ -77,13 +83,34 @@ void MAX11300::begin(uint8_t mosi, uint8_t miso, uint8_t sclk, uint8_t cs, uint8
 	init();
 }
 
+void MAX11300::shiftOutMAX(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder, byte val)
+{
+      int i;
+
+      for (i = 0; i < 8; i++)  {
+            if (bitOrder == LSBFIRST) {
+                  digitalWrite(dataPin, !!(val & (1 << i)));
+            } else {
+                  digitalWrite(dataPin, !!(val & (1 << (7 - i))));
+            }
+            //delayMicroseconds(100);
+
+            digitalWrite(clockPin, HIGH);
+            //delayMicroseconds(40);
+            digitalWrite(clockPin, LOW);
+            //delayMicroseconds(140);
+      }
+}
+
 //*********************************************************************
 void MAX11300::write_register(MAX11300RegAddress_t reg, uint16_t data)
 {
     digitalWrite(m_cs, LOW);
-	shiftOut(m_mosi, m_sclk, MSBFIRST, MAX11300Addr_SPI_Write(reg));
-	shiftOut(m_mosi, m_sclk, MSBFIRST, ((0xFF00 & data) >> 8));
-	shiftOut(m_mosi, m_sclk, MSBFIRST, (0x00FF & data));
+    delayMicroseconds(40);
+	shiftOutMAX(m_mosi, m_sclk, MSBFIRST, MAX11300Addr_SPI_Write(reg));
+	shiftOutMAX(m_mosi, m_sclk, MSBFIRST, ((0xFF00 & data) >> 8));
+	shiftOutMAX(m_mosi, m_sclk, MSBFIRST, (0x00FF & data));
+	delayMicroseconds(40);
     digitalWrite(m_cs, HIGH);
 }
 
@@ -93,9 +120,11 @@ uint16_t MAX11300::read_register(MAX11300RegAddress_t reg)
     uint16_t rtn_val = 0;
     
     digitalWrite(m_cs, LOW);
-    shiftOut(m_mosi, m_sclk, MSBFIRST, MAX11300Addr_SPI_Read(reg));
+    delayMicroseconds(40);
+    shiftOutMAX(m_mosi, m_sclk, MSBFIRST, MAX11300Addr_SPI_Read(reg));
 	rtn_val |= (shiftIn(m_miso, m_sclk, MSBFIRST) << 8);
 	rtn_val |= shiftIn(m_miso, m_sclk, MSBFIRST);
+	delayMicroseconds(40);
     digitalWrite(m_cs, HIGH);
     
     return rtn_val;
@@ -126,67 +155,61 @@ MAX11300::CmdResult MAX11300::gpio_write(MAX11300_Ports port, uint8_t state)
     uint16_t temp;
     uint16_t port_mask;
     
-    if(((port_config_design_vals[port] & 0xF000) >> 12) == MAX11300::MODE_3)
+    if (port != MAX11300::PIXI_PORT11)
     {
-        if(port < MAX11300::PIXI_PORT11)
+        port_mask = (1 << port);
+        temp = read_register(gpo_data_10_to_0);
+        if(state & 0x01)
         {
-            port_mask = (1 << port);
-            temp = read_register(gpo_data_10_to_0);
-            if(state & 0x01)
-            {
-                temp |= port_mask;
-            }
-            else
-            {
-                temp &= ~port_mask;
-            }
-            write_register(gpo_data_10_to_0, temp);
+            temp |= port_mask;
         }
         else
         {
-            port_mask = (1 << (port - MAX11300::PIXI_PORT11));
-            temp = read_register(gpo_data_11);
-            if(state & 0x01)
-            {
-                temp |= port_mask;
-            }
-            else
-            {
-                temp &= ~port_mask;
-            }
-            write_register(gpo_data_11, temp);
+            temp &= ~port_mask;
         }
-        
-        result = MAX11300::Success;
+        write_register(gpo_data_10_to_0, temp);
     }
-    
+    else
+    {
+        port_mask = 0x1;
+        temp = read_register(gpo_data_11);
+        if(state & 0x01)
+        {
+            temp |= port_mask;
+        }
+        else
+        {
+            temp &= ~port_mask;
+        }
+        write_register(gpo_data_11, temp);
+    }
+
+    //result = MAX11300::Success;
+
     return result;
 }
 
 //*********************************************************************
-MAX11300::CmdResult MAX11300::gpio_read(MAX11300_Ports port, uint8_t & state)
+MAX11300::CmdResult MAX11300::gpio_read(MAX11300_Ports port, uint8_t &state)
 {
     MAX11300::CmdResult result = MAX11300::OpFailure;
     
-    if(((port_config_design_vals[port] & 0xF000) >> 12) == MAX11300::MODE_1)
+    if(port != MAX11300::PIXI_PORT11)
     {
-        if(port < MAX11300::PIXI_PORT11)
-        {
-            state = (read_register(gpi_data_10_to_0) >> port);
-        }
-        else
-        {
-            state = (read_register(gpi_data_11) >> (port - MAX11300::PIXI_PORT11));
-        }
-        
-        result = MAX11300::Success;
+        state = (read_register(gpi_data_10_to_0) >> port);
     }
-    
+    else
+    {
+        state = (read_register(gpi_data_11) >> (port - MAX11300::PIXI_PORT11));
+    }
+
+    result = MAX11300::Success;
+
     return result;
 }
 
 //*********************************************************************
-MAX11300::CmdResult MAX11300::single_ended_adc_read(MAX11300_Ports port, uint16_t & data)
+MAX11300::CmdResult MAX11300::single_ended_adc_read(MAX11300_Ports port, uint16_t &data)
 {
     MAX11300::CmdResult result = MAX11300::OpFailure;
     
@@ -227,195 +250,6 @@ MAX11300::CmdResult MAX11300::single_ended_dac_write(MAX11300_Ports port, uint16
 //*********************************************************************
 void MAX11300::init(void)
 {
-    //see datasheet 19-7318; Rev 3; 4/16; page 49
-    //https://datasheets.maximintegrated.com/en/ds/MAX11300.pdf
-    //for description of configuration process
-    
-    uint8_t idx;
-    uint8_t port_mode;
-    uint16_t mode_bit_mask = 0;
-    
-    //figure out port modes used
-    for(idx = 0; idx < 20; idx++)
-    {
-        port_mode = ((port_config_design_vals[idx] & 0xf000) >> 12);
-        if(port_mode > 0)
-        {
-            mode_bit_mask |= (1 << port_mode);
-        }   
-    }
-    
-    //STEP 1: configure BRST, THSHDN, ADCCONV
-    uint16_t device_control_local = (device_control_DESIGNVALUE & (device_control_BRST | device_control_THSHDN | device_control_ADCCONV));
-    write_register(device_control, device_control_local);
-    
-    //STEP 2: If any port is configured for modes 1,3,4,5,6, or 10
-    if(mode_bit_mask & MODE_BITMASK_PROCESS_1)
-    {
-        config_process_1(device_control_local);
-    }
-    
-    //STEP 3: If any port is configured for modes 7,8, or 9
-    if(mode_bit_mask & MODE_BITMASK_PROCESS_2)
-    {
-        config_process_2(device_control_local);
-    }
-    
-    //STEP 4: If any port is configured for modes 2,11, or 12
-    if(mode_bit_mask & MODE_BITMASK_PROCESS_3)
-    {
-        config_process_3();
-    }
-    
-    //STEP 5: Are Temperature sensors used?
-    if(device_control_DESIGNVALUE & (device_control_TMPCTLEXT1 | device_control_TMPCTLEXT0 | device_control_TMPCTLINT))
-    {
-        device_control_local |= (device_control_DESIGNVALUE & (device_control_TMPPER | device_control_RS_CANCEL));
-        write_register(device_control, device_control_local);
-        
-        uint16_t temp_thresholds [6] = {
-            tmp_mon_int_hi_thresh_DESIGNVALUE, 
-            tmp_mon_int_lo_thresh_DESIGNVALUE,
-            tmp_mon_ext1_hi_thresh_DESIGNVALUE,
-            tmp_mon_ext1_lo_thresh_DESIGNVALUE,
-            tmp_mon_ext2_hi_thresh_DESIGNVALUE,
-            tmp_mon_ext2_lo_thresh_DESIGNVALUE};
-        block_write(tmp_mon_int_hi_thresh, temp_thresholds, 6);
-        
-        device_control_local |= (device_control_DESIGNVALUE & (device_control_TMPCTLEXT1 | device_control_TMPCTLEXT0 | device_control_TMPCTLINT));
-        write_register(device_control, device_control_local);
-    } 
-    
-    //STEP 6: Configure interrupt masks
-    write_register(interrupt_mask, interrupt_mask_DESIGNVALUE);
-}
 
-//*********************************************************************
-void MAX11300::config_process_1(uint16_t & device_control_local)
-{
-    uint8_t idx;
-    uint16_t port_mode;
-    uint16_t dac_data_array[20] = {
-        dac_data_port_00_DESIGNVALUE,
-        dac_data_port_01_DESIGNVALUE,
-        dac_data_port_02_DESIGNVALUE,
-        dac_data_port_03_DESIGNVALUE,
-        dac_data_port_04_DESIGNVALUE,
-        dac_data_port_05_DESIGNVALUE,
-        dac_data_port_06_DESIGNVALUE,
-        dac_data_port_07_DESIGNVALUE,
-        dac_data_port_08_DESIGNVALUE,
-        dac_data_port_09_DESIGNVALUE,
-        dac_data_port_10_DESIGNVALUE,
-        dac_data_port_11_DESIGNVALUE};
-    
-    device_control_local |= (device_control_DESIGNVALUE & (device_control_DACREF | device_control_DACCTL));
-    write_register(device_control, device_control_local);
-    
-    delayMicroseconds(200);
-    
-    //Is DACCTL = 2 or 3
-    if(((device_control_DESIGNVALUE & device_control_DACCTL) == 2) || ((device_control_DESIGNVALUE & device_control_DACCTL) == 3))
-    {
-        //yes
-        write_register(dac_preset_data_1, dac_preset_data_1_DESIGNVALUE);
-        write_register(dac_preset_data_2, dac_preset_data_2_DESIGNVALUE);
-    }
-    else
-    {
-        //no
-        for(idx = 0; idx < 20; idx++)
-        {
-            port_mode = ((port_config_design_vals[idx] & 0xf000) >> 12);
-            if((port_mode == MAX11300::MODE_1) || (port_mode == MAX11300::MODE_3) || 
-               (port_mode == MAX11300::MODE_4) || (port_mode == MAX11300::MODE_5) || 
-               (port_mode == MAX11300::MODE_6) || (port_mode == MAX11300::MODE_10))
-            {
-                write_register(static_cast<MAX11300RegAddress_t>(dac_data_port_00 + idx), dac_data_array[idx]);
-            }
-        }
-    }
-    
-    //Config FUNCID[i], FUNCPRM[i] for ports in mode 1
-    uint8_t num_ports_mode_1 = 0;
-    for(idx = 0; idx < 20; idx++)
-    {
-        port_mode = ((port_config_design_vals[idx] & 0xf000) >> 12);
-        if(port_mode == MAX11300::MODE_1)
-        {
-            write_register(static_cast<MAX11300RegAddress_t>(port_cfg_00 + idx), port_config_design_vals[idx]);
-            num_ports_mode_1++;
-        }
-    }
-    
-    delayMicroseconds(200 * num_ports_mode_1);
-    
-    //Config GPODAT[i] for ports in mode 3
-    write_register(gpo_data_10_to_0, gpo_data_10_to_0_DESIGNVALUE);
-    write_register(gpo_data_11, gpo_data_11_DESIGNVALUE);
-    
-    //Config FUNCID[i], FUNCPRM[i] for ports in mode 3, 4, 5, 6, or 10
-    for(idx = 0; idx < 20; idx++)
-    {
-        port_mode = ((port_config_design_vals[idx] & 0xf000) >> 12);
-        if((port_mode == MAX11300::MODE_3) | (port_mode == MAX11300::MODE_4) | 
-           (port_mode == MAX11300::MODE_5) | (port_mode == MAX11300::MODE_6) | 
-           (port_mode == MAX11300::MODE_10))
-        {
-            write_register(static_cast<MAX11300RegAddress_t>(port_cfg_00 + idx), port_config_design_vals[idx]);
-            delayMicroseconds(1000);
-        }
-    }
-    
-    //Config GPIMD[i] for ports in mode 1
-    write_register(gpi_irqmode_5_to_0, gpi_irqmode_5_to_0_DESIGNVALUE);
-    write_register(gpi_irqmode_10_to_6, gpi_irqmode_10_to_6_DESIGNVALUE);
-    write_register(gpi_irqmode_11, gpi_irqmode_11_DESIGNVALUE);
-}
-
-//*********************************************************************
-void MAX11300::config_process_2(uint16_t & device_control_local)
-{
-    uint8_t idx;
-    uint16_t port_mode;
-    
-    for(idx = 0; idx < 20; idx++)
-    {
-        port_mode = ((port_config_design_vals[idx] & 0xf000) >> 12); 
-        if(port_mode == MAX11300::MODE_9)
-        {
-            write_register(static_cast<MAX11300RegAddress_t>(port_cfg_00 + idx), port_config_design_vals[idx]);
-            delayMicroseconds(100);
-        }
-    }
-    
-    for(idx = 0; idx < 20; idx++)
-    {
-        port_mode = ((port_config_design_vals[idx] & 0xf000) >> 12); 
-        if((port_mode == MAX11300::MODE_7) || (port_mode == MAX11300::MODE_8))
-        {
-            write_register(static_cast<MAX11300RegAddress_t>(port_cfg_00 + idx), port_config_design_vals[idx]);
-            delayMicroseconds(100);
-        }
-    }
-    
-    device_control_local |= (device_control_DESIGNVALUE & device_control_ADCCTL);
-    write_register(device_control, device_control_local);
-}
-
-//*********************************************************************
-void MAX11300::config_process_3(void)
-{
-    uint8_t idx;
-    uint16_t port_mode;
-    
-    for(idx = 0; idx < 20; idx++)
-    {
-        port_mode = ((port_config_design_vals[idx] & 0xf000) >> 12); 
-        if((port_mode == MAX11300::MODE_2) || (port_mode == MAX11300::MODE_11) || (port_mode == MAX11300::MODE_12))
-        {
-            write_register(static_cast<MAX11300RegAddress_t>(port_cfg_00 + idx), port_config_design_vals[idx]);
-        }
-    }
 }
 

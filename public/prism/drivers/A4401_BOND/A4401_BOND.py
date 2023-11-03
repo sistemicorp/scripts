@@ -381,14 +381,24 @@ class A4401_BOND:
             answer = self.rpc.call_method('vbat_read')
             return self._rpc_validate(answer)
 
-    def iox_read(self):
+    def iox_reset(self, state: bool):
         """ MAX11311 IOX
 
-        :return: {'success': True, 'method': 'vbat_read', 'result': {'v': 0, 'ima': 0.050000001}}
+        :return: {'success': True, 'method': 'iox_reset'}
         """
         with self._lock:
-            self.logger.info(f"iox_read")
-            answer = self.rpc.call_method('iox_read')
+            self.logger.info(f"iox_reset {state}")
+            answer = self.rpc.call_method('iox_reset')
+            return self._rpc_validate(answer)
+
+    def iox_led_green(self, state: bool):
+        """ MAX11311 IOX
+
+        :return: {'success': True, 'method': 'iox_led_green'}
+        """
+        with self._lock:
+            self.logger.info(f"iox_led_green {state}")
+            answer = self.rpc.call_method('iox_led_green', state)
             return self._rpc_validate(answer)
 
     #

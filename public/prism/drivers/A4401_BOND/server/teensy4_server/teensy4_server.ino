@@ -8,7 +8,6 @@
  *     be called thru the RPC API.  These are "supporting" functions.
 */
 #include <Wire.h>
-#include "SPI.h"
 #include <simpleRPC.h>
 #include <ArduinoJson.h>
 #include "version.h"  // holds the "version" of this code, !update when code is changed!
@@ -157,6 +156,7 @@ void setup(void) {
   delay(blink_delay_ms);
   digitalWrite(LED_BUILTIN, LOW);
 
+  // set SPI interface pin modes
   digitalWrite(SPI_CS_IOX_Pin, HIGH); // SPI CS inactive high
   pinMode (SPI_CS_IOX_Pin, OUTPUT);   // ensure SPI CS is driven output
   digitalWrite(SPI_CS_HRD1_Pin, HIGH); 
@@ -210,8 +210,68 @@ void setup(void) {
     ina219_vbus.setMeasureMode(TRIGGERED);
   }
 
-  max_iox.begin(SPI_MOSI_Pin, SPI_MISO_Pin, SPI_SCLK_Pin, SPI_CS_IOX_Pin, MAX11311_COPNVERT_Pin);
-  max_iox.write_register(port_cfg_00, MAX11300::MODE_3);
+  int _d = 1;
+  max_iox.begin(SPI_MOSI_Pin, SPI_MISO_Pin, SPI_SCLK_Pin, SPI_CS_IOX_Pin, MAX11311_COPNVERT_Pin); 
+  max_iox.write_register(device_control, 0x8000);  // reset
+  max_iox.write_register(device_control, 0xc0 & 0x40b0);
+  max_iox.write_register(device_control, 0xc0 & 0x40fc);
+  delayMicroseconds(200);
+  max_iox.write_register(dac_data_port_01, 0x0666);
+  delay(_d);
+  max_iox.write_register(dac_data_port_05, 0x0666);
+  delay(_d);
+  max_iox.write_register(dac_data_port_02, 0x0547);
+  delay(_d);
+  max_iox.write_register(dac_data_port_03, 0x0547);
+  delay(_d);
+  max_iox.write_register(dac_data_port_04, 0x0547);
+  delay(_d);
+  max_iox.write_register(dac_data_port_06, 0x0547);
+  delay(_d);
+  max_iox.write_register(dac_data_port_07, 0x0547);
+  delay(_d);
+  max_iox.write_register(dac_data_port_08, 0x0547); 
+  delay(_d);
+  max_iox.write_register(dac_data_port_09, 0x0547);
+  delay(_d);
+  max_iox.write_register(dac_data_port_10, 0x0547);
+  delay(_d);
+  max_iox.write_register(dac_data_port_11, 0x0547);
+  delay(_d);
+  max_iox.write_register(dac_preset_data_1, 0x0);
+  max_iox.write_register(dac_preset_data_2, 0x0);
+
+  max_iox.write_register(port_cfg_01, (MAX11300::MODE_1 << 12));
+  delay(_d);
+  max_iox.write_register(port_cfg_05, (MAX11300::MODE_1 << 12));
+  delay(_d);
+  delayMicroseconds(400);
+  max_iox.write_register(gpo_data_10_to_0, 0x0);
+  max_iox.write_register(gpo_data_11, 0x0);
+
+  max_iox.write_register(port_cfg_02, (MAX11300::MODE_3 << 12));
+  delay(_d);
+  max_iox.write_register(port_cfg_03, (MAX11300::MODE_3 << 12));
+  delay(_d);
+  max_iox.write_register(port_cfg_04, (MAX11300::MODE_3 << 12));
+  delay(_d);
+  max_iox.write_register(port_cfg_06, (MAX11300::MODE_3 << 12));
+  delay(_d);    
+  max_iox.write_register(port_cfg_07, (MAX11300::MODE_3 << 12));
+  delay(_d);   
+  max_iox.write_register(port_cfg_08, (MAX11300::MODE_3 << 12));  // LED Green
+  delay(_d);
+  max_iox.write_register(port_cfg_09, (MAX11300::MODE_3 << 12));  // LED Yellow
+  delay(_d);
+  max_iox.write_register(port_cfg_10, (MAX11300::MODE_3 << 12));  // LED Red
+  delay(_d);
+  max_iox.write_register(port_cfg_11, (MAX11300::MODE_3 << 12));  // LED Blue
+  delay(_d);
+  max_iox.write_register(gpi_irqmode_5_to_0, 0x0);
+  max_iox.write_register(gpi_irqmode_10_to_6, 0x0);
+  max_iox.write_register(gpi_irqmode_11, 0x0);  
+
+  max_iox.write_register(device_control, 0xc0);
 
   delay(blink_delay_ms);
   if (!all_good) {
@@ -252,6 +312,7 @@ void loop(void) {
     bist_voltage, "bist_voltage: Reads internal voltage",
     vbus_read, "vbus_read: Read VBUS current and voltage",
     vbat_read, "vbat_read: Read VBAT current and voltage",
-    iox_reset, "iox_reset: IOX reset pin"
+    iox_reset, "iox_reset: IOX reset pin",
+    iox_led_green, "iox_led_green: green led"
     );
 }

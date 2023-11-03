@@ -51,3 +51,29 @@ String iox_selftest(bool assert) {
   max_iox.gpio_write(MAX11300::PIXI_PORT7, (assert ? 1 : 0));
   return _response(doc);  // always the last line of RPC API
 }
+
+/* iox_led_green
+ *  - set green LED high/low
+ */
+String iox_led_green(bool assert) {
+  DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
+  int success = max_iox.gpio_write(MAX11300::PIXI_PORT8, (assert ? 1 : 0));
+  //doc["success"] = success;
+  doc["result"]["set"] = (assert ? true : false);
+  doc["result"]["port"] = MAX11300::PIXI_PORT8;
+
+  //max_iox.write_register(gpo_data_10_to_0, 0x1 << 13);
+  //max_iox.write_register(gpo_data_10_to_0, 0xf8fc);
+
+  //max_iox.write_register(dac_preset_data_1, 0x123);
+  uint16_t test = max_iox.read_register(port_cfg_08);
+  doc["result"]["port_cfg_08"] = test;
+  test = max_iox.read_register(gpo_data_10_to_0);
+  doc["result"]["gpo_data_10_to_0"] = test;
+  test = max_iox.read_register(dac_data_port_08);
+  doc["result"]["dac_data_port_08"] = test;
+
+
+  return _response(doc);  // always the last line of RPC API
+}
+
