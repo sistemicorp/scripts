@@ -79,7 +79,7 @@ void MAX11300::begin(uint8_t mosi, uint8_t miso, uint8_t sclk, uint8_t cs, uint8
 	digitalWrite(m_sclk, LOW);
 	digitalWrite(m_cs, HIGH);
 	digitalWrite(m_cnvt, HIGH);
-	
+	delayMicroseconds(1);
 	init();
 }
 
@@ -93,12 +93,12 @@ void MAX11300::shiftOutMAX(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder, 
             } else {
                   digitalWrite(dataPin, !!(val & (1 << (7 - i))));
             }
-            //delayMicroseconds(100);
+            delayMicroseconds(1);
 
             digitalWrite(clockPin, HIGH);
-            //delayMicroseconds(40);
+            delayMicroseconds(2);
             digitalWrite(clockPin, LOW);
-            //delayMicroseconds(140);
+            delayMicroseconds(1);
       }
 }
 
@@ -106,12 +106,12 @@ void MAX11300::shiftOutMAX(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder, 
 void MAX11300::write_register(MAX11300RegAddress_t reg, uint16_t data)
 {
     digitalWrite(m_cs, LOW);
-    delayMicroseconds(40);
+    delayMicroseconds(1);
 	shiftOutMAX(m_mosi, m_sclk, MSBFIRST, MAX11300Addr_SPI_Write(reg));
 	shiftOutMAX(m_mosi, m_sclk, MSBFIRST, ((0xFF00 & data) >> 8));
 	shiftOutMAX(m_mosi, m_sclk, MSBFIRST, (0x00FF & data));
-	delayMicroseconds(40);
     digitalWrite(m_cs, HIGH);
+	delayMicroseconds(1);
 }
 
 //*********************************************************************    
@@ -120,13 +120,13 @@ uint16_t MAX11300::read_register(MAX11300RegAddress_t reg)
     uint16_t rtn_val = 0;
     
     digitalWrite(m_cs, LOW);
-    delayMicroseconds(40);
+    delayMicroseconds(1);
     shiftOutMAX(m_mosi, m_sclk, MSBFIRST, MAX11300Addr_SPI_Read(reg));
 	rtn_val |= (shiftIn(m_miso, m_sclk, MSBFIRST) << 8);
 	rtn_val |= shiftIn(m_miso, m_sclk, MSBFIRST);
-	delayMicroseconds(40);
     digitalWrite(m_cs, HIGH);
-    
+	delayMicroseconds(1);
+
     return rtn_val;
 }
 
