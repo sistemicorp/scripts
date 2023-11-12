@@ -1,4 +1,4 @@
-# Sistemi Lente/Prism Production Test System
+# Sistemi Lente/Prism PCBA Production Test System
 
 * Now in **BETA**
 * A framework to develop automated production test fixtures
