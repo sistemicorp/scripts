@@ -1,5 +1,6 @@
 // This file is NOT propagated by Lente to Prism stations.
 // For each Prism/Lente install, this file should be modified as required.
+// See https://sistemicorp.github.io/scripts/build/html/_deployment.html#settings-json-file
 {
   // turn on demo mode.  Creates test user accounts, ...
   // remove line, or set to false to disable demo mode
@@ -26,12 +27,26 @@
   // Prism/Lente internal connection password
   "prism_lente_pw": "mysecret",
 
+  // Manifest (enable/disable) checking
+  // Validates "public/prism" contents (sent by Lente)
+  // create manifest.exclude to list file exclusions
+  "manifest_check": false,
+
+  // password for scripts package sent from Lente to Lente/Prism
+  "manifest_pw": "mysecret",
+
+  // ------------------------------------------------------------------
+  // Below are only used by Lente and can be removed for Prism stations
+
+  // Lente/Lente internal connection password
+  "lente_lente_pw": "mysecret",
+
   // Enter IP Address:port, example "http://35.123.432.190:6595"
   // Use null to disable upstream sending.
   "result_server_url": null,
 
-  // ------------------------------------------------------------------
-  // Below are only used by Lente and can be removed for Prism stations
+  // This Lente computer is pyramid root and creates manifest
+  "root_authority": true,
 
   "postgres": {
     "resultbasekeysv1": {

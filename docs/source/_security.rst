@@ -7,6 +7,50 @@ Production security is important.  Sistemi Lente/Prism have features and suggest
    :local:
 
 
+Settings.json
+=============
+
+Most of the security of the system is set by `settings.json <_deployment.html#_Settings File>`__.
+
+`settings.json` file is unique to each Prism/Lente in the deployment.  It is common for
+multiple Prism computers sitting below Lente to have the same `settings.json`, assuming the settings are the same.
+
+`settings.json` is edited/created when Prism/Lente computer is configured.
+
+Although `settings.json` is in the git repo, it is not the one used by the deployment, nor is it
+sent between Lente/Prism computers.
+
+Prism computers should remove the Lente section of the `settings.json` file.
+
+
+Manifest Checking
+=================
+
+Enable Manifest checking in the `settings.json <_deployment.html#_Settings File>`__. file.
+
+The Manifest (file) is created by Lente to ensure the integrity of the all the scripts and supporting files.
+The manifest is a list of files and corresponding hashes, which Prism will use to validate there are no
+changes to the files it will use to test.  The Manifest file itself is encrypted and cannot be viewed.
+
+Only the Lente that is marked as `root_authority` in `settings.json` will create the Manifest.  All other
+Lente's will pass along the Manifest.
+
+
+Prism/Lente Files
+=================
+
+Prism/Lente "programs" are access via a browser.  Technically, the user could be on a different computer
+and accessing Prism/Lente remotely. Remote access is common for Lente, and not common for Prism.
+
+Because Prism/Lente are accessed via the browser, a Ubuntu (operator) account need only provide the Chrome
+browser and access to `localhost` (127.0.0.1:6590).  One could create a boot script for the operator to run Chrome
+automatically and point to Prism.
+
+All the files that Prism/Lente use should be in another Ubuntu account, and not accessible by other accounts.
+If the account home directory is encrypted, and/or the whole hard drive is encrypted, then the files are
+protected.
+
+
 Lente
 =====
 
@@ -17,14 +61,15 @@ The following are further suggestions to improve security,
 
 * encrypt the hard disk by the OS
 * strong admin password
-* use Sistemi Account Roles for users
+* use Account Roles for users
+* Prism/Lente use ports 6590 & 6595, so other ports can be blocked
 
 
 Prism
 =====
 
 Prism stations are considered insecure.  Presumably anyone on the production floor can access a Prism.
-Often login names and passwords are common to a group of people, or shared amoung them to access the computer.
+Often login names and passwords are common to a group of people, or shared among them to access the computer.
 
 The following are further suggestions to improve security,
 
@@ -32,7 +77,9 @@ The following are further suggestions to improve security,
 * strong admin password
 * enable result encryption
 * regularly purge the backups from the disk, (or disable backups, not recommended)
-* use Lente Account Roles for users
+* use Account Roles for users
+* A Ubuntu Operator account could launch Chrome in kiosk mode and launch the Prism URL
+* Prism/Lente use ports 6590 & 6595, so other ports can be blocked
 
 
 Postgres DB
@@ -40,7 +87,7 @@ Postgres DB
 
 * Change the default password!
 
-  * Also remember to use the same password in the settings.json, see `here <_deployment.html#_Settings File>`__.
+  * Also remember to use the same password in `settings.json <_deployment.html#_Settings File>`__.
 
 
 .. _https:
@@ -57,13 +104,13 @@ These keys will still be using the same TLS protocol over the connection and are
 However, since the (Chrome) browser is not able to authenticate the self signed keys/certificate it
 will indicate that the connection is "untrusted" and will prompt the user to validate the connection.
 
-With HTTPS the connection between Prism/Lente is now encrypted.  The :ref:`settings.json file <deploy-settings-file>`
+With HTTPS the connection between Prism/Lente is now encrypted.  `settings.json <_deployment.html#_Settings File>`__
 has `prism_lente_pw` which should also be set to something unique.  This setting needs to be the same
 across all the Prism/Lente computers.
 
 On deployed Prism/Lente computers the user account is presumed to be secure.  The Ubuntu filesystem should
 be encrypted, and the user account that hosts the files for Prism/Lente should be password protected.  Operator
-accounts do not need access to the Prism/Lente files. See :ref:`Ubuntu File System <deployment-ubuntu-filesystem>`
+accounts do not need access to the Prism/Lente files. See `Ubuntu File System <_deployment-ubuntu-filesystem>`__
 
 To generate the certificate and key,
 
@@ -89,7 +136,7 @@ To generate the certificate and key,
 
 
 * Generate the cert/key file on each Prism/Lente computer.
-* See the :ref:`settings.json file <deploy-settings-file>` to enable HTTPS and set the Prism/Lente password.
+* See the `settings.json <_deployment.html#_Settings File>`__ to enable HTTPS and set the Prism/Lente password.
 * In the browser, connect over HTTPs,
 
   * for Prism use `https://127.0.0.1:6590`

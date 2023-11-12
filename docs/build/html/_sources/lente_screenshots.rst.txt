@@ -20,3 +20,27 @@ The right table is each result.  By selecting a result in this table, a new tab 
 The table on the bottom left counts the various types of Fail tests.
 
 .. image:: static/Screenshot_lente_dashboard_01.png
+
+
+Station Management
+******************
+
+Prism and Lente Station management console.
+
+* View station stats
+* Take actions (Ping, Sync)
+
+.. image:: static/Screenshot_lente_dashboard_03.png
+
+
+Account Management
+******************
+
+Create Users
+
+.. image:: static/Screenshot_lente_dashboard_04.png
+
+
+Edit User Roles
+
+.. image:: static/Screenshot_lente_dashboard_05.png
