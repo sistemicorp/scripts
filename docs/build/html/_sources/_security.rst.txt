@@ -35,6 +35,15 @@ changes to the files it will use to test.  The Manifest file itself is encrypted
 Only the Lente that is marked as `root_authority` in `settings.json` will create the Manifest.  All other
 Lente's will pass along the Manifest.
 
+If some files need to be excluded from Manifest checking, create `./public/prism/manifest.exclude` and list
+the path names of the files to be excluded, for example,
+
+::
+
+    # comments are allowed, startswith #
+    public/prism/scripts/example/prod_v0/prod_0.scr
+
+
 
 Prism/Lente Files
 =================

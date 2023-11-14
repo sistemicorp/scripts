@@ -16,6 +16,7 @@ infrastructure to manage the data, scripts, users, roles, reporting and other mu
    lente_main
    _system
    _prodplan
+   _database
    _development
    _jigs
    _security
