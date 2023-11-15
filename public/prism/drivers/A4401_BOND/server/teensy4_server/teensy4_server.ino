@@ -6,6 +6,7 @@
  *  Notes:
  *  1) functions begining with "_" are considered "private" and should not
  *     be called thru the RPC API.  These are "supporting" functions.
+ *  2) "Bond"
 */
 #include <Wire.h>
 #include <simpleRPC.h>
@@ -13,6 +14,7 @@
 #include "version.h"  // holds the "version" of this code, !update when code is changed!
 #include <INA219_WE.h>
 #include "src/MAX11311/MAX11300.h"
+#include "bond_max_iox.h"
 
 #define INA220_VBAT_I2C_ADDRESS 0x40
 #define INA220_VBUS_I2C_ADDRESS 0x41
@@ -43,6 +45,8 @@ INA219_WE ina219_vbus = INA219_WE(INA220_VBUS_I2C_ADDRESS);
 // Original Repo: https://github.com/sistemicorp/MAX11300/tree/master
 // Clone the repo and documentation can be found in "extras"
 MAX11300 max_iox = MAX11300();
+
+static uint16_t setup_fail_code = 0;
 
 //-------------------------------------------------------------------------------------------------------------
 // Teensy "on board" RPC functions
@@ -124,6 +128,15 @@ String slot() {
   return _response(doc);  // always the last line of RPC API
 }
 
+/* status
+ *  - status flags and codes
+ */
+String status() {
+  DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
+  doc["result"]["setup_fail_code"] = setup_fail_code;
+  return _response(doc);  // always the last line of RPC API
+}
+
 /* reset
  *  - reset this code
  *  - DOES NOT RESET TEENSY, meerly resets its "state"
@@ -140,7 +153,6 @@ String reset(){
 //set-up/loop Functions
 
 void setup(void) {
-  bool all_good = true;
   unsigned int blink_delay_ms = 100;
 
   Serial.begin(115200);
@@ -157,6 +169,7 @@ void setup(void) {
   digitalWrite(LED_BUILTIN, LOW);
 
   // set SPI interface pin modes
+  // TODO: probably don't need this as MAX11300 inits pins
   digitalWrite(SPI_CS_IOX_Pin, HIGH); // SPI CS inactive high
   pinMode (SPI_CS_IOX_Pin, OUTPUT);   // ensure SPI CS is driven output
   digitalWrite(SPI_CS_HRD1_Pin, HIGH); 
@@ -190,91 +203,32 @@ void setup(void) {
   delay(100);
   // check VSYS_PG_PIN
   uint8_t vsys_pg_pin = digitalRead(VSYS_PG_PIN);
-  if (vsys_pg_pin == 0) {
-    all_good = false;
-  }
+  if (vsys_pg_pin == 0 && setup_fail_code == 0) setup_fail_code++;
 
   // configure INA220s
   if (!ina219_vbat.init()) {
-    all_good = false;
+    setup_fail_code |= (0x1 << 0);
   } else {
     ina219_vbat.setShuntSizeInOhms(INA220_VBAT_SHUNT_OHMS);
     ina219_vbat.setBusRange(BRNG_16);
     ina219_vbat.setMeasureMode(TRIGGERED);
   }
+
   if (!ina219_vbus.init()) {
-    all_good = false;
+    setup_fail_code |= (0x1 << 1);
   } else {
     ina219_vbus.setShuntSizeInOhms(INA220_VBUS_SHUNT_OHMS);
     ina219_vbus.setBusRange(BRNG_16);
     ina219_vbus.setMeasureMode(TRIGGERED);
   }
 
-  int _d = 1;
-  max_iox.begin(SPI_MOSI_Pin, SPI_MISO_Pin, SPI_SCLK_Pin, SPI_CS_IOX_Pin, MAX11311_COPNVERT_Pin); 
-  max_iox.write_register(device_control, 0x8000);  // reset
-  max_iox.write_register(device_control, 0xc0 & 0x40b0);
-  max_iox.write_register(device_control, 0xc0 & 0x40fc);
-  delayMicroseconds(200);
-  max_iox.write_register(dac_data_port_01, 0x0666);
-  delay(_d);
-  max_iox.write_register(dac_data_port_05, 0x0666);
-  delay(_d);
-  max_iox.write_register(dac_data_port_02, 0x0547);
-  delay(_d);
-  max_iox.write_register(dac_data_port_03, 0x0547);
-  delay(_d);
-  max_iox.write_register(dac_data_port_04, 0x0547);
-  delay(_d);
-  max_iox.write_register(dac_data_port_06, 0x0547);
-  delay(_d);
-  max_iox.write_register(dac_data_port_07, 0x0547);
-  delay(_d);
-  max_iox.write_register(dac_data_port_08, 0x0547); 
-  delay(_d);
-  max_iox.write_register(dac_data_port_09, 0x0547);
-  delay(_d);
-  max_iox.write_register(dac_data_port_10, 0x0547);
-  delay(_d);
-  max_iox.write_register(dac_data_port_11, 0x0547);
-  delay(_d);
-  max_iox.write_register(dac_preset_data_1, 0x0);
-  max_iox.write_register(dac_preset_data_2, 0x0);
-
-  max_iox.write_register(port_cfg_01, (MAX11300::MODE_1 << 12));
-  delay(_d);
-  max_iox.write_register(port_cfg_05, (MAX11300::MODE_1 << 12));
-  delay(_d);
-  delayMicroseconds(400);
-  max_iox.write_register(gpo_data_10_to_0, 0x0);
-  max_iox.write_register(gpo_data_11, 0x0);
-
-  max_iox.write_register(port_cfg_02, (MAX11300::MODE_3 << 12));
-  delay(_d);
-  max_iox.write_register(port_cfg_03, (MAX11300::MODE_3 << 12));
-  delay(_d);
-  max_iox.write_register(port_cfg_04, (MAX11300::MODE_3 << 12));
-  delay(_d);
-  max_iox.write_register(port_cfg_06, (MAX11300::MODE_3 << 12));
-  delay(_d);    
-  max_iox.write_register(port_cfg_07, (MAX11300::MODE_3 << 12));
-  delay(_d);   
-  max_iox.write_register(port_cfg_08, (MAX11300::MODE_3 << 12));  // LED Green
-  delay(_d);
-  max_iox.write_register(port_cfg_09, (MAX11300::MODE_3 << 12));  // LED Yellow
-  delay(_d);
-  max_iox.write_register(port_cfg_10, (MAX11300::MODE_3 << 12));  // LED Red
-  delay(_d);
-  max_iox.write_register(port_cfg_11, (MAX11300::MODE_3 << 12));  // LED Blue
-  delay(_d);
-  max_iox.write_register(gpi_irqmode_5_to_0, 0x0);
-  max_iox.write_register(gpi_irqmode_10_to_6, 0x0);
-  max_iox.write_register(gpi_irqmode_11, 0x0);  
-
-  max_iox.write_register(device_control, 0xc0);
+  int success = init_max_iox();
+  if (success != 0) {
+    setup_fail_code |= (0x1 << 2);
+  }
 
   delay(blink_delay_ms);
-  if (!all_good) {
+  if (setup_fail_code) {
     // long blinks if things are bad
     blink_delay_ms = 400;
 
@@ -308,11 +262,18 @@ void loop(void) {
     read_gpio, "read_gpio: Reads GPIO (HIGH or LOW).",
     write_gpio, "write_gpio: Writes GPIO (HIGH or LOW).",
     reset, "reset: Resets Teensy.",
+    status, "status: status flags",
 
     bist_voltage, "bist_voltage: Reads internal voltage",
     vbus_read, "vbus_read: Read VBUS current and voltage",
     vbat_read, "vbat_read: Read VBAT current and voltage",
-    iox_reset, "iox_reset: IOX reset pin",
-    iox_led_green, "iox_led_green: green led"
-    );
+    iox_reset, "iox_reset: IOX reset (USB Hub) pin",
+    iox_led_green, "iox_led_green: green led",
+    iox_led_yellow, "iox_led_yellow: yellow led",
+    iox_led_red, "iox_led_red: red led",
+    iox_led_blue, "iox_led_blue: blue led",
+    iox_vbus_en, "iox_vbus_en: VBUS Enable",
+    iox_vbat_en, "iox_vbat_en: VBAT Enable",
+    iox_vbat_con, "iox_vbat_con: VBAT Connect"
+  );
 }

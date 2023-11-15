@@ -132,6 +132,48 @@ def parse_args():
                            help='Assert LED GREEN',
                            default=False)
 
+    iox_led_yellow = subp.add_parser('iox_led_yellow')
+    iox_led_yellow.add_argument('--enable',
+                           dest="_enable",
+                           action='store_true',
+                           help='Assert LED YELLOW',
+                           default=False)
+
+    iox_led_red = subp.add_parser('iox_led_red')
+    iox_led_red.add_argument('--enable',
+                           dest="_enable",
+                           action='store_true',
+                           help='Assert LED RED',
+                           default=False)
+
+    iox_led_blue = subp.add_parser('iox_led_blue')
+    iox_led_blue.add_argument('--enable',
+                           dest="_enable",
+                           action='store_true',
+                           help='Assert LED BLUE',
+                           default=False)
+
+    iox_vbus_en = subp.add_parser('iox_vbus_en')
+    iox_vbus_en.add_argument('--enable',
+                           dest="_enable",
+                           action='store_true',
+                           help='Assert VBUS_EN',
+                           default=False)
+
+    iox_vbat_en = subp.add_parser('iox_vbat_en')
+    iox_vbat_en.add_argument('--enable',
+                           dest="_enable",
+                           action='store_true',
+                           help='Assert VBAT_EN',
+                           default=False)
+
+    iox_vbat_con = subp.add_parser('iox_vbat_con')
+    iox_vbat_con.add_argument('--enable',
+                           dest="_enable",
+                           action='store_true',
+                           help='Assert VBAT_CON',
+                           default=False)
+
     # add new commands here...
 
     args = parser.parse_args()
@@ -238,6 +280,60 @@ def iox_led_green(args):
     return response["success"]
 
 
+def iox_led_yellow(args):
+    _success = True
+    logging.info("iox_led_yellow: {}".format(args))
+
+    response = teensy.iox_led_yellow(args._enable)
+    logging.info("{}".format(response))
+    return response["success"]
+
+
+def iox_led_red(args):
+    _success = True
+    logging.info("iox_led_yellow: {}".format(args))
+
+    response = teensy.iox_led_red(args._enable)
+    logging.info("{}".format(response))
+    return response["success"]
+
+
+def iox_led_blue(args):
+    _success = True
+    logging.info("iox_led_blue: {}".format(args))
+
+    response = teensy.iox_led_blue(args._enable)
+    logging.info("{}".format(response))
+    return response["success"]
+
+
+def iox_vbus_en(args):
+    _success = True
+    logging.info("iox_vbus_en: {}".format(args))
+
+    response = teensy.iox_vbus_en(args._enable)
+    logging.info("{}".format(response))
+    return response["success"]
+
+
+def iox_vbat_en(args):
+    _success = True
+    logging.info("iox_vbat_en: {}".format(args))
+
+    response = teensy.iox_vbat_en(args._enable)
+    logging.info("{}".format(response))
+    return response["success"]
+
+
+def iox_vbat_con(args):
+    _success = True
+    logging.info("iox_vbat_con: {}".format(args))
+
+    response = teensy.iox_vbat_con(args._enable)
+    logging.info("{}".format(response))
+    return response["success"]
+
+
 if __name__ == '__main__':
     args = parse_args()
     exit_code = 0
@@ -282,6 +378,24 @@ if __name__ == '__main__':
 
     elif args._cmd == 'iox_led_green':
         success = iox_led_green(args)
+
+    elif args._cmd == 'iox_led_yellow':
+        success = iox_led_yellow(args)
+
+    elif args._cmd == 'iox_led_red':
+        success = iox_led_red(args)
+
+    elif args._cmd == 'iox_led_blue':
+        success = iox_led_blue(args)
+
+    elif args._cmd == 'iox_vbus_en':
+        success = iox_vbus_en(args)
+
+    elif args._cmd == 'iox_vbat_en':
+        success = iox_vbat_en(args)
+
+    elif args._cmd == 'iox_vbat_con':
+        success = iox_vbat_con(args)
 
     if success:
         logging.info("Success")

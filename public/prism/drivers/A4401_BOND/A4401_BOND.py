@@ -48,17 +48,10 @@ class A4401_BOND:
     GPIO_MODE_INPUT_PULLUP = "INPUT_PULLUP"
     GPIO_MODE_LIST = [GPIO_MODE_INPUT, GPIO_MODE_OUTPUT, GPIO_MODE_INPUT_PULLUP]
 
-    JIG_CLOSE_GPIO = 6  # GPIO number for Jig Closed detect, set to None if not using (Active-Low)
+    JIG_CLOSE_GPIO = 6  # BUTTON1 GPIO number for Jig Closed detect, set to None if not using (Active-Low)
 
     GPIO_NUMBER_MIN = 0
     GPIO_NUMBER_MAX = 41
-
-    # LED test indicators GPIO numbers and whether they are active_high. Set GPIO to None if not using
-    TEST_INDICATORS = {
-        "pass": {'gpio': 20, 'active_high': True},
-        "fail": {'gpio': 21, 'active_high': True},
-        "other": {'gpio': 22, 'active_high': True}
-    }
 
     # For Teensy FW version checking the SAME (c code) header file that created the Teensy4
     # firmware is used to check if that firmware is now running (deployed) on Teensy4.
@@ -103,9 +96,6 @@ class A4401_BOND:
         if self.my_version != version_response["result"]["version"]:
             self.logger.error("version does not match, Python: {} Arduino: {}".format(self.my_version, version_response["result"]["version"]))
             return False
-
-        # check if test indicator has valid GPIOs
-        self._test_indicator_check()
 
         # check if jig close has valid GPIOs
         self._jig_close_check()
@@ -159,18 +149,6 @@ class A4401_BOND:
             return "ERROR"
 
         return m[0]
-
-    def _test_indicator_check(self):
-        for k in self.TEST_INDICATORS.keys():
-            pin_number = self.TEST_INDICATORS[k]['gpio']
-            if pin_number < 0 or pin_number > 41:
-                self.logger.error("{} has Invalid GPIO {}".format(k, pin_number))
-                return False
-            if pin_number is None:
-                self.logger.error("Test Indicator not defined (None)")
-                return False
-            self.rpc.call_method('init_gpio', pin_number, self.GPIO_MODE_OUTPUT.encode())
-        return True
 
     def _jig_close_check(self):
         if self.JIG_CLOSE_GPIO is None:
@@ -394,11 +372,78 @@ class A4401_BOND:
     def iox_led_green(self, state: bool):
         """ MAX11311 IOX
 
-        :return: {'success': True, 'method': 'iox_led_green'}
+        :return: {'success': True, 'method': 'iox_led_green'},
+                  'result': {'assert': False, 'level': False}
         """
         with self._lock:
             self.logger.info(f"iox_led_green {state}")
             answer = self.rpc.call_method('iox_led_green', state)
+            return self._rpc_validate(answer)
+
+    def iox_led_yellow(self, state: bool):
+        """ MAX11311 IOX
+
+        :return: {'success': True, 'method': 'iox_led_yellow'},
+                  'result': {'assert': False, 'level': False}
+        """
+        with self._lock:
+            self.logger.info(f"iox_led_yellow {state}")
+            answer = self.rpc.call_method('iox_led_yellow', state)
+            return self._rpc_validate(answer)
+
+    def iox_led_red(self, state: bool):
+        """ MAX11311 IOX
+
+        :return: {'success': True, 'method': 'iox_led_red'},
+                  'result': {'assert': False, 'level': False}
+        """
+        with self._lock:
+            self.logger.info(f"iox_led_red {state}")
+            answer = self.rpc.call_method('iox_led_red', state)
+            return self._rpc_validate(answer)
+
+    def iox_led_blue(self, state: bool):
+        """ MAX11311 IOX
+
+        :return: {'success': True, 'method': 'iox_led_blue'},
+                  'result': {'assert': False, 'level': False}
+        """
+        with self._lock:
+            self.logger.info(f"iox_led_blue {state}")
+            answer = self.rpc.call_method('iox_led_blue', state)
+            return self._rpc_validate(answer)
+
+    def iox_vbus_en(self, state: bool):
+        """ MAX11311 IOX
+
+        :return: {'success': True, 'method': 'iox_vbus_en'},
+                  'result': {'assert': False, 'level': False}
+        """
+        with self._lock:
+            self.logger.info(f"iox_vbus_en {state}")
+            answer = self.rpc.call_method('iox_vbus_en', state)
+            return self._rpc_validate(answer)
+
+    def iox_vbat_en(self, state: bool):
+        """ MAX11311 IOX
+
+        :return: {'success': True, 'method': 'iox_vbat_en'},
+                  'result': {'assert': False, 'level': False}
+        """
+        with self._lock:
+            self.logger.info(f"iox_vbat_en {state}")
+            answer = self.rpc.call_method('iox_vbat_en', state)
+            return self._rpc_validate(answer)
+
+    def iox_vbat_con(self, state: bool):
+        """ MAX11311 IOX
+
+        :return: {'success': True, 'method': 'iox_vbat_con'},
+                  'result': {'assert': False, 'level': False}
+        """
+        with self._lock:
+            self.logger.info(f"iox_vbat_con {state}")
+            answer = self.rpc.call_method('iox_vbat_con', state)
             return self._rpc_validate(answer)
 
     #
@@ -446,37 +491,18 @@ class A4401_BOND:
     def show_pass_fail(self, p=False, f=False, o=False):
         """ Set pass/fail indicator
 
-        :param p: <True|False>  set the Pass LED
-        :param f: <True|False>  set the Fail LED
-        :param o: <True|False>  "other" is set
+        :param p: <True|False>  set the Pass LED  GREEN
+        :param f: <True|False>  set the Fail LED  RED
+        :param o: <True|False>  "other" is set    YELLOW
         :return: None
         """
         self.logger.info(f"pass: {p}, fail: {f}, other: {o}")
         if self.rpc is None:
             return
 
-        with self._lock:
-            for k in self.TEST_INDICATORS.keys():
-                self.rpc.call_method('write_gpio',
-                                     self.TEST_INDICATORS[k]['gpio'],
-                                     not self.TEST_INDICATORS[k]['active_high'])
-
-            if p and self.TEST_INDICATORS.get('pass', False):
-                self.rpc.call_method('write_gpio',
-                                     self.TEST_INDICATORS["pass"]["gpio"],
-                                     self.TEST_INDICATORS["pass"]["active_high"])
-
-            if f and self.TEST_INDICATORS.get('fail', False):
-                self.rpc.call_method('write_gpio',
-                                     self.TEST_INDICATORS["fail"]["gpio"],
-                                     self.TEST_INDICATORS["fail"]["active_high"])
-
-            if o and self.TEST_INDICATORS.get('other', False):
-                self.rpc.call_method('write_gpio',
-                                     self.TEST_INDICATORS["other"]["gpio"],
-                                     self.TEST_INDICATORS["other"]["active_high"])
-
-        return
+        self.iox_led_green(p)
+        self.iox_led_red(f)
+        self.iox_led_yellow(o)
 
     def jig_reset(self):
         """ Called by Prism at the start and end of testing
