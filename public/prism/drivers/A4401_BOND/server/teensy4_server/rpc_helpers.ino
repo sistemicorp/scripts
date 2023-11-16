@@ -3,7 +3,7 @@
 // - these functions are related to the simpleRPC library
 // 
 
-#define RESPONSE_BUFFER_SIZE 200
+#define RESPONSE_BUFFER_SIZE 400
 DynamicJsonDocument doc(RESPONSE_BUFFER_SIZE);
 
 /* _helper

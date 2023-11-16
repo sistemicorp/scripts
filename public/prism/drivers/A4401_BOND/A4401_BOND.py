@@ -53,6 +53,44 @@ class A4401_BOND:
     GPIO_NUMBER_MIN = 0
     GPIO_NUMBER_MAX = 41
 
+    # MAX11311 config per header
+    # mode - options shown in comments, else its fixed (cannot change)
+    #      - typical options are ADC, DAC, GPO, GPI
+    #
+    # port - format "#[,#]", where # is from 0-11
+    a44BOND_max_config = {
+        1: {  # HDR1
+            # not configurable
+            3: {"mode": None, "port": None},  # UART Level shifter VCC
+            5: {"mode": None, "port": None},  # UART RX
+            7: {"mode": None, "port": None},  # UART TX
+            11: {"mode": None, "port": None},  # GND
+            12: {"mode": None, "port": None},  # GND
+            15: {"mode": None, "port": None},  # N/C
+            17: {"mode": None, "port": None},  # GND
+            18: {"mode": None, "port": None},  # GND
+            19: {"mode": None, "port": None},  # VBUS
+            20: {"mode": None, "port": None},  # VBAT
+
+            # special function
+            1: {"mode": "LDO",      "port": "10,1"},  # LDO output
+            2: {"mode": "GPO",      "port": "7"},          # Open Drain FET
+            4: {"mode": "GPO",      "port": "8"},          # Open Drain FET
+            6: {"mode": "DAC",      "port": "9"},          # VBAT Adjustment
+            9: {"mode": "ADC",      "port": "6"},          # LDO output feedback
+
+            # User configurable
+            8:  {"mode": "DAC",   "port": "5"},  # mode = ADC, DAC, GPO, GPI
+            10: {"mode": "ADC",   "port": "4"},  # mode = ADC, DAC, GPO, GPI
+            13: {"mode": "ADC",   "port": "0"},  # mode = ADC, DAC, GPO, GPI
+            14: {"mode": "ADC",   "port": "3"},  # mode = ADC, DAC, GPO, GPI
+            16: {"mode": "ADC",   "port": "2"},  # mode = ADC, DAC, GPO, GPI
+
+            "gpo_mv": 3300,  # GPO output voltage, for all GPOs
+            "gpi_mv": 1000,  # GPI thresholdt voltage, for all GPIs
+        }
+    }
+
     # For Teensy FW version checking the SAME (c code) header file that created the Teensy4
     # firmware is used to check if that firmware is now running (deployed) on Teensy4.
     # if that FW is not running, there is probably a problem!  See method init().
@@ -100,8 +138,10 @@ class A4401_BOND:
         # check if jig close has valid GPIOs
         self._jig_close_check()
 
+        self._init_maxs()
+
         # finally, all is well
-        self.logger.info("Installed Teensy on port {}".format(self.port))
+        self.logger.info("Installed Teensy-A4401BOND on port {}".format(self.port))
         return True
 
     def close(self):
@@ -122,6 +162,48 @@ class A4401_BOND:
     #
     # - function names should all begin with "_"
     # - functions are all private to this class
+
+    def _init_maxs(self):
+        for k, v in self.a44BOND_max_config.items():
+            ports_dac = []
+            ports_adc = [11]  # all headers use MAX port11 for self test
+            ports_gpo = []
+            ports_gpi = []
+            self.logger.info(f"{k} init")
+            for pin in range(1, 21):
+                self.logger.info(f"{k} pin {pin} init {v[pin]}")
+                if v[pin]["mode"] is None: continue
+
+                ports = [int(p) for p in v[pin]["port"].split(",")]
+                if v[pin]["mode"] == "DAC":
+                    ports_dac.extend(ports)
+
+                if v[pin]["mode"] == "ADC":
+                    ports_adc.extend(ports)
+
+                if v[pin]["mode"] == "GPO":
+                    ports_gpo.extend(ports)
+
+                if v[pin]["mode"] == "GPI":
+                    ports_gpi.extend(ports)
+
+            ports_dac.sort()
+            ports_adc.sort()
+            ports_gpo.sort()
+            ports_gpi.sort()
+            self.logger.info(f"ports_dac {ports_dac}")
+            self.logger.info(f"ports_adc {ports_adc}")
+            self.logger.info(f"ports_gpo {ports_gpo}")
+            self.logger.info(f"ports_gpi {ports_gpi}")
+            answer = self.rpc.call_method('bond_max_hdr_init',
+                                          k,  # header MAX11311 number, 1-4
+                                          ports_adc, len(ports_adc),
+                                          ports_dac, len(ports_dac),
+                                          ports_gpo, len(ports_gpo),
+                                          ports_gpi, len(ports_gpi),
+                                          v["gpo_mv"], v["gpi_mv"])
+            self._rpc_validate(answer)
+
 
     def _get_version(self):
         """ Get Version from version.h

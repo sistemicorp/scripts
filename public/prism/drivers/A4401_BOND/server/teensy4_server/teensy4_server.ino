@@ -15,6 +15,7 @@
 #include <INA219_WE.h>
 #include "src/MAX11311/MAX11300.h"
 #include "bond_max_iox.h"
+#include "bond_max_hdr.h"
 
 #define INA220_VBAT_I2C_ADDRESS 0x40
 #define INA220_VBUS_I2C_ADDRESS 0x41
@@ -45,6 +46,10 @@ INA219_WE ina219_vbus = INA219_WE(INA220_VBUS_I2C_ADDRESS);
 // Original Repo: https://github.com/sistemicorp/MAX11300/tree/master
 // Clone the repo and documentation can be found in "extras"
 MAX11300 max_iox = MAX11300();
+MAX11300 max_hdr1 = MAX11300();
+MAX11300 max_hdr2 = MAX11300();
+MAX11300 max_hdr3 = MAX11300();
+MAX11300 max_hdr4 = MAX11300();
 
 static uint16_t setup_fail_code = 0;
 
@@ -263,8 +268,11 @@ void loop(void) {
     write_gpio, "write_gpio: Writes GPIO (HIGH or LOW).",
     reset, "reset: Resets Teensy.",
     status, "status: status flags",
-
     bist_voltage, "bist_voltage: Reads internal voltage",
+
+    // A44BOND APIs
+    bond_max_hdr_init, "bond_max_hdr_init: init max11311 on header #",
+
     vbus_read, "vbus_read: Read VBUS current and voltage",
     vbat_read, "vbat_read: Read VBAT current and voltage",
     iox_reset, "iox_reset: IOX reset (USB Hub) pin",

@@ -5,12 +5,9 @@
  *  See: https://github.com/MaximIntegratedRefDesTeam/MAX11300
  *  Clone and view docs in "extras", although missing examples
 */
+#include "bond_max_hdr.h"
 
-typedef struct {
-   MAX11300RegAddress_t r;
-   uint16_t d;
-   int delay;
-} _init_regs_t;
+
 static _init_regs_t init_regs[] = {
   {.r = device_control, .d = 0x8000}, // reset
   {.r = device_control, .d = 0xc0 & 0x40b0},
@@ -56,7 +53,7 @@ int init_max_iox(void) {
      The Configuration tool generates code to program the registers,
      values, sequence, and delay.  That is used here as a template.
   */
-  int i = 0;
+  unsigned int i = 0;
 
   max_iox.begin(SPI_MOSI_Pin, SPI_MISO_Pin, SPI_SCLK_Pin, SPI_CS_IOX_Pin, MAX11311_COPNVERT_Pin); 
 
