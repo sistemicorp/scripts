@@ -174,6 +174,13 @@ def parse_args():
                            help='Assert VBAT_CON',
                            default=False)
 
+    bond_max_hdr_adc_cal = subp.add_parser('bond_max_hdr_adc_cal')
+    bond_max_hdr_adc_cal.add_argument('--header',
+                           dest="_hdr",
+                           action='store',
+                           help='header, 1-4',
+                           default=1)
+
     # add new commands here...
 
     args = parser.parse_args()
@@ -334,6 +341,15 @@ def iox_vbat_con(args):
     return response["success"]
 
 
+def bond_max_hdr_adc_cal(args):
+    _success = True
+    logging.info("bond_max_hdr_adc_cal: {}".format(args))
+
+    response = teensy.bond_max_hdr_adc_cal(args._hdr)
+    logging.info("{}".format(response))
+    return response["success"]
+
+
 if __name__ == '__main__':
     args = parse_args()
     exit_code = 0
@@ -396,6 +412,9 @@ if __name__ == '__main__':
 
     elif args._cmd == 'iox_vbat_con':
         success = iox_vbat_con(args)
+
+    elif args._cmd == 'bond_max_hdr_adc_cal':
+        success = bond_max_hdr_adc_cal(args)
 
     if success:
         logging.info("Success")

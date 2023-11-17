@@ -14,6 +14,16 @@
   return NULL;
  }
 
+ uint8_t _get_max_cs_from_hdr(int hdr) {
+  switch (hdr) {
+  case 1: return SPI_CS_HRD1_Pin; 
+  case 2: return SPI_CS_HDR2_Pin; 
+  case 3: return SPI_CS_HDR3_Pin; 
+  case 4: return SPI_CS_HDR4_Pin;   
+  }
+  return 0;
+ }
+
 MAX11300RegAddress_t _reg_dac_data_port(int port) {
   switch (port) {
     case 0: return dac_data_port_00;
@@ -57,6 +67,13 @@ String bond_max_hdr_init(int hdr,  // 1-4
                          int *gpis, int gpi_len,
                          int gpo_mv, int gpi_mv) {
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
+  
+  MAX11300 *max = _get_max_from_hdr(hdr);
+  if (max == NULL) {
+    doc["result"]["error"] = "1 <= hdr <= 4, invalid parameter";
+    doc["success"] = false;
+    return _response(doc);
+  }
 
   #define MAX_INIT_SETTINGS  32
   _init_regs_t init_regs[MAX_INIT_SETTINGS];
@@ -71,8 +88,8 @@ String bond_max_hdr_init(int hdr,  // 1-4
 */
   unsigned int i = 0;
   init_regs[i].r = device_control; init_regs[i].d = 0x8000; i++; // reset
-  init_regs[i].r = device_control; init_regs[i].d = 0xc0 & 0x40b0; i++;
-  init_regs[i].r = device_control; init_regs[i].d = 0xc0 & 0x40fc; i++;
+  init_regs[i].r = device_control; init_regs[i].d = 0xc1 & 0x40b0; i++;
+  init_regs[i].r = device_control; init_regs[i].d = 0xc1 & 0x40fc; i++;
   // Set reg DAC_DATA_port registers -----------------------------------------
   // GPIs
   uint16_t d = 0x0666;  // TODO: this comes from gpi_mv
@@ -121,11 +138,13 @@ String bond_max_hdr_init(int hdr,  // 1-4
   for (int j = 0; j < adc_len; j++) {
     init_regs[i].r = _reg_port_config_port(adcs[j]); init_regs[i].d = d; i++;
   }    
-  init_regs[i].r = device_control; init_regs[i].d = 0xc0 & 0x40ff; i++;
-  init_regs[i].r = device_control; init_regs[i].d = 0xc0; i++;
+  init_regs[i].r = device_control; init_regs[i].d = 0xc1 & 0x40ff; i++;
+  init_regs[i].r = device_control; init_regs[i].d = 0xc1; i++;
   init_regs[i].r = interrupt_mask; init_regs[i].d = 0xffff; i++;
 
-  MAX11300 *max = _get_max_from_hdr(hdr);
+
+  uint8_t cs_pin = _get_max_cs_from_hdr(hdr);
+  max->begin(SPI_MOSI_Pin, SPI_MISO_Pin, SPI_SCLK_Pin, cs_pin, MAX11311_COPNVERT_Pin);
   for(unsigned int k = 0; k < i; k++) {
     if (init_regs[k].r != reserved_6a) {
       max->write_register(init_regs[k].r, init_regs[k].d);
@@ -134,6 +153,37 @@ String bond_max_hdr_init(int hdr,  // 1-4
   }
 
   doc["result"]["regs_seq_len"] = i;
+
+  return _response(doc);  // always the last line of RPC API
+}
+
+/* Read ADC Port 11 cal voltage
+ * - all MAX11311's Port 11 is connected to 3300mV voltage
+ */
+String bond_max_hdr_adc_cal(int hdr) {
+  DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
+
+  MAX11300 *max = _get_max_from_hdr(hdr);
+  if (max == NULL) {
+    doc["result"]["error"] = "1 <= hdr <= 4, invalid parameter";
+    doc["success"] = false;
+    return _response(doc);
+  }  
+  
+  digitalWrite(MAX11311_COPNVERT_Pin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(MAX11311_COPNVERT_Pin, HIGH);
+  delayMicroseconds(100);
+
+  uint16_t data = 0;
+  MAX11300::CmdResult result = max->single_ended_adc_read(MAX11300::PIXI_PORT11, &data);
+  if (result != MAX11300::Success) {
+    doc["result"]["error"] = "single_ended_adc_read error";
+    doc["success"] = false;
+    return _response(doc);    
+  }
+
+  doc["result"]["adc_raw"] = data;
 
   return _response(doc);  // always the last line of RPC API
 }

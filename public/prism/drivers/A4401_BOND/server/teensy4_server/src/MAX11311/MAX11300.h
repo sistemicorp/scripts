@@ -130,6 +130,9 @@ class MAX11300
     void begin(uint8_t mosi = 11, uint8_t miso = 12, uint8_t sclk = 13, uint8_t cs = 10, uint8_t cnvt = 9);
 
     void shiftOutMAX(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder, byte val);
+    uint8_t shiftInMAX(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder);
+
+    MAX11300RegAddressEnum _get_adc_data_port(MAX11300_Ports port);
 
     ///@brief Writes given register with data
     ///@param[in] reg - register to be written
@@ -172,7 +175,7 @@ class MAX11300
     ///@param[in] port - single ended ADC configured port
     ///@param[out] data - contents of ADC data register
     ///@return Result of operation
-    CmdResult single_ended_adc_read(MAX11300_Ports port, uint16_t & data);
+    CmdResult single_ended_adc_read(MAX11300_Ports port, uint16_t *data);
     
     ///@brief Write single ended DAC configured port
     ///@param[in] port - single ended DAC configured port

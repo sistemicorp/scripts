@@ -32,25 +32,6 @@
 
 #include "MAX11300.h"
 
-static const uint16_t port_config_design_vals[16] = {
-    // needs to match index from MAX11300_Ports
-    0x0,                        // 0
-    port_cfg_11_DESIGNVALUE,    // 1
-    port_cfg_00_DESIGNVALUE,
-    port_cfg_01_DESIGNVALUE,
-    port_cfg_02_DESIGNVALUE,
-    port_cfg_03_DESIGNVALUE,
-    port_cfg_04_DESIGNVALUE,
-    port_cfg_05_DESIGNVALUE,    // 7
-    0x0,                        // 8
-    0x0,                        // 9
-    0x0,                        // 10
-    port_cfg_06_DESIGNVALUE,    // 11
-    port_cfg_07_DESIGNVALUE,
-    port_cfg_08_DESIGNVALUE,
-    port_cfg_09_DESIGNVALUE,
-    port_cfg_10_DESIGNVALUE,    // 15
-};
 
 //*********************************************************************
 MAX11300::MAX11300()
@@ -102,6 +83,24 @@ void MAX11300::shiftOutMAX(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder, 
       }
 }
 
+uint8_t MAX11300::shiftInMAX(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder)
+{
+    uint8_t value = 0;
+    uint8_t i;
+
+    for (i = 0; i < 8; ++i) {
+        digitalWrite(clockPin, HIGH);
+        delayMicroseconds(2);
+        if (bitOrder == LSBFIRST)
+            value |= digitalRead(dataPin) << i;
+        else
+            value |= digitalRead(dataPin) << (7 - i);
+        digitalWrite(clockPin, LOW);
+        delayMicroseconds(2);
+    }
+    return value;
+}
+
 //*********************************************************************
 void MAX11300::write_register(MAX11300RegAddress_t reg, uint16_t data)
 {
@@ -122,15 +121,36 @@ uint16_t MAX11300::read_register(MAX11300RegAddress_t reg)
     digitalWrite(m_cs, LOW);
     delayMicroseconds(1);
     shiftOutMAX(m_mosi, m_sclk, MSBFIRST, MAX11300Addr_SPI_Read(reg));
-	rtn_val |= (shiftIn(m_miso, m_sclk, MSBFIRST) << 8);
-	rtn_val |= shiftIn(m_miso, m_sclk, MSBFIRST);
+	rtn_val |= (shiftInMAX(m_miso, m_sclk, MSBFIRST) << 8);
+	rtn_val |= shiftInMAX(m_miso, m_sclk, MSBFIRST);
     digitalWrite(m_cs, HIGH);
 	delayMicroseconds(1);
 
     return rtn_val;
 }
 
-//*********************************************************************    
+//*********************************************************************
+MAX11300RegAddressEnum MAX11300::_get_adc_data_port(MAX11300_Ports port)
+{
+    switch(port) {
+    case PIXI_PORT0: return adc_data_port_00;
+    case PIXI_PORT1: return adc_data_port_01;
+    case PIXI_PORT2: return adc_data_port_02;
+    case PIXI_PORT3: return adc_data_port_03;
+    case PIXI_PORT4: return adc_data_port_04;
+    case PIXI_PORT5: return adc_data_port_05;
+    case PIXI_PORT6: return adc_data_port_06;
+    case PIXI_PORT7: return adc_data_port_07;
+    case PIXI_PORT8: return adc_data_port_08;
+    case PIXI_PORT9: return adc_data_port_09;
+    case PIXI_PORT10: return adc_data_port_10;
+    case PIXI_PORT11: return adc_data_port_11;
+    default:
+        return adc_data_port_00;
+    }
+}
+
+//*********************************************************************
 void MAX11300::block_write(MAX11300RegAddress_t reg, uint16_t * data, uint8_t num_reg)
 {
     for(uint8_t idx = 0; idx < num_reg; idx++)
@@ -209,27 +229,21 @@ MAX11300::CmdResult MAX11300::gpio_read(MAX11300_Ports port, uint8_t &state)
 }
 
 //*********************************************************************
-MAX11300::CmdResult MAX11300::single_ended_adc_read(MAX11300_Ports port, uint16_t &data)
+MAX11300::CmdResult MAX11300::single_ended_adc_read(MAX11300_Ports port, uint16_t *data)
 {
     MAX11300::CmdResult result = MAX11300::OpFailure;
-    
-    if(((port_config_design_vals[port] & 0xF000) >> 12) == MAX11300::MODE_7)
+    uint8_t num_samples = 1;
+
+    while(num_samples--)
     {
-        uint8_t num_samples = ((port_config_design_vals[port] & port_cfg_00_funcprm_nsamples) >> 5);
-        num_samples = (1 << num_samples);
-        
-        while(num_samples--)
-        {
-            digitalWrite(m_cnvt, LOW);
-            delayMicroseconds(1);
-            digitalWrite(m_cnvt, HIGH);
-            delayMicroseconds(100);
-        }
-        data = read_register(static_cast<MAX11300RegAddress_t>(adc_data_port_00 + port));
-        
-        result = MAX11300::Success;
+        digitalWrite(m_cnvt, LOW);
+        delayMicroseconds(100);
+        digitalWrite(m_cnvt, HIGH);
+        delayMicroseconds(100);
     }
-    
+    *data = read_register(_get_adc_data_port(port));
+
+    result = MAX11300::Success;
     return result;
 }
 
@@ -238,12 +252,9 @@ MAX11300::CmdResult MAX11300::single_ended_dac_write(MAX11300_Ports port, uint16
 {
     MAX11300::CmdResult result = MAX11300::OpFailure;
     
-    if(((port_config_design_vals[port] & 0xF000) >> 12) == MAX11300::MODE_5)
-    {
-        write_register(static_cast<MAX11300RegAddress_t>(dac_data_port_00 + port) , data);
-        result = MAX11300::Success;
-    }
-    
+    write_register(static_cast<MAX11300RegAddress_t>(dac_data_port_00 + port) , data);
+    result = MAX11300::Success;
+
     return result;
 }
 

@@ -272,6 +272,7 @@ void loop(void) {
 
     // A44BOND APIs
     bond_max_hdr_init, "bond_max_hdr_init: init max11311 on header #",
+    bond_max_hdr_adc_cal, "bond_max_hdr_adc_cal: read port 11 cal voltage",
 
     vbus_read, "vbus_read: Read VBUS current and voltage",
     vbat_read, "vbat_read: Read VBAT current and voltage",

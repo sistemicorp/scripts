@@ -528,6 +528,18 @@ class A4401_BOND:
             answer = self.rpc.call_method('iox_vbat_con', state)
             return self._rpc_validate(answer)
 
+    def bond_max_hdr_adc_cal(self, hdr: int):
+        """ MAX11311 IOX
+
+        :return: {'success': True, 'method': 'iox_vbat_con'},
+                  'result': {'assert': False, 'level': False}
+        """
+        with self._lock:
+            self.logger.info(f"bond_max_hdr_adc_cal {hdr}")
+            answer = self.rpc.call_method('bond_max_hdr_adc_cal', hdr)
+            return self._rpc_validate(answer)
+
+
     #
     # API (wrapper functions)
     # ---------------------------------------------------------------------------------------------
