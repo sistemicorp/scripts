@@ -178,7 +178,25 @@ def parse_args():
     bond_max_hdr_adc_cal.add_argument('--header',
                            dest="_hdr",
                            action='store',
+                           type=int,
                            help='header, 1-4',
+                           required=True,
+                           default=1)
+
+    bond_max_hdr_adc = subp.add_parser('bond_max_hdr_adc')
+    bond_max_hdr_adc.add_argument('--header',
+                           dest="_hdr",
+                           action='store',
+                           type=int,
+                           help='header, 1-4',
+                           required=True,
+                           default=1)
+    bond_max_hdr_adc.add_argument('--pin',
+                           dest="_pin",
+                           action='store',
+                           type=int,
+                           help='pin, 1-20, but not all pins have function',
+                           required=True,
                            default=1)
 
     # add new commands here...
@@ -341,6 +359,15 @@ def iox_vbat_con(args):
     return response["success"]
 
 
+def bond_max_hdr_adc(args):
+    _success = True
+    logging.info("bond_max_hdr_adc: {}".format(args))
+
+    response = teensy.bond_max_hdr_adc(args._hdr, args._pin)
+    logging.info("{}".format(response))
+    return response["success"]
+
+
 def bond_max_hdr_adc_cal(args):
     _success = True
     logging.info("bond_max_hdr_adc_cal: {}".format(args))
@@ -415,6 +442,9 @@ if __name__ == '__main__':
 
     elif args._cmd == 'bond_max_hdr_adc_cal':
         success = bond_max_hdr_adc_cal(args)
+
+    elif args._cmd == 'bond_max_hdr_adc':
+        success = bond_max_hdr_adc(args)
 
     if success:
         logging.info("Success")

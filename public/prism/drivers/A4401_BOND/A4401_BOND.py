@@ -74,12 +74,12 @@ class A4401_BOND:
 
             # special function
             1: {"mode": "LDO",      "port": "10,1"},  # LDO output
-            2: {"mode": "GPO",      "port": "7"},          # Open Drain FET
-            4: {"mode": "GPO",      "port": "8"},          # Open Drain FET
-            6: {"mode": "DAC",      "port": "9"},          # VBAT Adjustment
-            9: {"mode": "ADC",      "port": "6"},          # LDO output feedback
+            2: {"mode": "GPO",      "port": "7"},     # Open Drain FET
+            4: {"mode": "GPO",      "port": "8"},     # Open Drain FET
+            6: {"mode": "DAC",      "port": "9"},     # VBAT Adjustment
+            9: {"mode": "ADC",      "port": "6"},     # LDO output feedback
 
-            # User configurable
+            # User configurable, change mode as required
             8:  {"mode": "DAC",   "port": "5"},  # mode = ADC, DAC, GPO, GPI
             10: {"mode": "ADC",   "port": "4"},  # mode = ADC, DAC, GPO, GPI
             13: {"mode": "ADC",   "port": "0"},  # mode = ADC, DAC, GPO, GPI
@@ -454,7 +454,7 @@ class A4401_BOND:
     def iox_led_green(self, state: bool):
         """ MAX11311 IOX
 
-        :return: {'success': True, 'method': 'iox_led_green'},
+        :return: {'success': True, 'method': 'iox_led_green',
                   'result': {'assert': False, 'level': False}
         """
         with self._lock:
@@ -465,7 +465,7 @@ class A4401_BOND:
     def iox_led_yellow(self, state: bool):
         """ MAX11311 IOX
 
-        :return: {'success': True, 'method': 'iox_led_yellow'},
+        :return: {'success': True, 'method': 'iox_led_yellow',
                   'result': {'assert': False, 'level': False}
         """
         with self._lock:
@@ -476,7 +476,7 @@ class A4401_BOND:
     def iox_led_red(self, state: bool):
         """ MAX11311 IOX
 
-        :return: {'success': True, 'method': 'iox_led_red'},
+        :return: {'success': True, 'method': 'iox_led_red',
                   'result': {'assert': False, 'level': False}
         """
         with self._lock:
@@ -487,7 +487,7 @@ class A4401_BOND:
     def iox_led_blue(self, state: bool):
         """ MAX11311 IOX
 
-        :return: {'success': True, 'method': 'iox_led_blue'},
+        :return: {'success': True, 'method': 'iox_led_blue',
                   'result': {'assert': False, 'level': False}
         """
         with self._lock:
@@ -498,7 +498,7 @@ class A4401_BOND:
     def iox_vbus_en(self, state: bool):
         """ MAX11311 IOX
 
-        :return: {'success': True, 'method': 'iox_vbus_en'},
+        :return: {'success': True, 'method': 'iox_vbus_en',
                   'result': {'assert': False, 'level': False}
         """
         with self._lock:
@@ -509,7 +509,7 @@ class A4401_BOND:
     def iox_vbat_en(self, state: bool):
         """ MAX11311 IOX
 
-        :return: {'success': True, 'method': 'iox_vbat_en'},
+        :return: {'success': True, 'method': 'iox_vbat_en',
                   'result': {'assert': False, 'level': False}
         """
         with self._lock:
@@ -520,7 +520,7 @@ class A4401_BOND:
     def iox_vbat_con(self, state: bool):
         """ MAX11311 IOX
 
-        :return: {'success': True, 'method': 'iox_vbat_con'},
+        :return: {'success': True, 'method': 'iox_vbat_con',
                   'result': {'assert': False, 'level': False}
         """
         with self._lock:
@@ -529,16 +529,45 @@ class A4401_BOND:
             return self._rpc_validate(answer)
 
     def bond_max_hdr_adc_cal(self, hdr: int):
-        """ MAX11311 IOX
+        """ MAX11311 Header <1-4> read ADC CAL (port 11) voltage
+        - expected result is always 2500 +/- error
 
-        :return: {'success': True, 'method': 'iox_vbat_con'},
-                  'result': {'assert': False, 'level': False}
+        :return: {'success': True, 'method': 'bond_max_hdr_adc_cal',
+                  'result': {'mV': <int> }
         """
         with self._lock:
             self.logger.info(f"bond_max_hdr_adc_cal {hdr}")
             answer = self.rpc.call_method('bond_max_hdr_adc_cal', hdr)
             return self._rpc_validate(answer)
 
+    def bond_max_hdr_adc(self, hdr: int, pin: int):
+        """ MAX11311 Header <1-4> read ADC Port <0-10> voltage
+        - expected result is always 2500 +/- error
+        - get port from pin, and also check mode
+
+        :return: {'success': True, 'method': 'bond_max_hdr_adc',
+                  'result': {'mV': <int> }
+        """
+        if hdr not in self.a44BOND_max_config:
+            self.logger.error(f'Invalid parameter hdr {hdr}')
+            return {'success': False, 'method': 'bond_max_hdr_adc',
+                    'result': {'error': f'Invalid parameter hdr {hdr}'}}
+        if pin not in self.a44BOND_max_config[hdr]:
+            self.logger.error(f'Invalid parameter pin {pin}')
+            return {'success': False, 'method': 'bond_max_hdr_adc',
+                    'result': {'error': f'Invalid parameter pin {pin}'}}
+
+        config = self.a44BOND_max_config[hdr][pin]
+        if config['mode'] != "ADC":
+            self.logger.error(f'Invalid mode hdr {hdr} pin {pin} mode {config["mode"]}')
+            return {'success': False, 'method': 'bond_max_hdr_adc',
+                    'result': {'error': f'Invalid mode hdr {hdr} pin {pin} mode {config["mode"]}'}}
+
+        port = config["port"]
+        with self._lock:
+            self.logger.info(f"bond_max_hdr_adc {hdr} {port}")
+            answer = self.rpc.call_method('bond_max_hdr_adc', hdr, port)
+            return self._rpc_validate(answer)
 
     #
     # API (wrapper functions)
