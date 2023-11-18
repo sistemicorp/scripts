@@ -73,21 +73,21 @@ class A4401_BOND:
             20: {"mode": None, "port": None},  # VBAT
 
             # special function
-            1: {"mode": "LDO",      "port": "10,1"},  # LDO output
-            2: {"mode": "GPO",      "port": "7"},     # Open Drain FET
-            4: {"mode": "GPO",      "port": "8"},     # Open Drain FET
-            6: {"mode": "DAC",      "port": "9"},     # VBAT Adjustment
-            9: {"mode": "ADC",      "port": "6"},     # LDO output feedback
+            1: {"mode": "DAC,GPO", "port": "10,1"},  # LDO output
+            2: {"mode": "GPO",     "port": "7"},     # Open Drain FET
+            4: {"mode": "GPO",     "port": "8"},     # Open Drain FET
+            6: {"mode": "DAC",     "port": "9"},     # VBAT Adjustment
+            9: {"mode": "ADC",     "port": "6"},     # LDO output feedback
 
             # User configurable, change mode as required
-            8:  {"mode": "DAC",   "port": "5"},  # mode = ADC, DAC, GPO, GPI
-            10: {"mode": "ADC",   "port": "4"},  # mode = ADC, DAC, GPO, GPI
-            13: {"mode": "ADC",   "port": "0"},  # mode = ADC, DAC, GPO, GPI
-            14: {"mode": "ADC",   "port": "3"},  # mode = ADC, DAC, GPO, GPI
-            16: {"mode": "ADC",   "port": "2"},  # mode = ADC, DAC, GPO, GPI
+            8:  {"mode": "DAC",    "port": "5"},  # mode = ADC, DAC, GPO, GPI
+            10: {"mode": "GPO",    "port": "4"},  # mode = ADC, DAC, GPO, GPI
+            13: {"mode": "GPI",    "port": "0"},  # mode = ADC, DAC, GPO, GPI
+            14: {"mode": "ADC",    "port": "3"},  # mode = ADC, DAC, GPO, GPI
+            16: {"mode": "ADC",    "port": "2"},  # mode = ADC, DAC, GPO, GPI
 
-            "gpo_mv": 3300,  # GPO output voltage, for all GPOs
-            "gpi_mv": 1000,  # GPI thresholdt voltage, for all GPIs
+            "gpo_mv": 3300,  # TODO: GPO output voltage, for all GPOs
+            "gpi_mv": 1000,  # TODO: GPI threshold voltage, for all GPIs
         }
     }
 
@@ -174,18 +174,23 @@ class A4401_BOND:
                 self.logger.info(f"{k} pin {pin} init {v[pin]}")
                 if v[pin]["mode"] is None: continue
 
+                modes = [m for m in v[pin]["mode"].split(",")]
                 ports = [int(p) for p in v[pin]["port"].split(",")]
-                if v[pin]["mode"] == "DAC":
-                    ports_dac.extend(ports)
+                if len(ports) != len(modes):
+                    self.logger.error(f"modes and ports must be equal lengths")
+                    continue
+                for m, p in zip(modes, ports):
+                    if "DAC" == m:
+                        ports_dac.append(p)
 
-                if v[pin]["mode"] == "ADC":
-                    ports_adc.extend(ports)
+                    if "ADC" == m:
+                        ports_adc.append(p)
 
-                if v[pin]["mode"] == "GPO":
-                    ports_gpo.extend(ports)
+                    if "GPO" == m:
+                        ports_gpo.append(p)
 
-                if v[pin]["mode"] == "GPI":
-                    ports_gpi.extend(ports)
+                    if "GPI" == m:
+                        ports_gpi.append(p)
 
             ports_dac.sort()
             ports_adc.sort()

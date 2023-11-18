@@ -93,17 +93,9 @@ String bond_max_hdr_init(int hdr,  // 1-4
     return _response(doc);
   }
 
-  #define MAX_INIT_SETTINGS  32
+  #define MAX_INIT_SETTINGS  40
   _init_regs_t init_regs[MAX_INIT_SETTINGS];
 
-/*  debug only
-  doc["result"]["len_adc"] = adc_len;
-  doc["result"]["len_dac"] = dac_len;
-  doc["result"]["len_gpo"] = gpo_len;
-  doc["result"]["len_gpi"] = gpi_len;
-  doc["result"]["gpo_mv"] = gpo_mv;
-  doc["result"]["gpi_mv"] = gpi_mv;
-*/
   unsigned int i = 0;
   init_regs[i].r = device_control; init_regs[i].d = 0x8000; i++; // reset
   init_regs[i].r = device_control; init_regs[i].d = 0xc1 & 0x40b0; i++;
@@ -128,6 +120,7 @@ String bond_max_hdr_init(int hdr,  // 1-4
   init_regs[i].r = dac_preset_data_2; init_regs[i].d = 0x0; i++;
   // Set reg PORT_CONFIG -----------------------------------------------------
   // GPIs
+  d = 0x1000;  // TODO: this comes from ??
   for (int j = 0; j < gpi_len; j++) {
     init_regs[i].r = _reg_port_config_port(gpis[j]); init_regs[i].d = d; i++;
   }
@@ -160,11 +153,21 @@ String bond_max_hdr_init(int hdr,  // 1-4
   init_regs[i].r = device_control; init_regs[i].d = 0xc1; i++;
   init_regs[i].r = interrupt_mask; init_regs[i].d = 0xffff; i++;
 
+  if (0) {  // DEBUG CODE
+    doc["result"]["len_adc"] = adc_len;
+    doc["result"]["len_dac"] = dac_len;
+    doc["result"]["len_gpo"] = gpo_len;
+    doc["result"]["len_gpi"] = gpi_len;
+    doc["result"]["gpo_mv"] = gpo_mv;
+    doc["result"]["gpi_mv"] = gpi_mv;
+    doc["result"]["i"] = i;  //  !! check i < MAX_INIT_SETTINGS !! 
+    return _response(doc);
+  }
 
   uint8_t cs_pin = _get_max_cs_from_hdr(hdr);
   max->begin(SPI_MOSI_Pin, SPI_MISO_Pin, SPI_SCLK_Pin, cs_pin, MAX11311_COPNVERT_Pin);
   for(unsigned int k = 0; k < i; k++) {
-    if (init_regs[k].r != reserved_6a) {
+    if (init_regs[k].r != reserved_6a) {  // reserved_6a is flag for just delay
       max->write_register(init_regs[k].r, init_regs[k].d);
     }
     delay(1);
