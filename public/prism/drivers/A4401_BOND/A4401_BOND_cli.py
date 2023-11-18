@@ -199,6 +199,29 @@ def parse_args():
                            required=True,
                            default=1)
 
+    bond_max_hdr_dac = subp.add_parser('bond_max_hdr_dac')
+    bond_max_hdr_dac.add_argument('--header',
+                           dest="_hdr",
+                           action='store',
+                           type=int,
+                           help='header, 1-4',
+                           required=True,
+                           default=1)
+    bond_max_hdr_dac.add_argument('--pin',
+                           dest="_pin",
+                           action='store',
+                           type=int,
+                           help='pin, 1-20, but not all pins have function',
+                           required=True,
+                           default=1)
+    bond_max_hdr_dac.add_argument('--mv',
+                           dest="_mv",
+                           action='store',
+                           type=int,
+                           help='DAC output voltage 0-10000 mV',
+                           required=True,
+                           default=2500)
+
     # add new commands here...
 
     args = parser.parse_args()
@@ -377,6 +400,15 @@ def bond_max_hdr_adc_cal(args):
     return response["success"]
 
 
+def bond_max_hdr_dac(args):
+    _success = True
+    logging.info("bond_max_hdr_dac: {}".format(args))
+
+    response = teensy.bond_max_hdr_dac(args._hdr, args._pin, args._mv)
+    logging.info("{}".format(response))
+    return response["success"]
+
+
 if __name__ == '__main__':
     args = parse_args()
     exit_code = 0
@@ -445,6 +477,9 @@ if __name__ == '__main__':
 
     elif args._cmd == 'bond_max_hdr_adc':
         success = bond_max_hdr_adc(args)
+
+    elif args._cmd == 'bond_max_hdr_dac':
+        success = bond_max_hdr_dac(args)
 
     if success:
         logging.info("Success")

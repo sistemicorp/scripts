@@ -239,3 +239,24 @@ String bond_max_hdr_adc(int hdr, int port) {
 
   return _response(doc);  // always the last line of RPC API
 }
+
+/* Write Header <1-4> DAC Port <#> cal voltage
+ * - its assume the port mode was checked by the Python side code
+ */
+String bond_max_hdr_dac(int hdr, int port, int mv) {
+  DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
+
+  MAX11300 *max = _get_max_from_hdr(hdr);
+  if (max == NULL) {
+    doc["result"]["error"] = "1 <= hdr <= 4, invalid parameter";
+    doc["success"] = false;
+    return _response(doc);
+  }  
+
+  uint16_t data = (mv * 2) / 5;  // divide by 2.5
+  max->write_register(_reg_dac_data_port(port), data);
+
+  doc["result"]["dac_raw"] = data;
+  doc["result"]["mV"] = mv;
+  return _response(doc);  // always the last line of RPC API
+}

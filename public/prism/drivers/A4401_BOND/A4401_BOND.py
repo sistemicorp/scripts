@@ -54,13 +54,14 @@ class A4401_BOND:
     GPIO_NUMBER_MAX = 41
 
     # MAX11311 config per header
+    # - based on schematic A4401
     # mode - options shown in comments, else its fixed (cannot change)
     #      - typical options are ADC, DAC, GPO, GPI
     #
     # port - format "#[,#]", where # is from 0-11
     a44BOND_max_config = {
         1: {  # HDR1
-            # not configurable
+            # not configurable - do not change
             3: {"mode": None, "port": None},  # UART Level shifter VCC
             5: {"mode": None, "port": None},  # UART RX
             7: {"mode": None, "port": None},  # UART TX
@@ -72,7 +73,7 @@ class A4401_BOND:
             19: {"mode": None, "port": None},  # VBUS
             20: {"mode": None, "port": None},  # VBAT
 
-            # special function
+            # special function - do not change
             1: {"mode": "DAC,GPO", "port": "10,1"},  # LDO output
             2: {"mode": "GPO",     "port": "7"},     # Open Drain FET
             4: {"mode": "GPO",     "port": "8"},     # Open Drain FET
@@ -545,33 +546,60 @@ class A4401_BOND:
             answer = self.rpc.call_method('bond_max_hdr_adc_cal', hdr)
             return self._rpc_validate(answer)
 
+    def _bond_check_hdr_pin(self, hdr, pin, mode):
+        if hdr not in self.a44BOND_max_config:
+            self.logger.error(f'Invalid parameter hdr {hdr}')
+            return False, None, {'success': False, 'method': 'bond_max_hdr_adc',
+                                 'result': {'error': f'Invalid parameter hdr {hdr}'}}
+        if pin not in self.a44BOND_max_config[hdr]:
+            self.logger.error(f'Invalid parameter pin {pin}')
+            return False, None, {'success': False, 'method': 'bond_max_hdr_adc',
+                                 'result': {'error': f'Invalid parameter pin {pin}'}}
+
+        config = self.a44BOND_max_config[hdr][pin]
+        if config['mode'] != mode:
+            self.logger.error(f'Invalid mode hdr {hdr} pin {pin} mode {config["mode"]}')
+            return False, None, {'success': False, 'method': 'bond_max_hdr_adc',
+                                'result': {'error': f'Invalid mode hdr {hdr} pin {pin} mode {config["mode"]}'}}
+
+        port = config["port"]
+        return True, port, None
+
     def bond_max_hdr_adc(self, hdr: int, pin: int):
         """ MAX11311 Header <1-4> read ADC Port <0-10> voltage
-        - expected result is always 2500 +/- error
         - get port from pin, and also check mode
 
         :return: {'success': True, 'method': 'bond_max_hdr_adc',
                   'result': {'mV': <int> }
         """
-        if hdr not in self.a44BOND_max_config:
-            self.logger.error(f'Invalid parameter hdr {hdr}')
-            return {'success': False, 'method': 'bond_max_hdr_adc',
-                    'result': {'error': f'Invalid parameter hdr {hdr}'}}
-        if pin not in self.a44BOND_max_config[hdr]:
-            self.logger.error(f'Invalid parameter pin {pin}')
-            return {'success': False, 'method': 'bond_max_hdr_adc',
-                    'result': {'error': f'Invalid parameter pin {pin}'}}
+        success, port, error = self._bond_check_hdr_pin(hdr, pin, "ADC")
+        if not success:
+            return error
 
-        config = self.a44BOND_max_config[hdr][pin]
-        if config['mode'] != "ADC":
-            self.logger.error(f'Invalid mode hdr {hdr} pin {pin} mode {config["mode"]}')
-            return {'success': False, 'method': 'bond_max_hdr_adc',
-                    'result': {'error': f'Invalid mode hdr {hdr} pin {pin} mode {config["mode"]}'}}
-
-        port = config["port"]
         with self._lock:
             self.logger.info(f"bond_max_hdr_adc {hdr} {port}")
             answer = self.rpc.call_method('bond_max_hdr_adc', hdr, port)
+            return self._rpc_validate(answer)
+
+    def bond_max_hdr_dac(self, hdr: int, pin: int, mv: int):
+        """ MAX11311 Header <1-4> write DAC Port <0-10> voltage <mv>
+        - get port from pin, and also check mode
+        - dac raw is mv / 2.5
+
+        :return: {'success': True, 'method': 'bond_max_hdr_dac',
+                  'result': {'mV': <int>, 'dac_raw': <int> }
+        """
+        success, port, error = self._bond_check_hdr_pin(hdr, pin, "DAC")
+        if not success:
+            return error
+
+        if not (0 < mv < 10000):
+            return {'success': False, 'method': 'bond_max_hdr_dac',
+                    'result': {'error': f'Invalid parameter mv {mv}'}}
+
+        with self._lock:
+            self.logger.info(f"bond_max_hdr_dac {hdr} {port} {mv}")
+            answer = self.rpc.call_method('bond_max_hdr_dac', hdr, port, mv)
             return self._rpc_validate(answer)
 
     #
