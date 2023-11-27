@@ -16,6 +16,7 @@
 #include "src/MAX11311/MAX11300.h"
 #include "bond_max_iox.h"
 #include "bond_max_hdr.h"
+#include "src/oled/er_oled.h"
 
 #define INA220_VBAT_I2C_ADDRESS 0x40
 #define INA220_VBUS_I2C_ADDRESS 0x41
@@ -40,6 +41,15 @@
 #define SPI_SCLK_Pin            27
 #define MAX11311_COPNVERT_Pin   8
 
+#define SETUP_FAIL_VSYS_PG_PIN  0
+#define SETUP_FAIL_INA219_VBAT  1
+#define SETUP_FAIL_INA219_VBUS  2
+#define SETUP_FAIL_MAX_IOX      3
+
+static uint16_t setup_fail_code = 0;
+
+int8_t oled_buf[OLED_WIDTH * OLED_HEIGHT / 8];
+
 INA219_WE ina219_vbat = INA219_WE(INA220_VBAT_I2C_ADDRESS);
 INA219_WE ina219_vbus = INA219_WE(INA220_VBUS_I2C_ADDRESS);
 
@@ -51,7 +61,7 @@ MAX11300 max_hdr2 = MAX11300();
 MAX11300 max_hdr3 = MAX11300();
 MAX11300 max_hdr4 = MAX11300();
 
-static uint16_t setup_fail_code = 0;
+
 
 //-------------------------------------------------------------------------------------------------------------
 // Teensy "on board" RPC functions
@@ -173,6 +183,12 @@ void setup(void) {
   delay(blink_delay_ms);
   digitalWrite(LED_BUILTIN, LOW);
 
+  er_oled_begin();
+  er_oled_clear(oled_buf);
+  er_oled_string(0, 0, "SETUP: BOOTING...", 12, 1, oled_buf);
+  er_oled_display(oled_buf);
+  er_oled_clear(oled_buf);
+
   // set SPI interface pin modes
   // TODO: probably don't need this as MAX11300 inits pins
   digitalWrite(SPI_CS_IOX_Pin, HIGH); // SPI CS inactive high
@@ -208,11 +224,17 @@ void setup(void) {
   delay(100);
   // check VSYS_PG_PIN
   uint8_t vsys_pg_pin = digitalRead(VSYS_PG_PIN);
-  if (vsys_pg_pin == 0 && setup_fail_code == 0) setup_fail_code++;
+  if (vsys_pg_pin == 0) {
+    setup_fail_code |= (0x1 << SETUP_FAIL_VSYS_PG_PIN);
+    er_oled_string(0, 0, "SETUP: SETUP_FAIL_VSYS_PG_PIN", 12, 1, oled_buf);
+    er_oled_display(oled_buf);
+  }
 
   // configure INA220s
   if (!ina219_vbat.init()) {
-    setup_fail_code |= (0x1 << 0);
+    setup_fail_code |= (0x1 << SETUP_FAIL_INA219_VBAT);
+    er_oled_string(0, 0, "SETUP: SETUP_FAIL_INA219_VBAT", 12, 1, oled_buf);
+    er_oled_display(oled_buf);
   } else {
     ina219_vbat.setShuntSizeInOhms(INA220_VBAT_SHUNT_OHMS);
     ina219_vbat.setBusRange(BRNG_16);
@@ -220,7 +242,9 @@ void setup(void) {
   }
 
   if (!ina219_vbus.init()) {
-    setup_fail_code |= (0x1 << 1);
+    setup_fail_code |= (0x1 << SETUP_FAIL_INA219_VBUS);
+    er_oled_string(0, 0, "SETUP: SETUP_FAIL_INA219_VBUS", 12, 1, oled_buf);
+    er_oled_display(oled_buf);
   } else {
     ina219_vbus.setShuntSizeInOhms(INA220_VBUS_SHUNT_OHMS);
     ina219_vbus.setBusRange(BRNG_16);
@@ -229,7 +253,9 @@ void setup(void) {
 
   int success = init_max_iox();
   if (success != 0) {
-    setup_fail_code |= (0x1 << 2);
+    setup_fail_code |= (0x1 << SETUP_FAIL_MAX_IOX);
+    er_oled_string(0, 0, "SETUP: SETUP_FAIL_INA219_VBUS", 12, 1, oled_buf);
+    er_oled_display(oled_buf);
   }
 
   delay(blink_delay_ms);
@@ -239,6 +265,9 @@ void setup(void) {
 
     // shutdown for safety
     //digitalWrite(VSYS_EN_PIN, LOW);
+  } else {
+    er_oled_string(0, 0, "SETUP: COMPLETE", 12, 1, oled_buf);
+    er_oled_display(oled_buf);
   }
     
   // TODO: blink error code based on fault
