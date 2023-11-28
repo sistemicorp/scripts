@@ -6,7 +6,7 @@
  *  Clone and view docs in "extras", although missing examples
 */
 #include "bond_max_hdr.h"
-
+#include "src/oled/bond_oled.h"
 
 static _init_regs_t init_regs[] = {
   {.r = device_control, .d = 0x8000}, // reset
@@ -83,6 +83,7 @@ int init_max_iox(void) {
   max_iox.gpio_write(MAX11300::PIXI_PORT10, 0);
   max_iox.gpio_write(MAX11300::PIXI_PORT11, 0);
 
+  oled_print(OLED_LINE_RPC, __func__, false);
   return 0;
 }
 
@@ -95,6 +96,8 @@ String iox_reset(bool assert) {
   max_iox.gpio_write(MAX11300::PIXI_PORT6, (!assert ? 1 : 0));
   doc["result"]["assert"] = assert;
   doc["result"]["level"] = !assert;    
+
+  oled_print(OLED_LINE_RPC, __func__, false);
   return _response(doc);  // always the last line of RPC API
 }
 
@@ -106,6 +109,8 @@ String iox_vbat_con(bool assert) {
   max_iox.gpio_write(MAX11300::PIXI_PORT2, (assert ? 1 : 0));
   doc["result"]["assert"] = assert;
   doc["result"]["level"] = assert;  
+
+  oled_print(OLED_LINE_RPC, __func__, false);
   return _response(doc);  // always the last line of RPC API
 }
 
@@ -117,6 +122,8 @@ String iox_vbat_en(bool assert) {
   max_iox.gpio_write(MAX11300::PIXI_PORT3, (assert ? 1 : 0));
   doc["result"]["assert"] = assert;
   doc["result"]["level"] = assert;  
+
+  oled_print(OLED_LINE_RPC, __func__, false);
   return _response(doc);  // always the last line of RPC API
 }
 
@@ -128,6 +135,8 @@ String iox_vbus_en(bool assert) {
   max_iox.gpio_write(MAX11300::PIXI_PORT4, (assert ? 1 : 0));
   doc["result"]["assert"] = assert;
   doc["result"]["level"] = assert;
+
+  oled_print(OLED_LINE_RPC, __func__, false);
   return _response(doc);  // always the last line of RPC API
 }
 
@@ -139,6 +148,8 @@ String iox_selftest(bool assert) {
   max_iox.gpio_write(MAX11300::PIXI_PORT7, (assert ? 1 : 0));
   doc["result"]["assert"] = assert;
   doc["result"]["level"] = assert;
+
+  oled_print(OLED_LINE_RPC, __func__, false);
   return _response(doc);  // always the last line of RPC API
 }
 
@@ -150,6 +161,8 @@ String iox_led_green(bool assert) {
   max_iox.gpio_write(MAX11300::PIXI_PORT8, (assert ? 1 : 0));
   doc["result"]["assert"] = assert;
   doc["result"]["level"] = assert;
+
+  oled_print(OLED_LINE_RPC, __func__, false);
   return _response(doc);  // always the last line of RPC API
 }
 
@@ -161,6 +174,8 @@ String iox_led_yellow(bool assert) {
   max_iox.gpio_write(MAX11300::PIXI_PORT9, (assert ? 1 : 0));
   doc["result"]["assert"] = assert;
   doc["result"]["level"] = assert;
+
+  oled_print(OLED_LINE_RPC, __func__, false);
   return _response(doc);  // always the last line of RPC API
 }
 
@@ -172,6 +187,8 @@ String iox_led_red(bool assert) {
   max_iox.gpio_write(MAX11300::PIXI_PORT10, (assert ? 1 : 0));
   doc["result"]["assert"] = assert;
   doc["result"]["level"] = assert;
+
+  oled_print(OLED_LINE_RPC, __func__, false);
   return _response(doc);  // always the last line of RPC API
 }
 
@@ -183,5 +200,7 @@ String iox_led_blue(bool assert) {
   max_iox.gpio_write(MAX11300::PIXI_PORT11, (assert ? 1 : 0));
   doc["result"]["assert"] = assert;
   doc["result"]["level"] = assert;
+
+  oled_print(OLED_LINE_RPC, __func__, false);
   return _response(doc);  // always the last line of RPC API
 }

@@ -16,7 +16,7 @@
 #include "src/MAX11311/MAX11300.h"
 #include "bond_max_iox.h"
 #include "bond_max_hdr.h"
-#include "src/oled/er_oled.h"
+#include "src/oled/bond_oled.h"
 
 #define INA220_VBAT_I2C_ADDRESS 0x40
 #define INA220_VBUS_I2C_ADDRESS 0x41
@@ -45,10 +45,8 @@
 #define SETUP_FAIL_INA219_VBAT  1
 #define SETUP_FAIL_INA219_VBUS  2
 #define SETUP_FAIL_MAX_IOX      3
-
+#define SETUP_FAIL_BATTEM       4
 static uint16_t setup_fail_code = 0;
-
-int8_t oled_buf[OLED_WIDTH * OLED_HEIGHT / 8];
 
 INA219_WE ina219_vbat = INA219_WE(INA220_VBAT_I2C_ADDRESS);
 INA219_WE ina219_vbus = INA219_WE(INA220_VBUS_I2C_ADDRESS);
@@ -95,7 +93,8 @@ String unique_id() {
   
   char unique_id[MAX_STR_SIZE];
   doc["result"]["unique_id"] = _teensyMAC(unique_id);
-  
+
+  oled_print(OLED_LINE_RPC, __func__, false);
   return _response(doc);  // always the last line of RPC API
 }
 
@@ -106,6 +105,8 @@ String unique_id() {
  */
 String reboot_to_bootloader() {
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
+  oled_print(OLED_LINE_RPC, __func__, false);
+
   // send reboot command ----- from https://forum.pjrc.com/threads/71624-teensy_loader_cli-with-multiple-Teensys-connected?p=316838#post316838
   _reboot_Teensyduino_();
   return _response(doc);  // this never happens because of reboot call
@@ -118,7 +119,8 @@ String version(){
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
  
   doc["result"]["version"] = VERSION;
-  
+
+  oled_print(OLED_LINE_RPC, __func__, false);
   return _response(doc);  // always the last line of RPC API
 }
 
@@ -140,6 +142,7 @@ String slot() {
   uint32_t _id = m2 & 0xffff;
   doc["result"]["id"] = _id;
   
+  oled_print(OLED_LINE_RPC, __func__, false);
   return _response(doc);  // always the last line of RPC API
 }
 
@@ -149,6 +152,7 @@ String slot() {
 String status() {
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
   doc["result"]["setup_fail_code"] = setup_fail_code;
+  oled_print(OLED_LINE_RPC, __func__, false);
   return _response(doc);  // always the last line of RPC API
 }
 
@@ -158,6 +162,7 @@ String status() {
  */
 String reset(){
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
+  oled_print(OLED_LINE_RPC, __func__, false);
 
   // ... add any required resetting code here ...
   
@@ -183,11 +188,8 @@ void setup(void) {
   delay(blink_delay_ms);
   digitalWrite(LED_BUILTIN, LOW);
 
-  er_oled_begin();
-  er_oled_clear(oled_buf);
-  er_oled_string(0, 0, "SETUP: BOOTING...", 12, 1, oled_buf);
-  er_oled_display(oled_buf);
-  er_oled_clear(oled_buf);
+  oled_init();
+  oled_print(OLED_LINE_STATUS, "SETUP:BOOTING...", false);
 
   // set SPI interface pin modes
   // TODO: probably don't need this as MAX11300 inits pins
@@ -226,38 +228,46 @@ void setup(void) {
   uint8_t vsys_pg_pin = digitalRead(VSYS_PG_PIN);
   if (vsys_pg_pin == 0) {
     setup_fail_code |= (0x1 << SETUP_FAIL_VSYS_PG_PIN);
-    er_oled_string(0, 0, "SETUP: SETUP_FAIL_VSYS_PG_PIN", 12, 1, oled_buf);
-    er_oled_display(oled_buf);
+    oled_print(OLED_LINE_STATUS, "SETUP:VSYS_PG_PIN", true);
+    goto fail;
   }
 
+  {  // fixes build error on goto
+    int success = init_max_iox();
+    if (success != 0) {
+      setup_fail_code |= (0x1 << SETUP_FAIL_MAX_IOX);
+      oled_print(OLED_LINE_STATUS, "SETUP:INA219_VBUS", true);
+      goto fail;
+    }
+  }
   // configure INA220s
   if (!ina219_vbat.init()) {
     setup_fail_code |= (0x1 << SETUP_FAIL_INA219_VBAT);
-    er_oled_string(0, 0, "SETUP: SETUP_FAIL_INA219_VBAT", 12, 1, oled_buf);
-    er_oled_display(oled_buf);
-  } else {
-    ina219_vbat.setShuntSizeInOhms(INA220_VBAT_SHUNT_OHMS);
-    ina219_vbat.setBusRange(BRNG_16);
-    ina219_vbat.setMeasureMode(TRIGGERED);
+    oled_print(OLED_LINE_STATUS, "SETUP:INA219_VBAT", true);
+    goto fail;
+  }
+
+  ina219_vbat.setShuntSizeInOhms(INA220_VBAT_SHUNT_OHMS);
+  ina219_vbat.setBusRange(BRNG_16);
+  ina219_vbat.setMeasureMode(TRIGGERED);
+
+  if (battemu_init()) {
+    setup_fail_code |= (0x1 << SETUP_FAIL_BATTEM);
+    oled_print(OLED_LINE_STATUS, "SETUP:BATTEM", true);
+    goto fail;
   }
 
   if (!ina219_vbus.init()) {
     setup_fail_code |= (0x1 << SETUP_FAIL_INA219_VBUS);
-    er_oled_string(0, 0, "SETUP: SETUP_FAIL_INA219_VBUS", 12, 1, oled_buf);
-    er_oled_display(oled_buf);
-  } else {
-    ina219_vbus.setShuntSizeInOhms(INA220_VBUS_SHUNT_OHMS);
-    ina219_vbus.setBusRange(BRNG_16);
-    ina219_vbus.setMeasureMode(TRIGGERED);
+    oled_print(OLED_LINE_STATUS, "SETUP:INA219_VBUS", true);
+    goto fail;
   }
 
-  int success = init_max_iox();
-  if (success != 0) {
-    setup_fail_code |= (0x1 << SETUP_FAIL_MAX_IOX);
-    er_oled_string(0, 0, "SETUP: SETUP_FAIL_INA219_VBUS", 12, 1, oled_buf);
-    er_oled_display(oled_buf);
-  }
+  ina219_vbus.setShuntSizeInOhms(INA220_VBUS_SHUNT_OHMS);
+  ina219_vbus.setBusRange(BRNG_16);
+  ina219_vbus.setMeasureMode(TRIGGERED);
 
+fail:
   delay(blink_delay_ms);
   if (setup_fail_code) {
     // long blinks if things are bad
@@ -266,8 +276,7 @@ void setup(void) {
     // shutdown for safety
     //digitalWrite(VSYS_EN_PIN, LOW);
   } else {
-    er_oled_string(0, 0, "SETUP: COMPLETE", 12, 1, oled_buf);
-    er_oled_display(oled_buf);
+    oled_print(OLED_LINE_STATUS, "SETUP: COMPLETE", false);
   }
     
   // TODO: blink error code based on fault
