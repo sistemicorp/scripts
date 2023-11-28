@@ -21,30 +21,34 @@ typedef struct {
 } _lut_t;
 
 static _lut_t _lut[LUT_NUM_ENTRIES];
+static bool cal_done = false;
 
 int battemu_init(void) {
     uint16_t vbat_target_mv = VBAT_START_MV;
     uint16_t dac_value = 0;
     char buf[LINE_MAX_LENGTH];
 
+    if (cal_done) return 0;
+
     iox_vbat_en(true);
     delay(12);  // TODO: measure this
 
     // create LUT for output
     for (int i = 0; i < LUT_NUM_ENTRIES; i++) {
-        max_iox.single_ended_dac_write(MAX11300::PIXI_PORT9, dac_value);
-        delay(2);
+        max_hdr1.single_ended_dac_write(MAX11300::PIXI_PORT9, dac_value);
+        delay(20);
         ina219_vbat.startSingleMeasurement();
         float tmp = ina219_vbat.getBusVoltage_V();
         uint16_t vbat = (uint16_t)(tmp * 1000.0f);
         snprintf(buf, LINE_MAX_LENGTH, "battemu: %u %u mV", dac_value, vbat);
 
         oled_print(OLED_LINE_DEBUG, buf, false);
-        dac_value += 50;
-        //break;
+        dac_value += 90;
+        break;
 
     }
 
+    cal_done = true;
     return 0;
 }
 

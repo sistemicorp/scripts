@@ -177,7 +177,15 @@ String bond_max_hdr_init(int hdr,  // 1-4
 
   doc["result"]["regs_seq_len"] = i;
 
-  oled_print(OLED_LINE_RPC, __func__, false);
+  if (max == &max_hdr1) {
+    int rc = battemu_init();
+    if (rc) {
+      doc["success"] = false;
+      doc["result"]["error"] = "battemu_init";
+    }
+  }
+
+  oled_print(OLED_LINE_RPC, __func__, !doc["success"]);
   return _response(doc);  // always the last line of RPC API
 }
 
@@ -209,7 +217,7 @@ String bond_max_hdr_adc_cal(int hdr) {
 
   doc["result"]["mV"] = (data << 1) + (data >> 1);  // raw * 2.5 = mV
 
-  oled_print(OLED_LINE_RPC, __func__, false);
+  oled_print(OLED_LINE_RPC, __func__, !doc["success"]);
   return _response(doc);  // always the last line of RPC API
 }
 
@@ -241,7 +249,7 @@ String bond_max_hdr_adc(int hdr, int port) {
 
   doc["result"]["mV"] = (data << 1) + (data >> 1);  // raw * 2.5 = mV
 
-  oled_print(OLED_LINE_RPC, __func__, false);
+  oled_print(OLED_LINE_RPC, __func__, !doc["success"]);
   return _response(doc);  // always the last line of RPC API
 }
 
@@ -264,6 +272,6 @@ String bond_max_hdr_dac(int hdr, int port, int mv) {
   doc["result"]["dac_raw"] = data;
   doc["result"]["mV"] = mv;
 
-  oled_print(OLED_LINE_RPC, __func__, false);
+  oled_print(OLED_LINE_RPC, __func__, !doc["success"]);
   return _response(doc);  // always the last line of RPC API
 }

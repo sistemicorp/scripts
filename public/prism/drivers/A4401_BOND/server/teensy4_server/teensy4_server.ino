@@ -45,7 +45,6 @@
 #define SETUP_FAIL_INA219_VBAT  1
 #define SETUP_FAIL_INA219_VBUS  2
 #define SETUP_FAIL_MAX_IOX      3
-#define SETUP_FAIL_BATTEM       4
 static uint16_t setup_fail_code = 0;
 
 INA219_WE ina219_vbat = INA219_WE(INA220_VBAT_I2C_ADDRESS);
@@ -249,12 +248,6 @@ void setup(void) {
   ina219_vbat.setShuntSizeInOhms(INA220_VBAT_SHUNT_OHMS);
   ina219_vbat.setBusRange(BRNG_16);
   ina219_vbat.setMeasureMode(TRIGGERED);
-
-  if (battemu_init()) {
-    setup_fail_code |= (0x1 << SETUP_FAIL_BATTEM);
-    oled_print(OLED_LINE_STATUS, "SETUP:BATTEM", true);
-    goto fail;
-  }
 
   if (!ina219_vbus.init()) {
     setup_fail_code |= (0x1 << SETUP_FAIL_INA219_VBUS);
