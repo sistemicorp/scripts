@@ -59,8 +59,6 @@ MAX11300 max_hdr2 = MAX11300();
 MAX11300 max_hdr3 = MAX11300();
 MAX11300 max_hdr4 = MAX11300();
 
-
-
 //-------------------------------------------------------------------------------------------------------------
 // Teensy "on board" RPC functions
 // - use this area to create RPC API functions for APIs that directly use (onboard) the Teensy (module)
@@ -177,6 +175,7 @@ void setup(void) {
 
   Serial.begin(115200);
   Wire.begin();
+  Wire.setClock(400000);
   pinMode(LED_BUILTIN, OUTPUT);
 
   // blink the LED to let people know we are good

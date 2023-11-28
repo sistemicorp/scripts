@@ -16,6 +16,7 @@ static _init_regs_t init_regs[] = {
   {.r = dac_data_port_05, .d = 0x0666}, // VBUS_PG input, threshold 1V
   {.r = dac_data_port_00, .d = 0x0547}, // VBUS_SWEN output, 3.3V
   {.r = dac_data_port_02, .d = 0x0547}, // VBAT_CON output, 3.3V
+  {.r = dac_data_port_03, .d = 0x0547}, // VBAT_EN output, 3.3V
   {.r = dac_data_port_04, .d = 0x0547}, // VBUS_EN output, 3.3V
   {.r = dac_data_port_06, .d = 0x0547}, // RESETb (active LOW) output, 3.3V
   {.r = dac_data_port_07, .d = 0x0547}, // SELFTEST output, 3.3V

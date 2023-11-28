@@ -7,9 +7,10 @@
 */
 #include <cstdio>
 #include "er_oled.h"
+#include "bond_oled.h"
 
 #define LINE_VERTICAL_SIZE  12
-#define LINE_MAX_LENGTH     21
+
 
 static uint8_t oled_buf[OLED_WIDTH * OLED_HEIGHT / 8];
 
@@ -22,9 +23,9 @@ void oled_clear(void) {
     er_oled_clear(oled_buf);
 }
 
-int oled_print(uint32_t line, char *buf, bool invert) {
+int oled_print(uint32_t line, const char *buf, bool invert) {
     char _buf[LINE_MAX_LENGTH];
-    snprintf(_buf, LINE_MAX_LENGTH, "%-21s", buf);
+    snprintf(_buf, LINE_MAX_LENGTH, "%-20s", buf);
     //er_oled_string(0, line * LINE_VERTICAL_SIZE, "                     ", 12, 1, oled_buf);  // clr line
     er_oled_string(0, line * LINE_VERTICAL_SIZE, _buf, 12, (invert ? 0 : 1), oled_buf);
     er_oled_display(oled_buf);

@@ -4,6 +4,7 @@
  *  Battery Emulator the BOND design, a4401.
  *
 */
+#include "bond_max_iox.h"
 #include "src/oled/bond_oled.h"
 
 //extern int8_t oled_buf[OLED_WIDTH * OLED_HEIGHT / 8];
@@ -24,17 +25,23 @@ static _lut_t _lut[LUT_NUM_ENTRIES];
 int battemu_init(void) {
     uint16_t vbat_target_mv = VBAT_START_MV;
     uint16_t dac_value = 0;
-    char buf[32];
+    char buf[LINE_MAX_LENGTH];
+
+    iox_vbat_en(true);
+    delay(12);  // TODO: measure this
 
     // create LUT for output
     for (int i = 0; i < LUT_NUM_ENTRIES; i++) {
         max_iox.single_ended_dac_write(MAX11300::PIXI_PORT9, dac_value);
-        delay(1);
-        uint16_t vbat = (uint16_t)(ina219_vbus.getBusVoltage_V() * 1000);
-        snprintf(buf, 32, "battemu_init: %u %u", dac_value, vbat);
+        delay(2);
+        ina219_vbat.startSingleMeasurement();
+        float tmp = ina219_vbat.getBusVoltage_V();
+        uint16_t vbat = (uint16_t)(tmp * 1000.0f);
+        snprintf(buf, LINE_MAX_LENGTH, "battemu: %u %u mV", dac_value, vbat);
 
         oled_print(OLED_LINE_DEBUG, buf, false);
-        break;
+        dac_value += 50;
+        //break;
 
     }
 
