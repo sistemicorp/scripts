@@ -133,6 +133,7 @@ class MAX11300
     uint8_t shiftInMAX(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder);
 
     MAX11300RegAddressEnum _get_adc_data_port(MAX11300_Ports port);
+    MAX11300RegAddressEnum _get_dac_data_port(MAX11300_Ports port);
 
     ///@brief Writes given register with data
     ///@param[in] reg - register to be written

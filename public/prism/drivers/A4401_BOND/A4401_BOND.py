@@ -61,6 +61,7 @@ class A4401_BOND:
     # port - format "#[,#]", where # is from 0-11
     a44BOND_max_config = {
         1: {  # HDR1
+            # HDR Pin # : { "mode": <>, "port": <> }
             # not configurable - do not change
             3: {"mode": None, "port": None},  # UART Level shifter VCC
             5: {"mode": None, "port": None},  # UART RX
@@ -593,7 +594,7 @@ class A4401_BOND:
         if not success:
             return error
 
-        if not (0 < mv < 10000):
+        if not (0 <= mv <= 10000):
             return {'success': False, 'method': 'bond_max_hdr_dac',
                     'result': {'error': f'Invalid parameter mv {mv}'}}
 

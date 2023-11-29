@@ -151,6 +151,27 @@ MAX11300RegAddressEnum MAX11300::_get_adc_data_port(MAX11300_Ports port)
 }
 
 //*********************************************************************
+MAX11300RegAddressEnum MAX11300::_get_dac_data_port(MAX11300_Ports port)
+{
+    switch(port) {
+    case PIXI_PORT0: return dac_data_port_00;
+    case PIXI_PORT1: return dac_data_port_01;
+    case PIXI_PORT2: return dac_data_port_02;
+    case PIXI_PORT3: return dac_data_port_03;
+    case PIXI_PORT4: return dac_data_port_04;
+    case PIXI_PORT5: return dac_data_port_05;
+    case PIXI_PORT6: return dac_data_port_06;
+    case PIXI_PORT7: return dac_data_port_07;
+    case PIXI_PORT8: return dac_data_port_08;
+    case PIXI_PORT9: return dac_data_port_09;
+    case PIXI_PORT10: return dac_data_port_10;
+    case PIXI_PORT11: return dac_data_port_11;
+    default:
+        return dac_data_port_00;
+    }
+}
+
+//*********************************************************************
 void MAX11300::block_write(MAX11300RegAddress_t reg, uint16_t * data, uint8_t num_reg)
 {
     for(uint8_t idx = 0; idx < num_reg; idx++)
@@ -252,7 +273,7 @@ MAX11300::CmdResult MAX11300::single_ended_dac_write(MAX11300_Ports port, uint16
 {
     MAX11300::CmdResult result = MAX11300::OpFailure;
     
-    write_register(static_cast<MAX11300RegAddress_t>(dac_data_port_00 + port) , data);
+    write_register(_get_dac_data_port(port), data);
     result = MAX11300::Success;
 
     return result;
