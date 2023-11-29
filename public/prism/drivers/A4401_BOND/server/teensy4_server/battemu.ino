@@ -15,7 +15,7 @@
 #define VBAT_STOP_MV      5500
 #define VBAT_STEP_MV      50
 #define VBAT_TOLERANCE_MV 10
-#define LUT_NUM_ENTRIES   (VBAT_STOP_MV - VBAT_START_MV) / VBAT_STEP_MV
+#define LUT_NUM_ENTRIES   ((VBAT_STOP_MV - VBAT_START_MV) / VBAT_STEP_MV + 1)
 
 
 typedef struct {
@@ -47,8 +47,7 @@ int battemu_init(void) {
             float tmp = ina219_vbat.getBusVoltage_V();
             uint16_t vbat = (uint16_t)(tmp * 1000.0f);
 
-
-            if ((abs(_lut[i].vbat_mv - vbat) <= VBAT_TOLERANCE_MV) || vbat > _lut[i].vbat_mv) {
+            if (vbat > _lut[i].vbat_mv) {
                 _lut[i].dac = dac_value;
                 dac_value--;
                 if (_lut[i].vbat_mv % 500 == 0) {
