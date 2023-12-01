@@ -47,6 +47,8 @@
 #define SETUP_FAIL_MAX_IOX      3
 static uint16_t setup_fail_code = 0;
 
+extern uint32_t external_psram_size;
+
 INA219_WE ina219_vbat = INA219_WE(INA220_VBAT_I2C_ADDRESS);
 INA219_WE ina219_vbus = INA219_WE(INA220_VBUS_I2C_ADDRESS);
 
@@ -143,12 +145,37 @@ String slot() {
   return _response(doc);  // always the last line of RPC API
 }
 
+/* mem_info
+ *  - from https://forum.pjrc.com/index.php?threads/how-to-display-free-ram.33443/#post-284796
+ */
+void mem_info(uint32_t *stack, uint32_t *heap, uint32_t *psram) {
+  extern char _ebss[], _heap_end[],_extram_start[],_extram_end[],*__brkval;
+
+  auto sp = (char*) __builtin_frame_address(0);
+  auto _stack = sp-_ebss;
+  auto _heap = _heap_end-__brkval;
+  auto _psram = _extram_start + (external_psram_size << 20) - _extram_end;
+
+  *stack = _stack >> 10;
+  *heap = _heap >> 10;
+  *psram = _psram >> 10;
+}
+
 /* status
  *  - status flags and codes
+ *  - memory stuff from https://forum.pjrc.com/index.php?threads/how-to-display-free-ram.33443/#post-284796
  */
 String status() {
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
   doc["result"]["setup_fail_code"] = setup_fail_code;
+
+  uint32_t stack = 0, heap = 0, psram = 0;
+  mem_info(&stack, &heap, &psram);
+
+  doc["result"]["stack_kb"] = stack;
+  doc["result"]["heap_kb"] = heap;
+  doc["result"]["psram_kb"] = psram;
+
   oled_print(OLED_LINE_RPC, __func__, false);
   return _response(doc);  // always the last line of RPC API
 }

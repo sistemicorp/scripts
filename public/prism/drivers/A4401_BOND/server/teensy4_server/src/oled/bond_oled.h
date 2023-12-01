@@ -9,6 +9,7 @@
 
 #define OLED_LINE_STATUS    0
 #define OLED_LINE_DEBUG     1
+#define OLED_LINE_MEM       3
 #define OLED_LINE_RPC       4
 
 int oled_print(uint32_t line, const char *buf, bool invert);
