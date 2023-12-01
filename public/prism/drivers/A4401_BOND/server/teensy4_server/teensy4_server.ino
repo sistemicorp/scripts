@@ -167,6 +167,9 @@ void mem_info(uint32_t *stack, uint32_t *heap, uint32_t *psram) {
  */
 String status() {
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
+
+  // TODO: might optionally (re-)run BIST here
+
   doc["result"]["setup_fail_code"] = setup_fail_code;
 
   uint32_t stack = 0, heap = 0, psram = 0;

@@ -137,6 +137,14 @@ class A4401_BOND:
             self.logger.error("version does not match, Python: {} Arduino: {}".format(self.my_version, version_response["result"]["version"]))
             return False
 
+        status_response = self.status()
+        if not status_response["success"]:
+            self.logger.error("Unable to get status")
+            return False
+        if status_response["result"]["setup_fail_code"] != 0:
+            self.logger.error(f'setup_fail_code {status_response["result"]["setup_fail_code"]}')
+            return False
+
         # check if jig close has valid GPIOs
         self._jig_close_check()
 
@@ -312,6 +320,15 @@ class A4401_BOND:
         with self._lock:
             self.logger.info(f"version")
             answer = self.rpc.call_method('version')
+            return self._rpc_validate(answer)
+
+    def status(self):
+        """ Status
+        :return: success = True/False, method = version,
+        """
+        with self._lock:
+            self.logger.info(f"status")
+            answer = self.rpc.call_method('status')
             return self._rpc_validate(answer)
 
     def reset(self):
