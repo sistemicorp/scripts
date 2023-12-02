@@ -43,7 +43,7 @@ class BrotherQL700(object):
         except Exception as e:
             self.logger.error("Failed to make path for {}: {}".format(self.WORKING_PATH, e))
             notice = "ERROR path {} failed".format(self.WORKING_PATH)
-            pub_notice(notice, sender="{}._make_dirs".format(__class__.__name__), type=PUB.NOTICE_ERR)
+            pub_notice(notice, sender="{}._make_dirs".format(__class__.__name__), type=PUB.NOTICES_ERROR)
 
         self.lock = Lock()
         self.path = path  # this is the linux usb path, /dev/usb/lp0
