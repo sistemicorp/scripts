@@ -39,6 +39,8 @@ uint16_t _vbat_mv(void) {
 }
 
 
+#define BATTEMU_DAC_STEP    6
+#define BATTEMU_SETTLE_MS   12
 int battemu_init(void) {
     uint16_t dac_value = 1600;
     char buf[LINE_MAX_LENGTH];
@@ -54,20 +56,33 @@ int battemu_init(void) {
 
         while (true) {
             max_hdr1.single_ended_dac_write(MAX11300::PIXI_PORT9, dac_value);
-            delay(10);
+            delay(BATTEMU_SETTLE_MS);
             uint16_t vbat = _vbat_mv();
 
             if (vbat > ctx._lut[i].vbat_mv) {
-                ctx._lut[i].dac = dac_value;
-                dac_value -= 4;
+                dac_value += BATTEMU_DAC_STEP;  // revert step, going to step by 1
+
+                while (true) {
+                    max_hdr1.single_ended_dac_write(MAX11300::PIXI_PORT9, dac_value);
+                    delay(BATTEMU_SETTLE_MS);
+                    uint16_t vbat = _vbat_mv();
+
+                    if (vbat > ctx._lut[i].vbat_mv) {
+                        ctx._lut[i].dac = dac_value;
+                        break;
+                    }
+                    dac_value -= 1;  // step by 1
+                }
+
                 if (ctx._lut[i].vbat_mv % 500 == 0) {
                     snprintf(buf, LINE_MAX_LENGTH, "bemu: %4u %4u mV", dac_value, vbat);
                     oled_print(OLED_LINE_DEBUG, buf, false);
                 }
                 break;
             }
-            dac_value -= 2;
+            dac_value -= BATTEMU_DAC_STEP;
         }
+        dac_value -= BATTEMU_DAC_STEP;
     }
 
     ctx.vbat_mv = ctx._lut[0].vbat_mv;
@@ -120,5 +135,8 @@ String vbat_set(uint16_t mv) {
     doc["result"]["measured_mv"] = vbat;
     doc["result"]["i"] = i;
     doc["result"]["dac"] = ctx._lut[i].dac;
+    //doc["result"]["dac1"] = ctx._lut[LUT_NUM_ENTRIES - 1].dac;
+    //doc["result"]["dac2"] = ctx._lut[LUT_NUM_ENTRIES - 2].dac;
+    //doc["result"]["dac3"] = ctx._lut[LUT_NUM_ENTRIES - 3].dac;
     return _response(doc);  // always the last line of RPC API
 }
