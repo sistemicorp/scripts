@@ -338,6 +338,7 @@ void loop(void) {
 
     vbus_read, "vbus_read: Read VBUS current and voltage",
     vbat_read, "vbat_read: Read VBAT current and voltage",
+    vbat_set, "vbat_set: Set VBAT voltage mV",
     iox_reset, "iox_reset: IOX reset (USB Hub) pin",
     iox_led_green, "iox_led_green: green led",
     iox_led_yellow, "iox_led_yellow: yellow led",

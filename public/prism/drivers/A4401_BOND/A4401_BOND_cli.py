@@ -123,6 +123,15 @@ def parse_args():
                            default=None, required=True)
 
     vbat_read = subp.add_parser('vbat_read')
+    vbat_set = subp.add_parser('vbat_set')
+    vbat_set.add_argument('--mv',
+                           dest="_mv",
+                           action='store',
+                           type=int,
+                           help='voltage, 500-5000 mV',
+                           required=True,
+                           default=500)
+
     vbus_read = subp.add_parser('vbus_read')
 
     iox_led_green = subp.add_parser('iox_led_green')
@@ -408,6 +417,14 @@ def bond_max_hdr_dac(args):
     logging.info("{}".format(response))
     return response["success"]
 
+def vbat_set(args):
+    _success = True
+    logging.info("vbat_set: {}".format(args))
+
+    response = teensy.vbat_set(args._mv)
+    logging.info("{}".format(response))
+    return response["success"]
+
 
 if __name__ == '__main__':
     args = parse_args()
@@ -480,6 +497,9 @@ if __name__ == '__main__':
 
     elif args._cmd == 'bond_max_hdr_dac':
         success = bond_max_hdr_dac(args)
+
+    elif args._cmd == 'vbat_set':
+        success = vbat_set(args)
 
     if success:
         logging.info("Success")

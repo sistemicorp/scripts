@@ -465,6 +465,17 @@ class A4401_BOND:
             answer = self.rpc.call_method('vbat_read')
             return self._rpc_validate(answer)
 
+    def vbat_set(self, mv: int):
+        """ Set VBAT (Battery emulator)
+
+        :return: {'success': True, 'method': 'vbat_set',
+                  'result': {'mV': <int>, 'measured_mv': <int> }
+        """
+        with self._lock:
+            self.logger.info(f"vbat_set {mv}")
+            answer = self.rpc.call_method('vbat_set', mv)
+            return self._rpc_validate(answer)
+
     def iox_reset(self, state: bool):
         """ MAX11311 IOX
 
