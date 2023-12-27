@@ -5,7 +5,7 @@
 * Single PC can control multiple test fixtures
 * Write Python scripts to control measurement equipment and other fixtures
 * APIs for recording measurements, setting Pass/Fail, locking resources, etc
-* Server dashboard to monitor production yield, rate, etc
+* Server dashboard to monitor production yield, rate, etc.
 * Check out the [PDF](https://github.com/sistemicorp/scripts/blob/master/SistemiLentePrism_Overview.pdf) slide deck for more information
 * Check out online documentation [docs](https://sistemicorp.github.io/scripts/build/html/index.html)
 * Check out the Prism [IBA01](https://github.com/sistemicorp/scripts/blob/master/Prism_IBA01_03.pdf) DUT Instrumentation board
