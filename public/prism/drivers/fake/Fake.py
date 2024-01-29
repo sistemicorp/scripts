@@ -89,16 +89,38 @@ class Fake(object):
     #
 
     def jig_closed_detect(self):
-        """ Always report jig is closed as this is a Fake driver.
+        """ Called by Prism to see if the jig has been "closed" (started)
         - Needs to be enabled by hwdrv_fake.py:discover_channels:line ~95
+        - Always report jig is closed as this is a Fake driver.
+
         :return: <True|False>
         """
         self.logger.info("False")
         return False
 
     def show_pass_fail(self, p=False, f=False, o=False):
+        """ Called by Prism with test status
+        - can be used by this hardware to display test status, on LEDs for example.
+
+        :param p: pass
+        :param f: fail
+        :param o: other (test in progress)
+        """
         self.logger.info("pass: {}, Fail: {}, Other: {}".format(p, f, o))
 
+    def show_msg(self, msg: str):
+        """ Called by Prism with test details in progress
+        - can be used by hardware to display test status
+        - examples
+            show_msg  117 - INFO  : 0, TST0xxSETUP, UNKNOWN, STATE_RUNNING, 6%, 1, 15
+            show_msg  117 - INFO  : 0, TST0xxSETUP, PASS, STATE_RUNNING, 6%, 1, 15
+            show_msg  117 - INFO  : 0, TST0xxSETUP, PASS, STATE_RUNNING, 6%, 1, 15
+            show_msg  117 - INFO  : 0, TST000_Meas, PASS, STATE_RUNNING, 13%, 2, 15
+            show_msg  117 - INFO  : 0, TST000_Meas, PASS, STATE_RUNNING, 13%, 2, 15
+
+        :param msg: csv: channel/slot #, Test ID, Pass/Fail, State, %done, item#, total items
+        """
+        self.logger.info(msg)
 
     #
     # Prism Player functions
