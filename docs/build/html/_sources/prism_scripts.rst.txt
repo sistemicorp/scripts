@@ -128,6 +128,13 @@ Here is a full example of what `subs` section could look like (taken from exampl
 * sets the default value for `textinput` ``widget``
 * optional
 
+Inner Subs
+----------
+
+Inner subs allow one User sub to be able to set multiple other subs.  An example is shown in the ``subs`` section
+above.  In the above example, when `Location` is selected by the user, `TST000Min` is assigned a value
+depending on the `Location` selected.
+
 info
 ----
 

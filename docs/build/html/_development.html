@@ -218,11 +218,21 @@ Usage examples:
 </div>
 <p>Notes about the command line development environment,</p>
 <ul class="simple">
-<li><p>parallel, multi-threaded, multiple test jigs are not supported</p></li>
-<li><p>script is run as a single thread</p></li>
-<li><p>NO results are sent to the Lente Server, however a local file with the results
+<li><p>parallel, multi-threaded, multiple test jigs are not supported</p>
+<ul>
+<li><p>script is run as a single thread - cannot test parallelism</p></li>
+</ul>
+</li>
+<li><p>Results are NOT sent to the Lente Server, however a local Result file with the results
 will be created for inspection purposes.</p></li>
-<li><p>script substitutions are not supported, use helper script <cite>prism_subs.py</cite></p></li>
+<li><p>script substitutions are not supported, leaving two options for developers,</p>
+<ul>
+<li><p>rename script <cite>subs</cite> section to something else and populate the subs manually, save this
+script to a new name while developing.  Revert after everything is working.</p></li>
+<li><p>use helper script <cite>prism_subs.py</cite>, which will perform the substitutions.  This helper needs
+to be modified per script it is used on.</p></li>
+</ul>
+</li>
 </ul>
 <p>After your script is running in the command line mode, you can try it in the Prism GUI.</p>
 </section>

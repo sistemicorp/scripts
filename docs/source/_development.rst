@@ -199,10 +199,17 @@ The command line help,
 Notes about the command line development environment,
 
 * parallel, multi-threaded, multiple test jigs are not supported
-* script is run as a single thread
-* NO results are sent to the Lente Server, however a local file with the results
+
+  * script is run as a single thread - cannot test parallelism
+
+* Results are NOT sent to the Lente Server, however a local Result file with the results
   will be created for inspection purposes.
-* script substitutions are not supported, use helper script `prism_subs.py`
+* script substitutions are not supported, leaving two options for developers,
+
+  * rename script `subs` section to something else and populate the subs manually, save this
+    script to a new name while developing.  Revert after everything is working.
+  * use helper script `prism_subs.py`, which will perform the substitutions.  This helper needs
+    to be modified per script it is used on.
 
 After your script is running in the command line mode, you can try it in the Prism GUI.
 
