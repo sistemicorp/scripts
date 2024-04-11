@@ -196,24 +196,23 @@ for specific sets of results.  This is important.</p>
 <h2>config<a class="headerlink" href="#config" title="Permalink to this headline">¶</a></h2>
 <p>This section sets required variables that Prism uses to drive the test script.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span>
-  <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;public.prism.result.ResultBaseV1&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;fail_fast&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+  <span class="s2">&quot;fail_fast&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
   <span class="s2">&quot;drivers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;public.prism.drivers.fake.fake&quot;</span><span class="p">]</span>
 <span class="p">},</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">result</span></code></p>
-<ul class="simple">
-<li><p>sets the result record type</p></li>
-<li><p>this is related to the back end database processing</p></li>
-<li><p>the dot notation is specifying a directory path to the python file to read</p></li>
-<li><p>its possible to extend the backend database to incorporate new fields for your application. See TBD</p></li>
-</ul>
 <p><code class="docutils literal notranslate"><span class="pre">fail_fast</span></code></p>
 <ul class="simple">
-<li><p>this directive tells Prism whether to stop the test script on the first occurrance of a failed test</p></li>
+<li><p>this directive tells Prism whether to stop the test script on the first occurrence of a failed test</p></li>
 <li><p>this directive can be overridden by the directive in the <code class="docutils literal notranslate"><span class="pre">options</span></code> section of the <code class="docutils literal notranslate"><span class="pre">tests</span></code> section - in other
 words, here it has the least priority</p></li>
+<li><p>it is recommended <code class="docutils literal notranslate"><span class="pre">fail_fast</span></code> be set to <cite>true</cite>.</p>
+<ul>
+<li><p>Often tests are interdependent, and if one test fails, it often means other tests will fail that depended on
+that particular function.  What happens then is a cascade of failed tests which my might obscure the root failure.</p></li>
+<li><p>If tests are mutually exclusive, it may be advantages to set <code class="docutils literal notranslate"><span class="pre">fail_fast</span></code> to <cite>false</cite>.</p></li>
+</ul>
+</li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">drivers</span></code></p>
 <ul class="simple">

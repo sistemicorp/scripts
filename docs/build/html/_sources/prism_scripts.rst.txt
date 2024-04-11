@@ -173,23 +173,21 @@ This section sets required variables that Prism uses to drive the test script.
 ::
 
   "config": {
-    "result": "public.prism.result.ResultBaseV1",
-    "fail_fast": false,
+    "fail_fast": true,
     "drivers": ["public.prism.drivers.fake.fake"]
   },
 
-``result``
-
-* sets the result record type
-* this is related to the back end database processing
-* the dot notation is specifying a directory path to the python file to read
-* its possible to extend the backend database to incorporate new fields for your application. See TBD
 
 ``fail_fast``
 
-* this directive tells Prism whether to stop the test script on the first occurrance of a failed test
+* this directive tells Prism whether to stop the test script on the first occurrence of a failed test
 * this directive can be overridden by the directive in the ``options`` section of the ``tests`` section - in other
   words, here it has the least priority
+* it is recommended ``fail_fast`` be set to `true`.
+
+  * Often tests are interdependent, and if one test fails, it often means other tests will fail that depended on
+    that particular function.  What happens then is a cascade of failed tests which my might obscure the root failure.
+  * If tests are mutually exclusive, it may be advantages to set ``fail_fast`` to `false`.
 
 ``drivers``
 
