@@ -80,7 +80,7 @@ to change some parameters might be useful.  This feature does not have to be use
 <p>Only (logged in) users with a certain role privileges can access <cite>Test Config</cite>, and thus access to GUI controls that
 use the <cite>subs</cite> feature.  Otherwise <cite>subs</cite> are used to create a <cite>Traveller</cite>, which stores the <cite>subs</cite> used.</p>
 <p><cite>subs</cite> are useful for generating <a class="reference internal" href="prism_travellers.html#travellers"><span class="std std-ref">Travellers</span></a>.</p>
-<p>Here is a full example of what <cite>subs</cite> section could look like (taken from example <cite>prod_1.scr</cite>,</p>
+<p>Here is a full example of what <cite>subs</cite> section could look like (taken from example <cite>prod_1.scr</cite>),</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;subs&quot;</span><span class="p">:</span> <span class="p">{</span>
   <span class="o">//</span> <span class="n">Each</span> <span class="n">item</span> <span class="n">here</span> <span class="ow">is</span> <span class="n">described</span> <span class="n">by</span><span class="p">,</span>
   <span class="o">//</span> <span class="s2">&quot;&lt;subs_name&gt;&quot;</span><span class="p">:</span>
@@ -184,8 +184,11 @@ in the Test Config view.</p>
 <span class="p">},</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">product</span></code>, <code class="docutils literal notranslate"><span class="pre">bom</span></code>, <code class="docutils literal notranslate"><span class="pre">lot</span></code>, <code class="docutils literal notranslate"><span class="pre">location</span></code> are fields that you define a meaning specific to your operation.</p>
-<p><code class="docutils literal notranslate"><span class="pre">config</span></code> is an optional 16 character length field.</p>
+<p><code class="docutils literal notranslate"><span class="pre">product</span></code> - 32 character length field.</p>
+<p><code class="docutils literal notranslate"><span class="pre">bom</span></code> - 32 character length field. Note <cite>bom</cite> stands for Bill of Materials.</p>
+<p><code class="docutils literal notranslate"><span class="pre">lot</span></code> - 16 character length field.</p>
+<p><code class="docutils literal notranslate"><span class="pre">location</span></code> - 128 character length field.</p>
+<p><code class="docutils literal notranslate"><span class="pre">config</span></code> - (optional) 16 character length field.</p>
 <p>Defining rules and a naming convention for these fields will help you later when you need to make database searches
 for specific sets of results.  This is important.</p>
 </section>
@@ -230,6 +233,7 @@ for example, in development of code</p></li>
 </ul>
 <p>Consider the following <code class="docutils literal notranslate"><span class="pre">test</span></code> section, which only has ONE test definition in the JSON list.  An example of more than
 one test definition will be shown later.</p>
+<p>See <code class="docutils literal notranslate"><span class="pre">public/prism/scripts/example/prod_v0/tst00xx.py</span></code> for usage.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;tests&quot;</span><span class="p">:</span> <span class="p">[</span>
   <span class="p">{</span>
     <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;public.prism.scripts.prod_v0.tst00xx&quot;</span><span class="p">,</span>
@@ -251,13 +255,18 @@ one test definition will be shown later.</p>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">module</span></code></p>
 <ul class="simple">
-<li><p>a dot notation path to the python code that is associated with this test definition</p></li>
+<li><p>a dot notation path to the Python code that is associated with this test definition</p></li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">options</span></code></p>
 <ul class="simple">
-<li><p>a list of fields assigned values that persist over the execution life of the test definition</p></li>
-<li><p>only <code class="docutils literal notranslate"><span class="pre">fail_fast</span></code> is used by the system, which overrides the value used in the <code class="docutils literal notranslate"><span class="pre">config</span></code> section</p></li>
-<li><p>you may add fields here as your application requires</p></li>
+<li><p>a list of fields assigned values that persist over the execution life of the test item definition</p></li>
+<li><p>Prism key words,</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">fail_fast</span></code> overrides <cite>fail_fast</cite> in the <code class="docutils literal notranslate"><span class="pre">config</span></code> section</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">enable</span></code> (defaults to <cite>true</cite>) when set to false, disables all tests in <code class="docutils literal notranslate"><span class="pre">items</span></code></p></li>
+</ul>
+</li>
+<li><p>add fields here as your application requires</p></li>
 <li><p>these <code class="docutils literal notranslate"><span class="pre">options</span></code> fields are available programmatically to each test <code class="docutils literal notranslate"><span class="pre">items</span></code></p>
 <ul>
 <li><p>for example, you could have a global value assigned here that any test <code class="docutils literal notranslate"><span class="pre">items</span></code> can access</p></li>
@@ -269,7 +278,7 @@ one test definition will be shown later.</p>
 <li><p>a list of test <code class="docutils literal notranslate"><span class="pre">items</span></code></p></li>
 <li><p>the system will execute these tests in order</p>
 <ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> - A unique identifier of the test</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> - A unique identifier of the test, which is also the Python (class) function name in <cite>module</cite>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">enable</span></code> - <cite>true</cite> or <cite>false</cite>, can be omitted if always enabled</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">args</span></code> - a list of key/value pairs of any name/value required by your application</p>
 <ul>

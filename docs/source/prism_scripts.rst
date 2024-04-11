@@ -43,7 +43,7 @@ use the `subs` feature.  Otherwise `subs` are used to create a `Traveller`, whic
 
 `subs` are useful for generating :ref:`prism_travellers:Travellers`.
 
-Here is a full example of what `subs` section could look like (taken from example `prod_1.scr`,
+Here is a full example of what `subs` section could look like (taken from example `prod_1.scr`),
 
 ::
 
@@ -152,9 +152,15 @@ in the Test Config view.
     // "config": "optional"
   },
 
-``product``, ``bom``, ``lot``, ``location`` are fields that you define a meaning specific to your operation.
+``product`` - 32 character length field.
 
-``config`` is an optional 16 character length field.
+``bom`` - 32 character length field. Note `bom` stands for Bill of Materials.
+
+``lot`` - 16 character length field.
+
+``location`` - 128 character length field.
+
+``config`` - (optional) 16 character length field.
 
 Defining rules and a naming convention for these fields will help you later when you need to make database searches
 for specific sets of results.  This is important.
@@ -204,6 +210,8 @@ This section has a list of test definitions
 Consider the following ``test`` section, which only has ONE test definition in the JSON list.  An example of more than
 one test definition will be shown later.
 
+See ``public/prism/scripts/example/prod_v0/tst00xx.py`` for usage.
+
 ::
 
   "tests": [
@@ -226,13 +234,17 @@ one test definition will be shown later.
 
 ``module``
 
-* a dot notation path to the python code that is associated with this test definition
+* a dot notation path to the Python code that is associated with this test definition
 
 ``options``
 
-* a list of fields assigned values that persist over the execution life of the test definition
-* only ``fail_fast`` is used by the system, which overrides the value used in the ``config`` section
-* you may add fields here as your application requires
+* a list of fields assigned values that persist over the execution life of the test item definition
+* Prism key words,
+
+  * ``fail_fast`` overrides `fail_fast` in the ``config`` section
+  * ``enable`` (defaults to `true`) when set to false, disables all tests in ``items``
+
+* add fields here as your application requires
 * these ``options`` fields are available programmatically to each test ``items``
 
   * for example, you could have a global value assigned here that any test ``items`` can access
@@ -242,7 +254,7 @@ one test definition will be shown later.
 * a list of test ``items``
 * the system will execute these tests in order
 
-  * ``id`` - A unique identifier of the test
+  * ``id`` - A unique identifier of the test, which is also the Python (class) function name in `module`.
   * ``enable`` - `true` or `false`, can be omitted if always enabled
   * ``args`` - a list of key/value pairs of any name/value required by your application
 
