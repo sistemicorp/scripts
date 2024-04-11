@@ -74,35 +74,56 @@ the script to be documented</p></li>
 <h2>subs<a class="headerlink" href="#subs" title="Permalink to this headline">¶</a></h2>
 <p>This is a section of User configurable substitutions for variables in the script.  For example, if there was a test
 limit that could have two values, the values can be listed as a <cite>subs</cite> field and the user can select which one to use.</p>
-<p>Obviously, in a production environment, operators are not typically allowed to arbitrarily change values of test
+<p>In a production environment, operators are not typically allowed to arbitrarily change values of test
 limits or any other setup.  However, in an engineering lab, or new product ramp environment, having an easy method
 to change some parameters might be useful.  This feature does not have to be used.</p>
-<p><cite>subs</cite> are also useful for generating <a class="reference internal" href="prism_travellers.html#travellers"><span class="std std-ref">Travellers</span></a>.</p>
-<p>Here is a full example of what <cite>subs</cite> section could look like,</p>
+<p>Only (logged in) users with a certain role privileges can access <cite>Test Config</cite>, and thus access to GUI controls that
+use the <cite>subs</cite> feature.  Otherwise <cite>subs</cite> are used to create a <cite>Traveller</cite>, which stores the <cite>subs</cite> used.</p>
+<p><cite>subs</cite> are useful for generating <a class="reference internal" href="prism_travellers.html#travellers"><span class="std std-ref">Travellers</span></a>.</p>
+<p>Here is a full example of what <cite>subs</cite> section could look like (taken from example <cite>prod_1.scr</cite>,</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;subs&quot;</span><span class="p">:</span> <span class="p">{</span>
-  <span class="c1"># Each item here is described by,</span>
-  <span class="c1"># &quot;key&quot;:</span>
-  <span class="c1">#   &quot;title&quot;: &quot;&lt;title&gt;&quot;,</span>
-  <span class="c1">#   &quot;type&quot; : &quot;&lt;str|num&gt;&quot;, &quot;widget&quot;: &quot;&lt;textinput|select&gt;&quot;,</span>
-  <span class="c1">#   &quot;regex&quot;: &lt;&quot;regex&quot;|null|omit&gt;, &quot;default&quot;: &lt;default&gt;</span>
-  <span class="c1">#</span>
-  <span class="c1"># Rules:</span>
-  <span class="c1"># 1. key must not have any spaces or special characters</span>
-  <span class="c1"># 2. regex can be omitted if not applicable</span>
-  <span class="c1">#</span>
+  <span class="o">//</span> <span class="n">Each</span> <span class="n">item</span> <span class="n">here</span> <span class="ow">is</span> <span class="n">described</span> <span class="n">by</span><span class="p">,</span>
+  <span class="o">//</span> <span class="s2">&quot;&lt;subs_name&gt;&quot;</span><span class="p">:</span>
+  <span class="o">//</span>   <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;title&gt;&quot;</span><span class="p">,</span>
+  <span class="o">//</span>   <span class="s2">&quot;type&quot;</span> <span class="p">:</span> <span class="s2">&quot;&lt;str|num&gt;&quot;</span><span class="p">,</span>
+  <span class="o">//</span>   <span class="s2">&quot;widget&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;textinput|select&gt;&quot;</span><span class="p">,</span>
+  <span class="o">//</span>   <span class="s2">&quot;regex&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="s2">&quot;regex&quot;</span><span class="o">&gt;</span><span class="p">,</span>  <span class="o">//</span> <span class="n">only</span> <span class="k">for</span> <span class="n">widget</span> <span class="o">==</span> <span class="n">textinput</span><span class="p">,</span>
+  <span class="o">//</span>                           <span class="n">when</span> <span class="n">regex</span> <span class="ow">is</span> <span class="n">satisfied</span> <span class="n">widget</span> <span class="n">turns</span> <span class="n">green</span>
+  <span class="o">//</span>   <span class="s2">&quot;choices&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">choice1</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">choice2</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>  <span class="o">//</span> <span class="n">only</span> <span class="k">for</span> <span class="n">widget</span> <span class="o">==</span> <span class="n">select</span>
+  <span class="o">//</span>   <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">default</span><span class="o">&gt;</span><span class="p">,</span>
+  <span class="o">//</span>   <span class="s2">&quot;subs&quot;</span><span class="p">:</span> <span class="o">//</span> <span class="n">inner</span> <span class="n">dependant</span> <span class="n">subs</span>
+  <span class="o">//</span>           <span class="p">{</span> <span class="o">&lt;</span><span class="n">key1</span><span class="o">&gt;</span> <span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;subs_name1&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="o">&lt;&gt;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;str|num&gt;&quot;</span> <span class="p">},</span> <span class="o">...</span><span class="p">},</span>
+  <span class="o">//</span>             <span class="o">&lt;</span><span class="n">key2</span><span class="o">&gt;</span> <span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;subs_name1&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="o">&lt;&gt;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;str|num&gt;&quot;</span> <span class="p">},</span> <span class="o">...</span><span class="p">}</span>
+  <span class="o">//</span>           <span class="p">}</span>
+  <span class="o">//</span> <span class="p">}</span>
+  <span class="o">//</span>
+  <span class="o">//</span> <span class="n">Rules</span><span class="p">:</span>
+  <span class="o">//</span> <span class="mf">1.</span> <span class="n">key</span> <span class="n">must</span> <span class="ow">not</span> <span class="n">have</span> <span class="nb">any</span> <span class="n">spaces</span> <span class="ow">or</span> <span class="n">special</span> <span class="n">characters</span>
+  <span class="o">//</span>
   <span class="s2">&quot;Lot&quot;</span><span class="p">:</span> <span class="p">{</span>
     <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Lot (format #####)&quot;</span><span class="p">,</span>
     <span class="s2">&quot;type&quot;</span> <span class="p">:</span> <span class="s2">&quot;str&quot;</span><span class="p">,</span> <span class="s2">&quot;widget&quot;</span><span class="p">:</span> <span class="s2">&quot;textinput&quot;</span><span class="p">,</span> <span class="s2">&quot;regex&quot;</span><span class="p">:</span> <span class="s2">&quot;^</span><span class="se">\\</span><span class="s2">d</span><span class="si">{5}</span><span class="s2">$&quot;</span><span class="p">,</span> <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;95035&quot;</span>
   <span class="p">},</span>
   <span class="s2">&quot;Loc&quot;</span><span class="p">:</span> <span class="p">{</span>
     <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Location&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;type&quot;</span> <span class="p">:</span> <span class="s2">&quot;str&quot;</span><span class="p">,</span> <span class="s2">&quot;widget&quot;</span><span class="p">:</span> <span class="s2">&quot;select&quot;</span><span class="p">,</span> <span class="s2">&quot;choices&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;canada/ontario/milton&quot;</span><span class="p">,</span> <span class="s2">&quot;us/newyork/bufalo&quot;</span><span class="p">]</span>
+    <span class="s2">&quot;type&quot;</span> <span class="p">:</span> <span class="s2">&quot;str&quot;</span><span class="p">,</span> <span class="s2">&quot;widget&quot;</span><span class="p">:</span> <span class="s2">&quot;select&quot;</span><span class="p">,</span> <span class="s2">&quot;choices&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;canada/ontario/milton&quot;</span><span class="p">,</span>
+                                                    <span class="s2">&quot;us/newyork/buffalo&quot;</span><span class="p">],</span>
+    <span class="o">//</span> <span class="n">inner</span> <span class="n">dependant</span> <span class="n">substitutions</span> <span class="n">based</span> <span class="n">on</span> <span class="n">user</span> <span class="nb">input</span>
+    <span class="s2">&quot;subs&quot;</span> <span class="p">:</span> <span class="p">{</span><span class="s2">&quot;canada/ontario/milton&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;TST000Min&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;num&quot;</span> <span class="p">}},</span>
+              <span class="s2">&quot;us/newyork/buffalo&quot;</span><span class="p">:</span>    <span class="p">{</span> <span class="s2">&quot;TST000Min&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;num&quot;</span> <span class="p">}}</span>
+    <span class="p">}</span>
   <span class="p">},</span>
   <span class="s2">&quot;TST000Max&quot;</span><span class="p">:</span> <span class="p">{</span>
     <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;TST000 Max Attenuation (db)&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;type&quot;</span> <span class="p">:</span> <span class="s2">&quot;num&quot;</span><span class="p">,</span> <span class="s2">&quot;widget&quot;</span><span class="p">:</span> <span class="s2">&quot;select&quot;</span><span class="p">,</span> <span class="s2">&quot;choices&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">]</span>
+    <span class="s2">&quot;type&quot;</span> <span class="p">:</span> <span class="s2">&quot;num&quot;</span><span class="p">,</span> <span class="s2">&quot;widget&quot;</span><span class="p">:</span> <span class="s2">&quot;select&quot;</span><span class="p">,</span> <span class="s2">&quot;choices&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">9.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">11.0</span><span class="p">]</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;TST000Enable&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;TST000_Meas Enable&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span> <span class="p">:</span> <span class="s2">&quot;str&quot;</span><span class="p">,</span> <span class="s2">&quot;widget&quot;</span><span class="p">:</span> <span class="s2">&quot;select&quot;</span><span class="p">,</span> <span class="s2">&quot;choices&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">]</span>
   <span class="p">}</span>
-<span class="p">},</span>
+
+<span class="o">//</span> <span class="ow">and</span> <span class="n">how</span> <span class="n">it</span> <span class="n">looks</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">test</span> <span class="n">item</span><span class="p">,</span>
+<span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST000_Meas&quot;</span><span class="p">,</span>     <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%%</span><span class="s2">TST000Enable&quot;</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%%</span><span class="s2">TST000Min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%%</span><span class="s2">TST000Max&quot;</span><span class="p">}},</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">key</span></code></p>
@@ -158,11 +179,13 @@ in the Test Config view.</p>
   <span class="s2">&quot;bom&quot;</span><span class="p">:</span> <span class="s2">&quot;B00012-001&quot;</span><span class="p">,</span>
   <span class="c1"># list fields present user choice or fill in</span>
   <span class="s2">&quot;lot&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%%</span><span class="s2">Lot&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%%</span><span class="s2">Loc&quot;</span>
+  <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%%</span><span class="s2">Loc&quot;</span><span class="p">,</span>
+  <span class="o">//</span> <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="s2">&quot;optional&quot;</span>
 <span class="p">},</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">product</span></code>, <code class="docutils literal notranslate"><span class="pre">bom</span></code>, <code class="docutils literal notranslate"><span class="pre">lot</span></code>, <code class="docutils literal notranslate"><span class="pre">location</span></code> are fields that you define a meaning specific to your operation.</p>
+<p><code class="docutils literal notranslate"><span class="pre">config</span></code> is an optional 16 character length field.</p>
 <p>Defining rules and a naming convention for these fields will help you later when you need to make database searches
 for specific sets of results.  This is important.</p>
 </section>

@@ -34,40 +34,63 @@ subs
 This is a section of User configurable substitutions for variables in the script.  For example, if there was a test
 limit that could have two values, the values can be listed as a `subs` field and the user can select which one to use.
 
-Obviously, in a production environment, operators are not typically allowed to arbitrarily change values of test
+In a production environment, operators are not typically allowed to arbitrarily change values of test
 limits or any other setup.  However, in an engineering lab, or new product ramp environment, having an easy method
 to change some parameters might be useful.  This feature does not have to be used.
 
-`subs` are also useful for generating :ref:`prism_travellers:Travellers`.
+Only (logged in) users with a certain role privileges can access `Test Config`, and thus access to GUI controls that
+use the `subs` feature.  Otherwise `subs` are used to create a `Traveller`, which stores the `subs` used.
 
-Here is a full example of what `subs` section could look like,
+`subs` are useful for generating :ref:`prism_travellers:Travellers`.
+
+Here is a full example of what `subs` section could look like (taken from example `prod_1.scr`,
 
 ::
 
   "subs": {
-    # Each item here is described by,
-    # "key":
-    #   "title": "<title>",
-    #   "type" : "<str|num>", "widget": "<textinput|select>",
-    #   "regex": <"regex"|null|omit>, "default": <default>
-    #
-    # Rules:
-    # 1. key must not have any spaces or special characters
-    # 2. regex can be omitted if not applicable
-    #
+    // Each item here is described by,
+    // "<subs_name>":
+    //   "title": "<title>",
+    //   "type" : "<str|num>",
+    //   "widget": "<textinput|select>",
+    //   "regex": <"regex">,  // only for widget == textinput,
+    //                           when regex is satisfied widget turns green
+    //   "choices": [<choice1>, <choice2>, ...],  // only for widget == select
+    //   "default": <default>,
+    //   "subs": // inner dependant subs
+    //           { <key1> : { "subs_name1": {"val": <>, "type": "<str|num>" }, ...},
+    //             <key2> : { "subs_name1": {"val": <>, "type": "<str|num>" }, ...}
+    //           }
+    // }
+    //
+    // Rules:
+    // 1. key must not have any spaces or special characters
+    //
     "Lot": {
       "title": "Lot (format #####)",
       "type" : "str", "widget": "textinput", "regex": "^\\d{5}$", "default": "95035"
     },
     "Loc": {
       "title": "Location",
-      "type" : "str", "widget": "select", "choices": ["canada/ontario/milton", "us/newyork/bufalo"]
+      "type" : "str", "widget": "select", "choices": ["canada/ontario/milton",
+                                                      "us/newyork/buffalo"],
+      // inner dependant substitutions based on user input
+      "subs" : {"canada/ontario/milton": { "TST000Min": { "val": 0.1, "type": "num" }},
+                "us/newyork/buffalo":    { "TST000Min": { "val": 0.2, "type": "num" }}
+      }
     },
     "TST000Max": {
       "title": "TST000 Max Attenuation (db)",
-      "type" : "num", "widget": "select", "choices": [9, 10, 11]
+      "type" : "num", "widget": "select", "choices": [9.0, 10.0, 11.0]
+    },
+    "TST000Enable": {
+      "title": "TST000_Meas Enable",
+      "type" : "str", "widget": "select", "choices": ["true", "false"]
     }
-  },
+
+  // and how it looks in the test item,
+  {"id": "TST000_Meas",     "enable": "%%TST000Enable", "args": {"min": "%%TST000Min", "max": "%%TST000Max"}},
+
 
 ``key``
 
@@ -125,10 +148,13 @@ in the Test Config view.
     "bom": "B00012-001",
     # list fields present user choice or fill in
     "lot": "%%Lot",
-    "location": "%%Loc"
+    "location": "%%Loc",
+    // "config": "optional"
   },
 
 ``product``, ``bom``, ``lot``, ``location`` are fields that you define a meaning specific to your operation.
+
+``config`` is an optional 16 character length field.
 
 Defining rules and a naming convention for these fields will help you later when you need to make database searches
 for specific sets of results.  This is important.

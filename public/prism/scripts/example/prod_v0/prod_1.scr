@@ -37,6 +37,10 @@
       "title": "TST000 Max Attenuation (db)",
       "type" : "num", "widget": "select", "choices": [9.0, 10.0, 11.0]
     },
+    "TST000Enable": {
+      "title": "TST000_Meas Enable",
+      "type" : "str", "widget": "select", "choices": ["true", "false"]
+    }
   },
   "info": {
     "product": "widget_1",
@@ -57,10 +61,10 @@
       },
       "items": [
         {"id": "TST0xxSETUP",        "enable": true },
-        {"id": "TST000_Meas",        "enable": true, "args": {"min": "%%TST000Min", "max": "%%TST000Max"}},
+        {"id": "TST000_Meas",        "enable": "%%TST000Enable", "args": {"min": "%%TST000Min", "max": "%%TST000Max"}},
 
         // always called, no matter if test fails above
-        {"id": "TST0xxTEARDOWN",        "enable": true },
+        {"id": "TST0xxTEARDOWN",     "enable": true },
       ]
     }
   ]
