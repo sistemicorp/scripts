@@ -1,0 +1,293 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>System &#8212; Sistemi Lente/Prism Test System 0.6.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Production Planning" href="_prodplan.html" />
+    <link rel="prev" title="Cloud" href="lente_cloud.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="_prodplan.html" title="Production Planning"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="lente_cloud.html" title="Cloud"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.6.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">System</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="system">
+<h1>System<a class="headerlink" href="#system" title="Permalink to this headline">¶</a></h1>
+<p id="system-arch">This section describes system related considerations to building your test system with
+Prism and Lente.</p>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#architecture" id="id1">Architecture</a></p></li>
+<li><p><a class="reference internal" href="#results-flow" id="id2">Results Flow</a></p></li>
+<li><p><a class="reference internal" href="#docker" id="id3">Docker</a></p>
+<ul>
+<li><p><a class="reference internal" href="#check-what-is-running" id="id4">Check what is running</a></p></li>
+<li><p><a class="reference internal" href="#helper-docker-scripts" id="id5">Helper Docker Scripts</a></p></li>
+</ul>
+</li>
+</ul>
+</div>
+<section id="architecture">
+<h2><a class="toc-backref" href="#id1">Architecture</a><a class="headerlink" href="#architecture" title="Permalink to this headline">¶</a></h2>
+<p>This is a typical Sistemi system architecture layout.  More complex systems are possible and
+shown later in this section.</p>
+<img alt="_images/Screenshot_system_network_01.png" src="_images/Screenshot_system_network_01.png" />
+<p>Notes:</p>
+<ul class="simple">
+<li><p>Local wired LAN for Prisms and Lente (local)</p>
+<ul>
+<li><p>Wired LANs are more reliable and secure than wireless</p></li>
+<li><p>This LAN should NOT have a connection to the internet</p></li>
+</ul>
+</li>
+<li><p>Prisms</p>
+<ul>
+<li><p>only two are shown but there can be as many as needed</p></li>
+<li><p>USB is used to connect to local test jigs and test equipment</p></li>
+<li><p>Test equipment can be shared across test jigs at one Prism station</p>
+<ul>
+<li><p>Support for sharing equipment across Prisms is not (yet) supported</p></li>
+</ul>
+</li>
+<li><p>Sends results to Lente</p>
+<ul>
+<li><p>if a Lente is not online, testing can still continue, results will
+be staged for upload to Lente when it comes online</p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Lente</p>
+<ul>
+<li><p>there should only be ONE per LAN</p></li>
+<li><p>this computer should have a fixed IP address as every Prism is configured
+to look for Lente</p></li>
+<li><p>Lente can be configured to send its results upstream to another Lente</p></li>
+<li><p>Lente can be run in the cloud</p>
+<ul>
+<li><p>Local Lente can be configured to send their results upstream to a cloud
+based Lente, thus all you results can end up in one place</p></li>
+<li><p>As noted above, you don’t want to have your production LAN connected to the
+internet for security and reliablity reasons, therefore, at some regular
+interval you will remove a local Lente from the production LAN and connect it
+to the internet so it can find the upstream Lente and upload results to it</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>This is a more sophisticated Sistemi system plan.</p>
+<img alt="_images/Screenshot_system_network_03.png" src="_images/Screenshot_system_network_03.png" />
+<p>Here two remote factories send their data to a cloud Lente so that Head Office can
+monitor all Result data.</p>
+<p>Note in Factory 1 there are three production lines.  Line 1 and 2 have their own local
+Lente and a monitoring station for viewing the dashboard.  Line 3 does not have a
+local Lente and is using the factory Lente.</p>
+</section>
+<section id="results-flow">
+<h2><a class="toc-backref" href="#id2">Results Flow</a><a class="headerlink" href="#results-flow" title="Permalink to this headline">¶</a></h2>
+<p>This diagram also shows a possible architecture of a Sistemi system.  In this diagram the focus
+is on what happens to DUT results.</p>
+<p>This architecture shows how Lente can be stacked
+on top of each other.  Each Lente is aggregating more results that come from below it.  In
+this case, two factories are supplying results to a central Lente.</p>
+<img alt="_images/Screenshot_system_network_02.png" src="_images/Screenshot_system_network_02.png" />
+<p>What follows is a description of lables A-F…</p>
+<ul class="simple">
+<li><p>A</p>
+<ul>
+<li><p>Result JSON is created at Prism station and saved locally to a <cite>stage</cite> directory</p></li>
+</ul>
+</li>
+<li><p>B</p>
+<ul>
+<li><p>At some point, Prism will attempt to contact Lente and send the result
+JSON to it.</p></li>
+<li><p>If Lente is not connected/reachable, the file remains in <cite>stage</cite>.</p></li>
+</ul>
+</li>
+<li><p>C</p>
+<ul>
+<li><p>If Lente indicates the file was received successfully, Prism result is moved from
+<cite>stage</cite> to the <cite>bkup</cite> folder.</p></li>
+</ul>
+</li>
+<li><p>D</p>
+<ul>
+<li><p>Lente processes the result JSON into its (postgres) database.</p></li>
+</ul>
+</li>
+<li><p>Derr</p>
+<ul>
+<li><p>If there was a processing error, the result JSON is stored in <cite>quarantine</cite> folder.</p></li>
+</ul>
+</li>
+<li><p>E</p>
+<ul>
+<li><p>result JSON is stored in <cite>bkup</cite> folder if it was processed without error.</p></li>
+</ul>
+</li>
+<li><p>F</p>
+<ul>
+<li><p>if this Lente is configured to have an upstream Lente, the result JSON is stored
+in <cite>stage</cite> folder</p></li>
+</ul>
+</li>
+<li><p>At this point, the process B-F repeats itself.</p></li>
+</ul>
+<p>Notes:</p>
+<ol class="arabic simple">
+<li><p>The Result JSON is backed up at each level.  These backups can be turned off if desired.</p></li>
+<li><p>Any Lente dashboard can be accessed with web browser.  The results that can be seen
+will be that which is local to that Lente.</p></li>
+</ol>
+</section>
+<section id="docker">
+<h2><a class="toc-backref" href="#id3">Docker</a><a class="headerlink" href="#docker" title="Permalink to this headline">¶</a></h2>
+<p>Prism and Lente are running as Docker images/containers.  Using Docker containers has two
+advantages,</p>
+<ul class="simple">
+<li><p>Less impact of the local operating system setup, and/or installed libraries, modules, etc.
+on impacting Prism/Lente</p></li>
+<li><p>Deployment (software updates) via Docker Hub</p></li>
+</ul>
+<p>Docker is a large subject and there is a lot of online content.  There are but a few Docker
+commands that you should know for the purposes of troubleshooting.</p>
+<section id="check-what-is-running">
+<h3><a class="toc-backref" href="#id4">Check what is running</a><a class="headerlink" href="#check-what-is-running" title="Permalink to this headline">¶</a></h3>
+<p>To determine what docker images are running,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ docker ps
+CONTAINER ID   IMAGE               COMMAND                CREATED      STATUS      PORTS                                       NAMES
+c206788fcc35   sistemicorp/prism   &quot;python ./prism.pyc&quot;   5 days ago   Up 5 days   0.0.0.0:6590-&gt;6590/tcp, :::6590-&gt;6590/tcp   prism
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Key information</p>
+<ul>
+<li><p>STATUS: how long has the image been running.  If there has been a reset/crash, the running time will be less than
+what you expect.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="helper-docker-scripts">
+<span id="system-helper-docker"></span><h3><a class="toc-backref" href="#id5">Helper Docker Scripts</a><a class="headerlink" href="#helper-docker-scripts" title="Permalink to this headline">¶</a></h3>
+<p>Prism and Lente each have a helper script for simplifying working with Docker.</p>
+<p>The scripts can be found here:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>~/git/scripts/public$ ll
+total 36
+drwxr-xr-x  4 martin martin 4096 Jun  7 17:21 ./
+drwxrwxr-x 10 martin martin 4096 Jun  7 16:13 ../
+-rwxr-xr-x  1 martin martin 2954 Apr 29 13:11 lente.sh*        &lt;---- Lente helper
+drwxr-xr-x  5 martin martin 4096 Jun  7 16:09 prism/
+-rwxr-xr-x  1 martin martin 4409 Apr 29 13:11 prism.sh*        &lt;---- Prism helper
+-rw-r--r--  1 martin martin 1619 Jun  7 17:21 settings.json
+-rw-r--r--  1 martin martin  121 Jun  7 16:56 VERSION
+</pre></div>
+</div>
+<p>Each script will display a help if run with no arguments,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>~/git/scripts/public$ ./prism.sh
+Usage: prism.sh [flags] &lt;command&gt;
+
+command:
+  start                     Start Prism
+
+    flags, --server=, -s    (REQUIRED) Lente IP address. Use &#39;none&#39; if no Lente.
+           --hostname=, -h  Specify an alternative hostname for this computer (default martin-staric2)
+           --restart=, -r   &lt;always|no&gt; (default no) &#39;always&#39; will start Lente EVERY time the
+                            computer is booted, which is typically used on a node that
+                            is in actual deployment.
+                            To disable restart, use &#39;docker update --restart=no prism&#39;
+                            and then reboot the node.
+
+  update                    Update the docker image, requires internet connection.
+                            You will need to restart Prism with the start command.
+
+  stop                      Stop Prism
+</pre></div>
+</div>
+<p>How to use these scripts in detail is covered in <a class="reference internal" href="_deployment.html#deployment"><span class="std std-ref">Deployment</span></a> section.</p>
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="lente_cloud.html"
+                        title="previous chapter">Cloud</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="_prodplan.html"
+                        title="next chapter">Production Planning</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="_prodplan.html" title="Production Planning"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="lente_cloud.html" title="Cloud"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.6.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">System</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019-2023, Sistemi Corp..
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+    </div>
+  </body>
+</html>

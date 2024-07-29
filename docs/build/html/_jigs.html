@@ -1,0 +1,163 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Test Jigs &#8212; Sistemi Lente/Prism Test System 0.6.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Security" href="_security.html" />
+    <link rel="prev" title="Development" href="_development.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="_security.html" title="Security"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="_development.html" title="Development"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.6.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Test Jigs</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="test-jigs">
+<h1>Test Jigs<a class="headerlink" href="#test-jigs" title="Permalink to this headline">¶</a></h1>
+<p>Test Jigs are used in production to test your product, which is referred to as Device Under Test (DUT).
+These are custom designed fixtures that interface your product (DUT) to the Prism programs.</p>
+<p>In general, it is your responsibility to develop your own test jigs based on your requirements.
+Sistemi (in general) does not build jigs.  That being said, Sistemi has a reference platform that you may
+be able to use, perhaps with some modifications.</p>
+<img alt="_images/Screenshot_jigs_01.png" src="_images/Screenshot_jigs_01.png" />
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#definitions" id="id1">Definitions</a></p>
+<ul>
+<li><p><a class="reference internal" href="#interface-board" id="id2">Interface Board</a></p></li>
+<li><p><a class="reference internal" href="#interface-controller" id="id3">Interface Controller</a></p></li>
+<li><p><a class="reference internal" href="#bed-of-nails" id="id4">Bed of Nails</a></p></li>
+<li><p><a class="reference internal" href="#nest" id="id5">Nest</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#teensy4-interface-controller" id="id6">Teensy4 Interface Controller</a></p></li>
+</ul>
+</div>
+<section id="definitions">
+<h2><a class="toc-backref" href="#id1">Definitions</a><a class="headerlink" href="#definitions" title="Permalink to this headline">¶</a></h2>
+<section id="interface-board">
+<h3><a class="toc-backref" href="#id2">Interface Board</a><a class="headerlink" href="#interface-board" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>A Printed Circuit Board (PCB) that has spring probes and some type of controller that
+the Prism can talk to, to take measurements, and otherwise control the stimulus to the DUT.</p></li>
+<li><p>Is custom developed depending on the DUT test measurement and stimulus requirements</p></li>
+</ul>
+</section>
+<section id="interface-controller">
+<h3><a class="toc-backref" href="#id3">Interface Controller</a><a class="headerlink" href="#interface-controller" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>A device with USB connectivity and a processor in which Prism can control and
+otherwise interface to</p></li>
+<li><p>Examples that could be used, Teensy4 Arduino, and RaspBerry Pi.</p></li>
+<li><p>An <code class="docutils literal notranslate"><span class="pre">Interface</span> <span class="pre">Controller</span></code> may be designed into the <code class="docutils literal notranslate"><span class="pre">Interface</span> <span class="pre">Board</span></code> or
+it can be a daughter card that plugs into an <code class="docutils literal notranslate"><span class="pre">Interface</span> <span class="pre">Board</span></code></p></li>
+<li><p>Sistemi has developed a reference design based on Teensy4 Module</p></li>
+</ul>
+</section>
+<section id="bed-of-nails">
+<h3><a class="toc-backref" href="#id4">Bed of Nails</a><a class="headerlink" href="#bed-of-nails" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>An arrangement of spring mounted probes that make electrical connection to test points
+on the DUT</p></li>
+<li><p>Bed of Nails (probes) can wear out over time, you may want to consider a design that
+allows the Bed Of Nails to be replaced independently of the Interface Board electronics.</p></li>
+</ul>
+</section>
+<section id="nest">
+<h3><a class="toc-backref" href="#id5">Nest</a><a class="headerlink" href="#nest" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>A landing site for the DUT</p></li>
+<li><p>designed to make alignment between the Bed of Nails and the DUT test points</p></li>
+<li><p>Usually has two “dowels” that will align with holes on the DUT for precise positioning</p></li>
+</ul>
+</section>
+</section>
+<section id="teensy4-interface-controller">
+<h2><a class="toc-backref" href="#id6">Teensy4 Interface Controller</a><a class="headerlink" href="#teensy4-interface-controller" title="Permalink to this headline">¶</a></h2>
+<p>Teensy4 is a reference design that you may or may not be able to use, depending on your DUT testing
+requirements.  The intent here is to re-use this design to bootstrap your test jig design.</p>
+<p>Prism <code class="docutils literal notranslate"><span class="pre">scripts</span></code> repo includes Teensy4 code to support your Interface board requirements.  Note that
+the support code is compatible with Teensy 4.0 and 4.1 modules.</p>
+<p>Teensy4 information is here <a class="reference external" href="https://www.pjrc.com/store/teensy41.html">https://www.pjrc.com/store/teensy41.html</a></p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="_development.html"
+                        title="previous chapter">Development</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="_security.html"
+                        title="next chapter">Security</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="_security.html" title="Security"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="_development.html" title="Development"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.6.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Test Jigs</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019-2023, Sistemi Corp..
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+    </div>
+  </body>
+</html>

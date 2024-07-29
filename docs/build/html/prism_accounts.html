@@ -1,0 +1,185 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Accounts &#8212; Sistemi Lente/Prism Test System 0.6.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Travellers" href="prism_travellers.html" />
+    <link rel="prev" title="Drivers" href="prism_drivers.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="prism_travellers.html" title="Travellers"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="prism_drivers.html" title="Drivers"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.6.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="prism_main.html" accesskey="U">Prism</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Accounts</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="accounts">
+<h1>Accounts<a class="headerlink" href="#accounts" title="Permalink to this headline">¶</a></h1>
+<p>Prism has the concept of Users and Roles.</p>
+<p>The User logged in and performing tests will be noted in the Result JSON.</p>
+<p>You may decide on one global operator User, or a User for each individual.</p>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#users" id="id1">Users</a></p></li>
+<li><p><a class="reference internal" href="#roles" id="id2">Roles</a></p>
+<ul>
+<li><p><a class="reference internal" href="#enabled" id="id3">Enabled</a></p></li>
+<li><p><a class="reference internal" href="#admin" id="id4">Admin</a></p></li>
+<li><p><a class="reference internal" href="#account" id="id5">Account</a></p></li>
+<li><p><a class="reference internal" href="#operator" id="id6">Operator</a></p></li>
+<li><p><a class="reference internal" href="#configman" id="id7">ConfigMan</a></p></li>
+<li><p><a class="reference internal" href="#developer" id="id8">Developer</a></p></li>
+<li><p><a class="reference internal" href="#serversync" id="id9">ServerSync</a></p></li>
+</ul>
+</li>
+</ul>
+</div>
+<section id="users">
+<h2><a class="toc-backref" href="#id1">Users</a><a class="headerlink" href="#users" title="Permalink to this headline">¶</a></h2>
+<p>Users should be added to the system, rather than using the Admin account.</p>
+<p>Users need to have unique username.</p>
+<p>Users are added by another user (Admin) who has Account role privileges.</p>
+<p>A new User account must have the role <cite>Enabled</cite> in order to login.</p>
+</section>
+<section id="roles">
+<h2><a class="toc-backref" href="#id2">Roles</a><a class="headerlink" href="#roles" title="Permalink to this headline">¶</a></h2>
+<p>The following roles are defined,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;roles&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="c1"># Framework Roles</span>
+    <span class="s2">&quot;ENABLED&quot;</span><span class="p">:</span> <span class="s2">&quot;Enabled&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ACCOUNT&quot;</span><span class="p">:</span> <span class="s2">&quot;Account&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ADMIN&quot;</span><span class="p">:</span>   <span class="s2">&quot;Administrator&quot;</span><span class="p">,</span>  <span class="c1"># rights to do anything</span>
+
+    <span class="c1"># App specific Roles</span>
+    <span class="s2">&quot;OPERATOR&quot;</span><span class="p">:</span>   <span class="s2">&quot;Operator&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CONFIGMAN&quot;</span><span class="p">:</span>  <span class="s2">&quot;Config Management&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DEVELOPER&quot;</span><span class="p">:</span>  <span class="s2">&quot;Developer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SERVERSYNC&quot;</span><span class="p">:</span> <span class="s2">&quot;ServerSync&quot;</span><span class="p">,</span>  <span class="c1"># causes user to be pushed to all stations</span>
+<span class="p">},</span>
+</pre></div>
+</div>
+<section id="enabled">
+<h3><a class="toc-backref" href="#id3">Enabled</a><a class="headerlink" href="#enabled" title="Permalink to this headline">¶</a></h3>
+<p>Without this role, the User cannot log into the system.  When a User is created,
+this role is NOT set.  After a User is created, you must access the Roles menu
+and add <cite>Enabled</cite> to the User for them to be able to login.</p>
+<p>This allows you to disable a User without deleting their account.</p>
+</section>
+<section id="admin">
+<h3><a class="toc-backref" href="#id4">Admin</a><a class="headerlink" href="#admin" title="Permalink to this headline">¶</a></h3>
+<p>The Admin(istrator) role has access to all system functions and menus.</p>
+<p>In general its good practice to have two Users with Admin role.</p>
+</section>
+<section id="account">
+<h3><a class="toc-backref" href="#id5">Account</a><a class="headerlink" href="#account" title="Permalink to this headline">¶</a></h3>
+<p>This role provides the User with Account functions, create user, edit user, edit roles.</p>
+</section>
+<section id="operator">
+<h3><a class="toc-backref" href="#id6">Operator</a><a class="headerlink" href="#operator" title="Permalink to this headline">¶</a></h3>
+<p>Prism ONLY</p>
+<p>Basic role for operating Prism.</p>
+<p>Operator allows the User to scan a traveller and run tests.
+The User <strong>cannot</strong> use <cite>Test Config</cite> menu.</p>
+</section>
+<section id="configman">
+<h3><a class="toc-backref" href="#id7">ConfigMan</a><a class="headerlink" href="#configman" title="Permalink to this headline">¶</a></h3>
+<p>Prism ONLY</p>
+<p>Allows the User to use the <cite>Test Config</cite> menu, which allows the user to pick which
+script to run, and fill in any parameters for the script, and also to be able to create
+a Traveller.</p>
+</section>
+<section id="developer">
+<h3><a class="toc-backref" href="#id8">Developer</a><a class="headerlink" href="#developer" title="Permalink to this headline">¶</a></h3>
+<p>Currently this has no purpose.</p>
+</section>
+<section id="serversync">
+<h3><a class="toc-backref" href="#id9">ServerSync</a><a class="headerlink" href="#serversync" title="Permalink to this headline">¶</a></h3>
+<p>A User with this setting means their profile is controlled from Lente.  You
+may edit the user here on Prism, but if Users are sync’d from Lente, your changes
+will be overridden by the profile on Lente the next time there is a sync with Lente.</p>
+<p>All changes to this User should be made on Lente.</p>
+<p>More on ServerSync TBD (link)</p>
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="prism_drivers.html"
+                        title="previous chapter">Drivers</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="prism_travellers.html"
+                        title="next chapter">Travellers</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="prism_travellers.html" title="Travellers"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="prism_drivers.html" title="Drivers"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.6.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="prism_main.html" >Prism</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Accounts</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019-2023, Sistemi Corp..
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+    </div>
+  </body>
+</html>

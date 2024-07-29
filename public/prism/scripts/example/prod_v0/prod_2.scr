@@ -1,0 +1,68 @@
+// Example: Shows substitution being used in more than one place.
+//          Shows multiple modules being used.
+{
+  "subs": {
+    "Lot": {
+      "title": "Lot (format #####)",
+      "type" : "str", "widget": "textinput", "regex": "\\d{5}", "default": "95035"
+    },
+    "Loc": {
+      "title": "Location",
+      "type" : "str", "widget": "select", "choices": ["canada/ontario/milton", "us/newyork/bufalo"]
+    },
+    "TST000Max": {
+      "title": "TST000 Max Attenuation (db)",
+      "type" : "num", "widget": "select", "choices": [9, 10]
+    },
+    "TST100Max": {
+      "title": "TST100 Max Attenuation (db)",
+      "type" : "num", "widget": "select", "choices": [11.1, 12.2, 13.3]
+    }
+  },
+  "info": {
+    "product": "widget_1",
+    "bom": "B00012-003",
+    // list fields present user choice or fill in
+    "lot": "%%Lot",
+    "location": "%%Loc"
+  },
+  "config": {
+    "fail_fast": false,
+    "drivers": ["public.prism.drivers.fake.hwdrv_fake"]
+  },
+  "tests": [
+    {
+      "module": "public.prism.scripts.example.prod_v0.tst00xx",
+      "options": {
+        "fail_fast": false
+      },
+      "items": [
+        {"id": "TST0xxSETUP",           "enable": true },
+        {"id": "TST000_Meas",           "enable": true, "args": {"min": 0, "max": "%%TST000Max"},
+                                        "fail": [ {"fid": "TST000-0", "msg": "Component apple R1"},
+                                                  {"fid": "TST000-1", "msg": "Component banana R1"}] },
+        {"id": "TST002_Skip",           "enable": false },
+
+        // always called, no matter if test fails above
+        {"id": "TST0xxTEARDOWN",        "enable": true },
+      ]
+    },
+    {
+      "module": "public.prism.scripts.example.prod_v0.tst01xx",
+      "options": {
+        "fail_fast": false
+      },
+      "items": [
+        {"id": "TST1xxSETUP", "enable": true },
+        {"id": "TST100_Meas", "enable": true,  "args": {"min": 0, "max": "%%TST100Max"},
+                              "fail": [ {"fid": "TST100-0", "msg": "Component R1"} ] },
+        {"id": "TST100_Meas", "enable": true,  "args": {"min": 0, "max": "%%TST100Max"},
+                              "fail": [ {"fid": "TST100-0", "msg": "Component R1"} ] },
+        {"id": "TST101_Skip", "enable": false },
+
+        // always called, no matter if test fails above
+        {"id": "TST0xxTEARDOWN",        "enable": true },
+      ]
+    }
+  ]
+}

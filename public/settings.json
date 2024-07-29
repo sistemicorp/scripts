@@ -1,0 +1,65 @@
+// This file is NOT propagated by Lente to Prism stations.
+// For each Prism/Lente install, this file should be modified as required.
+// See https://sistemicorp.github.io/scripts/build/html/_deployment.html#settings-json-file
+{
+  // turn on demo mode.  Creates test user accounts, ...
+  // remove line, or set to false to disable demo mode
+  "demo": true,
+
+  // Result JSON file encryption
+  // - a valid license file is required to encrypt results
+  // - passwrd must be |<-  16  long  ->|
+  "result_encrypt_pw": "mysecretkey01234",
+  "result_encrypt": false,
+
+  // By default results that are sent to Lente are backed up
+  // locally, to disable this backup uncomment
+  //"result_bkup_dir": null,
+
+  // Result JSON files be backed up as encrypted, <true|false>,
+  // If the results were not encrypted by Prism, they won't be ecrypted by Lente
+  "results_bkup_encrypted": false,
+
+  // Use https secure transport, requires public/cert/key.pem files
+  // For Lente & Prism stations, all must be configured the same
+  "use_https": false,
+
+  // Prism/Lente internal connection password
+  "prism_lente_pw": "mysecret1",
+
+  // Manifest (enable/disable) checking
+  // Validates "public/prism" contents (sent by Lente)
+  // create manifest.exclude to list file exclusions
+  "manifest_check": false,
+
+  // password for scripts package sent from Lente to Lente/Prism
+  "manifest_pw": "mysecret2",
+
+  // ------------------------------------------------------------------
+  // Below are only used by Lente and can be removed for Prism stations
+
+  // Lente/Lente internal connection password
+  "lente_lente_pw": "mysecret3",
+
+  // Enter IP Address:port, example "http://35.123.432.190:6595"
+  // Use null to disable upstream sending.
+  "result_server_url": null,
+
+  // This Lente computer is pyramid root and creates manifest
+  "root_authority": true,
+
+  // automatically sync Prism clients scripts
+  "auto_sync_scripts": true,
+
+  "postgres": {
+    "resultbasekeysv1": {
+      // !! Change "pw" to a real password for a real deployment,
+      // !! This user/pw must match your postgres deployment too,
+      "user": "postgres",
+      "pw": "qwerty",
+
+      // ip address of the postgres database, use `127.0.0.1` if locahost
+      "ip": "127.0.0.1"
+    }
+  }
+}

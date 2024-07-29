@@ -1,0 +1,1013 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Programs &#8212; Sistemi Lente/Prism Test System 0.6.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Drivers" href="prism_drivers.html" />
+    <link rel="prev" title="Scripts" href="prism_scripts.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="prism_drivers.html" title="Drivers"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="prism_scripts.html" title="Scripts"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.6.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="prism_main.html" accesskey="U">Prism</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Programs</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="programs">
+<h1>Programs<a class="headerlink" href="#programs" title="Permalink to this headline">¶</a></h1>
+<p>Programs are Python code that implement <a class="reference internal" href="prism_scripts.html#tests"><span class="std std-ref">tests</span></a> <code class="docutils literal notranslate"><span class="pre">items</span></code>, and the location and name of the
+program file is given in field <code class="docutils literal notranslate"><span class="pre">module</span></code>.</p>
+<p>A very minimalist (“hello world”) (helloWorld.py) program file could look like this,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>! /usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import logging
+from core.test_item import TestItem
+from public.prism.api import ResultAPI
+
+# file name and class name must match
+class helloWorld(TestItem):
+
+    def __init__(self, controller, chan, shared_state):
+        super().__init__(controller, chan, shared_state)
+        self.logger = logging.getLogger(&quot;SC.{}.{}&quot;.format(__name__, self.chan))
+
+    def sayHello(self):
+        ctx = self.item_start()  # always first line of test
+        self.log_bullet(&quot;Hello World!&quot;)
+        self.item_end() # always last line of test
+</pre></div>
+</div>
+<p>And, a minimalist script file that uses this program code, could look like this,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;info&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;product&quot;</span><span class="p">:</span> <span class="s2">&quot;widget_1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;bom&quot;</span><span class="p">:</span> <span class="s2">&quot;BOM1-1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;lot&quot;</span><span class="p">:</span> <span class="s2">&quot;MYLOT1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="s2">&quot;FACTORY1&quot;</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;drivers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;public.prism.drivers.fake.fake&quot;</span><span class="p">]</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;tests&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;public.prism.scripts.my_product.helloWorld&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;options&quot;</span><span class="p">:</span> <span class="p">{},</span>
+      <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;sayHello&quot;</span><span class="p">},</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Lets make some general comments about the above script/program before diving into the details,</p>
+<ul class="simple">
+<li><p>script</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">options</span></code> has no key/value assignments.  This means that <code class="docutils literal notranslate"><span class="pre">fail_fast</span></code> is assumed to be true. See <a class="reference internal" href="prism_scripts.html#config"><span class="std std-ref">config</span></a></p></li>
+<li><p>the <code class="docutils literal notranslate"><span class="pre">module</span></code> value <code class="docutils literal notranslate"><span class="pre">public.prism.scripts.my_product.helloWorld</span></code> <strong>matches the class name and the program file name</strong></p></li>
+<li><p>has no (optional) <code class="docutils literal notranslate"><span class="pre">subs</span></code> section</p></li>
+</ul>
+</li>
+<li><p>Program</p>
+<ul>
+<li><p>there is no requirement for method names, the above uses <code class="docutils literal notranslate"><span class="pre">sayHello</span></code> for example</p>
+<ul>
+<li><p>However, you should plan to have a test naming structure, as these test names is what you will be doing backend
+database searches and filtering on.  See TBD-Planning</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<section id="program-class-structure">
+<h2>Program Class Structure<a class="headerlink" href="#program-class-structure" title="Permalink to this headline">¶</a></h2>
+<p>Lets take a more detailed look at the program structrure,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>! /usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import logging
+from core.test_item import TestItem
+from public.prism.api import ResultAPI
+
+# file name and class name must match
+class helloWorld(TestItem):
+
+    def __init__(self, controller, chan, shared_state):
+        super().__init__(controller, chan, shared_state)
+        self.logger = logging.getLogger(&quot;SC.{}.{}&quot;.format(__name__, self.chan))
+
+    def sayHello(self):
+        context = self.item_start()  # always first line of test
+        self.log_bullet(&quot;Hello World!&quot;)
+        self.item_end() # always last line of test
+</pre></div>
+</div>
+<section id="methods">
+<h3>methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>if you are not already familiar with Python Classes, you should quickly take an online tutorial</p>
+<ul>
+<li><p>for Prism programs you don’t need to know a lot about Python Class methods and fancy things that you
+can do with them</p></li>
+</ul>
+</li>
+<li><p>there are two methods shown in the example program, <code class="docutils literal notranslate"><span class="pre">__init__</span></code> and <code class="docutils literal notranslate"><span class="pre">sayHello</span></code></p></li>
+<li><p>From a Prism point of view, a method in the class is called IF it is referenced in the script <code class="docutils literal notranslate"><span class="pre">tests</span></code> <code class="docutils literal notranslate"><span class="pre">items</span></code>
+<code class="docutils literal notranslate"><span class="pre">id</span></code> field - if you reference the above simple script, <code class="docutils literal notranslate"><span class="pre">sayHello</span></code> is referenced</p>
+<ul>
+<li><p><strong>``__init__`` is NOT to be referenced by the script in anyway</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">__init__</span></code> is called automatically when the script is loaded by the system.  You should not have any test
+code in the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method.  You can add more self.variable_name as required</p></li>
+</ul>
+</li>
+<li><p>Methods that you add that are called by the script, will NOT have any additional arguments, only <code class="docutils literal notranslate"><span class="pre">self</span></code></p></li>
+<li><p>The first line of every method is</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>The last line of every method is</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span> <span class="c1"># always last line of test</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>more complex versions of the last line will be covered TBD-here</p></li>
+</ul>
+</section>
+<section id="context">
+<h3>context<a class="headerlink" href="#context" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">context</span></code> is your programmatic view of the script, and retrieving it is the first line of every method</p></li>
+<li><p>consider a little more complicated script,</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;info&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;product&quot;</span><span class="p">:</span> <span class="s2">&quot;widget_1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;bom&quot;</span><span class="p">:</span> <span class="s2">&quot;BOM1-1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;lot&quot;</span><span class="p">:</span> <span class="s2">&quot;MYLOT1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="s2">&quot;FACTORY1&quot;</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;drivers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;public.prism.drivers.fake.fake&quot;</span><span class="p">]</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;tests&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;public.prims.scripts.my_product.helloWorld&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;options&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;fail_fast&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;myVar&quot;</span><span class="p">:</span> <span class="s2">&quot;something&quot;</span> <span class="p">},</span>
+      <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;sayHello&quot;</span><span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST000_Meas&quot;</span><span class="p">,</span>  <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
+                               <span class="s2">&quot;fail&quot;</span><span class="p">:</span> <span class="p">[</span> <span class="p">{</span><span class="s2">&quot;fid&quot;</span><span class="p">:</span> <span class="s2">&quot;TST000-0&quot;</span><span class="p">,</span> <span class="s2">&quot;msg&quot;</span><span class="p">:</span> <span class="s2">&quot;Component apple R1&quot;</span><span class="p">},</span>
+                                         <span class="p">{</span><span class="s2">&quot;fid&quot;</span><span class="p">:</span> <span class="s2">&quot;TST000-1&quot;</span><span class="p">,</span> <span class="s2">&quot;msg&quot;</span><span class="p">:</span> <span class="s2">&quot;Component banana R1&quot;</span><span class="p">}]</span> <span class="p">},</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>And lets assume we are in the <code class="docutils literal notranslate"><span class="pre">TST000_Meas</span></code> method, then we can access (print) anything that is relevent,</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">TST000_Meas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="p">)</span>          <span class="c1"># = {&quot;id&quot;: &quot;TST000&quot;, &quot;enable&quot;: True,  &quot;args&quot;: {&quot;min&quot;: 0, &quot;max&quot;: 10}}</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>     <span class="c1"># = {&quot;min&quot;: 0, &quot;max&quot;: 10}</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">max</span><span class="p">)</span> <span class="c1"># = 10</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">options</span><span class="p">)</span>       <span class="c1"># = { &quot;fail_fast&quot;: False, &quot;myVar&quot;: &quot;something&quot; }</span>
+    <span class="o">...</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span> <span class="c1"># always last line of test</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>in Python, you can do <code class="docutils literal notranslate"><span class="pre">print(dir(ctx))</span></code> to get a list of everything available to you</p></li>
+<li><p>When designing your test script and program structure, consider what user configurable variables you want to be
+defined in the script <code class="docutils literal notranslate"><span class="pre">args</span></code> section and which you want in the program.  Things like min/max limits may change
+overt he product life cycle, and its better to make those things editable by a non-programmer. See TBS-Planning</p></li>
+</ul>
+</section>
+</section>
+<section id="everything-example">
+<h2>Everything Example<a class="headerlink" href="#everything-example" title="Permalink to this headline">¶</a></h2>
+<p>Here is a fully documented program example that shows just about every feature of the Lente system.  This
+example program is distributed with the system, and may be more up to date than here, so please consult that example.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#! /usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">core.test_item</span> <span class="kn">import</span> <span class="n">TestItem</span>
+<span class="kn">from</span> <span class="nn">public.prism.api</span> <span class="kn">import</span> <span class="n">ResultAPI</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">string</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+
+<span class="kn">from</span> <span class="nn">public.prism.drivers.fake.Fake</span> <span class="kn">import</span> <span class="n">DRIVER_TYPE</span>
+
+
+<span class="c1"># file and class name must match</span>
+<span class="k">class</span> <span class="nc">tst00xx</span><span class="p">(</span><span class="n">TestItem</span><span class="p">):</span>
+
+    <span class="n">DEMO_TIME_DELAY</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">DEMO_TIME_RND_ENABLE</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">controller</span><span class="p">,</span> <span class="n">chan</span><span class="p">,</span> <span class="n">shared_state</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">controller</span><span class="p">,</span> <span class="n">chan</span><span class="p">,</span> <span class="n">shared_state</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">.</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">chan</span><span class="p">))</span>
+
+        <span class="c1"># ------------------------------------------------------------------------</span>
+        <span class="c1"># API Reference:</span>
+        <span class="c1">#</span>
+        <span class="c1"># from prod_0.scr:</span>
+        <span class="c1">#         {&quot;id&quot;: &quot;TST000_Meas&quot;,  &quot;enable&quot;: true, &quot;args&quot;: {&quot;min&quot;: 0, &quot;max&quot;: 10},</span>
+        <span class="c1">#                                &quot;fail&quot;: [ {&quot;fid&quot;: &quot;TST000-0&quot;, &quot;msg&quot;: &quot;Component apple R1&quot;},</span>
+        <span class="c1">#                                          {&quot;fid&quot;: &quot;TST000-1&quot;, &quot;msg&quot;: &quot;Component banana R1&quot;}] },</span>
+        <span class="c1">#</span>
+        <span class="c1"># ctx = self.item_start()  # always first line of test</span>
+        <span class="c1">#  - use ctx (context) to extract information to drive the test program (see above)</span>
+        <span class="c1">#  - ctx (context) is a namespace of content from the test script</span>
+        <span class="c1">#  - ctx.item = {&quot;id&quot;: &quot;TST000&quot;, &quot;enable&quot;: True,  &quot;args&quot;: {&quot;min&quot;: 0, &quot;max&quot;: 10}}</span>
+        <span class="c1">#  - ctx.item.args = {&quot;min&quot;: 0, &quot;max&quot;: 10}</span>
+        <span class="c1">#  - ctx.item.args.max = 10</span>
+        <span class="c1">#  - ctx.options = { &quot;fail_fast&quot;: False }</span>
+        <span class="c1">#  - ctx.options.fail_fast = False</span>
+        <span class="c1">#</span>
+        <span class="c1">#  - record functions</span>
+        <span class="c1">#    - ctx.record.measurement(name, value, unit, min=None, max=None)</span>
+        <span class="c1">#      - name: name of the measurement, should be unique per test item</span>
+        <span class="c1">#      - unit: from ResultAPI.UNIT_*</span>
+        <span class="c1">#</span>
+        <span class="c1">#    - ctx.record.add_key(&quot;name&quot;, value, slot=0)</span>
+        <span class="c1">#      - slot is 0-4, Lente shows slot 0 in summary results</span>
+        <span class="c1">#      - keys become (additional) indexes in the Lente database</span>
+        <span class="c1">#      - key assignment to slot number should be standardized within organization</span>
+        <span class="c1">#    - ctx.record.get_keys()</span>
+        <span class="c1">#      - get all previously stored keys</span>
+        <span class="c1">#</span>
+        <span class="c1">#    - ctx.record.fail_msg(msg)</span>
+        <span class="c1">#      - add a fail message to the record</span>
+        <span class="c1">#</span>
+        <span class="c1"># self.chan  # this channel (0,1,2,3)</span>
+        <span class="c1">#</span>
+        <span class="c1"># self.shared_state  # instance of the shared state across all running test jigs</span>
+        <span class="c1">#</span>
+        <span class="c1"># self.timeout</span>
+        <span class="c1">#   - boolean indicating if a timeout has occurred</span>
+        <span class="c1">#   - use in while/for loops to check if a timeout has occurred</span>
+        <span class="c1">#</span>
+        <span class="c1"># self.item_end([result[s]]) # always last line of test</span>
+        <span class="c1">#  - result is one of ResultAPI.RECORD_* constants</span>
+        <span class="c1">#  - result may be a list or a single instance</span>
+        <span class="c1">#  - called without arguments, the result is ResultAPI.RECORD_RESULT_PASS</span>
+        <span class="c1">#</span>
+        <span class="c1"># Notes</span>
+        <span class="c1">#</span>
+        <span class="c1"># 1) Test Item Timeout</span>
+        <span class="c1">#    - every test time is guarded by a timeout which has a default of ResultAPI.TESTITEM_TIMEOUT Sec.</span>
+        <span class="c1">#    - this value can be overridden by adding &#39;&quot;timeout&quot;: &lt;value&gt;&#39; to the test item in the script</span>
+        <span class="c1">#    - if the timeout expires, it is considered a Fail, even if it is</span>
+        <span class="c1">#      on a user input item.  The test script will fail.</span>
+        <span class="c1">#    - when using loops (while/for) for long running tasks, use self.timeout to check</span>
+        <span class="c1">#</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hw_fake</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">TST0xxSETUP</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;  Setup up for testing</span>
+<span class="sd">        - main purpose is to get a local handle to the connected hardware</span>
+<span class="sd">        - store the ID of the hardware for tracking purposes</span>
+
+<span class="sd">            {&quot;id&quot;: &quot;TST0xxSETUP&quot;,           &quot;enable&quot;: true },</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
+
+        <span class="c1"># get instance of the hardware created by HWDriver:discover_channels()</span>
+        <span class="c1"># per the script, the fake hw driver is used (see script config:drivers section)</span>
+        <span class="c1"># drivers are stored in the shared_state and are retrieved as,</span>
+        <span class="n">drivers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_state</span><span class="o">.</span><span class="n">get_drivers</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chan</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">DRIVER_TYPE</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">drivers</span><span class="p">)</span>  <span class="c1"># review this output to see HW attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hw_fake</span> <span class="o">=</span> <span class="n">drivers</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;obj&quot;</span><span class="p">][</span><span class="s2">&quot;hwdrv&quot;</span><span class="p">]</span>  <span class="c1"># instance of ./drivers/fake/Fake.py:Fake</span>
+
+        <span class="c1"># record the (unique) ID of the (Fake) hardware.</span>
+        <span class="n">success</span><span class="p">,</span> <span class="n">_result</span><span class="p">,</span> <span class="n">_bullet</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span>
+                                                           <span class="bp">self</span><span class="o">.</span><span class="n">hw_fake</span><span class="o">.</span><span class="n">unique_id</span><span class="p">(),</span>
+                                                           <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_STRING</span><span class="p">,</span>
+                                                           <span class="kc">None</span><span class="p">,</span>
+                                                           <span class="kc">None</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="n">_bullet</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">_result</span><span class="p">)</span>  <span class="c1"># always last line of test</span>
+
+    <span class="k">def</span> <span class="nf">TST0xxTEARDOWN</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;  Always called at the end of testing</span>
+<span class="sd">        - process any cleanup, closing, etc</span>
+
+<span class="sd">            {&quot;id&quot;: &quot;TST0xxTEARDOWN&quot;,        &quot;enable&quot;: true },</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span>  <span class="c1"># always last line of test</span>
+
+    <span class="k">def</span> <span class="nf">TST000_Meas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Measurement example, simplest example</span>
+
+<span class="sd">        {&quot;id&quot;: &quot;TST000_Meas&quot;,    &quot;enable&quot;: true, &quot;args&quot;: {&quot;min&quot;: 0, &quot;max&quot;: 10},</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>   <span class="c1"># always first line of test</span>
+
+        <span class="n">adc_measurement</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hw_fake</span><span class="o">.</span><span class="n">adc_read</span><span class="p">()</span>
+        <span class="n">success</span><span class="p">,</span> <span class="n">_result</span><span class="p">,</span> <span class="n">_bullet</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span><span class="s2">&quot;apples&quot;</span><span class="p">,</span>
+                                                           <span class="n">adc_measurement</span><span class="p">,</span>
+                                                           <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_DB</span><span class="p">,</span>
+                                                           <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">min</span><span class="p">,</span>
+                                                           <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="n">_bullet</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">_result</span><span class="p">)</span>  <span class="c1"># always last line of test</span>
+
+    <span class="k">def</span> <span class="nf">TST001_Meas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Measurement example, with multiple failure messages</span>
+<span class="sd">        - example of taking multiple measurements, and sending as a list of results</span>
+<span class="sd">        - example of measurement indicating possible failed components</span>
+
+<span class="sd">        {&quot;id&quot;: &quot;TST001_Meas&quot;,    &quot;enable&quot;: true, &quot;args&quot;: {&quot;min&quot;: 0, &quot;max&quot;: 10},</span>
+<span class="sd">                                 &quot;fail&quot;: [ {&quot;fid&quot;: &quot;TST000-0&quot;, &quot;msg&quot;: &quot;Component apple R1&quot;},</span>
+<span class="sd">                                           {&quot;fid&quot;: &quot;TST000-1&quot;, &quot;msg&quot;: &quot;Component banana R1&quot;}] },</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>   <span class="c1"># always first line of test</span>
+
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_DELAY</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_RND_ENABLE</span><span class="p">)</span>
+
+        <span class="n">FAIL_APPLE</span>   <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># indexes into the &quot;fail&quot; list, just for code readability</span>
+        <span class="n">FAIL_BANANNA</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="n">measurement_results</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># list for all the coming measurements...</span>
+
+        <span class="c1"># Apples measurement...</span>
+        <span class="n">adc_measurement</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hw_fake</span><span class="o">.</span><span class="n">adc_read</span><span class="p">()</span>
+        <span class="n">success</span><span class="p">,</span> <span class="n">_result</span><span class="p">,</span> <span class="n">_bullet</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span><span class="s2">&quot;apples&quot;</span><span class="p">,</span>
+                                                           <span class="n">adc_measurement</span><span class="p">,</span>
+                                                           <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_DB</span><span class="p">,</span>
+                                                           <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">min</span><span class="p">,</span>
+                                                           <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_INTERNAL_ERROR</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="c1"># if failed, there is a msg in script to attach to the record, for repair purposes</span>
+        <span class="k">if</span> <span class="n">_result</span> <span class="o">==</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_FAIL</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">fail</span><span class="p">[</span><span class="n">FAIL_APPLE</span><span class="p">]</span>
+            <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">fail_msg</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="n">_bullet</span><span class="p">)</span>
+        <span class="n">measurement_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_result</span><span class="p">)</span>
+
+        <span class="c1"># Bananas measurement...</span>
+        <span class="n">adc_measurement</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hw_fake</span><span class="o">.</span><span class="n">adc_read</span><span class="p">()</span>
+        <span class="n">success</span><span class="p">,</span> <span class="n">_result</span><span class="p">,</span> <span class="n">_bullet</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span><span class="s2">&quot;bananas&quot;</span><span class="p">,</span>
+                                                           <span class="n">adc_measurement</span><span class="p">,</span>
+                                                           <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_DB</span><span class="p">,</span>
+                                                           <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">min</span><span class="p">,</span>
+                                                           <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_INTERNAL_ERROR</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="c1"># if failed, there is a msg in script to attach to the record, for repair purposes</span>
+        <span class="k">if</span> <span class="n">_result</span> <span class="o">==</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_FAIL</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">fail</span><span class="p">[</span><span class="n">FAIL_BANANNA</span><span class="p">]</span>
+            <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">fail_msg</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="n">_bullet</span><span class="p">)</span>
+        <span class="n">measurement_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_result</span><span class="p">)</span>
+
+        <span class="c1"># Note that we can send a list of measurements</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">item_result_state</span><span class="o">=</span><span class="n">measurement_results</span><span class="p">)</span>  <span class="c1"># always last line of test</span>
+
+    <span class="k">def</span> <span class="nf">TST002_Skip</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Example of an item that is skipped</span>
+
+<span class="sd">        {&quot;id&quot;: &quot;TST002_Skip&quot;,           &quot;enable&quot;: false },</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>   <span class="c1"># always first line of test</span>
+        <span class="c1"># this is a skipped test for testing, in some scripts</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;Was I skipped?&quot;</span><span class="p">)</span>
+
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_DELAY</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_RND_ENABLE</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span>  <span class="c1"># always last line of test</span>
+
+    <span class="k">def</span> <span class="nf">TST003_Buttons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Select one of three buttons</span>
+<span class="sd">        - capture the button index in the test record</span>
+
+<span class="sd">        {&quot;id&quot;: &quot;TST003_Buttons&quot;,        &quot;enable&quot;: true, &quot;timeout&quot;: 10 },</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>   <span class="c1"># always first line of test</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;Please press a button!&quot;</span><span class="p">)</span>
+
+        <span class="c1"># make two random to confirm GUI button label is updated</span>
+        <span class="n">_two</span> <span class="o">=</span> <span class="s2">&quot;two </span><span class="si">{:3.2f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="n">_two</span><span class="p">)</span>
+        <span class="n">buttons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;one&quot;</span><span class="p">,</span> <span class="n">_two</span><span class="p">,</span> <span class="s2">&quot;three&quot;</span><span class="p">]</span>
+        <span class="n">user_select</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_button</span><span class="p">(</span><span class="n">buttons</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">user_select</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]:</span>
+            <span class="n">b_idx</span> <span class="o">=</span> <span class="n">user_select</span><span class="p">[</span><span class="s2">&quot;button&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> was pressed!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">buttons</span><span class="p">[</span><span class="n">b_idx</span><span class="p">]))</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_result</span><span class="p">,</span> <span class="n">_bullet</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span><span class="s2">&quot;button&quot;</span><span class="p">,</span> <span class="n">b_idx</span><span class="p">,</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_INT</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="n">_bullet</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_result</span> <span class="o">=</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_FAIL</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="n">user_select</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;err&quot;</span><span class="p">,</span> <span class="s2">&quot;UNKNOWN ERROR&quot;</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">_result</span><span class="p">)</span>  <span class="c1"># always last line of test</span>
+
+    <span class="k">def</span> <span class="nf">TST004_KeyAdd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; How use of keys: keys are things like serial numbers.</span>
+<span class="sd">        - every call to self.add_key(k,v) adds the &quot;k:v&quot; to the next available</span>
+<span class="sd">          key# in the record, you can force the slot though.  It depends how you will</span>
+<span class="sd">          manage the keys in the final database; either by convention force every slot</span>
+<span class="sd">          to represent a specific thing (preferred), or search all keys for the &#39;k&#39; you want.</span>
+
+<span class="sd">        {&quot;id&quot;: &quot;TST004_KeyAdd&quot;,         &quot;enable&quot;: true },</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>   <span class="c1"># always first line of test</span>
+
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_DELAY</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_RND_ENABLE</span><span class="p">)</span>
+
+        <span class="n">value</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">add_key</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">slot</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;added key value: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span>  <span class="c1"># always last line of test</span>
+
+    <span class="k">def</span> <span class="nf">TST005_KeyGet</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; How use of keys works</span>
+<span class="sd">        - retrieve a previous key, otherwise fail test</span>
+
+<span class="sd">        {&quot;id&quot;: &quot;TST005_KeyGet&quot;,         &quot;enable&quot;: true },</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
+
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_DELAY</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_RND_ENABLE</span><span class="p">)</span>
+
+        <span class="n">keys</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">get_keys</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">keys</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;key0&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;ERROR key[0]: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;NOT FOUND!&quot;</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_FAIL</span><span class="p">)</span>  <span class="c1"># always last line of test</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;got key[0]: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">keys</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;key0&quot;</span><span class="p">,</span> <span class="s2">&quot;NOT FOUND!&quot;</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span>  <span class="c1"># always last line of test</span>
+
+    <span class="k">def</span> <span class="nf">TST006_RsrcLock</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Demonstrate locking of a resource in shared_state</span>
+<span class="sd">        - lock a resource for some time, and then release</span>
+<span class="sd">        - note the hold time comes from the test script</span>
+<span class="sd">        - this is useful for a piece of test equipment that is shared across channels</span>
+
+<span class="sd">        {&quot;id&quot;: &quot;TST006_RsrcLock&quot;,       &quot;enable&quot;: true, &quot;args&quot;: {&quot;holdTime&quot;: 1}, &quot;timeout&quot;: 60 },</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
+
+        <span class="n">hold_time</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;holdTime&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>  <span class="c1"># a safe way to get parms, a default backup</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;waiting for my_resource...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shared_lock</span><span class="p">(</span><span class="s2">&quot;my_resource&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+        <span class="k">while</span> <span class="n">hold_time</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;my_resource is locked for </span><span class="si">{}</span><span class="s2"> seconds&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">hold_time</span><span class="p">),</span> <span class="n">ovrwrite_last_line</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">hold_time</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shared_lock</span><span class="p">(</span><span class="s2">&quot;my_resource&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;my_resource is free&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span>  <span class="c1"># always last line of test</span>
+
+    <span class="k">def</span> <span class="nf">TST007_HWDriver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; How to get a driver that was initialized when script was loaded</span>
+<span class="sd">        - when the script is loaded, HW driver are initialized and stored in the shared</span>
+<span class="sd">          state.  The format of the return data is,</span>
+
+<span class="sd">          {&quot;channel&quot;: idx, &quot;type&quot;: type, &quot;obj&quot;: d}</span>
+<span class="sd">          where d:  {&#39;id&#39;: &lt;int&gt;, &quot;version&quot;: &lt;version&gt;, &lt;&quot;key&quot;: &quot;value&quot;&gt;, ...}</span>
+
+<span class="sd">        - how the &quot;obj&quot; field depends on the HW driver</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
+
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_DELAY</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_RND_ENABLE</span><span class="p">)</span>
+
+        <span class="n">drivers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_get_drivers</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">driver</span> <span class="ow">in</span> <span class="n">drivers</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;found driver: </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">driver</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">],</span>
+                                                            <span class="n">driver</span><span class="p">[</span><span class="s2">&quot;obj&quot;</span><span class="p">][</span><span class="s2">&quot;id&quot;</span><span class="p">],</span>
+                                                            <span class="n">driver</span><span class="p">[</span><span class="s2">&quot;obj&quot;</span><span class="p">][</span><span class="s2">&quot;version&quot;</span><span class="p">]))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span>  <span class="c1"># always last line of test</span>
+
+    <span class="k">def</span> <span class="nf">TST008_TextInput</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Text Input Box</span>
+<span class="sd">        - input text boxes in production are probably a bad idea unless the data</span>
+<span class="sd">          is coming from a scanner.  User input error correction is not something</span>
+<span class="sd">          scalable in production setting.</span>
+
+<span class="sd">        {&quot;id&quot;: &quot;TST008_TextInput&quot;,      &quot;enable&quot;: true, &quot;timeout&quot;: 10 },</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>   <span class="c1"># always first line of test</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;Please Enter Text!&quot;</span><span class="p">)</span>
+
+        <span class="n">user_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_textbox</span><span class="p">(</span><span class="s2">&quot;Enter Some Text:&quot;</span><span class="p">,</span> <span class="s2">&quot;change&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">user_text</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;Text: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">user_text</span><span class="p">[</span><span class="s2">&quot;textbox&quot;</span><span class="p">]))</span>
+            <span class="c1"># Note: ResultAPI.UNIT_STRING is used to format the measurement correctly in JSON</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_result</span><span class="p">,</span> <span class="n">_bullet</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span><span class="s2">&quot;input&quot;</span><span class="p">,</span> <span class="n">user_text</span><span class="p">[</span><span class="s2">&quot;textbox&quot;</span><span class="p">],</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_STRING</span><span class="p">)</span>
+            <span class="c1"># qualify the text here, and override _result if required</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># operator probably times out...</span>
+            <span class="n">_result</span> <span class="o">=</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_FAIL</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="n">user_text</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;err&quot;</span><span class="p">,</span> <span class="s2">&quot;UNKNOWN ERROR&quot;</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">_result</span><span class="p">)</span>  <span class="c1"># always last line of test</span>
+
+    <span class="k">def</span> <span class="nf">TST009_LogPctProgress</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Demo a log bullet with increasing percent</span>
+
+<span class="sd">        {&quot;id&quot;: &quot;TST008_TextInput&quot;,      &quot;enable&quot;: true, &quot;timeout&quot;: 10 },</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
+
+        <span class="n">percent</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">percent</span> <span class="o">&lt;=</span> <span class="mi">100</span><span class="p">:</span>
+            <span class="n">bar</span> <span class="o">=</span> <span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="mi">40</span> <span class="o">*</span> <span class="n">percent</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Completed </span><span class="si">{:3d}</span><span class="s2">% </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">percent</span><span class="p">,</span> <span class="n">bar</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">ovrwrite_last_line</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_DELAY</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_RND_ENABLE</span><span class="p">)</span>
+            <span class="n">percent</span> <span class="o">+=</span> <span class="mi">10</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span>  <span class="c1"># always last line of test</span>
+
+    <span class="k">def</span> <span class="nf">TST010_BlobUnknown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Blob Unknown</span>
+<span class="sd">        - create a string of random characters using BLOB_UNKNOWN</span>
+
+<span class="sd">            {&quot;id&quot;: &quot;TST010_BlobUnknown&quot;,    &quot;enable&quot;: true },</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>   <span class="c1"># always first line of test</span>
+
+        <span class="n">myBlob</span> <span class="o">=</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">BLOB_UNKNOWN</span>
+        <span class="c1"># key &#39;data&#39; is automatically created, or you may add your own keys</span>
+        <span class="n">myBlob</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1000</span><span class="p">))</span>
+        <span class="c1">#myBlob[&quot;my_other_key&quot;] = json.dumps(dict(k1=&quot;data1&quot;, k2=1.23))</span>
+        <span class="n">success</span><span class="p">,</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span><span class="s2">&quot;random&quot;</span><span class="p">,</span> <span class="n">myBlob</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_INTERNAL_ERROR</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span>  <span class="c1"># always last line of test</span>
+
+    <span class="k">def</span> <span class="nf">TST011_BlobXY</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Blob XY Plots</span>
+
+<span class="sd">        An example of creating a waveform, with a template to fit</span>
+<span class="sd">        - testing wave fitting the template is beyond the scope of this example</span>
+
+<span class="sd">        {&quot;id&quot;: &quot;TST011_BlobXY&quot;,    &quot;enable&quot;: true },</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>   <span class="c1"># always first line of test</span>
+        <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">sin</span><span class="p">,</span> <span class="n">arange</span>
+
+        <span class="n">myPlotFigure</span> <span class="o">=</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">BLOB_BOKEH_FIGURE</span>
+        <span class="n">myPlotFigure</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Voltage vs Current&quot;</span>
+        <span class="n">myPlotFigure</span><span class="p">[</span><span class="s2">&quot;x_axis_label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Current&quot;</span>
+        <span class="n">myPlotFigure</span><span class="p">[</span><span class="s2">&quot;y_axis_label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Voltage&quot;</span>
+
+        <span class="n">myPlotBlob</span> <span class="o">=</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">BLOB_PLOTXY</span>
+        <span class="n">myPlotBlob</span><span class="p">[</span><span class="s2">&quot;BLOB_BOKEH_FIGURE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">myPlotFigure</span>
+
+        <span class="c1"># this is the waveform, could come from a scope, artificially generated example</span>
+        <span class="n">myPlot</span> <span class="o">=</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">BLOB_PLOTXY_PLOT</span>
+        <span class="n">myPlot</span><span class="p">[</span><span class="s2">&quot;legend&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;sin wave&quot;</span>
+        <span class="n">myPlot</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">3.2</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>  <span class="c1"># hundreds of data points...</span>
+        <span class="n">myPlot</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">myPlot</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">myPlotBlob</span><span class="p">[</span><span class="s2">&quot;plots&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">myPlot</span><span class="p">))</span>
+
+        <span class="c1"># upper template</span>
+        <span class="n">myPlot</span> <span class="o">=</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">BLOB_PLOTXY_PLOT</span>
+        <span class="n">myPlot</span><span class="p">[</span><span class="s2">&quot;legend&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;upper&quot;</span>
+        <span class="n">myPlot</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.2</span><span class="p">,</span> <span class="mf">3.2</span><span class="p">]</span>
+        <span class="n">myPlot</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">]</span>
+        <span class="n">myPlotBlob</span><span class="p">[</span><span class="s2">&quot;plots&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">myPlot</span><span class="p">))</span>
+
+        <span class="c1"># lower template</span>
+        <span class="n">myPlot</span> <span class="o">=</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">BLOB_PLOTXY_PLOT</span>
+        <span class="n">myPlot</span><span class="p">[</span><span class="s2">&quot;legend&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;lower&quot;</span>
+        <span class="n">myPlot</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">1.3</span><span class="p">,</span> <span class="mf">1.8</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">]</span>
+        <span class="n">myPlot</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+        <span class="n">myPlotBlob</span><span class="p">[</span><span class="s2">&quot;plots&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">myPlot</span><span class="p">))</span>
+
+        <span class="c1"># save the blob of data</span>
+        <span class="n">success</span><span class="p">,</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span><span class="s2">&quot;sin&quot;</span><span class="p">,</span> <span class="n">myPlotBlob</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_INTERNAL_ERROR</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="c1"># here (the measurement) would be code to determine if waveform fits into template</span>
+        <span class="n">within_template</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># or False</span>
+
+        <span class="c1"># store measurement result</span>
+        <span class="n">success</span><span class="p">,</span> <span class="n">_result</span><span class="p">,</span> <span class="n">_bullet</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span><span class="s2">&quot;template&quot;</span><span class="p">,</span> <span class="n">within_template</span><span class="p">,</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_BOOLEAN</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="n">_bullet</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">_result</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span>  <span class="c1"># always last line of test</span>
+
+    <span class="k">def</span> <span class="nf">TST012_JSONB</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; postgres JSONB object example</span>
+
+<span class="sd">        {&quot;id&quot;: &quot;TST012_JSONB&quot;,          &quot;enable&quot;: true },</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>   <span class="c1"># always first line of test</span>
+
+        <span class="n">my_jsonb</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;serialNum&quot;</span><span class="p">:</span> <span class="mi">123456789</span><span class="p">}</span>
+        <span class="n">jsonb</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">getCustomJSONB</span><span class="p">()</span>
+        <span class="n">jsonb</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">my_jsonb</span><span class="p">)</span>
+        <span class="n">success</span><span class="p">,</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">setCustomJSONB</span><span class="p">(</span><span class="n">jsonb</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_INTERNAL_ERROR</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span>  <span class="c1"># always last line of test</span>
+</pre></div>
+</div>
+<p>And here is the script that drives the program,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Example</span><span class="p">:</span> <span class="n">Shows</span> <span class="n">most</span> <span class="n">of</span> <span class="nb">all</span> <span class="n">the</span> <span class="n">features</span> <span class="n">of</span> <span class="n">test</span> <span class="n">portal</span> <span class="n">UI</span> <span class="p">(</span><span class="k">except</span> <span class="n">subs</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="s2">&quot;info&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="o">//</span> <span class="n">info</span> <span class="ow">is</span> <span class="n">captured</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">result</span> <span class="n">record</span> <span class="ow">and</span> <span class="n">can</span> <span class="n">be</span> <span class="n">searched</span><span class="o">/</span><span class="n">filtered</span> <span class="ow">in</span> <span class="n">dB</span>
+    <span class="o">//</span> <span class="n">Cannot</span> <span class="n">add</span> <span class="n">fields</span> <span class="n">here</span> <span class="n">without</span> <span class="n">updating</span> <span class="n">the</span> <span class="n">result</span> <span class="n">record</span> <span class="n">handler</span> <span class="ow">and</span> <span class="n">backend</span> <span class="n">database</span>
+    <span class="s2">&quot;product&quot;</span><span class="p">:</span> <span class="s2">&quot;widget_1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;bom&quot;</span><span class="p">:</span> <span class="s2">&quot;B00012-001&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;lot&quot;</span><span class="p">:</span> <span class="s2">&quot;95035&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="s2">&quot;canada/ontario/milton&quot;</span>
+    <span class="o">//</span> <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="s2">&quot;something&quot;</span>  <span class="p">(</span><span class="n">optional</span><span class="p">)</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="o">//</span> <span class="n">fail_fast</span><span class="p">:</span> <span class="k">if</span> <span class="n">true</span> <span class="p">(</span><span class="n">default</span><span class="p">),</span> <span class="n">testing</span> <span class="n">will</span> <span class="n">stop</span> <span class="n">on</span> <span class="n">first</span> <span class="n">failed</span> <span class="n">test</span>
+    <span class="s2">&quot;fail_fast&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="o">//</span> <span class="n">channel_hw_driver</span><span class="p">:</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">code</span> <span class="n">to</span> <span class="n">initialize</span> <span class="n">the</span> <span class="n">test</span> <span class="n">environment</span><span class="p">,</span> <span class="n">must</span> <span class="n">be</span> <span class="n">specified</span>
+    <span class="s2">&quot;drivers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;public.prism.drivers.fake.hwdrv_fake&quot;</span><span class="p">]</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;tests&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="o">//</span> <span class="n">module</span> <span class="ow">is</span> <span class="n">path</span> <span class="n">to</span> <span class="n">python</span> <span class="n">code</span> <span class="n">supporting</span> <span class="n">this</span> <span class="n">test</span>
+      <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;public.prism.scripts.example.prod_v0.tst00xx&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;options&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="o">//</span> <span class="n">fail_fast</span><span class="p">:</span> <span class="k">if</span> <span class="n">true</span> <span class="p">(</span><span class="n">default</span><span class="p">),</span> <span class="n">testing</span> <span class="n">will</span> <span class="n">stop</span> <span class="n">on</span> <span class="n">first</span> <span class="n">failed</span> <span class="n">test</span><span class="p">,</span> <span class="n">overrides</span> <span class="n">config</span> <span class="n">section</span>
+        <span class="s2">&quot;fail_fast&quot;</span><span class="p">:</span> <span class="n">true</span>
+        <span class="o">//</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">defaults</span> <span class="n">to</span> <span class="mi">10</span> <span class="n">seconds</span><span class="p">,</span> <span class="n">but</span> <span class="n">can</span> <span class="n">be</span> <span class="n">overridden</span> <span class="n">here</span><span class="p">,</span> <span class="ow">or</span> <span class="ow">in</span> <span class="n">a</span> <span class="n">test</span> <span class="n">item</span> <span class="p">(</span><span class="n">below</span><span class="p">)</span>
+        <span class="o">//</span><span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">20</span>
+        <span class="o">//</span>
+        <span class="o">//</span> <span class="n">Other</span> <span class="n">options</span> <span class="n">may</span> <span class="n">be</span> <span class="n">added</span> <span class="n">here</span> <span class="k">for</span> <span class="n">your</span> <span class="n">specific</span> <span class="n">use</span> <span class="n">cases</span><span class="o">.</span>
+        <span class="o">//</span> <span class="n">Options</span> <span class="n">here</span> <span class="n">are</span> <span class="n">available</span> <span class="n">to</span> <span class="n">each</span> <span class="n">item</span> <span class="n">python</span> <span class="n">coded</span> <span class="n">implementation</span><span class="o">.</span>
+        <span class="o">//</span> <span class="n">Think</span> <span class="n">of</span> <span class="n">these</span> <span class="n">options</span> <span class="n">like</span> <span class="k">global</span> <span class="n">variable</span> <span class="n">to</span> <span class="nb">all</span> <span class="n">test</span> <span class="n">items</span> <span class="ow">in</span> <span class="n">this</span> <span class="n">module</span><span class="o">.</span>
+      <span class="p">},</span>
+      <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST0xxSETUP&quot;</span><span class="p">,</span>           <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span> <span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST000_Meas&quot;</span><span class="p">,</span>           <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">}},</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST001_Meas&quot;</span><span class="p">,</span>           <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
+                                        <span class="o">//</span> <span class="n">fail</span><span class="p">:</span> <span class="n">this</span> <span class="ow">is</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="s1">&#39;fid&#39;</span> <span class="ow">and</span> <span class="s1">&#39;msg&#39;</span> <span class="n">that</span> <span class="n">get</span> <span class="n">displayed</span> <span class="ow">and</span>
+                                        <span class="o">//</span>       <span class="n">recorded</span> <span class="k">with</span> <span class="n">the</span> <span class="n">test</span> <span class="n">record</span><span class="o">.</span>  <span class="n">The</span> <span class="n">python</span> <span class="n">code</span> <span class="k">for</span> <span class="n">this</span>
+                                        <span class="o">//</span>       <span class="n">test</span> <span class="n">item</span> <span class="n">assigns</span> <span class="n">which</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">the</span> <span class="nb">list</span> <span class="n">best</span> <span class="n">represents</span>
+                                        <span class="o">//</span>       <span class="n">the</span> <span class="n">failure</span> <span class="n">mode</span><span class="o">.</span>  <span class="n">This</span> <span class="n">information</span> <span class="ow">is</span> <span class="n">to</span> <span class="n">assist</span> <span class="n">repair</span><span class="o">.</span>
+                                        <span class="s2">&quot;fail&quot;</span><span class="p">:</span> <span class="p">[</span> <span class="p">{</span><span class="s2">&quot;fid&quot;</span><span class="p">:</span> <span class="s2">&quot;TST000-0&quot;</span><span class="p">,</span> <span class="s2">&quot;msg&quot;</span><span class="p">:</span> <span class="s2">&quot;Component apple R1&quot;</span><span class="p">},</span>
+                                                  <span class="p">{</span><span class="s2">&quot;fid&quot;</span><span class="p">:</span> <span class="s2">&quot;TST000-1&quot;</span><span class="p">,</span> <span class="s2">&quot;msg&quot;</span><span class="p">:</span> <span class="s2">&quot;Component banana R1&quot;</span><span class="p">}]</span> <span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST002_Skip&quot;</span><span class="p">,</span>           <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">false</span> <span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST003_Buttons&quot;</span><span class="p">,</span>        <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">10</span> <span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST004_KeyAdd&quot;</span><span class="p">,</span>         <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span> <span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST005_KeyGet&quot;</span><span class="p">,</span>         <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span> <span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST006_RsrcLock&quot;</span><span class="p">,</span>       <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;holdTime&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">60</span> <span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST007_HWDriver&quot;</span><span class="p">,</span>       <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span> <span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST008_TextInput&quot;</span><span class="p">,</span>      <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">10</span> <span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST009_LogPctProgress&quot;</span><span class="p">,</span> <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">15</span> <span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST010_BlobUnknown&quot;</span><span class="p">,</span>    <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span> <span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST011_BlobXY&quot;</span><span class="p">,</span>         <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span> <span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST012_JSONB&quot;</span><span class="p">,</span>          <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span> <span class="p">},</span>
+
+        <span class="o">//</span> <span class="n">always</span> <span class="n">called</span><span class="p">,</span> <span class="n">no</span> <span class="n">matter</span> <span class="k">if</span> <span class="n">test</span> <span class="n">fails</span> <span class="n">above</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST0xxTEARDOWN&quot;</span><span class="p">,</span>        <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span> <span class="p">},</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="measurements">
+<h2>Measurements<a class="headerlink" href="#measurements" title="Permalink to this headline">¶</a></h2>
+<p>Measurements are typically made by your test programs to decide on Pass/Fail.  Measurements are stored in
+a results (JSON) file and sent to a backend <cite>Lente</cite> database.  What measurements to save are up to your requirements.
+The Prism platform has an API to make storing measurements easy, and in a prescriptive way, so that these results
+can be analyzed from the backend SQL database.</p>
+<p>Example of measurement API is show in the example above, but are reviewed here in detail.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">measurement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_NONE</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">force_fail</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Check and store a measurement</span>
+<span class="sd">    - performs a check on the value, returning one of ResultAPI.RECORD_RESULT_*</span>
+<span class="sd">    - all values are stored as strings in the dB, converted here</span>
+
+<span class="sd">    :param name: must be unique per test item</span>
+<span class="sd">    :param force_fail: when set, forces measurement to fail</span>
+<span class="sd">    :param min: min limit (int or float), None to ignore</span>
+<span class="sd">    :param max: min limit (int or float), None to ignore</span>
+<span class="sd">    :param value: any</span>
+<span class="sd">    :param unit: one of self.UNIT_*</span>
+<span class="sd">    :return: success, result, msg</span>
+<span class="sd">        success: True: measurement accepted</span>
+<span class="sd">                 False: a error occurred</span>
+<span class="sd">        result: one of ResultAPI.RECORD_RESULT_*</span>
+<span class="sd">                (can be passed into self.item_end(), see examples)</span>
+<span class="sd">        msg: if not success, this is error message</span>
+<span class="sd">             if success, this is human friendly message of the measurment</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">name</span></code> - this will be appended to the full name of the test, which is the path to the python
+program, the program filename, the class method, and finally this name.  As such the final test
+name is a unique identifier.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It is important that test measurements have a unique <cite>name</cite> so that any particular measurement
+can be searched for in the SQL database.  If a duplicate <cite>name</cite> is used, <cite>measurement()</cite> will
+fail with RECORD_RESULT_UNKNOWN.</p>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">value</span></code> - the quantity to be tested.  The instance type of the value determines the behaviour
+of the testing and the requirements of ‘min’ and ‘max’.  Valid types are int, float, bool, and str.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For boolean type, <cite>measurement()</cite> will test that <cite>value</cite> is True.  If a <cite>value</cite> of False is
+a PASS, you will need to invert it before calling <cite>measurement()</cite>.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For integer and float types, <cite>measurement()</cite> will test <cite>min &lt;= value &lt;= max</cite>.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For str (string) types, <cite>measurement()</cite> will always PASS.  <cite>min</cite> and <cite>max</cite> must be set to None.
+String types are useful for storing serial numbers in the database.</p>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">min</span></code> - minimum quantity to test on <code class="docutils literal notranslate"><span class="pre">value</span></code>.  Can only be of type <cite>int</cite>, <cite>float</cite>, or <cite>None</cite>.
+Type <cite>None</cite> is used for types of <code class="docutils literal notranslate"><span class="pre">value</span></code> that do not use <cite>min</cite> or <cite>max</cite>, for example, when <code class="docutils literal notranslate"><span class="pre">value</span></code>
+is a boolean or string type, <cite>min</cite> and <cite>max</cite> must be None.</p>
+<p><code class="docutils literal notranslate"><span class="pre">max</span></code> - maximum quantity to test on <code class="docutils literal notranslate"><span class="pre">value</span></code>.  Can only be of type <cite>int</cite>, <cite>float</cite>, or <cite>None</cite>.
+Type <cite>None</cite> is used for types of <code class="docutils literal notranslate"><span class="pre">value</span></code> that do not use <cite>min</cite> or <cite>max</cite>, for example, when <code class="docutils literal notranslate"><span class="pre">value</span></code>
+is a boolean or string type, <cite>min</cite> and <cite>max</cite> must be None.</p>
+<p><code class="docutils literal notranslate"><span class="pre">units</span></code> - the units of measurement to be stored in the result.  The units of measurement are not
+used to determine the type of test to do on <code class="docutils literal notranslate"><span class="pre">value</span></code>. Valid units come from,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ResultAPI</span><span class="p">(</span><span class="n">Const</span><span class="p">):</span>
+    <span class="o">...</span>
+    <span class="n">UNIT_OHMS</span> <span class="o">=</span> <span class="s2">&quot;Ohms&quot;</span>
+    <span class="n">UNIT_DB</span> <span class="o">=</span> <span class="s2">&quot;dB&quot;</span>
+    <span class="n">UNIT_VOLTS</span> <span class="o">=</span> <span class="s2">&quot;Volts&quot;</span>
+    <span class="n">UNIT_CURRENT</span> <span class="o">=</span> <span class="s2">&quot;Amps&quot;</span>
+    <span class="n">UNIT_STRING</span> <span class="o">=</span> <span class="s2">&quot;STR&quot;</span>
+    <span class="n">UNIT_INT</span> <span class="o">=</span> <span class="s2">&quot;Integer&quot;</span>
+    <span class="n">UNIT_FLOAT</span> <span class="o">=</span> <span class="s2">&quot;Float&quot;</span>
+    <span class="n">UNIT_CELSIUS</span> <span class="o">=</span> <span class="s2">&quot;Celsius&quot;</span>
+    <span class="n">UNIT_KELVIN</span> <span class="o">=</span> <span class="s2">&quot;Kelvin&quot;</span>
+    <span class="n">UNIT_NEWTON</span> <span class="o">=</span> <span class="s2">&quot;Newton&quot;</span>
+    <span class="n">UNIT_PASCAL</span> <span class="o">=</span> <span class="s2">&quot;Pascal&quot;</span>
+    <span class="n">UNIT_BAR</span> <span class="o">=</span> <span class="s2">&quot;Bar&quot;</span>
+    <span class="n">UNIT_METER</span> <span class="o">=</span> <span class="s2">&quot;Meter&quot;</span>
+    <span class="n">UNIT_MILLIMETER</span> <span class="o">=</span> <span class="s2">&quot;Millimeter&quot;</span>
+    <span class="n">UNIT_SECONDS</span> <span class="o">=</span> <span class="s2">&quot;Seconds&quot;</span>
+    <span class="n">UNIT_MILLISECONDS</span> <span class="o">=</span> <span class="s2">&quot;Milliseconds&quot;</span>
+    <span class="n">UNIT_MICROSECONDS</span> <span class="o">=</span> <span class="s2">&quot;Microseconds&quot;</span>
+    <span class="n">UNIT_KILOGRAM</span> <span class="o">=</span> <span class="s2">&quot;Kilogram&quot;</span>
+    <span class="n">UNIT_GRAM</span> <span class="o">=</span> <span class="s2">&quot;gram&quot;</span>
+    <span class="n">UNIT_LITRE</span> <span class="o">=</span> <span class="s2">&quot;litre&quot;</span>
+    <span class="n">UNIT_BOOLEAN</span> <span class="o">=</span> <span class="s2">&quot;Boolean&quot;</span>
+    <span class="n">UNIT_CANDELA</span> <span class="o">=</span> <span class="s2">&quot;candela&quot;</span>
+    <span class="n">UNIT_NONE</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<p>Measurements are called thru the <code class="docutils literal notranslate"><span class="pre">ctx.record.measurement()</span></code> API like this,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">myTest</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>   <span class="c1"># always first line of test</span>
+
+    <span class="n">value</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">some_value_from_test_equipment</span><span class="o">&gt;</span>
+    <span class="n">success</span><span class="p">,</span> <span class="n">_result</span><span class="p">,</span> <span class="n">_bullet</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span><span class="s2">&quot;apples&quot;</span><span class="p">,</span>
+                                                       <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+                                                       <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_DB</span><span class="p">,</span>
+                                                       <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">min</span><span class="p">,</span>
+                                                       <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="n">_bullet</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">_result</span><span class="p">)</span>  <span class="c1"># always last line of test</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>calling <code class="docutils literal notranslate"><span class="pre">ctx.record.measurement()</span></code> means that this value will be in the backend database</p>
+<ul>
+<li><p>The stored <cite>name</cite> of the test will be “myTest.apples”.</p></li>
+</ul>
+</li>
+<li><p>three parameters are returned, shown above as <code class="docutils literal notranslate"><span class="pre">success,</span> <span class="pre">_result,</span> <span class="pre">_bullet</span></code></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">success</span></code> boolean indicating if the function was called successfully (not the result of the measurement).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_bullet</span></code> string suitable for printing to the log via <code class="docutils literal notranslate"><span class="pre">self.log_bullet()</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_result</span></code> is meant to be sent to <code class="docutils literal notranslate"><span class="pre">self.item_end()</span></code> as shown and thus the state of the test is set (Pass or Fail)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_result</span></code> may cause the program to take different action and not affect the state of the test item simply
+by not sending the result to <code class="docutils literal notranslate"><span class="pre">self.item_end()</span></code></p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="binning-failures">
+<h2>Binning Failures<a class="headerlink" href="#binning-failures" title="Permalink to this headline">¶</a></h2>
+<p>When a failure occurs in production, typically the DUTs are “binned” according to the failure type.  Then the
+“bin” is bulk processed at a later time.  Given this typical process, Prism provides a means of indicating
+a “binning code” when a failure occurs.</p>
+<p>The “binning mechanism” is provided by the <code class="docutils literal notranslate"><span class="pre">fail</span></code> field for the test item in the script.  There is a list
+of binning failure IDs (<code class="docutils literal notranslate"><span class="pre">fid</span></code>) with a corresponding <code class="docutils literal notranslate"><span class="pre">msg</span></code> for the user in the script.  This is shown in the
+example <code class="docutils literal notranslate"><span class="pre">TST000_Meas</span></code> above.  Repeated here.</p>
+<p>Example Notes:</p>
+<ul class="simple">
+<li><p>Two measurements are taken</p></li>
+<li><p>The measurement results are stored in a list, <code class="docutils literal notranslate"><span class="pre">measurement_results</span></code>.  This list will be passed
+to <code class="docutils literal notranslate"><span class="pre">self.item_end()</span></code> so that all the results are considered by the system.  If any one of these results
+is a FAIL, the test item will FAIL.</p></li>
+<li><p>There is a co-operation between the test script and the test code as per the index to the type of failure.
+This is coded in the constants <code class="docutils literal notranslate"><span class="pre">FAIL_APPLE</span></code> and <code class="docutils literal notranslate"><span class="pre">FAIL_BANANNA</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ctx.record.fail_msg()</span></code> is used to set the user facing “binning” message</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">fid</span></code> text represents the “binning” code</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">msg</span></code> is there to provide a hint to the test engineer of where the problem might be</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST000_Meas&quot;</span><span class="p">,</span>  <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
+                       <span class="c1"># fail: this is a list of &#39;fid&#39; and &#39;msg&#39; that get displayed and</span>
+                       <span class="c1">#       recorded with the test record.  The python code for this</span>
+                       <span class="c1">#       test item assigns which item in the list best represents</span>
+                       <span class="c1">#       the failure mode.  This information is to assist repair.</span>
+                       <span class="s2">&quot;fail&quot;</span><span class="p">:</span> <span class="p">[</span> <span class="p">{</span><span class="s2">&quot;fid&quot;</span><span class="p">:</span> <span class="s2">&quot;TST000-0&quot;</span><span class="p">,</span> <span class="s2">&quot;msg&quot;</span><span class="p">:</span> <span class="s2">&quot;Component apple R1&quot;</span><span class="p">},</span>
+                                 <span class="p">{</span><span class="s2">&quot;fid&quot;</span><span class="p">:</span> <span class="s2">&quot;TST000-1&quot;</span><span class="p">,</span> <span class="s2">&quot;msg&quot;</span><span class="p">:</span> <span class="s2">&quot;Component banana R1&quot;</span><span class="p">}]</span> <span class="p">},</span>
+</pre></div>
+</div>
+<p>Program code,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">TST000_Meas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Measurement example, with multiple failure messages</span>
+<span class="sd">    - example of taking multiple measurements, and sending as a list of results</span>
+<span class="sd">    - if any test fails, this test item fails</span>
+
+<span class="sd">        {&quot;id&quot;: &quot;TST000_Meas&quot;,    &quot;enable&quot;: true, &quot;args&quot;: {&quot;min&quot;: 0, &quot;max&quot;: 10},</span>
+<span class="sd">                                 &quot;fail&quot;: [ {&quot;fid&quot;: &quot;TST000-0&quot;, &quot;msg&quot;: &quot;Component apple R1&quot;},</span>
+<span class="sd">                                           {&quot;fid&quot;: &quot;TST000-1&quot;, &quot;msg&quot;: &quot;Component banana R1&quot;}] },</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>   <span class="c1"># always first line of test</span>
+
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_DELAY</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_RND_ENABLE</span><span class="p">)</span>
+
+    <span class="n">FAIL_APPLE</span>   <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># indexes into the &quot;fail&quot; list, just for code readability</span>
+    <span class="n">FAIL_BANANNA</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="n">measurement_results</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># list for all the coming measurements...</span>
+
+    <span class="c1"># Apples measurement...</span>
+    <span class="n">success</span><span class="p">,</span> <span class="n">_result</span><span class="p">,</span> <span class="n">_bullet</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span><span class="s2">&quot;apples&quot;</span><span class="p">,</span>
+                                                       <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+                                                       <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_DB</span><span class="p">,</span>
+                                                       <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">min</span><span class="p">,</span>
+                                                       <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_INTERNAL_ERROR</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="c1"># if failed, there is a msg in script to attach to the record, for repair purposes</span>
+    <span class="k">if</span> <span class="n">_result</span> <span class="o">==</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_FAIL</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">fail</span><span class="p">[</span><span class="n">FAIL_APPLE</span><span class="p">]</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">fail_msg</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="n">_bullet</span><span class="p">)</span>
+    <span class="n">measurement_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_result</span><span class="p">)</span>
+
+    <span class="c1"># Bananas measurement...</span>
+    <span class="n">success</span><span class="p">,</span> <span class="n">_result</span><span class="p">,</span> <span class="n">_bullet</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span><span class="s2">&quot;bananas&quot;</span><span class="p">,</span>
+                                                       <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+                                                       <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_DB</span><span class="p">,</span>
+                                                       <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">min</span><span class="p">,</span>
+                                                       <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_INTERNAL_ERROR</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="c1"># if failed, there is a msg in script to attach to the record, for repair purposes</span>
+    <span class="k">if</span> <span class="n">_result</span> <span class="o">==</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_FAIL</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">fail</span><span class="p">[</span><span class="n">FAIL_BANANNA</span><span class="p">]</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">fail_msg</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="n">_bullet</span><span class="p">)</span>
+    <span class="n">measurement_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_result</span><span class="p">)</span>
+
+    <span class="c1"># Note that we can send a list of measurements</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">item_result_state</span><span class="o">=</span><span class="n">measurement_results</span><span class="p">)</span>  <span class="c1"># always last line of test</span>
+</pre></div>
+</div>
+<p>The idea is that over time, the failure codes and messages can become more accurate and meaningful as
+production failures become understood.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="prism_scripts.html"
+                        title="previous chapter">Scripts</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="prism_drivers.html"
+                        title="next chapter">Drivers</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="prism_drivers.html" title="Drivers"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="prism_scripts.html" title="Scripts"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.6.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="prism_main.html" >Prism</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Programs</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019-2023, Sistemi Corp..
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+    </div>
+  </body>
+</html>

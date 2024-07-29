@@ -1,0 +1,289 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Development &#8212; Sistemi Lente/Prism Test System 0.6.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Test Jigs" href="_jigs.html" />
+    <link rel="prev" title="Results Database" href="_database.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="_jigs.html" title="Test Jigs"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="_database.html" title="Results Database"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.6.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Development</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="development">
+<h1>Development<a class="headerlink" href="#development" title="Permalink to this headline">¶</a></h1>
+<p>This section describes how to get started with your own development.</p>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#your-own-git-repo" id="id1">Your Own Git Repo</a></p></li>
+<li><p><a class="reference internal" href="#repo-setup" id="id2">Repo Setup</a></p>
+<ul>
+<li><p><a class="reference internal" href="#install-git-hooks" id="id3">Install Git Hooks</a></p></li>
+<li><p><a class="reference internal" href="#create-a-tag" id="id4">Create a Tag</a></p></li>
+<li><p><a class="reference internal" href="#change-readme-md" id="id5">Change README.md</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#command-line-development" id="id6">Command Line Development</a></p></li>
+</ul>
+</div>
+<section id="your-own-git-repo">
+<h2><a class="toc-backref" href="#id1">Your Own Git Repo</a><a class="headerlink" href="#your-own-git-repo" title="Permalink to this headline">¶</a></h2>
+<p>You will want to begin with setting up your own Git repo.  If you are unfamiliar with Git,
+then you should read up on it, and/or do some tutorials.  It is beyond the scope
+of this documentation to teach Git.</p>
+<p>There are some 3rd party Git GUI tools that you could use to help, especially if you don’t like
+the command line interface of Git.  Consider these,</p>
+<blockquote>
+<div><p><a class="reference external" href="https://www.gitkraken.com/git-client">https://www.gitkraken.com/git-client</a> (not free, works everywhere)</p>
+<p><a class="reference external" href="https://www.sourcetreeapp.com">https://www.sourcetreeapp.com</a> (free, Windows/Max only)</p>
+<p><a class="reference external" href="https://git-scm.com/download/gui/linux">https://git-scm.com/download/gui/linux</a>  (list of others)</p>
+</div></blockquote>
+<p>To get started, create yourself a guthub account.</p>
+<p>There are two ways to being using Sistemi Lente/Prism with Git,</p>
+<p>The first way, is to fork the <cite>scripts</cite> repo to your own github repo.  This is the
+easiest way to get started, but it has the draw back that all git forks must be
+public, and its very unlikely that you want that.  So the forking method will not be used
+below.</p>
+<p>The second way is to clone scripts and push it to your own repo.  Detailed instructions
+are shown below</p>
+<ul class="simple">
+<li><p>Create a new repository at github.com. (this is <strong>your</strong> repository)</p>
+<ul>
+<li><p>Give it the same name as Sistemi repository, <cite>scripts</cite></p></li>
+<li><p>Don’t initialize it with a README, .gitignore, or license.</p></li>
+</ul>
+</li>
+<li><p>Clone the <cite>scripts</cite> repository repository to your local machine. (if you haven’t done so already)</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">sistemicorp</span><span class="o">/</span><span class="n">scripts</span><span class="o">.</span><span class="n">git</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Note that the <cite>scripts</cite> clone will be created under your current directory.
+Some prefer all their (git) repositories to be under a common directory, so you might actually
+do something like this,</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">~/</span><span class="n">git</span>
+<span class="n">cd</span> <span class="o">~/</span><span class="n">git</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">sistemicorp</span><span class="o">/</span><span class="n">scripts</span><span class="o">.</span><span class="n">git</span>
+<span class="n">cd</span> <span class="n">scripts</span>
+<span class="n">sudo</span> <span class="n">pip3</span> <span class="n">install</span> <span class="o">-</span><span class="n">f</span> <span class="n">requirements</span><span class="o">.</span><span class="n">txt</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Pip install will install all the Python modules needed to run Prism</p>
+<ul>
+<li><p><strong>NOTE:</strong> Do not use/install any other Python modules.</p></li>
+<li><p>If another module is needed, contact Sistemi to have it added to Prism.</p></li>
+</ul>
+</li>
+<li><p>Rename the local repository’s current ‘origin’ to ‘upstream’</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">remote</span> <span class="n">rename</span> <span class="n">origin</span> <span class="n">upstream</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Give the local repository an ‘origin’ that points to your repository</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">remote</span> <span class="n">add</span> <span class="n">origin</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">your</span><span class="o">-</span><span class="n">account</span><span class="o">/</span><span class="n">scripts</span><span class="o">.</span><span class="n">git</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Push the local repository to your repository on github</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="n">master</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Now ‘origin’ points to your repository &amp; ‘upstream’ points to the other repository</p></li>
+<li><p>Create a new branch for your changes with</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="n">my</span><span class="o">-</span><span class="n">feature</span><span class="o">-</span><span class="n">branch</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>You can git commit as usual to your repository</p></li>
+<li><p>To pull changes from Sistemi <cite>scripts</cite> to your master branch use,</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">pull</span> <span class="n">upstream</span> <span class="n">master</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>You want to be able to pull from Sistemi <cite>scripts</cite> occasionally to get Sistemi updates to scripts, and/or
+examples, drivers, etc.</p></li>
+</ul>
+</section>
+<section id="repo-setup">
+<h2><a class="toc-backref" href="#id2">Repo Setup</a><a class="headerlink" href="#repo-setup" title="Permalink to this headline">¶</a></h2>
+<p>Additional steps.</p>
+<section id="install-git-hooks">
+<h3><a class="toc-backref" href="#id3">Install Git Hooks</a><a class="headerlink" href="#install-git-hooks" title="Permalink to this headline">¶</a></h3>
+<p><em>Git Hooks are generally replaced by Git Actions and are beyond the scope of these instructions</em></p>
+<p>In the <cite>scripts</cite> repo, there is a folder called <cite>hooks</cite>.  The contents of this folder
+needs to be copied to <cite>./.git/hooks</cite> folder of your repository.</p>
+<p>Depending on your directory structure, this example command may work,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">git</span><span class="o">/</span><span class="n">scripts</span>
+<span class="n">cp</span> <span class="n">hooks</span><span class="o">/*</span> <span class="o">./</span><span class="n">git</span><span class="o">/</span><span class="n">hooks</span>
+</pre></div>
+</div>
+</section>
+<section id="create-a-tag">
+<h3><a class="toc-backref" href="#id4">Create a Tag</a><a class="headerlink" href="#create-a-tag" title="Permalink to this headline">¶</a></h3>
+<p>The Sistemi system reports the version of things to help keep you organized, including the version of your scripts.</p>
+<p>On whatever branch you decide to “release” your scripts, for example, the “master” branch, create a
+tag on that branch.  The tag <strong>MUST</strong> be of this format,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Name</span><span class="o">-</span><span class="n">V</span><span class="o">.</span><span class="n">v</span>
+
+<span class="n">where</span><span class="p">:</span>
+    <span class="n">Name</span> <span class="o">-</span> <span class="ow">is</span> <span class="n">anything</span> <span class="n">you</span> <span class="n">want</span><span class="p">,</span> <span class="n">keep</span> <span class="n">it</span> <span class="n">short</span><span class="p">,</span> <span class="n">say</span> <span class="o">&lt;</span><span class="mi">8</span> <span class="n">characters</span>
+    <span class="n">V</span> <span class="o">-</span> <span class="ow">is</span> <span class="n">major</span> <span class="n">revision</span><span class="p">,</span> <span class="n">manually</span> <span class="n">increased</span> <span class="n">by</span> <span class="n">YOU</span><span class="p">,</span> <span class="n">be</span> <span class="n">making</span> <span class="n">a</span> <span class="n">new</span> <span class="n">Tag</span>
+    <span class="n">v</span> <span class="o">-</span> <span class="ow">is</span> <span class="n">minor</span> <span class="n">revision</span><span class="p">,</span> <span class="n">manually</span> <span class="n">increased</span> <span class="n">by</span> <span class="n">YOU</span><span class="p">,</span> <span class="n">be</span> <span class="n">making</span> <span class="n">a</span> <span class="n">new</span> <span class="n">Tag</span>
+</pre></div>
+</div>
+<p>Example commands to create (and push) a tag,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="n">master</span>
+<span class="n">git</span> <span class="n">tag</span> <span class="n">MyTest</span><span class="o">-</span><span class="mf">1.0</span>
+<span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="o">--</span><span class="n">tags</span>
+</pre></div>
+</div>
+<p><strong>There should only be one tag in effect at a time, and `scripts` has a tag already, remove that tag,</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="n">master</span>
+<span class="n">git</span> <span class="n">tag</span> <span class="o">--</span><span class="n">delete</span> <span class="n">Scripts</span><span class="o">-</span><span class="mf">0.1</span>
+<span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="o">--</span><span class="n">tags</span>
+</pre></div>
+</div>
+<p>There should only be one tag in effect at a time, so remove a previous tag.  Here is the sequence to change
+the minor version,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="n">master</span>
+<span class="n">git</span> <span class="n">tag</span> <span class="o">--</span><span class="n">delete</span> <span class="n">MyTest</span><span class="o">-</span><span class="mf">1.0</span>
+<span class="n">git</span> <span class="n">tag</span> <span class="n">MyTest</span><span class="o">-</span><span class="mf">1.1</span>
+<span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="o">--</span><span class="n">tags</span>
+</pre></div>
+</div>
+</section>
+<section id="change-readme-md">
+<h3><a class="toc-backref" href="#id5">Change README.md</a><a class="headerlink" href="#change-readme-md" title="Permalink to this headline">¶</a></h3>
+<p>Change this file to suit your needs.  For example, document your script/program naming strategy.</p>
+</section>
+</section>
+<section id="command-line-development">
+<h2><a class="toc-backref" href="#id6">Command Line Development</a><a class="headerlink" href="#command-line-development" title="Permalink to this headline">¶</a></h2>
+<p>Initial development will be done in “headless” mode, whereupon coding is done outside of the GUI used in production.</p>
+<p>A command line version of the core engine of the system is at the top of the <cite>scripts</cite> folder, called <cite>prism_dev.py</cite>.
+The command line help,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>computer:~/git/scripts$ python3 prism_dev.py --help
+usage: prism_dev.py [-h] --script SCRIPT
+
+prism_dev
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --script SCRIPT  Path to script file to run
+
+Usage examples:
+    python3 prism_dev.py --script ./public/prism/scripts/example/prod_v0/prod_0.scr
+</pre></div>
+</div>
+<p>Notes about the command line development environment,</p>
+<ul class="simple">
+<li><p>parallel, multi-threaded, multiple test jigs are not supported</p>
+<ul>
+<li><p>script is run as a single thread - cannot test parallelism</p></li>
+</ul>
+</li>
+<li><p>Results are NOT sent to the Lente Server, however a local Result file with the results
+will be created for inspection purposes.</p></li>
+<li><p>script substitutions are not supported, leaving two options for developers,</p>
+<ul>
+<li><p>rename script <cite>subs</cite> section to something else and populate the subs manually, save this
+script to a new name while developing.  Revert after everything is working.</p></li>
+<li><p>use helper script <cite>prism_subs.py</cite>, which will perform the substitutions.  This helper needs
+to be modified per script it is used on.</p></li>
+</ul>
+</li>
+</ul>
+<p>After your script is running in the command line mode, you can try it in the Prism GUI.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="_database.html"
+                        title="previous chapter">Results Database</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="_jigs.html"
+                        title="next chapter">Test Jigs</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="_jigs.html" title="Test Jigs"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="_database.html" title="Results Database"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.6.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Development</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019-2023, Sistemi Corp..
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+    </div>
+  </body>
+</html>
