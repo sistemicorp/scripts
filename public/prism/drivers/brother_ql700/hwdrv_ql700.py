@@ -201,22 +201,26 @@ class HWDriver(object):
         id = 0
         dev = usb.core.find(find_all=True)
         for d in dev:
-            # print(d) to see all the attributes
-            manu = usb.util.get_string(d, d.iManufacturer)
-            prod = usb.util.get_string(d, d.iProduct)
-            if manu == "Brother" and prod in ["QL-700", ]:
-                self.logger.info("Found {} {}".format(manu, prod))
+            #print(d) #to see all the attributes
+            try:
+                manu = usb.util.get_string(d, d.iManufacturer)
+                prod = usb.util.get_string(d, d.iProduct)
+                if manu == "Brother" and prod in ["QL-700", ]:
+                    self.logger.info("Found {} {}".format(manu, prod))
 
-                p = '/dev/usb/lp0'  # FIXME: when multiple printers exist, need to find file association
+                    p = '/dev/usb/lp0'  # FIXME: when multiple printers exist, need to find file association
 
-                drivers.append({"id": id,
-                                "version": VERSION,
-                                "hwdrv": BrotherQL700(id, p),
-                                "play": None,
-                                "show_pass_fail": None,
-                                "show_msg": None,
-                                "close": None})
-                id += 1
+                    drivers.append({"id": id,
+                                    "version": VERSION,
+                                    "hwdrv": BrotherQL700(id, p),
+                                    "play": None,
+                                    "show_pass_fail": None,
+                                    "show_msg": None,
+                                    "close": None})
+                    id += 1
+
+            except Exception as e:
+                self.logger.warning(e)
 
         if not drivers:
             self.logger.error("printer not found")
@@ -225,8 +229,8 @@ class HWDriver(object):
 
         # do not allow the test script validation step to succeed if can't print a test label
         for d in drivers:
-            id, path = d["printer"].get_id_path()
-            success = d["printer"].print_ruid_barcode("id{}-{}".format(id, path))
+            id, path = d["hwdrv"].get_id_path()
+            success = d["hwdrv"].print_ruid_barcode("id{}-{}".format(id, path))
             if not success:
                 self.logger.error("failed to print")
                 pub_notice("HWDriver:{}: failed to print".format(self.SFN), sender="discover_channels", type=PUB.NOTICES_ERROR)
