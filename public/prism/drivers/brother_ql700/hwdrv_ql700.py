@@ -1,8 +1,16 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2020-2021
+Sistemi Corporation, copyright, all rights reserved, 2020-2024
 Vivian Guthrie, Martin Guthrie
+
+USB Permissions:
+When Prism runs from Docker, it has root permissions so all is good.
+However, when you are developing, your user account will not have USB permissions.
+Use : sudo chmod -R 777 /dev/bus/usb/
+To unlock USB. This is not a great security solution.
+Also need to: sudo adduser $USER lp
+And then reboot for that to take effect.
 
 """
 import logging
