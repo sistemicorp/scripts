@@ -12,8 +12,10 @@
   "config": {
     // fail_fast: if true (default), testing will stop on first failed test
     "fail_fast": true,
-    // channel_hw_driver: list of code to initialize the test environment, must be specified
-    "drivers": ["public.prism.drivers.fake.hwdrv_fake"]
+    // list of driver code to initialize the test environment, must be specified
+    // Drivers may or make not have args
+    "drivers": ["public.prism.drivers.fake.hwdrv_fake",
+                ["public.prism.drivers.fake.hwdrv_fakeArgs", {"k0": 0, "k1": 1}] ]
   },
   "tests": [
     {
