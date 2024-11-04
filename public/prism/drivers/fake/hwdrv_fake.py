@@ -123,5 +123,7 @@ if __name__ == '__main__':
     logger = logging.getLogger()
 
     d = HWDriver()
-    d.discover_channels()
-    logger.info("Number channels: {}".format(d.num_channels()))
+    num_channels, driver_type, drivers = d.discover_channels()
+    logger.info("discover_channels: num channels {}, type {}, drivers {}".format(num_channels,
+                                                                                 driver_type,
+                                                                                 drivers))
