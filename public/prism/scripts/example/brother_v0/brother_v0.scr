@@ -12,7 +12,7 @@
     // fail_fast: if true (default), testing will stop on first failed test
     "fail_fast": false,
     // channel_hw_driver: list of code to initialize the test environment, must be specified
-    "drivers": ["public.prism.drivers.fake.fake",
+    "drivers": ["public.prism.drivers.fake.hwdrv_fake",
                 "public.prism.drivers.brother_ql700.hwdrv_ql700"]
   },
   "tests": [

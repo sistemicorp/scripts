@@ -34,40 +34,63 @@ subs
 This is a section of User configurable substitutions for variables in the script.  For example, if there was a test
 limit that could have two values, the values can be listed as a `subs` field and the user can select which one to use.
 
-Obviously, in a production environment, operators are not typically allowed to arbitrarily change values of test
+In a production environment, operators are not typically allowed to arbitrarily change values of test
 limits or any other setup.  However, in an engineering lab, or new product ramp environment, having an easy method
 to change some parameters might be useful.  This feature does not have to be used.
 
-`subs` are also useful for generating :ref:`prism_travellers:Travellers`.
+Only (logged in) users with a certain role privileges can access `Test Config`, and thus access to GUI controls that
+use the `subs` feature.  Otherwise `subs` are used to create a `Traveller`, which stores the `subs` used.
 
-Here is a full example of what `subs` section could look like,
+`subs` are useful for generating :ref:`prism_travellers:Travellers`.
+
+Here is a full example of what `subs` section could look like (taken from example `prod_1.scr`),
 
 ::
 
   "subs": {
-    # Each item here is described by,
-    # "key":
-    #   "title": "<title>",
-    #   "type" : "<str|num>", "widget": "<textinput|select>",
-    #   "regex": <"regex"|null|omit>, "default": <default>
-    #
-    # Rules:
-    # 1. key must not have any spaces or special characters
-    # 2. regex can be omitted if not applicable
-    #
+    // Each item here is described by,
+    // "<subs_name>":
+    //   "title": "<title>",
+    //   "type" : "<str|num>",
+    //   "widget": "<textinput|select>",
+    //   "regex": <"regex">,  // only for widget == textinput,
+    //                           when regex is satisfied widget turns green
+    //   "choices": [<choice1>, <choice2>, ...],  // only for widget == select
+    //   "default": <default>,
+    //   "subs": // inner dependant subs
+    //           { <key1> : { "subs_name1": {"val": <>, "type": "<str|num>" }, ...},
+    //             <key2> : { "subs_name1": {"val": <>, "type": "<str|num>" }, ...}
+    //           }
+    // }
+    //
+    // Rules:
+    // 1. key must not have any spaces or special characters
+    //
     "Lot": {
       "title": "Lot (format #####)",
       "type" : "str", "widget": "textinput", "regex": "^\\d{5}$", "default": "95035"
     },
     "Loc": {
       "title": "Location",
-      "type" : "str", "widget": "select", "choices": ["canada/ontario/milton", "us/newyork/bufalo"]
+      "type" : "str", "widget": "select", "choices": ["canada/ontario/milton",
+                                                      "us/newyork/buffalo"],
+      // inner dependant substitutions based on user input
+      "subs" : {"canada/ontario/milton": { "TST000Min": { "val": 0.1, "type": "num" }},
+                "us/newyork/buffalo":    { "TST000Min": { "val": 0.2, "type": "num" }}
+      }
     },
     "TST000Max": {
       "title": "TST000 Max Attenuation (db)",
-      "type" : "num", "widget": "select", "choices": [9, 10, 11]
+      "type" : "num", "widget": "select", "choices": [9.0, 10.0, 11.0]
+    },
+    "TST000Enable": {
+      "title": "TST000_Meas Enable",
+      "type" : "str", "widget": "select", "choices": ["true", "false"]
     }
-  },
+
+  // and how it looks in the test item,
+  {"id": "TST000_Meas",     "enable": "%%TST000Enable", "args": {"min": "%%TST000Min", "max": "%%TST000Max"}},
+
 
 ``key``
 
@@ -105,6 +128,13 @@ Here is a full example of what `subs` section could look like,
 * sets the default value for `textinput` ``widget``
 * optional
 
+Inner Subs
+----------
+
+Inner subs allow one User sub to be able to set multiple other subs.  An example is shown in the ``subs`` section
+above.  In the above example, when `Location` is selected by the user, `TST000Min` is assigned a value
+depending on the `Location` selected.
+
 info
 ----
 
@@ -125,10 +155,19 @@ in the Test Config view.
     "bom": "B00012-001",
     # list fields present user choice or fill in
     "lot": "%%Lot",
-    "location": "%%Loc"
+    "location": "%%Loc",
+    // "config": "optional"
   },
 
-``product``, ``bom``, ``lot``, ``location`` are fields that you define a meaning specific to your operation.
+``product`` - 32 character length field.
+
+``bom`` - 32 character length field. Note `bom` stands for Bill of Materials.
+
+``lot`` - 16 character length field.
+
+``location`` - 128 character length field.
+
+``config`` - (optional) 16 character length field.
 
 Defining rules and a naming convention for these fields will help you later when you need to make database searches
 for specific sets of results.  This is important.
@@ -141,23 +180,21 @@ This section sets required variables that Prism uses to drive the test script.
 ::
 
   "config": {
-    "result": "public.prism.result.ResultBaseV1",
-    "fail_fast": false,
+    "fail_fast": true,
     "drivers": ["public.prism.drivers.fake.fake"]
   },
 
-``result``
-
-* sets the result record type
-* this is related to the back end database processing
-* the dot notation is specifying a directory path to the python file to read
-* its possible to extend the backend database to incorporate new fields for your application. See TBD
 
 ``fail_fast``
 
-* this directive tells Prism whether to stop the test script on the first occurrance of a failed test
+* this directive tells Prism whether to stop the test script on the first occurrence of a failed test
 * this directive can be overridden by the directive in the ``options`` section of the ``tests`` section - in other
   words, here it has the least priority
+* it is recommended ``fail_fast`` be set to `true`.
+
+  * Often tests are interdependent, and if one test fails, it often means other tests will fail that depended on
+    that particular function.  What happens then is a cascade of failed tests which my might obscure the root failure.
+  * If tests are mutually exclusive, it may be advantages to set ``fail_fast`` to `false`.
 
 ``drivers``
 
@@ -177,6 +214,8 @@ This section has a list of test definitions
 
 Consider the following ``test`` section, which only has ONE test definition in the JSON list.  An example of more than
 one test definition will be shown later.
+
+See ``public/prism/scripts/example/prod_v0/tst00xx.py`` for usage.
 
 ::
 
@@ -200,13 +239,17 @@ one test definition will be shown later.
 
 ``module``
 
-* a dot notation path to the python code that is associated with this test definition
+* a dot notation path to the Python code that is associated with this test definition
 
 ``options``
 
-* a list of fields assigned values that persist over the execution life of the test definition
-* only ``fail_fast`` is used by the system, which overrides the value used in the ``config`` section
-* you may add fields here as your application requires
+* a list of fields assigned values that persist over the execution life of the test item definition
+* Prism key words,
+
+  * ``fail_fast`` overrides `fail_fast` in the ``config`` section
+  * ``enable`` (defaults to `true`) when set to false, disables all tests in ``items``
+
+* add fields here as your application requires
 * these ``options`` fields are available programmatically to each test ``items``
 
   * for example, you could have a global value assigned here that any test ``items`` can access
@@ -216,7 +259,7 @@ one test definition will be shown later.
 * a list of test ``items``
 * the system will execute these tests in order
 
-  * ``id`` - A unique identifier of the test
+  * ``id`` - A unique identifier of the test, which is also the Python (class) function name in `module`.
   * ``enable`` - `true` or `false`, can be omitted if always enabled
   * ``args`` - a list of key/value pairs of any name/value required by your application
 

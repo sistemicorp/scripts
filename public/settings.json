@@ -25,7 +25,7 @@
   "use_https": false,
 
   // Prism/Lente internal connection password
-  "prism_lente_pw": "mysecret",
+  "prism_lente_pw": "mysecret1",
 
   // Manifest (enable/disable) checking
   // Validates "public/prism" contents (sent by Lente)
@@ -33,13 +33,13 @@
   "manifest_check": false,
 
   // password for scripts package sent from Lente to Lente/Prism
-  "manifest_pw": "mysecret",
+  "manifest_pw": "mysecret2",
 
   // ------------------------------------------------------------------
   // Below are only used by Lente and can be removed for Prism stations
 
   // Lente/Lente internal connection password
-  "lente_lente_pw": "mysecret",
+  "lente_lente_pw": "mysecret3",
 
   // Enter IP Address:port, example "http://35.123.432.190:6595"
   // Use null to disable upstream sending.
@@ -47,6 +47,9 @@
 
   // This Lente computer is pyramid root and creates manifest
   "root_authority": true,
+
+  // automatically sync Prism clients scripts
+  "auto_sync_scripts": true,
 
   "postgres": {
     "resultbasekeysv1": {

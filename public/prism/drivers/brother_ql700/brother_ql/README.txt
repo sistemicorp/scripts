@@ -15,3 +15,9 @@ use usb-devices for more information about all the devices avalible
 
 NOTE:
 you do not need to install CUPS if you use /dev/usb/lp0 as your path to the printer
+
+USB Permissions:
+When Prism runs from Docker, it has root permissions so all is good.
+However, when you are developing, your user account will not have USB permissions.
+Use : sudo chmod -R 777 /dev/bus/usb/
+To unlock USB. This is not a great security solution.

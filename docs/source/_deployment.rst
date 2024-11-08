@@ -128,6 +128,9 @@ shown below and documented inline,
       // This Lente computer is pyramid root and creates manifest
       "root_authority": true,
 
+      // automatically sync Prism clients scripts
+      "auto_sync_scripts": true,
+
       "postgres": {
         "resultbasekeysv1": {
           // !! Change "pw" to a real password for a real deployment,

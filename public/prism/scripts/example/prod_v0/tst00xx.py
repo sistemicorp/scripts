@@ -67,6 +67,9 @@ class tst00xx(TestItem):
         # self.timeout
         #   - boolean indicating if a timeout has occurred
         #   - use in while/for loops to check if a timeout has occurred
+        #     - all loops must check self.timeout and exit loop if asserted
+        #   - use self.timeout_start() to restart the running timer
+        #     - provide optional new value (float seconds)
         #
         # self.item_end([result[s]]) # always last line of test
         #  - result is one of ResultAPI.RECORD_* constants
