@@ -54,8 +54,14 @@
         {"id": "TST012_JSONB",          "enable": true },
 
         // always called, no matter if test fails above
-        {"id": "TST0xxTEARDOWN",        "enable": true },
+        {"id": "TST0xxTEARDOWN",        "enable": true }
       ]
     }
-  ]
+  ],
+  "traveller": {
+    // text to appear in a cell on the Traveller PDF
+    // must be one line (per cell), use \n for newlines
+    "Instructions": "1. On Your Mark.\n2. Get Set.\n3. Go!",
+    "Inspections": "QA: ______________          COUNT IN: ___________ PASS: ___________ FAIL: ____________\nMFG:____________"
+  }
 }
