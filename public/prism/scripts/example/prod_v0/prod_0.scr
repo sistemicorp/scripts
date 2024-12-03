@@ -12,8 +12,10 @@
   "config": {
     // fail_fast: if true (default), testing will stop on first failed test
     "fail_fast": true,
-    // channel_hw_driver: list of code to initialize the test environment, must be specified
-    "drivers": ["public.prism.drivers.fake.hwdrv_fake"]
+    // list of driver code to initialize the test environment, must be specified
+    // Drivers may or may not have args
+    "drivers": ["public.prism.drivers.fake.hwdrv_fake",
+                ["public.prism.drivers.fake.hwdrv_fakeArgs", {"k0": 0, "k1": 1}] ]
   },
   "tests": [
     {
@@ -52,8 +54,14 @@
         {"id": "TST012_JSONB",          "enable": true },
 
         // always called, no matter if test fails above
-        {"id": "TST0xxTEARDOWN",        "enable": true },
+        {"id": "TST0xxTEARDOWN",        "enable": true }
       ]
     }
-  ]
+  ],
+  "traveller": {
+    // text to appear in a cell on the Traveller PDF
+    // must be one line (per cell), use \n for newlines
+    "Instructions": "1. On Your Mark.\n2. Get Set.\n3. Go!",
+    "Inspections": "QA: ______________          COUNT IN: ___________ PASS: ___________ FAIL: ____________\nMFG:____________"
+  }
 }
