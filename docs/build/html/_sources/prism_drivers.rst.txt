@@ -1,24 +1,32 @@
 Drivers
 =======
 
-Drivers are listed in the `config` section of scripts.  For example::
+These are typically pieces of test equipment that are used to measure, stimulate or otherwise "test"
+the device under test (DUT).  Examples of test equipment could be power supplies, oscilloscopes,
+JTAG programmers, etc..
+
+`Drivers` required for a particular DUT are listed in the `config` section of scripts.  For example::
 
       "config": {
         // fail_fast: if true (default), testing will stop on first failed test
         "fail_fast": false,
-        // channel_hw_driver: list of code to initialize the test environment, must be specified
-        "drivers": ["public.prism.drivers.fake.hwdrv_fake"]
+        // list of driver code to initialize the test environment, must be specified
+        // Drivers may or may not have args
+        "drivers": ["public.prism.drivers.fake.hwdrv_fake",
+                    ["public.prism.drivers.fake.hwdrv_fakeArgs", {"k0": 0, "k1": 1}] ]
       },
 
 
 
-The purpose of this file and class is to instantiate your hardware into Prism.  The Drivers files are stored
-in a separate path relative to scripts in order to isolate them.
+Prism will load/init each `driver` that is listed.
 
 The python file specified *MUST* have a class called `HWDriver`.  See the `fake` example for
 implementation details and documentation.
 
 By convention, the driver filename has prefix is `hwdrv_<name>.py`.
+
+The Drivers files are stored by convention in a separate path relative to scripts in order to isolate
+them.  `Drivers` are typically common to test multiple products.
 
 
 Discover Channels
