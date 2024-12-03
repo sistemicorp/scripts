@@ -39,3 +39,22 @@ to emulate the keyboard.
 Once the image is scanned, you `Apply`, `Submit` and the `Test` to proceed
 to the Test View.
 
+User Content
+************
+
+Adding a `traveller` section to the script you may add your own content.
+For example see `public/prism/scripts/example/prod_v0/prod_0.scr`,
+
+::
+
+    {
+      "info": { ... },
+      "config": { ... },
+      "tests": [ ... ],
+      "traveller": {
+        // text to appear in a cell on the Traveller PDF
+        // must be one line (per cell), use \n for newlines
+        "Instructions": "1. On Your Mark.\n2. Get Set.\n3. Go!",
+        "Inspections": "QA: ______________          COUNT IN: ___________ PASS: ___________ FAIL: ____________\nMFG:____________"
+      }
+    }
