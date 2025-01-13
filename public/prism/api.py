@@ -32,6 +32,7 @@ class ResultAPI():
     UNIT_DB = "dB"
     UNIT_DBM = "dBm"
     UNIT_VOLTS = "Volts"
+    UNIT_MILLIVOLTS = "milliVolts"
     UNIT_CURRENT = "Amps"
     UNIT_AMPS = "Amps"
     UNIT_MILLIAMPS = "milliAmps"
