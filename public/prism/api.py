@@ -27,9 +27,16 @@ class ResultAPI():
     # be sure to update UNIT_ALL list.
     # These items will be in the result record and backend database
     UNIT_OHMS = "Ohms"
+    UNIT_KILOOHMS = "KiloOhms"
+    UNIT_MILLIOHMS = "milliOhms"
     UNIT_DB = "dB"
+    UNIT_DBM = "dBm"
     UNIT_VOLTS = "Volts"
+    UNIT_MILLIVOLTS = "milliVolts"
     UNIT_CURRENT = "Amps"
+    UNIT_AMPS = "Amps"
+    UNIT_MILLIAMPS = "milliAmps"
+    UNIT_MICROAMPS = "microAmps"
     UNIT_STRING = "STR"
     UNIT_INT = "Integer"
     UNIT_FLOAT = "Float"
@@ -37,6 +44,7 @@ class ResultAPI():
     UNIT_KELVIN = "Kelvin"
     UNIT_NEWTON = "Newton"
     UNIT_PASCAL = "Pascal"
+    UNIT_KILOPASCAL = "KiloPascal"
     UNIT_BAR = "Bar"
     UNIT_METER = "Meter"
     UNIT_MILLIMETER = "Millimeter"
@@ -44,17 +52,26 @@ class ResultAPI():
     UNIT_MILLISECONDS = "Milliseconds"
     UNIT_MICROSECONDS = "Microseconds"
     UNIT_KILOGRAM = "Kilogram"
+    UNIT_MILLIGRAM = "milligram"
     UNIT_GRAM = "gram"
     UNIT_LITRE = "litre"
     UNIT_BOOLEAN = "Boolean"
     UNIT_CANDELA = "candela"
+    UNIT_HERTZ = "Hertz"
+    UNIT_KILOHERTZ = "KiloHertz"
+    UNIT_MEGAHERTZ = "MegaHertz"
+    UNIT_HENRY = "Henry"
+    UNIT_FARADS = "Farads"
+    UNIT_SIEMENS = "Siemens"
     UNIT_NONE = "None"
 
     # any new units added above need to be included in this list for checking
-    UNIT_ALL = [UNIT_OHMS, UNIT_BOOLEAN, UNIT_NONE, UNIT_STRING, UNIT_VOLTS, UNIT_CELSIUS, UNIT_CURRENT,
-                UNIT_DB, UNIT_FLOAT, UNIT_PASCAL, UNIT_BAR, UNIT_NEWTON, UNIT_METER,
-                UNIT_MILLIMETER, UNIT_INT, UNIT_SECONDS, UNIT_MILLISECONDS, UNIT_MICROSECONDS,
-                UNIT_KILOGRAM, UNIT_GRAM, UNIT_LITRE, UNIT_KELVIN, UNIT_CANDELA]
+    UNIT_ALL = [UNIT_OHMS, UNIT_KILOOHMS, UNIT_MILLIOHMS, UNIT_DB, UNIT_DBM, UNIT_VOLTS, UNIT_MILLIVOLTS,
+                UNIT_CURRENT, UNIT_AMPS, UNIT_MILLIAMPS, UNIT_MICROAMPS, UNIT_STRING, UNIT_INT, UNIT_FLOAT,
+                UNIT_CELSIUS, UNIT_KELVIN, UNIT_NEWTON, UNIT_PASCAL, UNIT_KILOPASCAL, UNIT_BAR, UNIT_METER,
+                UNIT_MILLIMETER, UNIT_SECONDS, UNIT_MILLISECONDS, UNIT_MICROSECONDS, UNIT_KILOGRAM,
+                UNIT_MILLIGRAM, UNIT_GRAM, UNIT_LITRE, UNIT_BOOLEAN, UNIT_CANDELA, UNIT_HERTZ, UNIT_KILOHERTZ,
+                UNIT_MEGAHERTZ, UNIT_HENRY, UNIT_FARADS, UNIT_SIEMENS, UNIT_NONE]
 
     # ===================================================================================
     # BLOB data types
