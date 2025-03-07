@@ -64,7 +64,7 @@ class ResultAPI():
     UNIT_FARADS = "Farads"
     UNIT_SIEMENS = "Siemens"
     UNIT_DEGREE = "Degree"
-    UNIT_RAD = "Rad"
+    UNIT_RADIAN = "Radian"
     UNIT_PERCENT = "Percent"
     UNIT_WATTS = "Watts"
     UNIT_NONE = "None"
@@ -75,7 +75,7 @@ class ResultAPI():
                 UNIT_CELSIUS, UNIT_KELVIN, UNIT_NEWTON, UNIT_PASCAL, UNIT_KILOPASCAL, UNIT_BAR, UNIT_METER,
                 UNIT_MILLIMETER, UNIT_SECONDS, UNIT_MILLISECONDS, UNIT_MICROSECONDS, UNIT_KILOGRAM,
                 UNIT_MILLIGRAM, UNIT_GRAM, UNIT_LITRE, UNIT_BOOLEAN, UNIT_CANDELA, UNIT_HERTZ, UNIT_KILOHERTZ,
-                UNIT_MEGAHERTZ, UNIT_HENRY, UNIT_FARADS, UNIT_SIEMENS, UNIT_DEGREE, UNIT_RAD, UNIT_PERCENT, UNIT_WATTS,
+                UNIT_MEGAHERTZ, UNIT_HENRY, UNIT_FARADS, UNIT_SIEMENS, UNIT_DEGREE, UNIT_RADIAN, UNIT_PERCENT, UNIT_WATTS,
                 UNIT_NONE]
 
     # ===================================================================================
