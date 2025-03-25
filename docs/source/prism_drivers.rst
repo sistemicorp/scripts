@@ -95,6 +95,13 @@ VISA
 ====
 
 VISA is a test equipment control protocol.  See `VISA <https://en.wikipedia.org/wiki/Virtual_instrument_software_architecture>`_
+for more information.
+
+Prism includes these two PyPi VISA modules,
+
+* `pyvisa <https://pypi.org/project/PyVISA>`_
+* `PyVISA-py <https://pypi.org/project/PyVISA-py>`_
+
 
 An example of VISA driver based hardware is provided in the `agilent_dso_usb_1` driver example.
 
