@@ -18,3 +18,6 @@ public/prism/drivers/brother_ql700/wip/
 .vscode/settings.json
 
 public/prism/scripts/a43/temp/
+
+public/prism/drivers/A4401_BOND/server/libraries/ArduinoJson/extras/
+public/prism/drivers/A4401_BOND/server/libraries/ArduinoJson/examples/
