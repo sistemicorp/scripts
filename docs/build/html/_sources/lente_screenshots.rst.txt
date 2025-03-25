@@ -36,6 +36,11 @@ Prism and Lente Station management console.
 Account Management
 ******************
 
+User Summary
+
+.. image:: static/Screenshot_lente_dashboard_06.png
+
+
 Create Users
 
 .. image:: static/Screenshot_lente_dashboard_04.png

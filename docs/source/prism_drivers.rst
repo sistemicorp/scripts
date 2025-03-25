@@ -94,9 +94,13 @@ is a number used to setup configuration of the physical system.
 VISA
 ====
 
+VISA is a test equipment control protocol.  See `VISA <https://en.wikipedia.org/wiki/Virtual_instrument_software_architecture>`_
+
 An example of VISA driver based hardware is provided in the `agilent_dso_usb_1` driver example.
 
-Error: Found a device whose serial number cannot be read
-See: https://stackoverflow.com/questions/52256123/unable-to-get-full-visa-address-that-includes-the-serial-number
+.. note::
+    Error: Found a device whose serial number cannot be read
 
+    This error can happen if your user account doesn't have correct privileges.
 
+    See: `stackoverflow <https://stackoverflow.com/questions/52256123/unable-to-get-full-visa-address-that-includes-the-serial-number>`_

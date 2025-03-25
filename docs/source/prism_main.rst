@@ -1,7 +1,16 @@
 Prism
 =====
 
-Prism is the production floor program that runs your scripts and tests your product.
+What is Prism?
+
+* Prism is the production floor program that runs your scripts
+* Prism is connected to the hardware, the bed of nails jig, that connects to your DUT
+* Prism provides a GUI that
+
+  * tracks testing progress on the production floor
+  * creates JSON test records that are sent to Lente for dB archiving
+  * can be configured by scanning Traveller QR codes
+
 
 .. toctree::
    :maxdepth: 2
