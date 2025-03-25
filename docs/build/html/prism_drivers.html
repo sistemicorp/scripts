@@ -45,20 +45,26 @@
             
   <section id="drivers">
 <h1>Drivers<a class="headerlink" href="#drivers" title="Permalink to this headline">¶</a></h1>
-<p>Drivers are listed in the <cite>config</cite> section of scripts.  For example:</p>
+<p>These are typically pieces of test equipment that are used to measure, stimulate or otherwise “test”
+the device under test (DUT).  Examples of test equipment could be power supplies, oscilloscopes,
+JTAG programmers, etc..</p>
+<p><cite>Drivers</cite> required for a particular DUT are listed in the <cite>config</cite> section of scripts.  For example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span>
   <span class="o">//</span> <span class="n">fail_fast</span><span class="p">:</span> <span class="k">if</span> <span class="n">true</span> <span class="p">(</span><span class="n">default</span><span class="p">),</span> <span class="n">testing</span> <span class="n">will</span> <span class="n">stop</span> <span class="n">on</span> <span class="n">first</span> <span class="n">failed</span> <span class="n">test</span>
   <span class="s2">&quot;fail_fast&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
-  <span class="o">//</span> <span class="n">channel_hw_driver</span><span class="p">:</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">code</span> <span class="n">to</span> <span class="n">initialize</span> <span class="n">the</span> <span class="n">test</span> <span class="n">environment</span><span class="p">,</span> <span class="n">must</span> <span class="n">be</span> <span class="n">specified</span>
-  <span class="s2">&quot;drivers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;public.prism.drivers.fake.hwdrv_fake&quot;</span><span class="p">]</span>
+  <span class="o">//</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">driver</span> <span class="n">code</span> <span class="n">to</span> <span class="n">initialize</span> <span class="n">the</span> <span class="n">test</span> <span class="n">environment</span><span class="p">,</span> <span class="n">must</span> <span class="n">be</span> <span class="n">specified</span>
+  <span class="o">//</span> <span class="n">Drivers</span> <span class="n">may</span> <span class="ow">or</span> <span class="n">may</span> <span class="ow">not</span> <span class="n">have</span> <span class="n">args</span>
+  <span class="s2">&quot;drivers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;public.prism.drivers.fake.hwdrv_fake&quot;</span><span class="p">,</span>
+              <span class="p">[</span><span class="s2">&quot;public.prism.drivers.fake.hwdrv_fakeArgs&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;k0&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;k1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}]</span> <span class="p">]</span>
 <span class="p">},</span>
 </pre></div>
 </div>
-<p>The purpose of this file and class is to instantiate your hardware into Prism.  The Drivers files are stored
-in a separate path relative to scripts in order to isolate them.</p>
+<p>Prism will load/init each <cite>driver</cite> that is listed.</p>
 <p>The python file specified <em>MUST</em> have a class called <cite>HWDriver</cite>.  See the <cite>fake</cite> example for
 implementation details and documentation.</p>
 <p>By convention, the driver filename has prefix is <cite>hwdrv_&lt;name&gt;.py</cite>.</p>
+<p>The Drivers files are stored by convention in a separate path relative to scripts in order to isolate
+them.  <cite>Drivers</cite> are typically common to test multiple products.</p>
 <section id="discover-channels">
 <h2>Discover Channels<a class="headerlink" href="#discover-channels" title="Permalink to this headline">¶</a></h2>
 <p>The important method of the <cite>HWDriver</cite> class is <cite>discover_channels</cite>.</p>

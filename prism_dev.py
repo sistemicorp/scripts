@@ -148,12 +148,20 @@ class ChanCon(object):
         num_channels = -1
         for hwdrv in self.script["config"]["drivers"]:
             self.logger.info("HWDRV: {}".format(hwdrv))
-            hwdrv_sname = hwdrv.split(".")[-1]
-            hwdrv_module = importlib.import_module(hwdrv)
-            hwdrv_module_klass = getattr(hwdrv_module, "HWDriver")
-            hwdriver = hwdrv_module_klass()
 
-            _num_channels, driver_type, drivers = hwdriver.discover_channels()
+            if isinstance(hwdrv, list):
+                _hwd, _args = hwdrv[0], hwdrv[1]
+                hwdrv_sname = _hwd.split(".")[-1]
+                i = importlib.import_module(_hwd)
+                hwdriver = getattr(i, "HWDriver")()
+                _num_channels, driver_type, drivers = hwdriver.discover_channels(_args)
+
+            else:
+                _hwd = hwdrv
+                hwdrv_sname = _hwd.split(".")[-1]
+                i = importlib.import_module(hwdrv)
+                hwdriver = getattr(i, "HWDriver")()
+                _num_channels, driver_type, drivers = hwdriver.discover_channels()
 
             if _num_channels >= 0:  # add to shared state if all good
                 shared = False
