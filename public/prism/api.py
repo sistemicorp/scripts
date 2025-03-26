@@ -61,12 +61,15 @@ class ResultAPI():
     UNIT_KILOHERTZ = "KiloHertz"
     UNIT_MEGAHERTZ = "MegaHertz"
     UNIT_HENRY = "Henry"
-    UNIT_FARADS = "Farads"
+    UNIT_MICROHENRY = "microHenry"
+    UNIT_FARAD = "Farad"
+    UNIT_NANOFARAD = "nanoFarad"
     UNIT_SIEMENS = "Siemens"
     UNIT_DEGREE = "Degree"
     UNIT_RADIAN = "Radian"
     UNIT_PERCENT = "Percent"
     UNIT_WATTS = "Watts"
+    UNIT_PPM = "PPM"
     UNIT_NONE = "None"
 
     # any new units added above need to be included in this list for checking
@@ -75,8 +78,9 @@ class ResultAPI():
                 UNIT_CELSIUS, UNIT_KELVIN, UNIT_NEWTON, UNIT_PASCAL, UNIT_KILOPASCAL, UNIT_BAR, UNIT_METER,
                 UNIT_MILLIMETER, UNIT_SECONDS, UNIT_MILLISECONDS, UNIT_MICROSECONDS, UNIT_KILOGRAM,
                 UNIT_MILLIGRAM, UNIT_GRAM, UNIT_LITRE, UNIT_BOOLEAN, UNIT_CANDELA, UNIT_HERTZ, UNIT_KILOHERTZ,
-                UNIT_MEGAHERTZ, UNIT_HENRY, UNIT_FARADS, UNIT_SIEMENS, UNIT_DEGREE, UNIT_RADIAN, UNIT_PERCENT, UNIT_WATTS,
-                UNIT_NONE]
+                UNIT_MEGAHERTZ, UNIT_HENRY, UNIT_MICROHENRY, UNIT_FARAD, UNIT_NANOFARAD, UNIT_SIEMENS,
+                UNIT_DEGREE, UNIT_RADIAN, UNIT_PERCENT, UNIT_WATTS, UNIT_PPM, UNIT_NONE]
+
 
     # ===================================================================================
     # BLOB data types
