@@ -106,7 +106,8 @@ Location: settings.json under top level
 Certificates
 ------------
 
-Certificate and key files can be the same ones as used by Prism/Lente to secure access using HTTPS.
+Certificate and key files can be the same ones as used by Prism/Lente to secure access
+using HTTPS. See :ref:`HTTPS and SSL Certificates<https>`.
 
 Section Name: certificates
 
