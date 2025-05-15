@@ -19,14 +19,13 @@ Operation
 =========
 
 Currently the status information uploaded to the upstream Lente server are published. Values are
-updated every 10s.
+updated every 10 seconds.
 
-The OPC-UA server must be enabled in the settings.json file.  See settings for details
+The OPC-UA server must be enabled in the settings.json file.  See settings section for details.
 
-For development and testing a full featured client is available from Unified Automation:
+For development and testing a free client is available from Unified Automation:
 
   https://www.unified-automation.com/products/development-tools/uaexpert.html
-
 
 Fields Published
 ================
@@ -43,8 +42,8 @@ Fields Published
 - version: Version of the Prism/Lente base directory
 - clients (Lente only): Listing of downstream Prism/Lente systems and their attributes
 
-Methods Available
-=================
+Methods
+=======
 
 - restart: Restart Prism or Lente application; causes active users to be logged out.
 
@@ -75,10 +74,11 @@ Example settings:
 OPC-UA Server
 -------------
 
-Name: opcua_server
+Section Name: opcua_server
+
 Location: settings.json under top level
 
-- enable: If true, start opcu_server
+- enable: If true, start opcua_server
 
   - default: false
 
@@ -106,14 +106,17 @@ Location: settings.json under top level
 Certificates
 ------------
 
-Name: certificates
+Certificate and key files can be the same ones as used by Prism/Lente to secure access using HTTPS.
+
+Section Name: certificates
+
 Location: settings.json under section 'opcua_server'
 
 - enable: If true, use certificates
 
   - default: false
 
-- path: Path to directory where certificate and private key files reside relative to the prism or lente root
+- path: Path to directory where certificate and private key files reside relative to the Prism or Lente root path
 
   - default: public
 

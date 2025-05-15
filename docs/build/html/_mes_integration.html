@@ -51,7 +51,7 @@ Information about the OPC-UA standard is available from the OPC Foundation:</p>
 <ul>
 <li><p><a class="reference internal" href="#operation" id="id2">Operation</a></p></li>
 <li><p><a class="reference internal" href="#fields-published" id="id3">Fields Published</a></p></li>
-<li><p><a class="reference internal" href="#methods-available" id="id4">Methods Available</a></p></li>
+<li><p><a class="reference internal" href="#methods" id="id4">Methods</a></p></li>
 <li><p><a class="reference internal" href="#settings" id="id5">Settings</a></p>
 <ul>
 <li><p><a class="reference internal" href="#opc-ua-server" id="id6">OPC-UA Server</a></p></li>
@@ -67,9 +67,9 @@ Information about the OPC-UA standard is available from the OPC Foundation:</p>
 <section id="operation">
 <h3><a class="toc-backref" href="#id2" role="doc-backlink">Operation</a><a class="headerlink" href="#operation" title="Link to this heading">¶</a></h3>
 <p>Currently the status information uploaded to the upstream Lente server are published. Values are
-updated every 10s.</p>
-<p>The OPC-UA server must be enabled in the settings.json file.  See settings for details</p>
-<p>For development and testing a full featured client is available from Unified Automation:</p>
+updated every 10 seconds.</p>
+<p>The OPC-UA server must be enabled in the settings.json file.  See settings section for details.</p>
+<p>For development and testing a free client is available from Unified Automation:</p>
 <blockquote>
 <div><p><a class="reference external" href="https://www.unified-automation.com/products/development-tools/uaexpert.html">https://www.unified-automation.com/products/development-tools/uaexpert.html</a></p>
 </div></blockquote>
@@ -90,8 +90,8 @@ updated every 10s.</p>
 <li><p>clients (Lente only): Listing of downstream Prism/Lente systems and their attributes</p></li>
 </ul>
 </section>
-<section id="methods-available">
-<h3><a class="toc-backref" href="#id4" role="doc-backlink">Methods Available</a><a class="headerlink" href="#methods-available" title="Link to this heading">¶</a></h3>
+<section id="methods">
+<h3><a class="toc-backref" href="#id4" role="doc-backlink">Methods</a><a class="headerlink" href="#methods" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p>restart: Restart Prism or Lente application; causes active users to be logged out.</p></li>
 </ul>
@@ -118,10 +118,10 @@ updated every 10s.</p>
 </div>
 <section id="opc-ua-server">
 <h4><a class="toc-backref" href="#id6" role="doc-backlink">OPC-UA Server</a><a class="headerlink" href="#opc-ua-server" title="Link to this heading">¶</a></h4>
-<p>Name: opcua_server
-Location: settings.json under top level</p>
+<p>Section Name: opcua_server</p>
+<p>Location: settings.json under top level</p>
 <ul class="simple">
-<li><p>enable: If true, start opcu_server</p>
+<li><p>enable: If true, start opcua_server</p>
 <ul>
 <li><p>default: false</p></li>
 </ul>
@@ -156,15 +156,16 @@ Location: settings.json under top level</p>
 </section>
 <section id="certificates">
 <h4><a class="toc-backref" href="#id7" role="doc-backlink">Certificates</a><a class="headerlink" href="#certificates" title="Link to this heading">¶</a></h4>
-<p>Name: certificates
-Location: settings.json under section ‘opcua_server’</p>
+<p>Certificate and key files can be the same ones as used by Prism/Lente to secure access using HTTPS.</p>
+<p>Section Name: certificates</p>
+<p>Location: settings.json under section ‘opcua_server’</p>
 <ul class="simple">
 <li><p>enable: If true, use certificates</p>
 <ul>
 <li><p>default: false</p></li>
 </ul>
 </li>
-<li><p>path: Path to directory where certificate and private key files reside relative to the prism or lente root</p>
+<li><p>path: Path to directory where certificate and private key files reside relative to the Prism or Lente root path</p>
 <ul>
 <li><p>default: public</p></li>
 </ul>

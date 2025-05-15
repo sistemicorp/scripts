@@ -101,8 +101,8 @@ Postgres DB
 
 .. _https:
 
-HTTPS
-=====
+HTTPS & Certificates
+====================
 
 Please read this article: https://blog.miguelgrinberg.com/post/running-your-flask-application-over-https
 
@@ -121,12 +121,15 @@ On deployed Prism/Lente computers the user account is presumed to be secure.  Th
 be encrypted, and the user account that hosts the files for Prism/Lente should be password protected.  Operator
 accounts do not need access to the Prism/Lente files. See `Ubuntu File System <_deployment-ubuntu-filesystem>`__
 
-To generate the certificate and key,
+The same certificate and key files can be used to secure the OPC-UA server.
+
+To generate the certificate and key, use the following commands.  Update openssl_req.ssl with
+organization information, if desired.
 
 ::
 
-    ~/git/scripts/public$ openssl req -x509 -newkey rsa:4096 -nodes -out cert.pem -keyout key.pem -days 3650
-    ... you will be promoted to answer some questions, the answers are not important
+    ~/git/scripts/public$ openssl req -x509 -newkey rsa:4096 -nodes -out cert.pem -keyout key.pem -days 3650 -config ../openssl_gen.cnf
+
     ~/git/scripts/public$ ls -al
     total 84
     drwxrwxr-x 6 martin martin  4096 Jun 10 09:42 ./
