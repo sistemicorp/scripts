@@ -1,26 +1,24 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Security &#8212; Sistemi Lente/Prism Test System 0.6.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=2bf1fcf8" />
     
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
+    <script src="_static/documentation_options.js?v=8fa8b3e9"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Deployment" href="_deployment.html" />
     <link rel="prev" title="Test Jigs" href="_jigs.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -43,9 +41,9 @@
           <div class="body" role="main">
             
   <section id="security">
-<h1>Security<a class="headerlink" href="#security" title="Permalink to this headline">¶</a></h1>
+<h1>Security<a class="headerlink" href="#security" title="Link to this heading">¶</a></h1>
 <p>Production security is important.  Sistemi Lente/Prism have features and suggestions to improve security.</p>
-<div class="contents local topic" id="contents">
+<nav class="contents local" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#settings-json" id="id2">Settings.json</a></p></li>
 <li><p><a class="reference internal" href="#manifest-checking" id="id3">Manifest Checking</a></p></li>
@@ -55,9 +53,9 @@
 <li><p><a class="reference internal" href="#postgres-db" id="id7">Postgres DB</a></p></li>
 <li><p><a class="reference internal" href="#https" id="id8">HTTPS</a></p></li>
 </ul>
-</div>
+</nav>
 <section id="settings-json">
-<h2><a class="toc-backref" href="#id2">Settings.json</a><a class="headerlink" href="#settings-json" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">Settings.json</a><a class="headerlink" href="#settings-json" title="Link to this heading">¶</a></h2>
 <p>Most of the security of the system is set by <a class="reference external" href="_deployment.html#_SettingsFile">settings.json</a>.</p>
 <p><cite>settings.json</cite> file is unique to each Prism/Lente in the deployment.  It is common for
 multiple Prism computers sitting below Lente to have the same <cite>settings.json</cite>, assuming the settings are the same.</p>
@@ -67,7 +65,7 @@ sent between Lente/Prism computers.</p>
 <p>Prism computers should remove the Lente section of the <cite>settings.json</cite> file.</p>
 </section>
 <section id="manifest-checking">
-<h2><a class="toc-backref" href="#id3">Manifest Checking</a><a class="headerlink" href="#manifest-checking" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Manifest Checking</a><a class="headerlink" href="#manifest-checking" title="Link to this heading">¶</a></h2>
 <p>Enable Manifest checking in the <a class="reference external" href="_deployment.html#_SettingsFile">settings.json</a>. file.</p>
 <p>The Manifest (file) is created by Lente to ensure the integrity of the all the scripts and supporting files.
 The manifest is a list of files and corresponding hashes, which Prism will use to validate there are no
@@ -82,7 +80,7 @@ the path names of the files to be excluded, for example,</p>
 </div>
 </section>
 <section id="prism-lente-files">
-<h2><a class="toc-backref" href="#id4">Prism/Lente Files</a><a class="headerlink" href="#prism-lente-files" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Prism/Lente Files</a><a class="headerlink" href="#prism-lente-files" title="Link to this heading">¶</a></h2>
 <p>Prism/Lente “programs” are access via a browser.  Technically, the user could be on a different computer
 and accessing Prism/Lente remotely. Remote access is common for Lente, and not common for Prism.</p>
 <p>Because Prism/Lente are accessed via the browser, a Ubuntu (operator) account need only provide the Chrome
@@ -93,7 +91,7 @@ If the account home directory is encrypted, and/or the whole hard drive is encry
 protected.</p>
 </section>
 <section id="lente">
-<h2><a class="toc-backref" href="#id5">Lente</a><a class="headerlink" href="#lente" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Lente</a><a class="headerlink" href="#lente" title="Link to this heading">¶</a></h2>
 <p>It is assumed that Lente are “physically secure”, which means physical access to the computers is
 restricted in some way, for example, locked in a secure room.</p>
 <p>The following are further suggestions to improve security,</p>
@@ -105,7 +103,7 @@ restricted in some way, for example, locked in a secure room.</p>
 </ul>
 </section>
 <section id="prism">
-<h2><a class="toc-backref" href="#id6">Prism</a><a class="headerlink" href="#prism" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">Prism</a><a class="headerlink" href="#prism" title="Link to this heading">¶</a></h2>
 <p>Prism stations are considered insecure.  Presumably anyone on the production floor can access a Prism.
 Often login names and passwords are common to a group of people, or shared among them to access the computer.</p>
 <p>The following are further suggestions to improve security,</p>
@@ -120,7 +118,7 @@ Often login names and passwords are common to a group of people, or shared among
 </ul>
 </section>
 <section id="postgres-db">
-<h2><a class="toc-backref" href="#id7">Postgres DB</a><a class="headerlink" href="#postgres-db" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id7" role="doc-backlink">Postgres DB</a><a class="headerlink" href="#postgres-db" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Change the default password!</p>
 <ul>
@@ -130,7 +128,7 @@ Often login names and passwords are common to a group of people, or shared among
 </ul>
 </section>
 <section id="https">
-<span id="id1"></span><h2><a class="toc-backref" href="#id8">HTTPS</a><a class="headerlink" href="#https" title="Permalink to this headline">¶</a></h2>
+<span id="id1"></span><h2><a class="toc-backref" href="#id8" role="doc-backlink">HTTPS</a><a class="headerlink" href="#https" title="Link to this heading">¶</a></h2>
 <p>Please read this article: <a class="reference external" href="https://blog.miguelgrinberg.com/post/running-your-flask-application-over-https">https://blog.miguelgrinberg.com/post/running-your-flask-application-over-https</a></p>
 <p>The coles notes version is that Prism/Lente are not public domain servers and are considered private
 internal servers.  Therefore we can avoid cost and complexity by using our own generated/signed keys.
@@ -182,15 +180,19 @@ drwxr-xr-x 2 root   root    4096 May 29 16:18 traveller/
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="_jigs.html"
-                        title="previous chapter">Test Jigs</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="_deployment.html"
-                        title="next chapter">Deployment</a></p>
-<div id="searchbox" style="display: none" role="search">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="_jigs.html"
+                          title="previous chapter">Test Jigs</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="_deployment.html"
+                          title="next chapter">Deployment</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -198,13 +200,13 @@ drwxr-xr-x 2 root   root    4096 May 29 16:18 traveller/
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -221,8 +223,8 @@ drwxr-xr-x 2 root   root    4096 May 29 16:18 traveller/
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2019-2023, Sistemi Corp..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+    &#169; Copyright 2019-2023, Sistemi Corp..
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
     </div>
   </body>
 </html>

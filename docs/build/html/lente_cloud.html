@@ -1,26 +1,24 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Cloud &#8212; Sistemi Lente/Prism Test System 0.6.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=2bf1fcf8" />
     
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
+    <script src="_static/documentation_options.js?v=8fa8b3e9"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="System" href="_system.html" />
     <link rel="prev" title="Accounts" href="lente_accounts.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -44,9 +42,9 @@
           <div class="body" role="main">
             
   <section id="cloud">
-<h1>Cloud<a class="headerlink" href="#cloud" title="Permalink to this headline">¶</a></h1>
+<h1>Cloud<a class="headerlink" href="#cloud" title="Link to this heading">¶</a></h1>
 <p>Lente running on the (GCP) Cloud.</p>
-<div class="contents local topic" id="contents">
+<nav class="contents local" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#gcp" id="id1">GCP</a></p>
 <ul>
@@ -54,9 +52,9 @@
 </ul>
 </li>
 </ul>
-</div>
+</nav>
 <section id="gcp">
-<h2><a class="toc-backref" href="#id1">GCP</a><a class="headerlink" href="#gcp" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">GCP</a><a class="headerlink" href="#gcp" title="Link to this heading">¶</a></h2>
 <p>Lente should be able to run any cloud but GCP was picked as a first example because they
 have a free tier that is free for “life”, rather than one year like some of the more popular others.</p>
 <p><strong>The instructions to be presented are certainly not the only way to put Lente on the cloud, and
@@ -77,7 +75,7 @@ enables access to several Google SQL tools, for example, backups, maintenance, a
 <p>For a production environment, if you choose to have Lente/Postgres in the cloud, the recommended
 approach is to use Postgres as a separate resource from the VM running Lente.</p>
 <section id="lente-postgres-on-instance-vm">
-<h3><a class="toc-backref" href="#id2">Lente/Postgres On Instance VM</a><a class="headerlink" href="#lente-postgres-on-instance-vm" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id2" role="doc-backlink">Lente/Postgres On Instance VM</a><a class="headerlink" href="#lente-postgres-on-instance-vm" title="Link to this heading">¶</a></h3>
 <p>Log into your Google Cloud Account.</p>
 <p>Create an instance VM and use a Ubuntu 18.04 Minimum image.</p>
 <p>Traffic to/from the GCP node needs to be allowed by the Firewall,</p>
@@ -129,15 +127,19 @@ Run these commands to install <cite>scripts</cite>,</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="lente_accounts.html"
-                        title="previous chapter">Accounts</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="_system.html"
-                        title="next chapter">System</a></p>
-<div id="searchbox" style="display: none" role="search">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="lente_accounts.html"
+                          title="previous chapter">Accounts</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="_system.html"
+                          title="next chapter">System</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -145,13 +147,13 @@ Run these commands to install <cite>scripts</cite>,</p>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -169,8 +171,8 @@ Run these commands to install <cite>scripts</cite>,</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2019-2023, Sistemi Corp..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+    &#169; Copyright 2019-2023, Sistemi Corp..
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
     </div>
   </body>
 </html>

@@ -6,6 +6,10 @@
   // remove line, or set to false to disable demo mode
   "demo": true,
 
+  // On startup optionally specify to load a traveller
+  //"load_traveller": "public/traveller/traveller_TZ6T.pdf",
+  //"load_user": "operator@here.com",
+
   // Result JSON file encryption
   // - a valid license file is required to encrypt results
   // - passwrd must be |<-  16  long  ->|
@@ -35,7 +39,7 @@
   // password for scripts package sent from Lente to Lente/Prism
   "manifest_pw": "mysecret2",
 
-  // use alternate network interface, used by VPNs
+  // network interface to use, used by VPNs
   //"net_iface": "tun0",
 
   // ------------------------------------------------------------------
@@ -63,6 +67,21 @@
 
       // ip address of the postgres database, use `127.0.0.1` if locahost
       "ip": "127.0.0.1"
+    }
+  },
+
+  "opcua_server": {
+    "enable": false,
+    "security_policies":[
+      "NoSecurity",
+      "Basic256Sha256_Sign",
+      "Basic256Sha256_SignAndEncrypt"
+    ],
+    "certificates": {
+      "enable": false,
+      // "path": "public",
+      // "certificate_file": "cert.pem",
+      // "private_key_file": "key.pem",
     }
   }
 }

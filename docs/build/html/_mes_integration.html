@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Manufacturing Execution System (MES) Integration &#8212; Sistemi Lente/Prism Test System 0.6.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=2bf1fcf8" />
+    
+    <script src="_static/documentation_options.js?v=8fa8b3e9"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Deployment" href="_deployment.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="_deployment.html" title="Deployment"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.6.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Manufacturing Execution System (MES) Integration</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="manufacturing-execution-system-mes-integration">
+<h1>Manufacturing Execution System (MES) Integration<a class="headerlink" href="#manufacturing-execution-system-mes-integration" title="Link to this heading">¶</a></h1>
+<p>Manufacturing Execution Systems (MES) offer many benefits including enhanced visibility into
+production, improved efficiency, cost reduction, and better inventory monitoring.</p>
+<p>The Prism-Lente framework supports integration using industry standard protocol OPC-UA.
+Information about the OPC-UA standard is available from the OPC Foundation:</p>
+<blockquote>
+<div><p><a class="reference external" href="https://opcfoundation.org/about/opc-technologies/opc-ua/">https://opcfoundation.org/about/opc-technologies/opc-ua/</a></p>
+</div></blockquote>
+<nav class="contents local" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#opc-ua-integration" id="id1">OPC-UA Integration</a></p>
+<ul>
+<li><p><a class="reference internal" href="#operation" id="id2">Operation</a></p></li>
+<li><p><a class="reference internal" href="#fields-published" id="id3">Fields Published</a></p></li>
+<li><p><a class="reference internal" href="#methods-available" id="id4">Methods Available</a></p></li>
+<li><p><a class="reference internal" href="#settings" id="id5">Settings</a></p>
+<ul>
+<li><p><a class="reference internal" href="#opc-ua-server" id="id6">OPC-UA Server</a></p></li>
+<li><p><a class="reference internal" href="#certificates" id="id7">Certificates</a></p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+<section id="opc-ua-integration">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">OPC-UA Integration</a><a class="headerlink" href="#opc-ua-integration" title="Link to this heading">¶</a></h2>
+<section id="operation">
+<h3><a class="toc-backref" href="#id2" role="doc-backlink">Operation</a><a class="headerlink" href="#operation" title="Link to this heading">¶</a></h3>
+<p>Currently the status information uploaded to the upstream Lente server are published. Values are
+updated every 10s.</p>
+<p>The OPC-UA server must be enabled in the settings.json file.  See settings for details</p>
+<p>For development and testing a full featured client is available from Unified Automation:</p>
+<blockquote>
+<div><p><a class="reference external" href="https://www.unified-automation.com/products/development-tools/uaexpert.html">https://www.unified-automation.com/products/development-tools/uaexpert.html</a></p>
+</div></blockquote>
+</section>
+<section id="fields-published">
+<h3><a class="toc-backref" href="#id3" role="doc-backlink">Fields Published</a><a class="headerlink" href="#fields-published" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>cmd: Last command remotely executed</p></li>
+<li><p>computer: Host name of host system</p></li>
+<li><p>disk_usage: Percentage of file storage space consumed on drive where result files are stored</p></li>
+<li><p>ip: IP address of host system</p></li>
+<li><p>num_files: Number of result backup files are stored in result_bkup_dir</p></li>
+<li><p>result_class: Not used</p></li>
+<li><p>script (Prism only): Currently loaded Prism script (if any)</p></li>
+<li><p>scripts_version: Version of the scripts directory</p></li>
+<li><p>user: Currently logged in user (if any)</p></li>
+<li><p>version: Version of the Prism/Lente base directory</p></li>
+<li><p>clients (Lente only): Listing of downstream Prism/Lente systems and their attributes</p></li>
+</ul>
+</section>
+<section id="methods-available">
+<h3><a class="toc-backref" href="#id4" role="doc-backlink">Methods Available</a><a class="headerlink" href="#methods-available" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>restart: Restart Prism or Lente application; causes active users to be logged out.</p></li>
+</ul>
+</section>
+<section id="settings">
+<h3><a class="toc-backref" href="#id5" role="doc-backlink">Settings</a><a class="headerlink" href="#settings" title="Link to this heading">¶</a></h3>
+<p>opcua_server settings are defined in the settings.json.</p>
+<p>Example settings:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;opcua_server&quot;</span><span class="p">:</span> <span class="p">{</span>
+  <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+  <span class="s2">&quot;security_policies&quot;</span><span class="p">:[</span>
+    <span class="s2">&quot;NoSecurity&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Basic256Sha256_Sign&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Basic256Sha256_SignAndEncrypt&quot;</span>
+  <span class="p">],</span>
+  <span class="s2">&quot;certificates&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="o">//</span> <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;public&quot;</span><span class="p">,</span>
+    <span class="o">//</span> <span class="s2">&quot;certificate_file&quot;</span><span class="p">:</span> <span class="s2">&quot;cert.pem&quot;</span><span class="p">,</span>
+    <span class="o">//</span> <span class="s2">&quot;private_key_file&quot;</span><span class="p">:</span> <span class="s2">&quot;key.pem&quot;</span><span class="p">,</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<section id="opc-ua-server">
+<h4><a class="toc-backref" href="#id6" role="doc-backlink">OPC-UA Server</a><a class="headerlink" href="#opc-ua-server" title="Link to this heading">¶</a></h4>
+<p>Name: opcua_server
+Location: settings.json under top level</p>
+<ul class="simple">
+<li><p>enable: If true, start opcu_server</p>
+<ul>
+<li><p>default: false</p></li>
+</ul>
+</li>
+<li><p>listen_address: IP address for opcua_server to listen</p>
+<ul>
+<li><p>default: 0.0.0.0</p></li>
+</ul>
+</li>
+<li><p>listen_port_prism: TCP port for Prism opcua_server to listen</p>
+<ul>
+<li><p>default: 4840</p></li>
+</ul>
+</li>
+<li><p>listen_port_lente: TCP port for Lente opcua_server to listen</p>
+<ul>
+<li><p>default: 4841</p></li>
+</ul>
+</li>
+<li><p>security_policies: List OPC-UA security policies to permit clients to connect with</p>
+<ul>
+<li><p>Possible values: NoSecurity, Basic256Sha256_Sign, Basic256Sha256_SignAndEncrypt</p></li>
+<li><p>Default: NoSecurity, Basic256Sha256_Sign, Basic256Sha256_SignAndEncrypt</p></li>
+</ul>
+</li>
+<li><p>fields: List of fields to publish (null: publish all)</p>
+<ul>
+<li><p>Default: null (publish all)</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="certificates">
+<h4><a class="toc-backref" href="#id7" role="doc-backlink">Certificates</a><a class="headerlink" href="#certificates" title="Link to this heading">¶</a></h4>
+<p>Name: certificates
+Location: settings.json under section ‘opcua_server’</p>
+<ul class="simple">
+<li><p>enable: If true, use certificates</p>
+<ul>
+<li><p>default: false</p></li>
+</ul>
+</li>
+<li><p>path: Path to directory where certificate and private key files reside relative to the prism or lente root</p>
+<ul>
+<li><p>default: public</p></li>
+</ul>
+</li>
+<li><p>private_key_file: File containing private key</p>
+<ul>
+<li><p>default: key.pem</p></li>
+</ul>
+</li>
+<li><p>certificate_file: File containing certificate</p>
+<ul>
+<li><p>default: cert.pem</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="_deployment.html"
+                          title="previous chapter">Deployment</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="_deployment.html" title="Deployment"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.6.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Manufacturing Execution System (MES) Integration</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2019-2023, Sistemi Corp..
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

@@ -21,3 +21,4 @@ infrastructure to manage the data, scripts, users, roles, reporting and other mu
    _jigs
    _security
    _deployment
+   _mes_integration
