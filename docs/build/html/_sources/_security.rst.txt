@@ -101,8 +101,8 @@ Postgres DB
 
 .. _https:
 
-HTTPS & Certificates
-====================
+HTTPS and SSL Certificates
+==========================
 
 Please read this article: https://blog.miguelgrinberg.com/post/running-your-flask-application-over-https
 

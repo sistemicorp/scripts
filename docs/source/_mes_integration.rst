@@ -27,6 +27,8 @@ For development and testing a free client is available from Unified Automation:
 
   https://www.unified-automation.com/products/development-tools/uaexpert.html
 
+.. image:: static/Screenshot_mes_integration_uaexpert.png
+
 Fields Published
 ================
 
