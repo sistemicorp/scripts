@@ -114,8 +114,10 @@ class A4401_BOND:
     def set_port(self, port):
         self.port = port
 
-    def init(self):
+    def init(self, skip_init=False):
         """ Init Teensy SimpleRPC connection
+
+        :param skip_init: True/False, skips MAX11311 setup, assume thats already done
         :return: <True/False> whether Teensy SimpleRPC connection was created
         """
         self.logger.info("attempting to install Teensy on port {}".format(self.port))
@@ -148,7 +150,8 @@ class A4401_BOND:
         # check if jig close has valid GPIOs
         self._jig_close_check()
 
-        self._init_maxs()
+        if not skip_init:
+            self._init_maxs()
 
         # finally, all is well
         self.logger.info("Installed Teensy-A4401BOND on port {}".format(self.port))

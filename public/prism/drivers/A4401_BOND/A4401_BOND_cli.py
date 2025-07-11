@@ -1,22 +1,14 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2021-2023
+Sistemi Corporation, copyright, all rights reserved, 2021-2025
 Owen Li, Martin Guthrie
 
 This CLI provides a linux CLI interface to Teensy4 SimpleRPC.
 
 Example:  (note the starting folder)
 
-martin@martin-staric2:~/git/scripts/public/prism/drivers/teensy4$ python3 Teensy4_cli.py --port /dev/ttyACM0 read_gpio --pin-number 2
-          Teensy4.py   INFO   78 version 0.1.0
-          Teensy4.py   INFO   87 attempting to install Teensy on port /dev/ttyACM0
-          Teensy4.py   INFO  176 Jig Closed Detector not defined (None)
-          Teensy4.py   INFO  113 Installed Teensy on port /dev/ttyACM0
-      Teensy4_cli.py   INFO  161 read_gpio: Namespace(port='/dev/ttyACM0', verbose=0, _cmd='read_gpio', _pin_number=2)
-      Teensy4_cli.py   INFO  165 {'success': True, 'method': 'read_gpio', 'result': {'state': 1}}
-      Teensy4_cli.py   INFO  202 Success
-          Teensy4.py   INFO  124 closing /dev/ttyACM0
+(venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/A4401_BOND$ python A4401_BOND_cli.py -p /dev/ttyACM0 version
 
 
 """
@@ -32,7 +24,7 @@ teensy = None
 def parse_args():
     epilog = """
     Usage examples:
-       python3 teensy4_cli.py --port /dev/ttyACM0 led --on
+       python teensy4_cli.py --port /dev/ttyACM0 led --on
 
     Port: Teensy4 when plugged into USB on Linux will show up as a ttyACM# device in /dev.
           Use 'ls -al /dev/ttyACM*' to find the port. 
@@ -48,22 +40,17 @@ def parse_args():
     --state {True,False}  True|False
       
     Example:
-    $ python3 Teensy4_cli.py --port /dev/ttyACM0 write_gpio --pin-number 2 --state False
-          Teensy4.py   INFO   78 version 0.1.0
-          Teensy4.py   INFO   87 attempting to install Teensy on port /dev/ttyACM0
-          Teensy4.py   INFO  176 Jig Closed Detector not defined (None)
-          Teensy4.py   INFO  113 Installed Teensy on port /dev/ttyACM0
-      Teensy4_cli.py   INFO  116 write_gpio: Namespace(port='/dev/ttyACM0', verbose=0, _cmd='write_gpio', _pin_number=2, _state='False')
-      Teensy4_cli.py   INFO  123 {'success': True, 'method': 'write_gpio', 'result': {'state': False}}
-      Teensy4_cli.py   INFO  157 Success
-          Teensy4.py   INFO  124 closing /dev/ttyACM0   
+    (venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/A4401_BOND$ python A4401_BOND_cli.py -p /dev/ttyACM0 version
     """
-    parser = argparse.ArgumentParser(description='teensy4_cli',
+    parser = argparse.ArgumentParser(description='A4401_BOND_cli',
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
                                      epilog=epilog)
 
     parser.add_argument("-p", '--port', dest='port', default=None, type=str, required=True,
                         action='store', help='Active serial port')
+
+    parser.add_argument("-n", '--no-init', dest='_skip_init', default=False,
+                        action='store_true', help='Do not init (its presumed BOND has been previously initialized)')
 
     parser.add_argument("-v", '--verbose', dest='verbose', default=0, action='count', help='Increase verbosity')
 
@@ -436,7 +423,8 @@ if __name__ == '__main__':
         logging.basicConfig(level=logging.DEBUG, format='%(filename)20s %(levelname)6s %(lineno)4s %(message)s')
 
     teensy = A4401_BOND(args.port, loggerIn=logging)
-    success = teensy.init()
+
+    success = teensy.init(skip_init=args._skip_init)
     if not success:
         logging.error("Failed to create teensy instance")
         exit(1)

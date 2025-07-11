@@ -1,5 +1,9 @@
 Instructions for Teensy 4.x development:
 
+These instructions are for developers who need to modify BOND behaviour, or to add additional
+functionality.  You should not need to modify Teensy code if you are just using BOND.  The 
+Teensy code found in the Prism BOND example is sufficient to use BOND.
+
 1) Follow setup instructions here, https://www.pjrc.com/teensy/td_download.html
 
    ![A test image](readme_images/rm_install_arduino_01.png)
@@ -22,34 +26,34 @@ Instructions for Teensy 4.x development:
 
 ![A test image](readme_images/rm_install_arduino_02.png)
 
-3) Set the Prism Sketch folder
-   - File->Preferences->Sketchbook Location
-   - Set the path appropriately, for example,
-     /home/martin/git/scripts/public/prism/drivers/teensy4BOND/server
+![A test image](readme_images/rm_install_arduino_03.png)
 
-4) Open teensy4_server.ino with the Arduino IDE.
 
-5) Go to the top ribbon menu and select 'Sketch'.
+3) Install library dependencies: Go to the top ribbon menu and select 'Sketch'.
+   - In the drop down menu select 'Include Library' then 'Manage Libraries' to open the Library Manager.
+   - In the Library Manager put simpleRPC (ver 3.2.0) in the search bar. Install the library.
+   - In the Library Manager put ArduinoJson (ver 7.4.2) in the search bar. Install the library.
+   - In the Library Manager put INA219_WE (ver 1.3.8) in the search bar. Install the library.
 
-6) In the drop down menu select 'Include Library' then 'Manage Libraries' to open the Library Manager.
+4) Open teensy4_server.ino with the Arduino IDE.  This is where you will find `setup()` and `loop()`.
 
-7) In the Library Manager put simpleRPC (ver 3.2.0) in the search bar. Install the library.
-
-8) In the Library Manager put ArduinoJson (ver 6.21.3) in the search bar. Install the library.
-
-9) Generating a Hex file from Arduino
+5) Generating a Hex file from Arduino
     - In Arduino IDE, File->Preferences, turn on Show Verbose Output During: Compilation
-    - Compile the sketch by pressing the Arduino IDE Verify (check mark) icon
-    - Note the panel output for the location of the compiled files,
+    - Compile the sketch by pressing the Arduino IDE Verify (check mark) icon (top-left)
+    - Note the panel output for the location of the compiled file, you will need this in later steps,
 
 
-    /home/martin/Downloads/arduino-1.8.19-linux64/arduino-1.8.19/hardware/teensy/../tools/teensy_size /tmp/arduino_build_864038/teensy4_server.ino.elf
+    /home/martin/.cache/arduino/sketches/AB98538F1B6B747D1325AD62F117F594/teensy4_server.ino.elf
 
-10) Plug your Teensy into your computer.
 
-11) Go to Arduino IDE and upload the sketch onto the Teensy.
+6) Connect the BOND to power and Teensy to USB. Note than BOND has a built in USB Hub, and just
+a short USB cable is needed to plug to the Teensy.
 
-12) Program Teensy with command line tool,
+7) Go to Arduino IDE and upload the sketch onto the Teensy by pressing the `Upload` icon in the upper left.
+A Teensy pop-up window will appear showing the status of the Teensy as it uploads.  You do not need to press
+the button, things should happen automatically.
+
+8) OPTIONAL: Program Teensy with command line tool,
 
 
     martin@martin-staric2:~/git/scripts/public/prism/drivers/teensy4/server$ ./teensy_loader_cli --mcu=TEENSY41 -w -v ../../../../prism/scripts/example/teensy4_v0/assets/teensy4_server.ino.hex 
@@ -59,9 +63,10 @@ Instructions for Teensy 4.x development:
     Programming..................................................................
     Booting
 
+NOTE: The Teensy CLI loader is used to update BOND's Teensy from a Prism script.  The Teensy
+ELF is copied to an assets folder and used by the CLI.
 
-
-13) Showing Teensy devices with lsusb,
+9) DEBUG: Showing Teensy devices with lsusb,
 
 
     martin@martin-virtual-machine:~/git/scripts/public/prism/drivers/teensy4/server$ lsusb
@@ -79,63 +84,57 @@ After programming, the teensy will show up as a serial, like so,
     Bus 001 Device 053: ID 16c0:0483 Van Ooijen Technische Informatica Teensyduino Serial
 
 
-
-14) Teensy RPC Development
+10) Teensy RPC Development
 
     - Prism calls Teensy's RPC server from Python, and there is a way to test that API from Python using 
-      a command line (CLI) interface.
+      a command line (CLI) interface, without using Prism.
     - Using the Teensy_cli.py program is how you will be testing/developing new APIs to the Teensy4 server.
 
 --Teensy4 CLI Examples--
 
 
-    (venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/teensy4BOND$ python3 Teensy4_cli.py -p /dev/ttyACM1 version
-              Teensy4.py   INFO   79 version 0.1.0
-              Teensy4.py   INFO   88 attempting to install Teensy on port /dev/ttyACM1
-              Teensy4.py   INFO  246 version
-              Teensy4.py   INFO  191 {'success': True, 'method': 'version', 'result': {'version': '0.1.0'}}
-              Teensy4.py   INFO  177 Jig Closed Detector not defined (None)
-              Teensy4.py   INFO  114 Installed Teensy on port /dev/ttyACM1
-          Teensy4_cli.py   INFO  150 version: Namespace(port='/dev/ttyACM1', verbose=0, _cmd='version')
-              Teensy4.py   INFO  246 version
-              Teensy4.py   INFO  191 {'success': True, 'method': 'version', 'result': {'version': '0.1.0'}}
-          Teensy4_cli.py   INFO  153 {'success': True, 'method': 'version', 'result': {'version': '0.1.0'}}
-          Teensy4_cli.py   INFO  221 Success
-              Teensy4.py   INFO  125 closing /dev/ttyACM1
-    (venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/teensy4BOND$ python3 Teensy4_cli.py -p /dev/ttyACM1 led --on
-              Teensy4.py   INFO   79 version 0.1.0
-              Teensy4.py   INFO   88 attempting to install Teensy on port /dev/ttyACM1
-              Teensy4.py   INFO  246 version
-              Teensy4.py   INFO  191 {'success': True, 'method': 'version', 'result': {'version': '0.1.0'}}
-              Teensy4.py   INFO  177 Jig Closed Detector not defined (None)
-              Teensy4.py   INFO  114 Installed Teensy on port /dev/ttyACM1
-          Teensy4_cli.py   INFO  125 led: Namespace(port='/dev/ttyACM1', verbose=0, _cmd='led', _on=True, _off=False)
-          Teensy4_cli.py   INFO  128 ON: turn on LED
-              Teensy4.py   INFO  284 set_led True
-              Teensy4.py   INFO  191 {'success': True, 'method': 'set_led', 'result': {'state': 'on'}}
-          Teensy4_cli.py   INFO  135 {'success': True, 'method': 'set_led', 'result': {'state': 'on'}}
-          Teensy4_cli.py   INFO  221 Success
-              Teensy4.py   INFO  125 closing /dev/ttyACM1
-    (venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/teensy4BOND$ python3 Teensy4_cli.py -p /dev/ttyACM1 led --off
-              Teensy4.py   INFO   79 version 0.1.0
-              Teensy4.py   INFO   88 attempting to install Teensy on port /dev/ttyACM1
-              Teensy4.py   INFO  246 version
-              Teensy4.py   INFO  191 {'success': True, 'method': 'version', 'result': {'version': '0.1.0'}}
-              Teensy4.py   INFO  177 Jig Closed Detector not defined (None)
-              Teensy4.py   INFO  114 Installed Teensy on port /dev/ttyACM1
-          Teensy4_cli.py   INFO  125 led: Namespace(port='/dev/ttyACM1', verbose=0, _cmd='led', _on=False, _off=True)
-          Teensy4_cli.py   INFO  132 OFF: turn off LED
-              Teensy4.py   INFO  284 set_led False
-              Teensy4.py   INFO  191 {'success': True, 'method': 'set_led', 'result': {'state': 'off'}}
-          Teensy4_cli.py   INFO  135 {'success': True, 'method': 'set_led', 'result': {'state': 'off'}}
-          Teensy4_cli.py   INFO  221 Success
-              Teensy4.py   INFO  125 closing /dev/ttyACM1
-    (venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/teensy4BOND$
-
-
-15) Your own Teensy Development
-
-   - the code here (~/public/prism/drivers/teensy4) is a starting point (template) for creating
-     your own Teensy4 code.
-   - copy ~/public/prism/drivers/teensy4 to your own driver folder, for example, ~/public/prism/drivers/company_teensy4
+    (venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/A4401_BOND$ python A4401_BOND_cli.py -p /dev/ttyACM0 version
+           A4401_BOND.py   INFO  112 version 0.1.0
+           A4401_BOND.py   INFO  121 attempting to install Teensy on port /dev/ttyACM0
+           A4401_BOND.py   INFO  321 version
+           A4401_BOND.py   INFO  266 {'success': True, 'method': 'version', 'result': {'version': '0.1.0'}}
+           A4401_BOND.py   INFO  330 status
+           A4401_BOND.py   INFO  266 {'success': True, 'method': 'status', 'result': {'setup_fail_code': 0, 'stack_kb': 402, 'heap_kb': 496, 'psram_kb': 786432}}
+           A4401_BOND.py   INFO  182 1 init
+           A4401_BOND.py   INFO  184 1 pin 1 init {'mode': 'DAC,GPO', 'port': '10,1'}
+           A4401_BOND.py   INFO  184 1 pin 2 init {'mode': 'GPO', 'port': '7'}
+           A4401_BOND.py   INFO  184 1 pin 3 init {'mode': None, 'port': None}
+           A4401_BOND.py   INFO  184 1 pin 4 init {'mode': 'GPO', 'port': '8'}
+           A4401_BOND.py   INFO  184 1 pin 5 init {'mode': None, 'port': None}
+           A4401_BOND.py   INFO  184 1 pin 6 init {'mode': 'DAC', 'port': '9'}
+           A4401_BOND.py   INFO  184 1 pin 7 init {'mode': None, 'port': None}
+           A4401_BOND.py   INFO  184 1 pin 8 init {'mode': 'DAC', 'port': '5'}
+           A4401_BOND.py   INFO  184 1 pin 9 init {'mode': 'ADC', 'port': '6'}
+           A4401_BOND.py   INFO  184 1 pin 10 init {'mode': 'GPO', 'port': '4'}
+           A4401_BOND.py   INFO  184 1 pin 11 init {'mode': None, 'port': None}
+           A4401_BOND.py   INFO  184 1 pin 12 init {'mode': None, 'port': None}
+           A4401_BOND.py   INFO  184 1 pin 13 init {'mode': 'GPI', 'port': '0'}
+           A4401_BOND.py   INFO  184 1 pin 14 init {'mode': 'ADC', 'port': '3'}
+           A4401_BOND.py   INFO  184 1 pin 15 init {'mode': None, 'port': None}
+           A4401_BOND.py   INFO  184 1 pin 16 init {'mode': 'ADC', 'port': '2'}
+           A4401_BOND.py   INFO  184 1 pin 17 init {'mode': None, 'port': None}
+           A4401_BOND.py   INFO  184 1 pin 18 init {'mode': None, 'port': None}
+           A4401_BOND.py   INFO  184 1 pin 19 init {'mode': None, 'port': None}
+           A4401_BOND.py   INFO  184 1 pin 20 init {'mode': None, 'port': None}
+           A4401_BOND.py   INFO  209 ports_dac [5, 9, 10]
+           A4401_BOND.py   INFO  210 ports_adc [2, 3, 6, 11]
+           A4401_BOND.py   INFO  211 ports_gpo [1, 4, 7, 8]
+           A4401_BOND.py   INFO  212 ports_gpi [0]
+           A4401_BOND.py   INFO  266 {'success': True, 'method': 'bond_max_hdr_init', 'result': {'regs_seq_len': 35}}
+           A4401_BOND.py   INFO  154 Installed Teensy-A4401BOND on port /dev/ttyACM0
+       A4401_BOND_cli.py   INFO  267 version: Namespace(port='/dev/ttyACM0', verbose=0, _cmd='version')
+           A4401_BOND.py   INFO  321 version
+           A4401_BOND.py   INFO  266 {'success': True, 'method': 'version', 'result': {'version': '0.1.0'}}
+       A4401_BOND_cli.py   INFO  270 {'success': True, 'method': 'version', 'result': {'version': '0.1.0'}}
+       A4401_BOND_cli.py   INFO  505 Success
+           A4401_BOND.py   INFO  165 closing /dev/ttyACM0
+    (venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/A4401_BOND$ python A4401_BOND_cli.py -p /dev/ttyACM0 led --on
+    ...
+    (venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/A4401_BOND$ python A4401_BOND_cli.py -p /dev/ttyACM0 led --off
+    ...
 
