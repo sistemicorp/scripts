@@ -24,14 +24,14 @@ teensy = None
 def parse_args():
     epilog = """
     Usage examples:
-       python teensy4_cli.py --port /dev/ttyACM0 led --on
+       python A4401_BOND_cli.py --port /dev/ttyACM0 led --on
 
     Port: Teensy4 when plugged into USB on Linux will show up as a ttyACM# device in /dev.
           Use 'ls -al /dev/ttyACM*' to find the port. 
           
     Getting Help for a command:
-    $ python3 Teensy4_cli.py --port /dev/ttyACM0 write_gpio --help
-    usage: Teensy4_cli.py write_gpio [-h] --pin-number _PIN_NUMBER --state {True,False}
+    $ python3 A4401_BOND_cli.py --port /dev/ttyACM0 write_gpio --help
+    usage: A4401_BOND_cli.py write_gpio [-h] --pin-number _PIN_NUMBER --state {True,False}
 
     options:
     -h, --help            show this help message and exit

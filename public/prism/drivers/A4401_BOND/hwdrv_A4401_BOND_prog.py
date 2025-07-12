@@ -1,17 +1,16 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2023
+Sistemi Corporation, copyright, all rights reserved, 2023-2025
 Martin Guthrie
 
 """
 import os
 import logging
 from core.sys_log import pub_notice
-from public.prism.drivers.common.list_serial import serial_ports
-from public.prism.drivers.A4401_BOND.A4401_BOND import A4401_BOND
 
-DRIVER_TYPE = "TEENSY4_PROG"
+from public.prism.drivers.A4401_BOND.A4401_BOND import DRIVER_TYPE_PROG
+DRIVER_TYPE = DRIVER_TYPE_PROG
 
 
 class HWDriver(object):
@@ -79,6 +78,7 @@ class HWDriver(object):
         sender = "{}.{}".format(self.SFN, __class__.__name__)  # for debug purposes
 
         # Fake - always report that one Teensy was found.
+        # FIXME: could spawn out to `lsusb` to make sure one is there?
         _teensy = {}
         _teensy['id'] = 0
         _teensy['version'] = "0.0"

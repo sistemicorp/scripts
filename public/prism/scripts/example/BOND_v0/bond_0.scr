@@ -1,0 +1,32 @@
+// Example: Teensy 4 board test script
+// !! NOTE: Only works if there is a provisioned Teensy 4 board on USB !!
+// !!       See public/prism/drivers/teensy4/README.txt for provision instructions
+{
+  "info": {
+    "product": "teensy4_1",
+    "bom": "B00101-001",
+    "lot": "95135",
+    "location": "canada/ontario/milton"
+  },
+  "config": {
+    "fail_fast": false,
+    "drivers": ["public.prism.drivers.teensy4.hwdrv_teensy4"]
+  },
+  "tests": [
+    {
+      "module": "public.prism.scripts.example.teensy4_v0.teensy400xx",
+      "options": {
+      },
+      "items": [
+        {"id": "T0xxSETUP",           "enable": true },
+        {"id": "T010_led",            "enable": true, "set": true},
+        {"id": "T010_led",            "enable": true, "set": false},
+        {"id": "T020_init_gpio",      "enable": false, "pin_number": 0, "mode": "GPIO_MODE_OUTPUT"},
+        {"id": "T030_read_gpio",      "enable": false, "pin_number": 0},
+        {"id": "T040_write_gpio",     "enable": false, "pin_number": 0, "state": 1},
+        {"id": "T030_read_gpio",      "enable": false, "pin_number": 0},
+        {"id": "T050_read_adc",       "enable": false, "pin_number": 0, "sample_num": 12, "sample_rate": 3},
+      ]
+    }
+  ]
+}
