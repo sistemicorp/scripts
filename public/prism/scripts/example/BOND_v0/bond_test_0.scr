@@ -1,0 +1,25 @@
+// BOND Example test Script
+// Note BOND Header pin configuration defintion to match Pogo board and DUT
+{
+  "info": {
+    "product": "BOND",
+    "bom": "a4401",
+    "lot": "NA",
+    "location": "here"
+  },
+  "config": {
+    "fail_fast": true,
+    "drivers": [["public.prism.drivers.A4401_BOND.hwdrv_A4401_BOND",
+                 "public/prism/scripts/example/BOND_v0/assets/pogo_hdr_definition._json"]]
+  },
+  "tests": [
+    {
+      "module": "public.prism.scripts.example.BOND_v0.bond_P00xx",
+      "options": {
+      },
+      "items": [
+        {"id": "P1000_SETUP",          "enable": true },
+      ]
+    }
+  ]
+}

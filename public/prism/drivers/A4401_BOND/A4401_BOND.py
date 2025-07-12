@@ -1,12 +1,13 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2023
+Sistemi Corporation, copyright, all rights reserved, 2023-2025
 Owen Li, Martin Guthrie
 
 """
 import os
 import json
+import jstyleson
 import threading
 import re
 from simple_rpc import Interface
@@ -54,46 +55,6 @@ class A4401_BOND:
     GPIO_NUMBER_MIN = 0
     GPIO_NUMBER_MAX = 41
 
-    # MAX11311 config per header
-    # - based on schematic A4401
-    # mode - options shown in comments, else its fixed (cannot change)
-    #      - typical options are ADC, DAC, GPO, GPI
-    #
-    # port - format "#[,#]", where # is from 0-11
-    a44BOND_max_config = {
-        1: {  # HDR1
-            # HDR Pin # : { "mode": <>, "port": <> }
-            # not configurable - do not change
-            3: {"mode": None, "port": None},  # UART Level shifter VCC
-            5: {"mode": None, "port": None},  # UART RX
-            7: {"mode": None, "port": None},  # UART TX
-            11: {"mode": None, "port": None},  # GND
-            12: {"mode": None, "port": None},  # GND
-            15: {"mode": None, "port": None},  # N/C
-            17: {"mode": None, "port": None},  # GND
-            18: {"mode": None, "port": None},  # GND
-            19: {"mode": None, "port": None},  # VBUS
-            20: {"mode": None, "port": None},  # VBAT
-
-            # special function - do not change
-            1: {"mode": "DAC,GPO", "port": "10,1"},  # LDO output
-            2: {"mode": "GPO",     "port": "7"},     # Open Drain FET
-            4: {"mode": "GPO",     "port": "8"},     # Open Drain FET
-            6: {"mode": "DAC",     "port": "9"},     # VBAT Adjustment
-            9: {"mode": "ADC",     "port": "6"},     # LDO output feedback
-
-            # User configurable, change mode as required
-            8:  {"mode": "DAC",    "port": "5"},  # mode = ADC, DAC, GPO, GPI
-            10: {"mode": "GPO",    "port": "4"},  # mode = ADC, DAC, GPO, GPI
-            13: {"mode": "GPI",    "port": "0"},  # mode = ADC, DAC, GPO, GPI
-            14: {"mode": "ADC",    "port": "3"},  # mode = ADC, DAC, GPO, GPI
-            16: {"mode": "ADC",    "port": "2"},  # mode = ADC, DAC, GPO, GPI
-
-            "gpo_mv": 3300,  # TODO: GPO output voltage, for all GPOs
-            "gpi_mv": 1000,  # TODO: GPI threshold voltage, for all GPIs
-        }
-    }
-
     # For Teensy FW version checking the SAME (c code) header file that created the Teensy4
     # firmware is used to check if that firmware is now running (deployed) on Teensy4.
     # if that FW is not running, there is probably a problem!  See method init().
@@ -115,13 +76,13 @@ class A4401_BOND:
     def set_port(self, port):
         self.port = port
 
-    def init(self, skip_init=False):
+    def init(self, skip_init=False, header_def_filename=None):
         """ Init Teensy SimpleRPC connection
 
         :param skip_init: True/False, skips MAX11311 setup, assume thats already done
         :return: <True/False> whether Teensy SimpleRPC connection was created
         """
-        self.logger.info("attempting to install Teensy on port {}".format(self.port))
+        self.logger.info("attempting to install BOND on port {}".format(self.port))
 
         if self.rpc is None:
             try:
@@ -152,10 +113,21 @@ class A4401_BOND:
         self._jig_close_check()
 
         if not skip_init:
-            self._init_maxs()
+            if header_def_filename is None:
+                self.logger.error(f"Header pin definition filename not supplied")
+                return False
+
+            if not os.path.exists(header_def_filename):
+                self.logger.error(f"Header pin definition filename {header_def_filename} does not exist")
+                return False
+
+            success = self._init_maxs(header_def_filename)
+            if not success:
+                self.logger.error(f"Failed to init MAX11311 pins")
+                return False
 
         # finally, all is well
-        self.logger.info("Installed Teensy-A4401BOND on port {}".format(self.port))
+        self.logger.info("Installed A4401BOND on port {}".format(self.port))
         return True
 
     def close(self):
@@ -177,15 +149,26 @@ class A4401_BOND:
     # - function names should all begin with "_"
     # - functions are all private to this class
 
-    def _init_maxs(self):
-        for k, v in self.a44BOND_max_config.items():
+    def _init_maxs(self, header_def_filename):
+        # read the json-like header defintion file
+        try:
+            with open(header_def_filename) as f:
+                json_data = f.read()
+
+            result_dict = jstyleson.loads(json_data)  # OK
+
+        except Exception as e:
+            self.logger.error(e)
+            return False
+
+        for k, v in result_dict.items():
             ports_dac = []
             ports_adc = [11]  # all headers use MAX port11 for self test
             ports_gpo = []
             ports_gpi = []
-            self.logger.info(f"{k} init")
-            for pin in range(1, 21):
-                self.logger.info(f"{k} pin {pin} init {v[pin]}")
+            for _pin in range(1, 21):
+                pin = str(_pin)
+                self.logger.info(f"HDR {k} pin {pin} init {v[pin]}")
                 if v[pin]["mode"] is None: continue
 
                 modes = [m for m in v[pin]["mode"].split(",")]
@@ -221,8 +204,12 @@ class A4401_BOND:
                                           ports_gpo, len(ports_gpo),
                                           ports_gpi, len(ports_gpi),
                                           v["gpo_mv"], v["gpi_mv"])
-            self._rpc_validate(answer)
+            answer = self._rpc_validate(answer)
+            if not answer['success']:
+                self.logger.error(f"failed to init")
+                return False
 
+        return True
 
     def _get_version(self):
         """ Get Version from version.h

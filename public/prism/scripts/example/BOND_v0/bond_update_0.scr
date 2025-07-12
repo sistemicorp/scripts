@@ -19,7 +19,7 @@
   },
   "config": {
     "fail_fast": true,
-    "drivers": ["public.prism.drivers.A4401_BOND.hwdrv_A4401_BOND"]
+    "drivers": [["public.prism.drivers.A4401_BOND.hwdrv_A4401_BOND", null]]
   },
   "tests": [
     {

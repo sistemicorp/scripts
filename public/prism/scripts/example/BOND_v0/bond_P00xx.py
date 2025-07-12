@@ -453,3 +453,35 @@ class bond_P00xx(TestItem):
 
         self.item_end()  # always last line of test
 
+    def P1000_SETUP(self):
+        """ Setup for testing DUT
+
+        {"id": "P1000_SETUP",          "enable": true },
+
+        :return:
+        """
+        ctx = self.item_start()  # always first line of test
+
+        # drivers are stored in the shared_state and are retrieved as,
+        drivers = self.shared_state.get_drivers(self.chan, type=DRIVER_TYPE)
+        if not (len(drivers) == 1):
+            self.logger.error("Unexpected number of drivers: {}".format(drivers))
+            self.log_bullet("Unexpected number of drivers")
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+        driver = drivers[0]  # this is a dict from hwdrv_teensy4
+
+        id = driver["obj"]["unique_id"]  # save the id of the teensy4 for the record
+        _, _, _bullet = ctx.record.measurement("teensy4_id", id, ResultAPI.UNIT_STRING)
+        self.log_bullet(_bullet)
+        self.logger.info("Found teensy4: {} {}, chan {}".format(driver, id, self.chan))
+        self.teensy = driver["obj"]["hwdrv"]
+
+        result = self.teensy.reset()   # set Teensy to a known good state
+        if not result["success"]:
+            self.logger.error("failed to reset teensy")
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        self.item_end()  # always last line of test
+
