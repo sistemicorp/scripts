@@ -31,16 +31,17 @@ def parse_args():
           
     Getting Help for a command:
     $ python3 A4401_BOND_cli.py --port /dev/ttyACM0 write_gpio --help
-    usage: A4401_BOND_cli.py write_gpio [-h] --pin-number _PIN_NUMBER --state {True,False}
-
-    options:
-    -h, --help            show this help message and exit
-    --pin-number _PIN_NUMBER
-                        GPIO number (0-41)
-    --state {True,False}  True|False
+        usage: A4401_BOND_cli.py write_gpio [-h] --pin-number _PIN_NUMBER --state {True,False}
+    
+        options:
+        -h, --help            show this help message and exit
+        --pin-number _PIN_NUMBER
+                            GPIO number (0-41)
+        --state {True,False}  True|False
       
-    Example:
+    Examples:
     (venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/A4401_BOND$ python A4401_BOND_cli.py -p /dev/ttyACM0 version
+    (venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/A4401_BOND$ python A4401_BOND_cli.py -p /dev/ttyACM0 -n iox_led_green --enable
     """
     parser = argparse.ArgumentParser(description='A4401_BOND_cli',
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -121,56 +122,64 @@ def parse_args():
 
     vbus_read = subp.add_parser('vbus_read')
 
-    iox_led_green = subp.add_parser('iox_led_green')
+    iox_led_green = subp.add_parser('iox_led_green',
+                                    description="Enable/Disable Green LED (PASS indicator on Jig)")
     iox_led_green.add_argument('--enable',
                            dest="_enable",
                            action='store_true',
                            help='Assert LED GREEN',
                            default=False)
 
-    iox_led_yellow = subp.add_parser('iox_led_yellow')
+    iox_led_yellow = subp.add_parser('iox_led_yellow',
+                                     description="Enable/Disable Yellow LED")
     iox_led_yellow.add_argument('--enable',
                            dest="_enable",
                            action='store_true',
                            help='Assert LED YELLOW',
                            default=False)
 
-    iox_led_red = subp.add_parser('iox_led_red')
+    iox_led_red = subp.add_parser('iox_led_red',
+                                  description="Enable/Disable RED LED (FAIL indicator on Jig)")
     iox_led_red.add_argument('--enable',
                            dest="_enable",
                            action='store_true',
                            help='Assert LED RED',
                            default=False)
 
-    iox_led_blue = subp.add_parser('iox_led_blue')
+    iox_led_blue = subp.add_parser('iox_led_blue',
+                                   description="Enable/Disable BLUE LED")
     iox_led_blue.add_argument('--enable',
                            dest="_enable",
                            action='store_true',
                            help='Assert LED BLUE',
                            default=False)
 
-    iox_vbus_en = subp.add_parser('iox_vbus_en')
+    iox_vbus_en = subp.add_parser('iox_vbus_en',
+                                  description="Enable/Disable VBUS")
     iox_vbus_en.add_argument('--enable',
                            dest="_enable",
                            action='store_true',
                            help='Assert VBUS_EN',
                            default=False)
 
-    iox_vbat_en = subp.add_parser('iox_vbat_en')
+    iox_vbat_en = subp.add_parser('iox_vbat_en',
+                                  description="Enable/Disable VBAT")
     iox_vbat_en.add_argument('--enable',
                            dest="_enable",
                            action='store_true',
                            help='Assert VBAT_EN',
                            default=False)
 
-    iox_vbat_con = subp.add_parser('iox_vbat_con')
+    iox_vbat_con = subp.add_parser('iox_vbat_con',
+                                   description="Enable/Disable VBAT Connect to DUT")
     iox_vbat_con.add_argument('--enable',
                            dest="_enable",
                            action='store_true',
                            help='Assert VBAT_CON',
                            default=False)
 
-    bond_max_hdr_adc_cal = subp.add_parser('bond_max_hdr_adc_cal')
+    bond_max_hdr_adc_cal = subp.add_parser('bond_max_hdr_adc_cal',
+                                           description="Read Header Calibration voltage, 2500mV")
     bond_max_hdr_adc_cal.add_argument('--header',
                            dest="_hdr",
                            action='store',
@@ -424,7 +433,7 @@ if __name__ == '__main__':
 
     teensy = A4401_BOND(args.port, loggerIn=logging)
 
-    success = teensy.init(skip_init=args._skip_init)
+    success = teensy.init(skip_init=args._skip_init, header_def_filename="pogo_hdr_definition._json")
     if not success:
         logging.error("Failed to create teensy instance")
         exit(1)

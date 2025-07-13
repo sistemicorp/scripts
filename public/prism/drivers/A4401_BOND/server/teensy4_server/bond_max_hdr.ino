@@ -190,7 +190,7 @@ String bond_max_hdr_init(int hdr,  // 1-4
 }
 
 /* Read Header <1-4> ADC Port 11 cal voltage
- * - all MAX11311's Port 11 is connected to 3300mV voltage
+ * - all MAX11311's Port 11 is connected to 2500mV voltage reference
  */
 String bond_max_hdr_adc_cal(int hdr) {
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
@@ -215,7 +215,7 @@ String bond_max_hdr_adc_cal(int hdr) {
     return _response(doc);    
   }
 
-  doc["result"]["mV"] = (data << 1) + (data >> 1);  // raw * 2.5 = mV
+  doc["result"]["mV"] = (data * 10000) / 4096  ;  // raw * 10000mV / 4096
 
   oled_print(OLED_LINE_RPC, __func__, !doc["success"]);
   return _response(doc);  // always the last line of RPC API

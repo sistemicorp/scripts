@@ -1,5 +1,5 @@
 // BOND Example test Script
-// Note BOND Header pin configuration defintion to match Pogo board and DUT
+// Note BOND Header pin configuration definition to match Pogo board and DUT
 {
   "info": {
     "product": "BOND",
@@ -19,6 +19,10 @@
       },
       "items": [
         {"id": "P1000_SETUP",          "enable": true },
+        {"id": "P1100_ADC_check",      "enable": true, "hdr": 1 },
+        {"id": "P1100_ADC_check",      "enable": true, "hdr": 2 },
+        {"id": "P1100_ADC_check",      "enable": true, "hdr": 3 },
+        {"id": "P1100_ADC_check",      "enable": true, "hdr": 4 },
       ]
     }
   ]

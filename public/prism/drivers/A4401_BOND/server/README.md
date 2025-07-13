@@ -90,82 +90,9 @@ After programming, the teensy will show up as a serial, like so,
     Bus 001 Device 053: ID 16c0:0483 Van Ooijen Technische Informatica Teensyduino Serial
 
 
-10) Teensy RPC Development with the CLI
+10) Testing BOND at the command line (CLI)
 
-The CLI is a way of testing the BOND Prism API without having to run Prism.  Debugging outside of Prism is easier
-and faster.  The downside is that for each API you add, you need to add it to the CLI.  But its worth it.
-
-    - Using the A4401_BOND_cli.py program is how you will be testing/developing new APIs to the Teensy4 server.
-    - Note the `-n` flag which will skip BOND initialization.  The first time BOND is used it requires
-      initialization so that flag should not be used the first time.  There is no harm in not using the flag
-      at all, but CLI would be slower because of the init work that is done.
-
-BOND CLI Examples,
-
-
-    (venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/A4401_BOND$ python A4401_BOND_cli.py -p /dev/ttyACM0 version
-           A4401_BOND.py   INFO  112 version 0.1.0
-           A4401_BOND.py   INFO  121 attempting to install Teensy on port /dev/ttyACM0
-           A4401_BOND.py   INFO  321 version
-           A4401_BOND.py   INFO  266 {'success': True, 'method': 'version', 'result': {'version': '0.1.0'}}
-           A4401_BOND.py   INFO  330 status
-           A4401_BOND.py   INFO  266 {'success': True, 'method': 'status', 'result': {'setup_fail_code': 0, 'stack_kb': 402, 'heap_kb': 496, 'psram_kb': 786432}}
-           A4401_BOND.py   INFO  182 1 init
-           A4401_BOND.py   INFO  184 1 pin 1 init {'mode': 'DAC,GPO', 'port': '10,1'}
-           A4401_BOND.py   INFO  184 1 pin 2 init {'mode': 'GPO', 'port': '7'}
-           A4401_BOND.py   INFO  184 1 pin 3 init {'mode': None, 'port': None}
-           A4401_BOND.py   INFO  184 1 pin 4 init {'mode': 'GPO', 'port': '8'}
-           A4401_BOND.py   INFO  184 1 pin 5 init {'mode': None, 'port': None}
-           A4401_BOND.py   INFO  184 1 pin 6 init {'mode': 'DAC', 'port': '9'}
-           A4401_BOND.py   INFO  184 1 pin 7 init {'mode': None, 'port': None}
-           A4401_BOND.py   INFO  184 1 pin 8 init {'mode': 'DAC', 'port': '5'}
-           A4401_BOND.py   INFO  184 1 pin 9 init {'mode': 'ADC', 'port': '6'}
-           A4401_BOND.py   INFO  184 1 pin 10 init {'mode': 'GPO', 'port': '4'}
-           A4401_BOND.py   INFO  184 1 pin 11 init {'mode': None, 'port': None}
-           A4401_BOND.py   INFO  184 1 pin 12 init {'mode': None, 'port': None}
-           A4401_BOND.py   INFO  184 1 pin 13 init {'mode': 'GPI', 'port': '0'}
-           A4401_BOND.py   INFO  184 1 pin 14 init {'mode': 'ADC', 'port': '3'}
-           A4401_BOND.py   INFO  184 1 pin 15 init {'mode': None, 'port': None}
-           A4401_BOND.py   INFO  184 1 pin 16 init {'mode': 'ADC', 'port': '2'}
-           A4401_BOND.py   INFO  184 1 pin 17 init {'mode': None, 'port': None}
-           A4401_BOND.py   INFO  184 1 pin 18 init {'mode': None, 'port': None}
-           A4401_BOND.py   INFO  184 1 pin 19 init {'mode': None, 'port': None}
-           A4401_BOND.py   INFO  184 1 pin 20 init {'mode': None, 'port': None}
-           A4401_BOND.py   INFO  209 ports_dac [5, 9, 10]
-           A4401_BOND.py   INFO  210 ports_adc [2, 3, 6, 11]
-           A4401_BOND.py   INFO  211 ports_gpo [1, 4, 7, 8]
-           A4401_BOND.py   INFO  212 ports_gpi [0]
-           A4401_BOND.py   INFO  266 {'success': True, 'method': 'bond_max_hdr_init', 'result': {'regs_seq_len': 35}}
-           A4401_BOND.py   INFO  154 Installed Teensy-A4401BOND on port /dev/ttyACM0
-       A4401_BOND_cli.py   INFO  267 version: Namespace(port='/dev/ttyACM0', verbose=0, _cmd='version')
-           A4401_BOND.py   INFO  321 version
-           A4401_BOND.py   INFO  266 {'success': True, 'method': 'version', 'result': {'version': '0.1.0'}}
-       A4401_BOND_cli.py   INFO  270 {'success': True, 'method': 'version', 'result': {'version': '0.1.0'}}
-       A4401_BOND_cli.py   INFO  505 Success
-           A4401_BOND.py   INFO  165 closing /dev/ttyACM0
-    (venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/A4401_BOND$ python A4401_BOND_cli.py -p -n /dev/ttyACM0 led --on
-    ...
-    (venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/A4401_BOND$ python A4401_BOND_cli.py -p -n /dev/ttyACM0 led --off
-    ...
-
-The BOND CLI has many commands, use `--help` to see all of them.
-
-
-      $ python A4401_BOND_cli.py --help
-      usage: A4401_BOND_cli.py [-h] -p PORT [-n] [-v] {led,uid,version,write_gpio,read_gpio,read_adc,bist_voltage,vbat_read,vbat_set,vbus_read,iox_led_green,iox_led_yellow,iox_led_red,iox_led_blue,iox_vbus_en,iox_vbat_en,iox_vbat_con,bond_max_hdr_adc_cal,bond_max_hdr_adc,bond_max_hdr_dac} ...
-      
-      A4401_BOND_cli
-      
-      positional arguments:
-        {led,uid,version,write_gpio,read_gpio,read_adc,bist_voltage,vbat_read,vbat_set,vbus_read,iox_led_green,iox_led_yellow,iox_led_red,iox_led_blue,iox_vbus_en,iox_vbat_en,iox_vbat_con,bond_max_hdr_adc_cal,bond_max_hdr_adc,bond_max_hdr_dac}
-                              commands
-      
-      options:
-        -h, --help            show this help message and exit
-        -p PORT, --port PORT  Active serial port
-        -n, --no-init         Do not init (its presumed BOND has been previously initialized)
-        -v, --verbose         Increase verbosity
-
+   - See the readme one folder up.
 
 
 11) Programming a FRESH Teensy on BOND via Prism Developer CLI
@@ -262,9 +189,10 @@ The BOND CLI has many commands, use `--help` to see all of them.
      8518             resultBaseClass.py: 186 -             ResultBaseKeysV1.0:      record_publish() INFO  : Result: PASS, Created: result_f06516f9-75e7-4f61-a9d9-bff73112aa08.json
 
 
-12) Updating BOND Teensy via Prism Developer CLI
+12) Updating BOND Teensy via Prism
 
+   - If BOND's Teensy is running the server code, it can be updated via Prism.  The server code has some functions to
+     to put Teensy into a mode where new code can be uploaded to it.  This updating path is different then the above
+     path which only the Teensy's built in bootloader is available.
+   - See the example BOND script for the update code.
 
-   - after testing your code with `A4401_BOND_cli.py` (see above) its time to test it within the Prism environment.
-   - in the Arduino environment the Arduino IDE loads the code for you, but now we need to be able to push the code
-     to BOND's Teensy4 in a way that Prism supports.  There is a Prism script for updating BOND.

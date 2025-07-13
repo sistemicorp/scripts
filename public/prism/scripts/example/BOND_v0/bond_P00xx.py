@@ -458,7 +458,6 @@ class bond_P00xx(TestItem):
 
         {"id": "P1000_SETUP",          "enable": true },
 
-        :return:
         """
         ctx = self.item_start()  # always first line of test
 
@@ -482,6 +481,38 @@ class bond_P00xx(TestItem):
             self.logger.error("failed to reset teensy")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
+
+        self.item_end()  # always last line of test
+
+    def P1100_ADC_check(self):
+        """ ADC Check/Validate conversion
+        - each MAX11311 on each header has an ADC input connected to Voltage Reference
+          for self testing each chip
+        - BOND's reference voltage is 2500mV
+
+        {"id": "P1100_ADC_check",      "enable": true, "hdr": 1 },
+
+        """
+        ctx = self.item_start()  # always first line of test
+        EXPECTED_MV = 2500
+        TOLERANCE_MV = 15
+
+        if not (1 <= ctx.item.hdr <= 4):
+            self.logger.error(f"invalid header index, 1 <= {ctx.item.hdr} <= 4")
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        response = self.teensy.bond_max_hdr_adc_cal(ctx.item.hdr)
+        if not response['success']:
+            self.logger.error(response)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        success, _result, _bullet  = ctx.record.measurement(f"adc_cal_hdr_{ctx.item.hdr}",
+                                                            response['result']['mV'],
+                                                            min=EXPECTED_MV - TOLERANCE_MV,
+                                                            max=EXPECTED_MV + TOLERANCE_MV)
+        self.log_bullet(_bullet)
 
         self.item_end()  # always last line of test
 
