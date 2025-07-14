@@ -70,6 +70,7 @@ class A4401_BOND:
         self.port = port
         self.rpc = None
         self.a44BOND_max_config = None
+        self._is_battemu_calibrated = False  # calibrate only if used
 
         self.my_version = self._get_version()
         self.logger.info(f"version {self.my_version}")
@@ -167,6 +168,9 @@ class A4401_BOND:
 
         self.logger.info(self.a44BOND_max_config)
         for k, v in self.a44BOND_max_config.items():
+            if not k.isdigit():
+                continue
+
             ports_dac = []
             ports_adc = [11]  # all headers use MAX port11 for self test
             ports_gpo = []
@@ -211,8 +215,19 @@ class A4401_BOND:
                                           v["gpo_mv"], v["gpi_mv"])
             answer = self._rpc_validate(answer)
             if not answer['success']:
-                self.logger.error(f"failed to init")
+                self.logger.error(f"failed to init: {answer}")
                 return False
+
+        if "calibrate_battery_emulator" in self.a44BOND_max_config and self.a44BOND_max_config['calibrate_battery_emulator']:
+            self.logger.info("Calibrating Battery Emulator...")
+            answer = self.rpc.call_method('bond_batt_emu_cal')
+            answer = self._rpc_validate(answer)
+            if not answer['success']:
+                self.logger.error(f"bond_batt_emu_cal failed: {answer}")
+                return False
+
+            self._is_battemu_calibrated = True
+            self.logger.info("Calibrating Battery Emulator completed")
 
         return True
 
@@ -538,22 +553,30 @@ class A4401_BOND:
             return self._rpc_validate(answer)
 
     def iox_vbat_en(self, state: bool):
-        """ MAX11311 IOX
+        """ Enable VBAT
 
         :return: {'success': True, 'method': 'iox_vbat_en',
                   'result': {'assert': False, 'level': False}
         """
+        if not self._is_battemu_calibrated:
+            self.logger.error("attempt to use Battery Emulator that is not calibrated")
+            return {'success': False, 'method': 'iox_vbat_en', 'result': {'error': "not calibrated"}}
+
         with self._lock:
             self.logger.info(f"iox_vbat_en {state}")
             answer = self.rpc.call_method('iox_vbat_en', state)
             return self._rpc_validate(answer)
 
     def iox_vbat_con(self, state: bool):
-        """ MAX11311 IOX
+        """ Connect VBAT to DUT
 
         :return: {'success': True, 'method': 'iox_vbat_con',
                   'result': {'assert': False, 'level': False}
         """
+        if not self._is_battemu_calibrated:
+            self.logger.error("attempt to use Battery Emulator that is not calibrated")
+            return {'success': False, 'method': 'iox_vbat_en', 'result': {'error': "not calibrated"}}
+
         with self._lock:
             self.logger.info(f"iox_vbat_con {state}")
             answer = self.rpc.call_method('iox_vbat_con', state)
