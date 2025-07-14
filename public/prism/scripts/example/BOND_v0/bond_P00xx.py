@@ -516,3 +516,49 @@ class bond_P00xx(TestItem):
 
         self.item_end()  # always last line of test
 
+    def P1200_DAC(self):
+        """ Set BOND DAC pin
+
+        {"id": "P1200_DAC",      "enable": true, "hdr": 1, "pin": 6, "mv": 3300 },
+
+        """
+        ctx = self.item_start()  # always first line of test
+
+        if not (1 <= ctx.item.hdr <= 4):
+            self.logger.error(f"invalid header index, 1 <= {ctx.item.hdr} <= 4")
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        response = self.teensy.bond_max_hdr_dac(ctx.item.hdr, ctx.item.pin, ctx.item.mv)
+        if not response['success']:
+            self.logger.error(response)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        self.item_end()  # always last line of test
+
+    def P1300_ADC(self):
+        """ read BOND ADC pint
+
+        {"id": "P1300_ADC",            "enable": true, "hdr": 2, "pin": 14,
+                                                       "min": 3200, "max": 3400 },
+
+        """
+        ctx = self.item_start()  # always first line of test
+
+        if not (1 <= ctx.item.hdr <= 4):
+            self.logger.error(f"invalid header index, 1 <= {ctx.item.hdr} <= 4")
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        response = self.teensy.bond_max_hdr_adc(ctx.item.hdr, ctx.item.pin)
+        if not response['success']:
+            self.logger.error(response)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        success, _result, _bullet  = ctx.record.measurement(None, response['result']['mV'], min=ctx.item.min, max=ctx.item.max)
+        self.log_bullet(_bullet)
+
+        self.item_end()  # always last line of test
+

@@ -177,17 +177,24 @@ String bond_max_hdr_init(int hdr,  // 1-4
 
   doc["result"]["regs_seq_len"] = i;
 
-  if (max == &max_hdr1) {
-    int rc = battemu_init();
-    if (rc) {
-      doc["success"] = false;
-      doc["result"]["error"] = "battemu_init";
-    }
+  oled_print(OLED_LINE_RPC, __func__, !doc["success"]);
+  return _response(doc);  // always the last line of RPC API
+}
+
+/* Calibrate Battery Emulator
+ */
+String bond_batt_emu_cal(void) {
+  DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
+
+  int rc = battemu_init();
+  if (rc) {
+    doc["success"] = false;
+    doc["result"]["error"] = "battemu_init";
   }
 
   oled_print(OLED_LINE_RPC, __func__, !doc["success"]);
   return _response(doc);  // always the last line of RPC API
-}
+}  
 
 /* Read Header <1-4> ADC Port 11 cal voltage
  * - all MAX11311's Port 11 is connected to 2500mV voltage reference
@@ -247,7 +254,7 @@ String bond_max_hdr_adc(int hdr, int port) {
     return _response(doc);    
   }
 
-  doc["result"]["mV"] = (data << 1) + (data >> 1);  // raw * 2.5 = mV
+  doc["result"]["mV"] = ((uint32_t)data * 10000) / 4096;  // raw * 10000mV / 4096
 
   oled_print(OLED_LINE_RPC, __func__, !doc["success"]);
   return _response(doc);  // always the last line of RPC API
@@ -265,8 +272,14 @@ String bond_max_hdr_dac(int hdr, int port, int mv) {
     doc["success"] = false;
     return _response(doc);
   }  
+  if (mv < 0 || mv > 10000) {
+    doc["result"]["error"] = "0 <= mv <= 10000, invalid parameter";
+    doc["success"] = false;
+    return _response(doc);    
+  }
 
-  uint16_t data = (mv * 2) / 5;  // divide by 2.5
+  float _data = mv * 4096 / 10000;
+  uint16_t data = (uint16_t)_data & 0xFFFF;  // 10000mV range over 4096
   max->write_register(_reg_dac_data_port(port), data);
 
   doc["result"]["dac_raw"] = data;

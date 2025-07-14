@@ -196,3 +196,39 @@ After programming, the teensy will show up as a serial, like so,
      path which only the Teensy's built in bootloader is available.
    - See the example BOND script for the update code.
 
+
+13) MAX11311 Setup
+
+   - The MAX11311 pots can be configured for DAC, ADC, GPO, GPI and that is done by 
+     `public/prism/drivers/A4401_BOND/A4401_BOND.py:A4401_BOND:_init_maxs()`
+     - And on the Teensy side by code at `public/prism/drivers/A4401_BOND/server/teensy4_server/bond_max_hdr.ino:bond_max_hdr_init()` 
+   - An example of the json-like file that is used to define the MAX11311 ports is found at
+     `public/prism/drivers/A4401_BOND/pogo_hdr_definition._json`
+     - BOND is intended to support multiple DUT targets in production and the MAX11311 port assignment is
+       part of that flexibility.  A Prism script can call out a specific port assignment file to be used by 
+       a certain DUT, using a specific Pogo board.
+   - Setting the MAX11311 ports is detailed process, defined in the datasheet, but there is also a PC side tool that
+     one can use which generates C code.
+
+
+14) Battery Emulator Calibration
+
+   - See the schematic for the battery emulator.  The Battery Emulator can source and sink current.
+   - header #1 uses dedicated MAX11311 port 9 as a DAC to operate the Battery Emulator.
+   - The output of the Battery emulator is monitored by the INA220 (U9), which can measure the Battery Emulator
+     output voltage and current.
+
+15) Normal Workflow
+
+   - The Arduino IDE is open and connected to the Bond Teensy
+   - Make code changes and use the IDE to push code to the target
+   - In a terminal window run the BOND Python CLI to test out commands
+     - You don't need to use the CLI push new code to Bond Teensy
+   - When done testing code, you need to remember to copy the hex/elf files to the Prism folder(s)
+     - As shown in step 11 above 
+
+16) version.h
+
+   - this version file is provided so that Prism can determine if a BOND system is running the right version of code.
+   - updating this file is manual task 
+

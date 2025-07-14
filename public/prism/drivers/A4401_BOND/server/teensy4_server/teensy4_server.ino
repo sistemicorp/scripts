@@ -335,6 +335,7 @@ void loop(void) {
     bond_max_hdr_adc_cal, "bond_max_hdr_adc_cal: read port 11 cal voltage on header",
     bond_max_hdr_adc, "bond_max_hdr_adc: read ADC voltage on header port",
     bond_max_hdr_dac, "bond_max_hdr_dac: write DAC voltage on header port",
+    bond_batt_emu_cal, "bond_batt_emu_cal: calibrate battery emulator",
 
     vbus_read, "vbus_read: Read VBUS current and voltage",
     vbat_read, "vbat_read: Read VBAT current and voltage",

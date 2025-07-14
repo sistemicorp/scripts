@@ -69,6 +69,7 @@ class A4401_BOND:
         self._lock = threading.Lock()
         self.port = port
         self.rpc = None
+        self.a44BOND_max_config = None
 
         self.my_version = self._get_version()
         self.logger.info(f"version {self.my_version}")
@@ -76,13 +77,16 @@ class A4401_BOND:
     def set_port(self, port):
         self.port = port
 
-    def init(self, skip_init=False, header_def_filename=None):
+    def init(self, header_def_filename=None):
         """ Init Teensy SimpleRPC connection
 
         :param skip_init: True/False, skips MAX11311 setup, assume thats already done
         :return: <True/False> whether Teensy SimpleRPC connection was created
         """
-        self.logger.info("attempting to install BOND on port {}".format(self.port))
+        self.logger.info(f"installing BOND on port {self.port} using {header_def_filename}")
+        if header_def_filename is None:
+            self.logger.error("MAX11311 port definition file must be specified")
+            return False
 
         if self.rpc is None:
             try:
@@ -112,19 +116,18 @@ class A4401_BOND:
         # check if jig close has valid GPIOs
         self._jig_close_check()
 
-        if not skip_init:
-            if header_def_filename is None:
-                self.logger.error(f"Header pin definition filename not supplied")
-                return False
+        if header_def_filename is None:
+            self.logger.error(f"Header pin definition filename not supplied")
+            return False
 
-            if not os.path.exists(header_def_filename):
-                self.logger.error(f"Header pin definition filename {header_def_filename} does not exist")
-                return False
+        if not os.path.exists(header_def_filename):
+            self.logger.error(f"Header pin definition filename {header_def_filename} does not exist")
+            return False
 
-            success = self._init_maxs(header_def_filename)
-            if not success:
-                self.logger.error(f"Failed to init MAX11311 pins")
-                return False
+        success = self._init_maxs(header_def_filename)
+        if not success:
+            self.logger.error(f"Failed to init MAX11311 pins")
+            return False
 
         # finally, all is well
         self.logger.info("Installed A4401BOND on port {}".format(self.port))
@@ -151,17 +154,19 @@ class A4401_BOND:
 
     def _init_maxs(self, header_def_filename):
         # read the json-like header defintion file
+        self.logger.info(f"Attempting to read MAX11311 config from {header_def_filename}...")
         try:
             with open(header_def_filename) as f:
                 json_data = f.read()
 
-            result_dict = jstyleson.loads(json_data)  # OK
+            self.a44BOND_max_config = jstyleson.loads(json_data)  # OK
 
         except Exception as e:
             self.logger.error(e)
             return False
 
-        for k, v in result_dict.items():
+        self.logger.info(self.a44BOND_max_config)
+        for k, v in self.a44BOND_max_config.items():
             ports_dac = []
             ports_adc = [11]  # all headers use MAX port11 for self test
             ports_gpo = []
@@ -566,7 +571,13 @@ class A4401_BOND:
             answer = self.rpc.call_method('bond_max_hdr_adc_cal', hdr)
             return self._rpc_validate(answer)
 
-    def _bond_check_hdr_pin(self, hdr, pin, mode):
+    def _bond_check_hdr_pin(self, _hdr, _pin, mode):
+        if self.a44BOND_max_config is None:
+            self.logger.error(f"Attempt to use MAX11311 before configured")
+            return False, None, {'success': False, 'method': 'bond_max_hdr_adc/dac',
+                                 'result': {'error': f'MAX11311 not configured'}}
+
+        hdr, pin = str(_hdr), str(_pin)
         if hdr not in self.a44BOND_max_config:
             self.logger.error(f'Invalid parameter hdr {hdr}')
             return False, None, {'success': False, 'method': 'bond_max_hdr_adc',

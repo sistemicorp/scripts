@@ -84,7 +84,7 @@ class HWDriver(object):
             # test if this COM port is really a Teensy
             # create an instance of Teensy()
             _teensy['hwdrv'] = A4401_BOND(port, loggerIn=logging.getLogger("teensy.try"))
-            success = _teensy['hwdrv'].init(False, scriptArgs)
+            success = _teensy['hwdrv'].init(scriptArgs)
             if not success:
                 self.logger.error("failed on {}...".format(port))
                 continue

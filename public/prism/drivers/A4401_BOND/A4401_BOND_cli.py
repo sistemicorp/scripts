@@ -50,9 +50,6 @@ def parse_args():
     parser.add_argument("-p", '--port', dest='port', default=None, type=str, required=True,
                         action='store', help='Active serial port')
 
-    parser.add_argument("-n", '--no-init', dest='_skip_init', default=False,
-                        action='store_true', help='Do not init (its presumed BOND has been previously initialized)')
-
     parser.add_argument("-v", '--verbose', dest='verbose', default=0, action='count', help='Increase verbosity')
 
     subp = parser.add_subparsers(dest="_cmd", help='commands')
@@ -188,7 +185,8 @@ def parse_args():
                            required=True,
                            default=1)
 
-    bond_max_hdr_adc = subp.add_parser('bond_max_hdr_adc')
+    bond_max_hdr_adc = subp.add_parser('bond_max_hdr_adc',
+                                       description="Read Header Pin ADC Voltage in mV")
     bond_max_hdr_adc.add_argument('--header',
                            dest="_hdr",
                            action='store',
@@ -204,7 +202,8 @@ def parse_args():
                            required=True,
                            default=1)
 
-    bond_max_hdr_dac = subp.add_parser('bond_max_hdr_dac')
+    bond_max_hdr_dac = subp.add_parser('bond_max_hdr_dac',
+                                       description="Write Header Pin DAC Voltage in mV")
     bond_max_hdr_dac.add_argument('--header',
                            dest="_hdr",
                            action='store',
@@ -433,7 +432,7 @@ if __name__ == '__main__':
 
     teensy = A4401_BOND(args.port, loggerIn=logging)
 
-    success = teensy.init(skip_init=args._skip_init, header_def_filename="pogo_hdr_definition._json")
+    success = teensy.init(header_def_filename="pogo_hdr_definition._json")
     if not success:
         logging.error("Failed to create teensy instance")
         exit(1)

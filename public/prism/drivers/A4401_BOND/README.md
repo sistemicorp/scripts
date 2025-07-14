@@ -10,9 +10,8 @@ and faster.  The downside is that for each API you add, you need to add it to th
 (Please maintain this CLI for debugging)
 
     - Using the A4401_BOND_cli.py program is how you will be testing/developing new APIs to the Teensy4 server.
-    - Note the `-n` flag which will skip BOND initialization.  The first time BOND is used it requires
-      initialization so that flag should not be used the first time.  There is no harm in not using the flag
-      at all, but CLI would be slower because of the init work that is done.
+    - Note the CLI will re-init BOND every time it is called, because between CLI runs it can't keep state.
+    - If testing/using the Battery Emulator it must be calibrated using `bond_max_batt_emu_cal` 
 
 BOND CLI Examples,
 
@@ -274,4 +273,6 @@ The BOND CLI has many commands, use `--help` to see all of them.
         oled_print(OLED_LINE_RPC, __func__, !doc["success"]);
         return _response(doc);  // always the last line of RPC API
       }
+   
+   - Note the `resposne` is passed all the way back to the calling script Python function.
 
