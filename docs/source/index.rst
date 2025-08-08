@@ -29,3 +29,4 @@ EMAIL: info@sistemi.ca for more information.
    _jigs
    _security
    _deployment
+   _mes_integration

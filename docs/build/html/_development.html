@@ -1,26 +1,30 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
+<<<<<<< HEAD
     <title>Development &#8212; Sistemi Lente/Prism Test System 0.8.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+=======
+    <title>Development &#8212; Sistemi Lente/Prism Test System 0.6.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=2bf1fcf8" />
+>>>>>>> origin/master
     
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
+    <script src="_static/documentation_options.js?v=8fa8b3e9"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Test Jigs" href="_jigs.html" />
     <link rel="prev" title="Results Database" href="_database.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -43,9 +47,9 @@
           <div class="body" role="main">
             
   <section id="development">
-<h1>Development<a class="headerlink" href="#development" title="Permalink to this headline">¶</a></h1>
+<h1>Development<a class="headerlink" href="#development" title="Link to this heading">¶</a></h1>
 <p>This section describes how to get started with your own development.</p>
-<div class="contents local topic" id="contents">
+<nav class="contents local" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#your-own-git-repo" id="id1">Your Own Git Repo</a></p></li>
 <li><p><a class="reference internal" href="#repo-setup" id="id2">Repo Setup</a></p>
@@ -57,9 +61,9 @@
 </li>
 <li><p><a class="reference internal" href="#command-line-development" id="id6">Command Line Development</a></p></li>
 </ul>
-</div>
+</nav>
 <section id="your-own-git-repo">
-<h2><a class="toc-backref" href="#id1">Your Own Git Repo</a><a class="headerlink" href="#your-own-git-repo" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Your Own Git Repo</a><a class="headerlink" href="#your-own-git-repo" title="Link to this heading">¶</a></h2>
 <p>You will want to begin with setting up your own Git repo.  If you are unfamiliar with Git,
 then you should read up on it, and/or do some tutorials.  It is beyond the scope
 of this documentation to teach Git.</p>
@@ -146,10 +150,10 @@ examples, drivers, etc.</p></li>
 </ul>
 </section>
 <section id="repo-setup">
-<h2><a class="toc-backref" href="#id2">Repo Setup</a><a class="headerlink" href="#repo-setup" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">Repo Setup</a><a class="headerlink" href="#repo-setup" title="Link to this heading">¶</a></h2>
 <p>Additional steps.</p>
 <section id="install-git-hooks">
-<h3><a class="toc-backref" href="#id3">Install Git Hooks</a><a class="headerlink" href="#install-git-hooks" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id3" role="doc-backlink">Install Git Hooks</a><a class="headerlink" href="#install-git-hooks" title="Link to this heading">¶</a></h3>
 <p><em>Git Hooks are generally replaced by Git Actions and are beyond the scope of these instructions</em></p>
 <p>In the <cite>scripts</cite> repo, there is a folder called <cite>hooks</cite>.  The contents of this folder
 needs to be copied to <cite>./.git/hooks</cite> folder of your repository.</p>
@@ -160,7 +164,7 @@ needs to be copied to <cite>./.git/hooks</cite> folder of your repository.</p>
 </div>
 </section>
 <section id="create-a-tag">
-<h3><a class="toc-backref" href="#id4">Create a Tag</a><a class="headerlink" href="#create-a-tag" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id4" role="doc-backlink">Create a Tag</a><a class="headerlink" href="#create-a-tag" title="Link to this heading">¶</a></h3>
 <p>The Sistemi system reports the version of things to help keep you organized, including the version of your scripts.</p>
 <p>On whatever branch you decide to “release” your scripts, for example, the “master” branch, create a
 tag on that branch.  The tag <strong>MUST</strong> be of this format,</p>
@@ -194,12 +198,12 @@ the minor version,</p>
 </div>
 </section>
 <section id="change-readme-md">
-<h3><a class="toc-backref" href="#id5">Change README.md</a><a class="headerlink" href="#change-readme-md" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id5" role="doc-backlink">Change README.md</a><a class="headerlink" href="#change-readme-md" title="Link to this heading">¶</a></h3>
 <p>Change this file to suit your needs.  For example, document your script/program naming strategy.</p>
 </section>
 </section>
 <section id="command-line-development">
-<h2><a class="toc-backref" href="#id6">Command Line Development</a><a class="headerlink" href="#command-line-development" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">Command Line Development</a><a class="headerlink" href="#command-line-development" title="Link to this heading">¶</a></h2>
 <p>Initial development will be done in “headless” mode, whereupon coding is done outside of the GUI used in production.</p>
 <p>A command line version of the core engine of the system is at the top of the <cite>scripts</cite> folder, called <cite>prism_dev.py</cite>.
 The command line help,</p>
@@ -243,15 +247,19 @@ to be modified per script it is used on.</p></li>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="_database.html"
-                        title="previous chapter">Results Database</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="_jigs.html"
-                        title="next chapter">Test Jigs</a></p>
-<div id="searchbox" style="display: none" role="search">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="_database.html"
+                          title="previous chapter">Results Database</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="_jigs.html"
+                          title="next chapter">Test Jigs</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -259,13 +267,13 @@ to be modified per script it is used on.</p></li>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -282,8 +290,13 @@ to be modified per script it is used on.</p></li>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
+<<<<<<< HEAD
         &#169; Copyright 2019-2025, Sistemi Corp, info@sistemi.ca.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+=======
+    &#169; Copyright 2019-2023, Sistemi Corp..
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+>>>>>>> origin/master
     </div>
   </body>
 </html>
