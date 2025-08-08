@@ -1,30 +1,26 @@
+
 <!DOCTYPE html>
 
-<html lang="en" data-content_root="./">
+<html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-<<<<<<< HEAD
     <title>System &#8212; Sistemi Lente/Prism Test System 0.8.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
-=======
-    <title>System &#8212; Sistemi Lente/Prism Test System 0.6.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=2bf1fcf8" />
->>>>>>> origin/master
     
-    <script src="_static/documentation_options.js?v=8fa8b3e9"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Production Planning" href="_prodplan.html" />
     <link rel="prev" title="Cloud" href="lente_cloud.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="Related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -47,10 +43,10 @@
           <div class="body" role="main">
             
   <section id="system">
-<h1>System<a class="headerlink" href="#system" title="Link to this heading">¶</a></h1>
+<h1>System<a class="headerlink" href="#system" title="Permalink to this headline">¶</a></h1>
 <p id="system-arch">This section describes system related considerations to building your test system with
 Prism and Lente.</p>
-<nav class="contents local" id="contents">
+<div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#architecture" id="id1">Architecture</a></p></li>
 <li><p><a class="reference internal" href="#results-flow" id="id2">Results Flow</a></p></li>
@@ -61,9 +57,9 @@ Prism and Lente.</p>
 </ul>
 </li>
 </ul>
-</nav>
+</div>
 <section id="architecture">
-<h2><a class="toc-backref" href="#id1" role="doc-backlink">Architecture</a><a class="headerlink" href="#architecture" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id1">Architecture</a><a class="headerlink" href="#architecture" title="Permalink to this headline">¶</a></h2>
 <p>This is a typical Sistemi system architecture layout.  More complex systems are possible and
 shown later in this section.</p>
 <img alt="_images/Screenshot_system_network_01.png" src="_images/Screenshot_system_network_01.png" />
@@ -120,7 +116,7 @@ Lente and a monitoring station for viewing the dashboard.  Line 3 does not have 
 local Lente and is using the factory Lente.</p>
 </section>
 <section id="results-flow">
-<h2><a class="toc-backref" href="#id2" role="doc-backlink">Results Flow</a><a class="headerlink" href="#results-flow" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id2">Results Flow</a><a class="headerlink" href="#results-flow" title="Permalink to this headline">¶</a></h2>
 <p>This diagram also shows a possible architecture of a Sistemi system.  In this diagram the focus
 is on what happens to DUT results.</p>
 <p>This architecture shows how Lente can be stacked
@@ -178,7 +174,7 @@ will be that which is local to that Lente.</p></li>
 </ol>
 </section>
 <section id="docker">
-<h2><a class="toc-backref" href="#id3" role="doc-backlink">Docker</a><a class="headerlink" href="#docker" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id3">Docker</a><a class="headerlink" href="#docker" title="Permalink to this headline">¶</a></h2>
 <p>Prism and Lente are running as Docker images/containers.  Using Docker containers has two
 advantages,</p>
 <ul class="simple">
@@ -189,7 +185,7 @@ on impacting Prism/Lente</p></li>
 <p>Docker is a large subject and there is a lot of online content.  There are but a few Docker
 commands that you should know for the purposes of troubleshooting.</p>
 <section id="check-what-is-running">
-<h3><a class="toc-backref" href="#id4" role="doc-backlink">Check what is running</a><a class="headerlink" href="#check-what-is-running" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id4">Check what is running</a><a class="headerlink" href="#check-what-is-running" title="Permalink to this headline">¶</a></h3>
 <p>To determine what docker images are running,</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ docker ps
 CONTAINER ID   IMAGE               COMMAND                CREATED      STATUS      PORTS                                       NAMES
@@ -206,7 +202,7 @@ what you expect.</p></li>
 </ul>
 </section>
 <section id="helper-docker-scripts">
-<span id="system-helper-docker"></span><h3><a class="toc-backref" href="#id5" role="doc-backlink">Helper Docker Scripts</a><a class="headerlink" href="#helper-docker-scripts" title="Link to this heading">¶</a></h3>
+<span id="system-helper-docker"></span><h3><a class="toc-backref" href="#id5">Helper Docker Scripts</a><a class="headerlink" href="#helper-docker-scripts" title="Permalink to this headline">¶</a></h3>
 <p>Prism and Lente each have a helper script for simplifying working with Docker.</p>
 <p>The scripts can be found here:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>~/git/scripts/public$ ll
@@ -251,19 +247,15 @@ command:
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="lente_cloud.html"
-                          title="previous chapter">Cloud</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="_prodplan.html"
-                          title="next chapter">Production Planning</a></p>
-  </div>
-<search id="searchbox" style="display: none" role="search">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="lente_cloud.html"
+                        title="previous chapter">Cloud</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="_prodplan.html"
+                        title="next chapter">Production Planning</a></p>
+<div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -271,13 +263,13 @@ command:
       <input type="submit" value="Go" />
     </form>
     </div>
-</search>
-<script>document.getElementById('searchbox').style.display = "block"</script>
+</div>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="Related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -294,13 +286,8 @@ command:
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-<<<<<<< HEAD
         &#169; Copyright 2019-2025, Sistemi Corp, info@sistemi.ca.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
-=======
-    &#169; Copyright 2019-2023, Sistemi Corp..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
->>>>>>> origin/master
     </div>
   </body>
 </html>

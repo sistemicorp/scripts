@@ -1,0 +1,132 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Version History &#8212; Sistemi Lente/Prism Test System 0.8.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Manufacturing Execution System (MES) Integration" href="_mes_integration.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="_mes_integration.html" title="Manufacturing Execution System (MES) Integration"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.8.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Version History</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="version-history">
+<h1>Version History<a class="headerlink" href="#version-history" title="Permalink to this headline">¶</a></h1>
+<p>Version history and migration guide.  For each release changes may affect Prism, or Lente, or both.
+A Migration Guide section is provided if any changes on the client side are required.</p>
+<p>Some features are implemented in a previous version as experimental, and when that is the case it
+is mentioned.  Note that not all cited versions are released as Docker images.</p>
+<section id="ver-0-8-x">
+<h2>Ver 0.8.x<a class="headerlink" href="#ver-0-8-x" title="Permalink to this headline">¶</a></h2>
+<p>This is the first version where this type of information will be tracked.</p>
+<p>The major feature released in <cite>0.8</cite> is support for OPCUA, which is a Manufacturing Execution System (MES)
+to facilitate the monitoring of the Prism/Lente deployment by other OPCUA tools.</p>
+<p>In addition new features have been added to make it easier to debug deployment issues, get logs, and
+otherwise monitor the system.</p>
+<section id="prism-lente">
+<h3>Prism &amp; Lente<a class="headerlink" href="#prism-lente" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Lente Station Management portal can request Prism Log (implemented in 0.7.48)</p></li>
+<li><p>[BUGFIX] Fix/improve getting self IP address (implemented in 0.7.52)</p></li>
+<li><p>Lente Station Management portal can reboot a Prism computer (implemented in 0.7.66)</p></li>
+<li><p>Support for UPCUA, see <a class="reference external" href="_mes_integration.html#_Manufacturing">OPCUA</a></p></li>
+</ul>
+</section>
+<section id="prism-only">
+<h3>Prism Only<a class="headerlink" href="#prism-only" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Test portal layout supports up to 8 test channels (jigs per Prism PC) (implemented in 0.7.43)</p></li>
+<li><p>Index page shows time and date (implemented in 0.7.56)</p></li>
+<li><p>Auto config test on startup, see <a class="reference external" href="_deployment.html#_SettingsFile">settings.json</a> (implemented in 0.7.64)</p></li>
+<li><p>[BUGFIX] Text entry box entry was incorrect when user timeout occurred (fixed in 0.7.73)</p></li>
+<li><p>Test Portal layout includes script Info section in title bar</p></li>
+<li><p>Prism PC Health checks, see <a class="reference external" href="_deployment.html#_SettingsFile">settings.json</a></p></li>
+</ul>
+</section>
+<section id="lente-only">
+<h3>Lente Only<a class="headerlink" href="#lente-only" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+</section>
+<section id="migration-guide">
+<h3>Migration Guide<a class="headerlink" href="#migration-guide" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>None</p></li>
+<li><p>Some new features are implemented in <a class="reference external" href="_deployment.html#_SettingsFile">settings.json</a></p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="_mes_integration.html"
+                        title="previous chapter">Manufacturing Execution System (MES) Integration</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="_mes_integration.html" title="Manufacturing Execution System (MES) Integration"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.8.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Version History</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019-2025, Sistemi Corp, info@sistemi.ca.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+    </div>
+  </body>
+</html>

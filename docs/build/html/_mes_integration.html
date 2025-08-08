@@ -1,32 +1,38 @@
+
 <!DOCTYPE html>
 
-<html lang="en" data-content_root="./">
+<html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Manufacturing Execution System (MES) Integration &#8212; Sistemi Lente/Prism Test System 0.6.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=2bf1fcf8" />
+    <title>Manufacturing Execution System (MES) Integration &#8212; Sistemi Lente/Prism Test System 0.8.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
-    <script src="_static/documentation_options.js?v=8fa8b3e9"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Version History" href="_version_history.html" />
     <link rel="prev" title="Deployment" href="_deployment.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="Related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="_version_history.html" title="Version History"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
           <a href="_deployment.html" title="Deployment"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.6.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.8.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Manufacturing Execution System (MES) Integration</a></li> 
       </ul>
     </div>  
@@ -37,7 +43,7 @@
           <div class="body" role="main">
             
   <section id="manufacturing-execution-system-mes-integration">
-<h1>Manufacturing Execution System (MES) Integration<a class="headerlink" href="#manufacturing-execution-system-mes-integration" title="Link to this heading">¶</a></h1>
+<h1>Manufacturing Execution System (MES) Integration<a class="headerlink" href="#manufacturing-execution-system-mes-integration" title="Permalink to this headline">¶</a></h1>
 <p>Manufacturing Execution Systems (MES) offer many benefits including enhanced visibility into
 production, improved efficiency, cost reduction, and better inventory monitoring.</p>
 <p>The Prism-Lente framework supports integration using industry standard protocol OPC-UA.
@@ -45,7 +51,7 @@ Information about the OPC-UA standard is available from the OPC Foundation:</p>
 <blockquote>
 <div><p><a class="reference external" href="https://opcfoundation.org/about/opc-technologies/opc-ua/">https://opcfoundation.org/about/opc-technologies/opc-ua/</a></p>
 </div></blockquote>
-<nav class="contents local" id="contents">
+<div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#opc-ua-integration" id="id1">OPC-UA Integration</a></p>
 <ul>
@@ -61,11 +67,11 @@ Information about the OPC-UA standard is available from the OPC Foundation:</p>
 </ul>
 </li>
 </ul>
-</nav>
+</div>
 <section id="opc-ua-integration">
-<h2><a class="toc-backref" href="#id1" role="doc-backlink">OPC-UA Integration</a><a class="headerlink" href="#opc-ua-integration" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id1">OPC-UA Integration</a><a class="headerlink" href="#opc-ua-integration" title="Permalink to this headline">¶</a></h2>
 <section id="operation">
-<h3><a class="toc-backref" href="#id2" role="doc-backlink">Operation</a><a class="headerlink" href="#operation" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id2">Operation</a><a class="headerlink" href="#operation" title="Permalink to this headline">¶</a></h3>
 <p>Currently the status information uploaded to the upstream Lente server are published. Values are
 updated every 10 seconds.</p>
 <p>The OPC-UA server must be enabled in the settings.json file.  See settings section for details.</p>
@@ -76,7 +82,7 @@ updated every 10 seconds.</p>
 <img alt="_images/Screenshot_mes_integration_uaexpert.png" src="_images/Screenshot_mes_integration_uaexpert.png" />
 </section>
 <section id="fields-published">
-<h3><a class="toc-backref" href="#id3" role="doc-backlink">Fields Published</a><a class="headerlink" href="#fields-published" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id3">Fields Published</a><a class="headerlink" href="#fields-published" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>cmd: Last command remotely executed</p></li>
 <li><p>computer: Host name of host system</p></li>
@@ -92,13 +98,13 @@ updated every 10 seconds.</p>
 </ul>
 </section>
 <section id="methods">
-<h3><a class="toc-backref" href="#id4" role="doc-backlink">Methods</a><a class="headerlink" href="#methods" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id4">Methods</a><a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>restart: Restart Prism or Lente application; causes active users to be logged out.</p></li>
 </ul>
 </section>
 <section id="settings">
-<h3><a class="toc-backref" href="#id5" role="doc-backlink">Settings</a><a class="headerlink" href="#settings" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id5">Settings</a><a class="headerlink" href="#settings" title="Permalink to this headline">¶</a></h3>
 <p>opcua_server settings are defined in the settings.json.</p>
 <p>Example settings:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;opcua_server&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -118,7 +124,7 @@ updated every 10 seconds.</p>
 </pre></div>
 </div>
 <section id="opc-ua-server">
-<h4><a class="toc-backref" href="#id6" role="doc-backlink">OPC-UA Server</a><a class="headerlink" href="#opc-ua-server" title="Link to this heading">¶</a></h4>
+<h4><a class="toc-backref" href="#id6">OPC-UA Server</a><a class="headerlink" href="#opc-ua-server" title="Permalink to this headline">¶</a></h4>
 <p>Section Name: opcua_server</p>
 <p>Location: settings.json under top level</p>
 <ul class="simple">
@@ -156,7 +162,7 @@ updated every 10 seconds.</p>
 </ul>
 </section>
 <section id="certificates">
-<h4><a class="toc-backref" href="#id7" role="doc-backlink">Certificates</a><a class="headerlink" href="#certificates" title="Link to this heading">¶</a></h4>
+<h4><a class="toc-backref" href="#id7">Certificates</a><a class="headerlink" href="#certificates" title="Permalink to this headline">¶</a></h4>
 <p>Certificate and key files can be the same ones as used by Prism/Lente to secure access
 using HTTPS. See <a class="reference internal" href="_security.html#https"><span class="std std-ref">HTTPS and SSL Certificates</span></a>.</p>
 <p>Section Name: certificates</p>
@@ -193,14 +199,15 @@ using HTTPS. See <a class="reference internal" href="_security.html#https"><span
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="_deployment.html"
-                          title="previous chapter">Deployment</a></p>
-  </div>
-<search id="searchbox" style="display: none" role="search">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="_deployment.html"
+                        title="previous chapter">Deployment</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="_version_history.html"
+                        title="next chapter">Version History</a></p>
+<div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -208,28 +215,31 @@ using HTTPS. See <a class="reference internal" href="_security.html#https"><span
       <input type="submit" value="Go" />
     </form>
     </div>
-</search>
-<script>document.getElementById('searchbox').style.display = "block"</script>
+</div>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="Related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
+          <a href="_version_history.html" title="Version History"
+             >next</a> |</li>
+        <li class="right" >
           <a href="_deployment.html" title="Deployment"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.6.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.8.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Manufacturing Execution System (MES) Integration</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-    &#169; Copyright 2019-2023, Sistemi Corp..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+        &#169; Copyright 2019-2025, Sistemi Corp, info@sistemi.ca.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
   </body>
 </html>
