@@ -3,6 +3,9 @@ Security
 
 Production security is important.  Sistemi Lente/Prism have features and suggestions to improve security.
 
+When setting up a new deployment for the first time it is recommended that security features be disabled
+until the system is operating correctly and only then able encryption and other security features.
+
 .. contents::
    :local:
 

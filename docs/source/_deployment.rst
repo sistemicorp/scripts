@@ -4,11 +4,12 @@ Deployment
 Prism/Lente allows for various deployment strategies, and some diagrams
 are shown `here <_system.html#_system_arch>`__.
 
-Prism deployment is straight foward.
-
 Lente deployment depends on your dashboarding and Prism station management strategy.
 A Lente station can manage Prism stations directly below it, in the connection
 hierarchy.
+
+A deployment plan should be discussed with a Sistemi support engineer.
+
 
 .. index:: Settings
 
@@ -73,76 +74,128 @@ changes,
 Settings.JSON File
 ******************
 
-Each Lente/Prism station instillation will have a local settings file, as
-shown below and documented inline,
+* Each Lente/Prism station instillation will have a local settings file.
+* This file is NOT propagated within the deployment by Lente.
+* Each Lente/Prism computer will have its own file.
+
+  * In practice, most Prism computers can use the same file, and therefore the file
+    should be stored in a separate place and used as a source when new Prism computers
+    are added to the deplopyment.
+
+* This file contains passwords in plain text so it should be handled appropriately.
+
 
 ::
 
-    // This file is NOT propagated by Lente to Prism stations.
-    // For each Prism/Lente install, this file should be modified as required.
-    // See https://sistemicorp.github.io/scripts/build/html/_deployment.html#settings-json-file
-    {
-      // turn on demo mode.  Creates test user accounts, ...
-      // remove line, or set to false to disable demo mode
-      "demo": true,
+        // This file is NOT propagated by Lente to Prism stations.
+        // For each Prism/Lente install, this file should be modified as required.
+        // See https://sistemicorp.github.io/scripts/build/html/_deployment.html#settings-json-file
+        {
+          // turn on demo mode.  Creates test user accounts, ...
+          // remove line, or set to false to disable demo mode
+          "demo": true,
 
-      // Result JSON file encryption
-      // - a valid license file is required to encrypt results
-      // - passwrd must be |<-  16  long  ->|
-      "result_encrypt_pw": "mysecretkey01234",
-      "result_encrypt": false,
+          // On startup optionally specify to load a traveller
+          //"load_traveller": "public/traveller/traveller_TZ6T.pdf",
+          //"load_user": "operator@here.com",
 
-      // By default results that are sent to Lente are backed up
-      // locally, to disable this backup uncomment
-      //"result_bkup_dir": null,
+          // Result JSON file encryption
+          // - a valid license file is required to encrypt results
+          // - passwrd must be |<-  16  long  ->|
+          "result_encrypt_pw": "mysecretkey01234",
+          "result_encrypt": false,
 
-      // Result JSON files be backed up as encrypted, <true|false>,
-      // If the results were not encrypted by Prism, they won't be ecrypted by Lente
-      "results_bkup_encrypted": false,
+          // By default results that are sent to Lente are backed up
+          // locally, to disable this backup uncomment
+          //"result_bkup_dir": null,
 
-      // Use https secure transport, requires public/cert/key.pem files
-      // For Lente & Prism stations, all must be configured the same
-      "use_https": false,
+          // Result JSON files be backed up as encrypted, <true|false>,
+          // If the results were not encrypted by Prism, they won't be ecrypted by Lente
+          "results_bkup_encrypted": false,
 
-      // Prism/Lente internal connection password
-      "prism_lente_pw": "mysecret",
+          // Use https secure transport, requires public/cert/key.pem files
+          // For Lente & Prism stations, all must be configured the same
+          "use_https": false,
 
-      // Manifest (enable/disable) checking
-      // Validates "public/prism" contents (sent by Lente)
-      // create manifest.exclude to list file exclusions
-      "manifest_check": false,
+          // Prism/Lente internal connection password
+          "prism_lente_pw": "mysecret1",
 
-      // password for scripts package sent from Lente to Lente/Prism
-      "manifest_pw": "mysecret",
+          // Manifest (enable/disable) checking
+          // Validates "public/prism" contents (sent by Lente)
+          // create manifest.exclude to list file exclusions
+          "manifest_check": false,
 
-      // ------------------------------------------------------------------
-      // Below are only used by Lente and can be removed for Prism stations
+          // password for scripts package sent from Lente to Lente/Prism
+          "manifest_pw": "mysecret2",
 
-      // Lente/Lente internal connection password
-      "lente_lente_pw": "mysecret",
+          // network interface to use, used by VPNs
+          //"net_iface": "tun0",
 
-      // Enter IP Address:port, example "http://35.123.432.190:6595"
-      // Use null to disable upstream sending.
-      "result_server_url": null,
+          // Send log files on startup for diagnostic purposes
+          "send_logs_on_startup": false,
 
-      // This Lente computer is pyramid root and creates manifest
-      "root_authority": true,
+          // Health checks
+          // Levels: Warn, Error, Critical (case insensitive)
+          // "Warn" and "Error" only appear in the notification log
+          // "Critical" additionally prevents new test sessions from starting
+          // First rule that matches for each health check is reported
+          "health_checks": {
+            "disk_space": {
+              "enable": true,
+              "rules": [
+                // free format: <value> [MB|GB|%]
+                {"free": "10%",    "level": "Critical"},
+                {"free": "100 MB", "level": "Error"},
+                {"free": "200 MB", "level": "Warn"}
+              ]
+            }
+          },
 
-      // automatically sync Prism clients scripts
-      "auto_sync_scripts": true,
+          // OPCUA Configuration
+          "opcua_server": {
+            "enable": false,
+            "security_policies":[
+              "NoSecurity",
+              "Basic256Sha256_Sign",
+              "Basic256Sha256_SignAndEncrypt"
+            ],
+            "certificates": {
+              "enable": false,
+              // "path": "public",
+              // "certificate_file": "cert.pem",
+              // "private_key_file": "key.pem",
+            }
+          },
 
-      "postgres": {
-        "resultbasekeysv1": {
-          // !! Change "pw" to a real password for a real deployment,
-          // !! This user/pw must match your postgres deployment too,
-          "user": "postgres",
-          "pw": "qwerty",
+          // ------------------------------------------------------------------
+          // Below are only used by Lente and can be removed for Prism stations
 
-          // ip address of the postgres database, use `127.0.0.1` if locahost
-          "ip": "127.0.0.1"
+          // Lente/Lente internal connection password
+          "lente_lente_pw": "mysecret3",
+
+          // Enter IP Address:port, example "http://35.123.432.190:6595"
+          // Use null to disable upstream sending.
+          "result_server_url": null,
+
+          // This Lente computer is pyramid root and creates manifest
+          "root_authority": true,
+
+          // automatically sync Prism clients scripts
+          "auto_sync_scripts": true,
+
+          "postgres": {
+            // resultbasekeysv1 is the name of the dB and cannot be changed
+            "resultbasekeysv1": {
+              // !! Change "pw" to a real password for a real deployment,
+              // !! This user/pw must match your postgres deployment too,
+              "user": "postgres",
+              "pw": "qwerty",
+              // ip address of the postgres database, use `127.0.0.1` if locahost
+              "ip": "127.0.0.1"
+            }
+          }
         }
-      }
-    }
+
 
 
 For Prism stations, a number of items can be removed per the comments, which will make
@@ -165,3 +218,12 @@ every time the computer boots up.
 The helper scripts to start Prism/Lente (see :ref:`Helpers <system-helper-docker>`),
 have a `restart=always` option that should be used.  Once that is done, Prism/Lente will forever
 startup.
+
+
+Health Checks
+*************
+
+When enabled/specified in `settings.json` (see example above) Prism will perform health checks on
+boot up and when the test configuration changes.  Based on the health check item severity the system will
+indicate the status in the GUI.  When the failure severity is `Critical` Prism will not allow testing
+to begin.

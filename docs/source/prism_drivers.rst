@@ -92,7 +92,7 @@ is a number used to setup configuration of the physical system.
 
 
 VISA
-====
+----
 
 VISA is a test equipment control protocol.  See `VISA <https://en.wikipedia.org/wiki/Virtual_instrument_software_architecture>`_
 for more information.

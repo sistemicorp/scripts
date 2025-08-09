@@ -46,10 +46,10 @@
 <h1>Deployment<a class="headerlink" href="#deployment" title="Permalink to this headline">¶</a></h1>
 <p>Prism/Lente allows for various deployment strategies, and some diagrams
 are shown <a class="reference external" href="_system.html#_system_arch">here</a>.</p>
-<p>Prism deployment is straight foward.</p>
 <p>Lente deployment depends on your dashboarding and Prism station management strategy.
 A Lente station can manage Prism stations directly below it, in the connection
 hierarchy.</p>
+<p>A deployment plan should be discussed with a Sistemi support engineer.</p>
 <section id="ubuntu-file-system-and-users">
 <span id="deployment-ubuntu-filesystem"></span><span id="index-0"></span><h2>Ubuntu File System and Users<a class="headerlink" href="#ubuntu-file-system-and-users" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
@@ -118,8 +118,18 @@ Lente will automatically start on every computer boot up.</p></li>
 </section>
 <section id="settings-json-file">
 <span id="deploy-settings-file"></span><h2>Settings.JSON File<a class="headerlink" href="#settings-json-file" title="Permalink to this headline">¶</a></h2>
-<p>Each Lente/Prism station instillation will have a local settings file, as
-shown below and documented inline,</p>
+<ul class="simple">
+<li><p>Each Lente/Prism station instillation will have a local settings file.</p></li>
+<li><p>This file is NOT propagated within the deployment by Lente.</p></li>
+<li><p>Each Lente/Prism computer will have its own file.</p>
+<ul>
+<li><p>In practice, most Prism computers can use the same file, and therefore the file
+should be stored in a separate place and used as a source when new Prism computers
+are added to the deplopyment.</p></li>
+</ul>
+</li>
+<li><p>This file contains passwords in plain text so it should be handled appropriately.</p></li>
+</ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>// This file is NOT propagated by Lente to Prism stations.
 // For each Prism/Lente install, this file should be modified as required.
 // See https://sistemicorp.github.io/scripts/build/html/_deployment.html#settings-json-file
@@ -127,6 +137,10 @@ shown below and documented inline,</p>
   // turn on demo mode.  Creates test user accounts, ...
   // remove line, or set to false to disable demo mode
   &quot;demo&quot;: true,
+
+  // On startup optionally specify to load a traveller
+  //&quot;load_traveller&quot;: &quot;public/traveller/traveller_TZ6T.pdf&quot;,
+  //&quot;load_user&quot;: &quot;operator@here.com&quot;,
 
   // Result JSON file encryption
   // - a valid license file is required to encrypt results
@@ -147,7 +161,7 @@ shown below and documented inline,</p>
   &quot;use_https&quot;: false,
 
   // Prism/Lente internal connection password
-  &quot;prism_lente_pw&quot;: &quot;mysecret&quot;,
+  &quot;prism_lente_pw&quot;: &quot;mysecret1&quot;,
 
   // Manifest (enable/disable) checking
   // Validates &quot;public/prism&quot; contents (sent by Lente)
@@ -155,13 +169,52 @@ shown below and documented inline,</p>
   &quot;manifest_check&quot;: false,
 
   // password for scripts package sent from Lente to Lente/Prism
-  &quot;manifest_pw&quot;: &quot;mysecret&quot;,
+  &quot;manifest_pw&quot;: &quot;mysecret2&quot;,
+
+  // network interface to use, used by VPNs
+  //&quot;net_iface&quot;: &quot;tun0&quot;,
+
+  // Send log files on startup for diagnostic purposes
+  &quot;send_logs_on_startup&quot;: false,
+
+  // Health checks
+  // Levels: Warn, Error, Critical (case insensitive)
+  // &quot;Warn&quot; and &quot;Error&quot; only appear in the notification log
+  // &quot;Critical&quot; additionally prevents new test sessions from starting
+  // First rule that matches for each health check is reported
+  &quot;health_checks&quot;: {
+    &quot;disk_space&quot;: {
+      &quot;enable&quot;: true,
+      &quot;rules&quot;: [
+        // free format: &lt;value&gt; [MB|GB|%]
+        {&quot;free&quot;: &quot;10%&quot;,    &quot;level&quot;: &quot;Critical&quot;},
+        {&quot;free&quot;: &quot;100 MB&quot;, &quot;level&quot;: &quot;Error&quot;},
+        {&quot;free&quot;: &quot;200 MB&quot;, &quot;level&quot;: &quot;Warn&quot;}
+      ]
+    }
+  },
+
+  // OPCUA Configuration
+  &quot;opcua_server&quot;: {
+    &quot;enable&quot;: false,
+    &quot;security_policies&quot;:[
+      &quot;NoSecurity&quot;,
+      &quot;Basic256Sha256_Sign&quot;,
+      &quot;Basic256Sha256_SignAndEncrypt&quot;
+    ],
+    &quot;certificates&quot;: {
+      &quot;enable&quot;: false,
+      // &quot;path&quot;: &quot;public&quot;,
+      // &quot;certificate_file&quot;: &quot;cert.pem&quot;,
+      // &quot;private_key_file&quot;: &quot;key.pem&quot;,
+    }
+  },
 
   // ------------------------------------------------------------------
   // Below are only used by Lente and can be removed for Prism stations
 
   // Lente/Lente internal connection password
-  &quot;lente_lente_pw&quot;: &quot;mysecret&quot;,
+  &quot;lente_lente_pw&quot;: &quot;mysecret3&quot;,
 
   // Enter IP Address:port, example &quot;http://35.123.432.190:6595&quot;
   // Use null to disable upstream sending.
@@ -174,12 +227,12 @@ shown below and documented inline,</p>
   &quot;auto_sync_scripts&quot;: true,
 
   &quot;postgres&quot;: {
+    // resultbasekeysv1 is the name of the dB and cannot be changed
     &quot;resultbasekeysv1&quot;: {
       // !! Change &quot;pw&quot; to a real password for a real deployment,
       // !! This user/pw must match your postgres deployment too,
       &quot;user&quot;: &quot;postgres&quot;,
       &quot;pw&quot;: &quot;qwerty&quot;,
-
       // ip address of the postgres database, use `127.0.0.1` if locahost
       &quot;ip&quot;: &quot;127.0.0.1&quot;
     }
@@ -203,6 +256,13 @@ every time the computer boots up.</p>
 <p>The helper scripts to start Prism/Lente (see <a class="reference internal" href="_system.html#system-helper-docker"><span class="std std-ref">Helpers</span></a>),
 have a <cite>restart=always</cite> option that should be used.  Once that is done, Prism/Lente will forever
 startup.</p>
+</section>
+<section id="health-checks">
+<h2>Health Checks<a class="headerlink" href="#health-checks" title="Permalink to this headline">¶</a></h2>
+<p>When enabled/specified in <cite>settings.json</cite> (see example above) Prism will perform health checks on
+boot up and when the test configuration changes.  Based on the health check item severity the system will
+indicate the status in the GUI.  When the failure severity is <cite>Critical</cite> Prism will not allow testing
+to begin.</p>
 </section>
 </section>
 
