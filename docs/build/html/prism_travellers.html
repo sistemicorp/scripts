@@ -46,29 +46,29 @@
   <section id="travellers">
 <h1>Travellers<a class="headerlink" href="#travellers" title="Permalink to this headline">¶</a></h1>
 <p>Travellers are 2D bar codes printed on paper than can configure Prism
-to run a script with certain substitution parameters.</p>
-<p>Travellers are used to simplify setting up and operating Prism by any
-User (operator) that may not be familiar with the production process.</p>
+to run a script with certain substitution parameters.  Travellers are used to simplify
+setting up and operating Prism by any User (operator).</p>
 <p>Travellers can only be created by users with the <a class="reference internal" href="prism_accounts.html#configman"><span class="std std-ref">ConfigMan</span></a> role.</p>
 <p>The image below shows the <cite>Test Config</cite> view, a script has been selected and
 the parameters selected, at this point the <cite>Traveller</cite> button turns Green
 indicating it can now be pressed.</p>
 <img alt="_images/Screenshot_traveller_01.png" src="_images/Screenshot_traveller_01.png" />
-<p>Pressing the <cite>Traveller</cite> button will pop up a new tab in the browser, similiar
-to the following,</p>
+<p>Pressing the <cite>Create Traveller</cite> button will create the Traveller and save it as a PDF.</p>
 <img alt="_images/Screenshot_traveller_02.png" src="_images/Screenshot_traveller_02.png" />
 <p>The traveller shows the User that created it, the time and date, and the parameters
 used when it was created.</p>
-<p>This is a PDF document.
-Use the browser functions to either Print or Save this document and pass
-it along to the production floor.</p>
+<p>This is a PDF document which is saved to the Download folder of your PC.  The intent is the
+PDF file is delivered to production as an additional traveller to the product.  When the product
+reaches the Prism test station, the traveller is scanned and testing can begin.</p>
 <section id="scanning">
 <h2>Scanning<a class="headerlink" href="#scanning" title="Permalink to this headline">¶</a></h2>
 <p>Travellers are scanned by the operator using most any bar code scanner set
-to emulate the keyboard.</p>
+to emulate the keyboard.  After the Operator logs in the Prism waits for a scan,</p>
 <img alt="_images/Screenshot_traveller_03.png" src="_images/Screenshot_traveller_03.png" />
-<p>Once the image is scanned, you <cite>Apply</cite>, <cite>Submit</cite> and the <cite>Test</cite> to proceed
-to the Test View.</p>
+<p>Once the image is scanned the system will validate and then move to the Test Portal
+where testing can start.</p>
+<p>Note that Operator sign in Roles can be changed such that the Operator cannot access the
+Test Configuration or other menu options.</p>
 </section>
 <section id="user-content">
 <h2>User Content<a class="headerlink" href="#user-content" title="Permalink to this headline">¶</a></h2>
@@ -87,6 +87,17 @@ For example see <cite>public/prism/scripts/example/prod_v0/prod_0.scr</cite>,</p
 <span class="p">}</span>
 </pre></div>
 </div>
+</section>
+<section id="auto-load-traveller">
+<h2>Auto Load Traveller<a class="headerlink" href="#auto-load-traveller" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="_deployment.html#_SettingsFile">settings.json</a> can specify a traveller that is automatically loaded when
+Prism boots up and the indicated user logs in.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">On</span> <span class="n">startup</span> <span class="n">optionally</span> <span class="n">specify</span> <span class="n">to</span> <span class="n">load</span> <span class="n">a</span> <span class="n">traveller</span>
+<span class="o">//</span><span class="s2">&quot;load_traveller&quot;</span><span class="p">:</span> <span class="s2">&quot;public/traveller/traveller_TZ6T.pdf&quot;</span><span class="p">,</span>
+<span class="o">//</span><span class="s2">&quot;load_user&quot;</span><span class="p">:</span> <span class="s2">&quot;operator@here.com&quot;</span><span class="p">,</span>
+</pre></div>
+</div>
+<p>This feature can be used to create a User account that runs a Traveller.</p>
 </section>
 </section>
 
