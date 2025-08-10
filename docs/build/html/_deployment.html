@@ -119,15 +119,16 @@ Lente will automatically start on every computer boot up.</p></li>
 <section id="settings-json-file">
 <span id="deploy-settings-file"></span><h2>Settings.JSON File<a class="headerlink" href="#settings-json-file" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
-<li><p>Each Lente/Prism station instillation will have a local settings file.</p></li>
-<li><p>This file is NOT propagated within the deployment by Lente.</p></li>
-<li><p>Each Lente/Prism computer will have its own file.</p>
+<li><p>Each Lente/Prism computer will have its own (local) settings file.</p>
 <ul>
+<li><p>When setting up a new Prism/Lente instance, this file must be manually edited or
+copied from a reference source to reflect this instances configuration.</p></li>
 <li><p>In practice, most Prism computers can use the same file, and therefore the file
 should be stored in a separate place and used as a source when new Prism computers
-are added to the deplopyment.</p></li>
+are added to the deployment.</p></li>
 </ul>
 </li>
+<li><p>This file is NOT propagated within the deployment by Lente.</p></li>
 <li><p>This file contains passwords in plain text so it should be handled appropriately.</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>// This file is NOT propagated by Lente to Prism stations.
@@ -258,7 +259,7 @@ have a <cite>restart=always</cite> option that should be used.  Once that is don
 startup.</p>
 </section>
 <section id="health-checks">
-<h2>Health Checks<a class="headerlink" href="#health-checks" title="Permalink to this headline">¶</a></h2>
+<span id="id1"></span><h2>Health Checks<a class="headerlink" href="#health-checks" title="Permalink to this headline">¶</a></h2>
 <p>When enabled/specified in <cite>settings.json</cite> (see example above) Prism will perform health checks on
 boot up and when the test configuration changes.  Based on the health check item severity the system will
 indicate the status in the GUI.  When the failure severity is <cite>Critical</cite> Prism will not allow testing

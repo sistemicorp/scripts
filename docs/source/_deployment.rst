@@ -74,14 +74,16 @@ changes,
 Settings.JSON File
 ******************
 
-* Each Lente/Prism station instillation will have a local settings file.
-* This file is NOT propagated within the deployment by Lente.
-* Each Lente/Prism computer will have its own file.
+* Each Lente/Prism computer will have its own (local) settings file.
 
+  * When setting up a new Prism/Lente instance, this file must be manually edited or
+    copied from a reference source to reflect this instances configuration.
   * In practice, most Prism computers can use the same file, and therefore the file
     should be stored in a separate place and used as a source when new Prism computers
-    are added to the deplopyment.
+    are added to the deployment.
 
+
+* This file is NOT propagated within the deployment by Lente.
 * This file contains passwords in plain text so it should be handled appropriately.
 
 
@@ -219,6 +221,8 @@ The helper scripts to start Prism/Lente (see :ref:`Helpers <system-helper-docker
 have a `restart=always` option that should be used.  Once that is done, Prism/Lente will forever
 startup.
 
+
+.. _health-checks:
 
 Health Checks
 *************
