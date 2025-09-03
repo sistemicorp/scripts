@@ -14,8 +14,22 @@ Things to read before starting:
 
    ![A test image](readme_images/rm_install_arduino_01.png)
 
-   Do not use the AppImage version, use the Linux Zip file.
-   
+   At this time the Arduino IDE version 2.3.6 was used, following instructions for loading the
+   AppImage, found here https://docs.arduino.cc/software/ide-v2/tutorials/getting-started/ide-v2-downloading-and-installing/
+   Note that you have to install libfuse2 for Ubuntu 22/24 mentioned in the link instructions.
+
+   Note: Ubuntu doesn't seem to play nice with the AppImage, so recommend using the zip file.
+   But there must be a better way to do this.  Note the Unbuntu App Store only had version 1.8.
+
+        ~$ cd /opt
+        /opt$ sudo unzip ~/Downloads/arduino-ide_2.3.6_Linux_64bit.zip
+        /opt$ sudo ln -s arduino-ide_2.3.6_Linux_64bit/arduino-ide arduino-ide
+        /opt$ cd ~ 
+        ~$ sudo chmod 4755 /opt/arduino-ide_2.3.6_Linux_64bit/chrome-sandbox
+
+   TODO: How to get a desktop icon for the Arduino IDE?
+
+
    Download and install the Linux UDEV rules: https://www.pjrc.com/teensy/00-teensy.rules
 
    The teensy CLI loader is used by Prism scripts to load teensy, and that binary
@@ -23,9 +37,33 @@ Things to read before starting:
 
         sudo apt-get install libusb-dev
    
+   Adding user to the dailout group (need to re-login for this to take effect):
+
+      sudo usermod -a -G dialout $USER
+
    Optional CLI loader source and information:
-      https://www.pjrc.com/teensy/loader_cli.html
-      https://github.com/PaulStoffregen/teensy_loader_cli
+
+      * https://www.pjrc.com/teensy/loader_cli.html
+      * https://github.com/PaulStoffregen/teensy_loader_cli
+
+   Test the Teensy CLI:
+
+    ~/git/scripts/public/prism/drivers/A4401_BOND/server$ ./teensy_loader_cli --version
+    Unknown option "--version"
+    
+    Usage: teensy_loader_cli --mcu=<MCU> [-w] [-h] [-n] [-b] [-v] <file.hex>
+        -w : Wait for device to appear
+        -r : Use hard reboot if device not online
+        -s : Use soft reboot if device not online (Teensy 3.x & 4.x)
+        -n : No reboot after programming
+        -b : Boot only, do not program
+        -v : Verbose output
+    
+    Use `teensy_loader_cli --list-mcus` to list supported MCUs.
+    
+    For more information, please visit:
+    http://www.pjrc.com/teensy/loader_cli.html
+
 
 2) Start the Arduino IDE
    - Select the board, Tools->Board->TeensyArduino->Teensy41
@@ -52,8 +90,7 @@ Things to read before starting:
     /home/martin/.cache/arduino/sketches/AB98538F1B6B747D1325AD62F117F594/teensy4_server.ino.elf
 
 
-6) Connect the BOND to power and Teensy to USB. Note than BOND has a built in USB Hub, and just
-a short USB cable is needed to plug to the Teensy.
+6) Connect the BOND to power and Teensy to USB.
 
 7) Go to Arduino IDE and upload the sketch onto the Teensy by pressing the `Upload` icon in the upper left.
 A Teensy pop-up window will appear showing the status of the Teensy as it uploads.  You do not need to press
@@ -72,8 +109,21 @@ the button, things should happen automatically.
 NOTE: The Teensy CLI loader is used to update BOND's Teensy from a Prism script.  The Teensy
 ELF is copied to an assets folder and used by the CLI.
 
-9) DEBUG: Showing Teensy devices with lsusb,
+9) Build code in the Arduino IDE, and upload to Teensy.
 
+   - The Arduino IDE will automatically compile the code and upload it to the Teensy.
+   - For Prism to upload Teensy copy the Teensy4 ELF/Hex files created to the assets folder of your BOND scripts.
+
+
+      (venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/A4401_BOND$ cp /home/martin/.cache/arduino/sketches/AB98538F1B6B747D1325AD62F117F594/teensy4_server.ino.elf ~/git/scripts/public/prism/scripts/example/BOND_v0/assets/
+      (venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/A4401_BOND$ cp /home/martin/.cache/arduino/sketches/AB98538F1B6B747D1325AD62F117F594/teensy4_server.ino.hex ~/git/scripts/public/prism/scripts/example/BOND_v0/assets/
+
+   - WARNING: If you are using both Arduino and Prism BOND Update script, make sure to copy these files to the
+     assets folder of the BOND script you are using.  Else you could be over writing Arduino new code with stale
+     assets files.
+
+
+   - DEBUG: Showing Teensy devices with lsusb,
 
     martin@martin-virtual-machine:~/git/scripts/public/prism/drivers/teensy4/server$ lsusb
     Bus 001 Device 050: ID 16c0:0486 Van Ooijen Technische Informatica Teensyduino RawHID
@@ -95,7 +145,7 @@ After programming, the teensy will show up as a serial, like so,
    - See the readme one folder up.
 
 
-11) Programming a FRESH Teensy on BOND via Prism Developer CLI
+11) Programming a FRESH Teensy on BOND via Prism Developer CLI (Note this does not always work)
 
    - if you have been using the Arduino IDE as above and downloading code to the BOND, the Teensy4 is no longer
      FRESH, it has existing code on it, and these steps do not apply.
@@ -110,13 +160,8 @@ After programming, the teensy will show up as a serial, like so,
      - Remove USB cable to remove power from Teensy, then plug USB back in
      - No LEDs should be on now
      - Press the Button once on Teensy, the LED will turn dim RED
-   - copy the Teensy4 ELF/Hex files created to the assets folder of your BOND scripts.
-
-
-      (venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/A4401_BOND$ cp /home/martin/.cache/arduino/sketches/AB98538F1B6B747D1325AD62F117F594/teensy4_server.ino.elf ~/git/scripts/public/prism/scripts/example/BOND_v0/assets/
-      (venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/A4401_BOND$ cp /home/martin/.cache/arduino/sketches/AB98538F1B6B747D1325AD62F117F594/teensy4_server.ino.hex ~/git/scripts/public/prism/scripts/example/BOND_v0/assets/
-
-   - run the script, and result,
+     - It can be hard to get Teensy into this state.  Use the Arduino IDE to program a fresh Teensy.
+   - run the script, and result (note inside venv),
 
 
     (venv) martin@martin-ThinkPad-L13:~/git/scripts$ python prism_dev.py --script public/prism/scripts/example/BOND_v0/bond_progfresh_0.scr 
@@ -195,6 +240,7 @@ After programming, the teensy will show up as a serial, like so,
      to put Teensy into a mode where new code can be uploaded to it.  This updating path is different then the above
      path which only the Teensy's built in bootloader is available.
    - See the example BOND script for the update code.
+
 
 
 13) MAX11311 Setup

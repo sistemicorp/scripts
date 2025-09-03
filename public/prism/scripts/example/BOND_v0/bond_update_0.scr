@@ -19,7 +19,8 @@
   },
   "config": {
     "fail_fast": true,
-    "drivers": [["public.prism.drivers.A4401_BOND.hwdrv_A4401_BOND", null]]
+    "drivers": [["public.prism.drivers.A4401_BOND.hwdrv_A4401_BOND",
+                 "public/prism/scripts/example/BOND_v0/assets/pogo_hdr_definition._json"]]
   },
   "tests": [
     {

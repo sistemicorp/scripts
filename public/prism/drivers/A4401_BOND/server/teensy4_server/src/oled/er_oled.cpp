@@ -18,7 +18,7 @@ void I2C_Write_Byte(uint8_t value, uint8_t Cmd)
 
 void er_oled_begin()
 {
-    pinMode(OLED_RST, OUTPUT);      
+    pinMode(OLED_RST, OUTPUT);
     digitalWrite(OLED_RST, HIGH);
     delay(10);
     digitalWrite(OLED_RST, LOW);
@@ -53,8 +53,7 @@ void er_oled_begin()
     command(0xA4);// Disable Entire Display On (0xa4/0xa5)
     command(0xA6);// Disable Inverse Display On (0xa6/a7) 
     command(0xAF);//--turn on oled panel
-
-
+    delay(10);
 }
 
 void er_oled_clear(uint8_t* buffer)

@@ -201,20 +201,22 @@ String reset(){
 
 void setup(void) {
   unsigned int blink_delay_ms = 100;
+  unsigned int blink_error_count = 0;
+
+  // set BOND pins
+  pinMode(VSYS_EN_PIN, OUTPUT);
+  pinMode(VSYS_PG_PIN, INPUT);
+
+  // toggle (power reset) VSYS (~6V) - powers rest of system
+  digitalWrite(VSYS_EN_PIN, LOW);
+  delay(100);
+  digitalWrite(VSYS_EN_PIN, HIGH);
+  delay(100);
 
   Serial.begin(115200);
   Wire.begin();
   Wire.setClock(400000);
   pinMode(LED_BUILTIN, OUTPUT);
-
-  // blink the LED to let people know we are good
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(blink_delay_ms);
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(blink_delay_ms);
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(blink_delay_ms);
-  digitalWrite(LED_BUILTIN, LOW);
 
   oled_init();
   oled_print(OLED_LINE_STATUS, "SETUP:BOOTING...", false);
@@ -239,24 +241,18 @@ void setup(void) {
   digitalWrite(SPI_SCLK_Pin, LOW);
   pinMode (SPI_SCLK_Pin, OUTPUT);
 
-  // set BOND pins
-  pinMode(VSYS_EN_PIN, OUTPUT);
-  pinMode(VSYS_PG_PIN, INPUT);
-
   // ADC
   pinMode(BIST_VOLTAGE_V3V3A_PIN, INPUT);  // analog input
   pinMode(BIST_VOLTAGE_V3V3D_PIN, INPUT);  // analog input
   pinMode(BIST_VOLTAGE_V5V_PIN, INPUT);    // analog input
   pinMode(BIST_VOLTAGE_V6V_PIN, INPUT);    // analog input
 
-  // turn on VSYS (~6V) - powers rest of system
-  digitalWrite(VSYS_EN_PIN, HIGH);
-  delay(100);
   // check VSYS_PG_PIN
   uint8_t vsys_pg_pin = digitalRead(VSYS_PG_PIN);
   if (vsys_pg_pin == 0) {
     setup_fail_code |= (0x1 << SETUP_FAIL_VSYS_PG_PIN);
     oled_print(OLED_LINE_STATUS, "SETUP:VSYS_PG_PIN", true);
+    blink_error_count = 1;
     goto fail;
   }
 
@@ -265,6 +261,7 @@ void setup(void) {
     if (success != 0) {
       setup_fail_code |= (0x1 << SETUP_FAIL_MAX_IOX);
       oled_print(OLED_LINE_STATUS, "SETUP:INA219_VBUS", true);
+      blink_error_count = 2;
       goto fail;
     }
   }
@@ -272,6 +269,7 @@ void setup(void) {
   if (!ina219_vbat.init()) {
     setup_fail_code |= (0x1 << SETUP_FAIL_INA219_VBAT);
     oled_print(OLED_LINE_STATUS, "SETUP:INA219_VBAT", true);
+    blink_error_count = 3;
     goto fail;
   }
 
@@ -282,6 +280,7 @@ void setup(void) {
   if (!ina219_vbus.init()) {
     setup_fail_code |= (0x1 << SETUP_FAIL_INA219_VBUS);
     oled_print(OLED_LINE_STATUS, "SETUP:INA219_VBUS", true);
+    blink_error_count = 4;
     goto fail;
   }
 
@@ -289,32 +288,46 @@ void setup(void) {
   ina219_vbus.setBusRange(BRNG_16);
   ina219_vbus.setMeasureMode(TRIGGERED);
 
-fail:
-  delay(blink_delay_ms);
-  if (setup_fail_code) {
-    // long blinks if things are bad
-    blink_delay_ms = 500;
+  // TODO: add voltage checks here, A_V6V, V_3V3D, etc...
 
-    // shutdown for safety
-    //digitalWrite(VSYS_EN_PIN, LOW);
-  } else {
-    oled_print(OLED_LINE_STATUS, "SETUP: COMPLETE", false);
+  oled_print(OLED_LINE_STATUS, "SETUP: COMPLETE", false);
+
+  // blink the LED to let people know we started, 2 fast blinks
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(blink_delay_ms);
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(blink_delay_ms);
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(blink_delay_ms);
+  digitalWrite(LED_BUILTIN, LOW);
+  return;
+
+fail:
+  // On error, LED blinks 3x (slower), then count the error code
+  blink_delay_ms *= 2;
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(blink_delay_ms);
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(blink_delay_ms);
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(blink_delay_ms);
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(blink_delay_ms);
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(blink_delay_ms);
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(blink_delay_ms);
+  for (int i=0; i < blink_error_count; i++) {
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(blink_delay_ms * 2);
+    digitalWrite(LED_BUILTIN, LOW);
   }
-    
-  // TODO: blink error code based on fault
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(blink_delay_ms);
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(blink_delay_ms);
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(blink_delay_ms);
-  digitalWrite(LED_BUILTIN, LOW);
 }
 
 void loop(void) {
 
   // interface() is non-blocking
-  // NOTE: !! the function name and string begining must match !!
+  // NOTE: !! the function name and string beginning must match !!
   interface(
     Serial,
     unique_id, "unique_id: Shows Teensy's unique id",

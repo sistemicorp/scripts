@@ -1,4 +1,4 @@
-/*  Sistemi Corporation, copyright, all rights reserved, 2023
+/*  Sistemi Corporation, copyright, all rights reserved, 2023-2025
  *  Martin Guthrie
  *
  *  Battery Emulator the BOND design, a4401.
@@ -39,58 +39,71 @@ uint16_t _vbat_mv(void) {
 }
 
 
-#define BATTEMU_DAC_STEP    6
+#define BATTEMU_DAC_STEP    1
 #define BATTEMU_SETTLE_MS   12
 int battemu_init(void) {
-    uint16_t dac_value = 1600;
+    uint16_t dac_value = 1600;  // 1600 experimentally found, see electical circuit
     char buf[LINE_MAX_LENGTH];
+    bool error_set = false;
 
     if (ctx.cal_done) return 0;
 
     iox_vbat_en(true);
     delay(12);  // TODO: measure this
 
+    // NOTE: As the DAC value goes down, the battery emulator voltage goes up
+
     // create LUT for output
-    for (int i = 0; i < LUT_NUM_ENTRIES; i++) {
+    for (int i = 0; i < LUT_NUM_ENTRIES, !error_set; i++) {
         ctx._lut[i].vbat_mv = VBAT_START_MV + i * VBAT_STEP_MV;
 
-        while (true) {
+        while (!error_set) {
             max_hdr1.single_ended_dac_write(MAX11300::PIXI_PORT9, dac_value);
             delay(BATTEMU_SETTLE_MS);
             uint16_t vbat = _vbat_mv();
 
-            if (vbat > ctx._lut[i].vbat_mv) {
-                dac_value += BATTEMU_DAC_STEP;  // revert step, going to step by 1
-
-                while (true) {
+            if (!error_set && vbat > ctx._lut[i].vbat_mv) {
+                while (!error_set) {
                     max_hdr1.single_ended_dac_write(MAX11300::PIXI_PORT9, dac_value);
                     delay(BATTEMU_SETTLE_MS);
                     uint16_t vbat = _vbat_mv();
 
+                    // stop when VBAT goes just above the desired value
                     if (vbat > ctx._lut[i].vbat_mv) {
                         ctx._lut[i].dac = dac_value;
                         break;
                     }
-                    dac_value -= 1;  // step by 1
+                    dac_value -= BATTEMU_DAC_STEP;
+                    if (dac_value == 0) {
+                        snprintf(buf, LINE_MAX_LENGTH, "bemu ERR1: %u %u mV", dac_value, ctx._lut[i].vbat_mv);
+                        oled_print(OLED_LINE_DEBUG, buf, false);
+                        error_set = true;
+                        break;
+                    }
                 }
-
-                if (ctx._lut[i].vbat_mv % 500 == 0) {
-                    snprintf(buf, LINE_MAX_LENGTH, "bemu: %4u %4u mV", dac_value, vbat);
+                // debug print to display
+                if (!error_set && ctx._lut[i].vbat_mv % 1 == 0) {
+                    snprintf(buf, LINE_MAX_LENGTH, "bemu: %4u %4u mV", dac_value, ctx._lut[i].vbat_mv);
                     oled_print(OLED_LINE_DEBUG, buf, false);
                 }
                 break;
-            }
-            dac_value -= BATTEMU_DAC_STEP;
+            }          
         }
-        dac_value -= BATTEMU_DAC_STEP;
     }
 
+    // leave the battery emulator set to a low voltage
     ctx.vbat_mv = ctx._lut[0].vbat_mv;
     max_hdr1.single_ended_dac_write(MAX11300::PIXI_PORT9, ctx._lut[0].dac);
     ctx.vbat_connect = false;
 
-    ctx.cal_done = true;
-    return 0;
+    if (!error_set) {
+        ctx.cal_done = true;
+        return 0;
+    } else {
+        snprintf(buf, LINE_MAX_LENGTH, "bemu ERR2: error_set");
+        oled_print(OLED_LINE_DEBUG, buf, false);        
+        return -1;
+    }
 }
 
 String vbat_set(uint16_t mv) {
