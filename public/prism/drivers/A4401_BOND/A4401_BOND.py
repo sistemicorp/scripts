@@ -125,9 +125,26 @@ class A4401_BOND:
             self.logger.error(f"Header pin definition filename {header_def_filename} does not exist")
             return False
 
+        # init MAX11311 pins per the JSON defintion
+        # also calibrates the battery emulator if needed
         success = self._init_maxs(header_def_filename)
         if not success:
             self.logger.error(f"Failed to init MAX11311 pins")
+            return False
+
+        success = self.iox_vbat_con(False)
+        if not success:
+            self.logger.error(f"iox_vbat_con {success}")
+            return False
+
+        success = self.iox_vbus_en(False)
+        if not success:
+            self.logger.error(f"iox_vbat_con {success}")
+            return False
+
+        success = self.iox_selftest(False)
+        if not success:
+            self.logger.error(f"iox_vbat_con {success}")
             return False
 
         # finally, all is well
@@ -552,6 +569,17 @@ class A4401_BOND:
             answer = self.rpc.call_method('iox_vbus_en', state)
             return self._rpc_validate(answer)
 
+    def iox_selftest(self, state: bool):
+        """ MAX11311 IOX
+
+        :return: {'success': True, 'method': 'iox_vbus_en',
+                  'result': {'assert': False, 'level': False}
+        """
+        with self._lock:
+            self.logger.info(f"iox_selftest {state}")
+            answer = self.rpc.call_method('iox_selftest', state)
+            return self._rpc_validate(answer)
+
     def iox_vbat_en(self, state: bool):
         """ Enable VBAT
 
@@ -654,6 +682,18 @@ class A4401_BOND:
         with self._lock:
             self.logger.info(f"bond_max_hdr_dac {hdr} {port} {mv}")
             answer = self.rpc.call_method('bond_max_hdr_dac', hdr, port, mv)
+            return self._rpc_validate(answer)
+
+    # DEBUG APIs
+
+    def bond_debug_batt_emu(self):
+        """ DEBUG: Battery emulator
+        :return: {'success': True, 'method': 'debug_batt_emu',
+                  'result': {'mV': <int> }
+        """
+        with self._lock:
+            self.logger.info(f"debug_batt_emu")
+            answer = self.rpc.call_method('debug_batt_emu')
             return self._rpc_validate(answer)
 
     #

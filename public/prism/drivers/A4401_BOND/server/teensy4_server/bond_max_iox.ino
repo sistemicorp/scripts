@@ -73,17 +73,6 @@ int init_max_iox(void) {
   delay(5);
   max_iox.gpio_write(MAX11300::PIXI_PORT6, 1);
 
-  // flash all LEDs
-  max_iox.gpio_write(MAX11300::PIXI_PORT8, 1);
-  max_iox.gpio_write(MAX11300::PIXI_PORT9, 1);
-  max_iox.gpio_write(MAX11300::PIXI_PORT10, 1);
-  max_iox.gpio_write(MAX11300::PIXI_PORT11, 1);
-  delay(100);
-  max_iox.gpio_write(MAX11300::PIXI_PORT8, 0);
-  max_iox.gpio_write(MAX11300::PIXI_PORT9, 0);
-  max_iox.gpio_write(MAX11300::PIXI_PORT10, 0);
-  max_iox.gpio_write(MAX11300::PIXI_PORT11, 0);
-
   oled_print(OLED_LINE_RPC, __func__, false);
   return 0;
 }

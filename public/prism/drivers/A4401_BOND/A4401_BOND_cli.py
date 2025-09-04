@@ -226,6 +226,9 @@ def parse_args():
                            required=True,
                            default=2500)
 
+    debug_batt_emu = subp.add_parser('debug_batt_emu',
+                                     description="BOND debug battery emulator")
+
     # add new commands here...
 
     args = parser.parse_args()
@@ -233,7 +236,6 @@ def parse_args():
 
 
 def led(args):
-    _success = True
     logging.info("led: {}".format(args))
 
     if args._on:
@@ -249,7 +251,6 @@ def led(args):
 
 
 def uid(args):
-    _success = True
     logging.info("uid: {}".format(args))
 
     response = teensy.unique_id()
@@ -258,7 +259,6 @@ def uid(args):
 
 
 def version(args):
-    _success = True
     logging.info("version: {}".format(args))
 
     response = teensy.version()
@@ -267,7 +267,6 @@ def version(args):
 
 
 def write_gpio(args):
-    _success = True
     logging.info("write_gpio: {}".format(args))
 
     _state = True
@@ -279,7 +278,6 @@ def write_gpio(args):
 
 
 def read_gpio(args):
-    _success = True
     logging.info("read_gpio: {}".format(args))
 
     response = teensy.read_gpio(args._pin_number)
@@ -288,7 +286,6 @@ def read_gpio(args):
 
 
 def read_adc(args):
-    _success = True
     logging.info("read_adc: {}".format(args))
 
     response = teensy.read_adc(args._pin_number, args._sample_number, args._sample_rate)
@@ -297,7 +294,6 @@ def read_adc(args):
 
 
 def bist_voltage(args):
-    _success = True
     logging.info("bist_voltage: {}".format(args))
 
     response = teensy.bist_voltage(args._name)
@@ -306,7 +302,6 @@ def bist_voltage(args):
 
 
 def vbus_read(args):
-    _success = True
     logging.info("vbus_read: {}".format(args))
 
     response = teensy.vbus_read()
@@ -315,7 +310,6 @@ def vbus_read(args):
 
 
 def vbat_read(args):
-    _success = True
     logging.info("vbat_read: {}".format(args))
 
     response = teensy.vbat_read()
@@ -324,7 +318,6 @@ def vbat_read(args):
 
 
 def iox_led_green(args):
-    _success = True
     logging.info("iox_led_green: {}".format(args))
 
     response = teensy.iox_led_green(args._enable)
@@ -333,7 +326,6 @@ def iox_led_green(args):
 
 
 def iox_led_yellow(args):
-    _success = True
     logging.info("iox_led_yellow: {}".format(args))
 
     response = teensy.iox_led_yellow(args._enable)
@@ -342,7 +334,6 @@ def iox_led_yellow(args):
 
 
 def iox_led_red(args):
-    _success = True
     logging.info("iox_led_yellow: {}".format(args))
 
     response = teensy.iox_led_red(args._enable)
@@ -351,7 +342,6 @@ def iox_led_red(args):
 
 
 def iox_led_blue(args):
-    _success = True
     logging.info("iox_led_blue: {}".format(args))
 
     response = teensy.iox_led_blue(args._enable)
@@ -360,7 +350,6 @@ def iox_led_blue(args):
 
 
 def iox_vbus_en(args):
-    _success = True
     logging.info("iox_vbus_en: {}".format(args))
 
     response = teensy.iox_vbus_en(args._enable)
@@ -369,7 +358,6 @@ def iox_vbus_en(args):
 
 
 def iox_vbat_en(args):
-    _success = True
     logging.info("iox_vbat_en: {}".format(args))
 
     response = teensy.iox_vbat_en(args._enable)
@@ -378,7 +366,6 @@ def iox_vbat_en(args):
 
 
 def iox_vbat_con(args):
-    _success = True
     logging.info("iox_vbat_con: {}".format(args))
 
     response = teensy.iox_vbat_con(args._enable)
@@ -387,7 +374,6 @@ def iox_vbat_con(args):
 
 
 def bond_max_hdr_adc(args):
-    _success = True
     logging.info("bond_max_hdr_adc: {}".format(args))
 
     response = teensy.bond_max_hdr_adc(args._hdr, args._pin)
@@ -396,7 +382,6 @@ def bond_max_hdr_adc(args):
 
 
 def bond_max_hdr_adc_cal(args):
-    _success = True
     logging.info("bond_max_hdr_adc_cal: {}".format(args))
 
     response = teensy.bond_max_hdr_adc_cal(args._hdr)
@@ -405,7 +390,6 @@ def bond_max_hdr_adc_cal(args):
 
 
 def bond_max_hdr_dac(args):
-    _success = True
     logging.info("bond_max_hdr_dac: {}".format(args))
 
     response = teensy.bond_max_hdr_dac(args._hdr, args._pin, args._mv)
@@ -413,13 +397,18 @@ def bond_max_hdr_dac(args):
     return response["success"]
 
 def vbat_set(args):
-    _success = True
     logging.info("vbat_set: {}".format(args))
 
     response = teensy.vbat_set(args._mv)
     logging.info("{}".format(response))
     return response["success"]
 
+def debug_batt_emu(args):
+    logging.info("debug_batt_emu: {}".format(args))
+
+    response = teensy.bond_debug_batt_emu()
+    logging.info("{}".format(response))
+    return response["success"]
 
 if __name__ == '__main__':
     args = parse_args()
@@ -496,6 +485,9 @@ if __name__ == '__main__':
 
     elif args._cmd == 'vbat_set':
         success = vbat_set(args)
+
+    elif args._cmd == 'debug_batt_emu':
+        success = debug_batt_emu(args)
 
     if success:
         logging.info("Success")

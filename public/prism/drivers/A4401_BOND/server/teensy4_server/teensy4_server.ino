@@ -20,8 +20,8 @@
 
 #define INA220_VBAT_I2C_ADDRESS 0x40
 #define INA220_VBUS_I2C_ADDRESS 0x41
-#define INA220_VBAT_SHUNT_OHMS  0.2f
-#define INA220_VBUS_SHUNT_OHMS  0.2f
+#define INA220_VBAT_SHUNT_OHMS  0.11f
+#define INA220_VBUS_SHUNT_OHMS  0.11f
 
 #define VSYS_EN_PIN             41
 #define VSYS_PG_PIN             40
@@ -41,10 +41,11 @@
 #define SPI_SCLK_Pin            27
 #define MAX11311_COPNVERT_Pin   8
 
-#define SETUP_FAIL_VSYS_PG_PIN  0
-#define SETUP_FAIL_INA219_VBAT  1
-#define SETUP_FAIL_INA219_VBUS  2
-#define SETUP_FAIL_MAX_IOX      3
+#define SETUP_FAIL_VSYS_PG_PIN  1
+#define SETUP_FAIL_INA219_VBAT  2
+#define SETUP_FAIL_INA219_VBUS  3
+#define SETUP_FAIL_MAX_IOX      4
+#define SETUP_FAIL_RESET        5
 static uint16_t setup_fail_code = 0;
 
 extern uint32_t external_psram_size;
@@ -183,16 +184,44 @@ String status() {
   return _response(doc);  // always the last line of RPC API
 }
 
+int _reset(void) {
+  // called on setup() and by API reset()
+  // ... add any required resetting code here ...
+
+  max_iox.gpio_write(MAX11300::PIXI_PORT2, 0); // vbat disconnect
+  max_iox.gpio_write(MAX11300::PIXI_PORT7, 0); // self test disable
+
+  // flash all LEDs
+  max_iox.gpio_write(MAX11300::PIXI_PORT8, 0);  // GREEN
+  max_iox.gpio_write(MAX11300::PIXI_PORT9, 0);  // YELLOW
+  max_iox.gpio_write(MAX11300::PIXI_PORT10, 0); // RED
+  max_iox.gpio_write(MAX11300::PIXI_PORT11, 0); // BLUE
+  max_iox.gpio_write(MAX11300::PIXI_PORT8, 1);  // GREEN
+  max_iox.gpio_write(MAX11300::PIXI_PORT9, 1);  // YELLOW
+  max_iox.gpio_write(MAX11300::PIXI_PORT10, 1); // RED
+  max_iox.gpio_write(MAX11300::PIXI_PORT11, 1); // BLUE
+  delay(200);
+  max_iox.gpio_write(MAX11300::PIXI_PORT8, 0);  // GREEN
+  max_iox.gpio_write(MAX11300::PIXI_PORT9, 0);  // YELLOW
+  max_iox.gpio_write(MAX11300::PIXI_PORT10, 0); // RED
+  max_iox.gpio_write(MAX11300::PIXI_PORT11, 0); // BLUE
+
+  return 0;
+}
+
 /* reset
- *  - reset this code
+ *  - this reset is called when Prism "finishes" the DUT test
  *  - DOES NOT RESET TEENSY, meerly resets its "state"
  */
 String reset(){
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
   oled_print(OLED_LINE_RPC, __func__, false);
 
-  // ... add any required resetting code here ...
-  
+  if (_reset()) {
+    doc["success"] = false;
+    doc["result"]["error"] = "reset failed";
+  }
+
   return _response(doc);  // always the last line of RPC API
 }
 
@@ -241,6 +270,16 @@ void setup(void) {
   digitalWrite(SPI_SCLK_Pin, LOW);
   pinMode (SPI_SCLK_Pin, OUTPUT);
 
+  int success = init_max_iox();
+  if (success != 0) {
+    setup_fail_code |= (0x1 << SETUP_FAIL_MAX_IOX);
+    oled_print(OLED_LINE_STATUS, "SETUP:init_max_iox", true);
+    blink_error_count = 2;
+    goto fail;
+  }
+  // turn on YELLOW while setup is running
+  max_iox.gpio_write(MAX11300::PIXI_PORT9, 1);  // YELLOW
+
   // ADC
   pinMode(BIST_VOLTAGE_V3V3A_PIN, INPUT);  // analog input
   pinMode(BIST_VOLTAGE_V3V3D_PIN, INPUT);  // analog input
@@ -248,28 +287,21 @@ void setup(void) {
   pinMode(BIST_VOLTAGE_V6V_PIN, INPUT);    // analog input
 
   // check VSYS_PG_PIN
-  uint8_t vsys_pg_pin = digitalRead(VSYS_PG_PIN);
-  if (vsys_pg_pin == 0) {
-    setup_fail_code |= (0x1 << SETUP_FAIL_VSYS_PG_PIN);
-    oled_print(OLED_LINE_STATUS, "SETUP:VSYS_PG_PIN", true);
-    blink_error_count = 1;
-    goto fail;
+  { // fixes build error
+      uint8_t vsys_pg_pin = digitalRead(VSYS_PG_PIN);
+      if (vsys_pg_pin == 0) {
+        setup_fail_code |= (0x1 << SETUP_FAIL_VSYS_PG_PIN);
+        oled_print(OLED_LINE_STATUS, "SETUP:VSYS_PG_PIN", true);
+        blink_error_count = SETUP_FAIL_VSYS_PG_PIN;
+        goto fail;
+      }
   }
 
-  {  // fixes build error on goto
-    int success = init_max_iox();
-    if (success != 0) {
-      setup_fail_code |= (0x1 << SETUP_FAIL_MAX_IOX);
-      oled_print(OLED_LINE_STATUS, "SETUP:INA219_VBUS", true);
-      blink_error_count = 2;
-      goto fail;
-    }
-  }
   // configure INA220s
   if (!ina219_vbat.init()) {
     setup_fail_code |= (0x1 << SETUP_FAIL_INA219_VBAT);
     oled_print(OLED_LINE_STATUS, "SETUP:INA219_VBAT", true);
-    blink_error_count = 3;
+    blink_error_count = SETUP_FAIL_INA219_VBAT;
     goto fail;
   }
 
@@ -280,7 +312,7 @@ void setup(void) {
   if (!ina219_vbus.init()) {
     setup_fail_code |= (0x1 << SETUP_FAIL_INA219_VBUS);
     oled_print(OLED_LINE_STATUS, "SETUP:INA219_VBUS", true);
-    blink_error_count = 4;
+    blink_error_count = SETUP_FAIL_INA219_VBUS;
     goto fail;
   }
 
@@ -288,11 +320,24 @@ void setup(void) {
   ina219_vbus.setBusRange(BRNG_16);
   ina219_vbus.setMeasureMode(TRIGGERED);
 
+  // Battery Emulator
+  // - DO NOT INIT HERE, because the MAX11311 DAC for battery emulator
+  //   is not initialized yet, and thats only done when the client side
+  //   JSON config is applied.  It takes a while to figure that out!
+
+  // reset also puts the YELLOW LED back to off
+  if (_reset()) {
+    setup_fail_code |= (0x1 << SETUP_FAIL_RESET);
+    oled_print(OLED_LINE_STATUS, "SETUP:reset", true);
+    blink_error_count = SETUP_FAIL_RESET;
+    goto fail;
+  }
+
   // TODO: add voltage checks here, A_V6V, V_3V3D, etc...
 
   oled_print(OLED_LINE_STATUS, "SETUP: COMPLETE", false);
 
-  // blink the LED to let people know we started, 2 fast blinks
+  // blink the TEENSY LED to let people know we started, 2 fast blinks
   digitalWrite(LED_BUILTIN, HIGH);
   delay(blink_delay_ms);
   digitalWrite(LED_BUILTIN, LOW);
@@ -305,16 +350,6 @@ void setup(void) {
 fail:
   // On error, LED blinks 3x (slower), then count the error code
   blink_delay_ms *= 2;
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(blink_delay_ms);
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(blink_delay_ms);
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(blink_delay_ms);
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(blink_delay_ms);
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(blink_delay_ms);
   digitalWrite(LED_BUILTIN, LOW);
   delay(blink_delay_ms);
   for (int i=0; i < blink_error_count; i++) {
@@ -360,6 +395,11 @@ void loop(void) {
     iox_led_blue, "iox_led_blue: blue led",
     iox_vbus_en, "iox_vbus_en: VBUS Enable",
     iox_vbat_en, "iox_vbat_en: VBAT Enable",
-    iox_vbat_con, "iox_vbat_con: VBAT Connect"
+    iox_vbat_con, "iox_vbat_con: VBAT Connect",
+    iox_selftest, "iox_selftest: Self test Enable",
+
+    // for debugging
+    debug_batt_emu, "debug_batt_emu: debug battery lut"
+
   );
 }

@@ -9,10 +9,8 @@
 #include "bond_max_iox.h"
 #include "src/oled/bond_oled.h"
 
-//extern int8_t oled_buf[OLED_WIDTH * OLED_HEIGHT / 8];
-
-#define VBAT_START_MV     500
-#define VBAT_STOP_MV      5500
+#define VBAT_START_MV     1500
+#define VBAT_STOP_MV      5000
 #define VBAT_STEP_MV      50
 #define VBAT_TOLERANCE_MV 10
 #define LUT_NUM_ENTRIES   ((VBAT_STOP_MV - VBAT_START_MV) / VBAT_STEP_MV + 1)
@@ -38,23 +36,32 @@ uint16_t _vbat_mv(void) {
     return (uint16_t)(tmp * 1000.0f);
 }
 
-
-#define BATTEMU_DAC_STEP    1
-#define BATTEMU_SETTLE_MS   12
+                                     // See DDR - cannot use value that results in output less than 1.19V
+#define BATTEMU_DAC_START      800  // 800 maps to 1.43V with R36=5.1K, R34=6.8K
+#define BATTEMU_DAC_STEP       1
+#define BATTEMU_DAC_NEXT_STEP  4
+#define BATTEMU_SETTLE_MS      4
 int battemu_init(void) {
-    uint16_t dac_value = 1600;  // 1600 experimentally found, see electical circuit
+    uint16_t dac_value = BATTEMU_DAC_START;
     char buf[LINE_MAX_LENGTH];
     bool error_set = false;
 
     if (ctx.cal_done) return 0;
 
+    iox_vbat_con(false);
     iox_vbat_en(true);
-    delay(12);  // TODO: measure this
+    delay(BATTEMU_SETTLE_MS * 2);  // TODO: measure this
+
+    // DEBUG: if you are debugging, use vbat_set() DEBUG note to
+    // set an specific DAC value, and then return early here.
+    //return 0;
 
     // NOTE: As the DAC value goes down, the battery emulator voltage goes up
 
     // create LUT for output
-    for (int i = 0; i < LUT_NUM_ENTRIES, !error_set; i++) {
+    for (int i = 0; i < LUT_NUM_ENTRIES; i++) {
+        if (error_set) break;
+
         ctx._lut[i].vbat_mv = VBAT_START_MV + i * VBAT_STEP_MV;
 
         while (!error_set) {
@@ -62,54 +69,87 @@ int battemu_init(void) {
             delay(BATTEMU_SETTLE_MS);
             uint16_t vbat = _vbat_mv();
 
-            if (!error_set && vbat > ctx._lut[i].vbat_mv) {
-                while (!error_set) {
-                    max_hdr1.single_ended_dac_write(MAX11300::PIXI_PORT9, dac_value);
-                    delay(BATTEMU_SETTLE_MS);
-                    uint16_t vbat = _vbat_mv();
+            while (!error_set) {
+                max_hdr1.single_ended_dac_write(MAX11300::PIXI_PORT9, dac_value);
+                delay(BATTEMU_SETTLE_MS);
+                uint16_t vbat = _vbat_mv();
 
-                    // stop when VBAT goes just above the desired value
-                    if (vbat > ctx._lut[i].vbat_mv) {
-                        ctx._lut[i].dac = dac_value;
-                        break;
-                    }
-                    dac_value -= BATTEMU_DAC_STEP;
-                    if (dac_value == 0) {
-                        snprintf(buf, LINE_MAX_LENGTH, "bemu ERR1: %u %u mV", dac_value, ctx._lut[i].vbat_mv);
-                        oled_print(OLED_LINE_DEBUG, buf, false);
-                        error_set = true;
-                        break;
-                    }
+                // stop when VBAT goes just above the desired value
+                if (vbat > ctx._lut[i].vbat_mv) {
+                    ctx._lut[i].dac = dac_value;
+                    break;
                 }
-                // debug print to display
-                if (!error_set && ctx._lut[i].vbat_mv % 1 == 0) {
-                    snprintf(buf, LINE_MAX_LENGTH, "bemu: %4u %4u mV", dac_value, ctx._lut[i].vbat_mv);
-                    oled_print(OLED_LINE_DEBUG, buf, false);
+                dac_value -= BATTEMU_DAC_STEP;
+                if (dac_value == 0) {
+                    snprintf(buf, LINE_MAX_LENGTH, "bemu E1: %u %u mV", dac_value, ctx._lut[i].vbat_mv);
+                    oled_print(OLED_LINE_DEBUG, buf, true);
+                    error_set = true;
+                    break;
                 }
-                break;
-            }          
+            }
+            // debug print to display
+            if (!error_set && ctx._lut[i].vbat_mv % 500 == 0) {  // squelch
+                snprintf(buf, LINE_MAX_LENGTH, "bemu: %4u %4u mV", dac_value, ctx._lut[i].vbat_mv);
+                oled_print(OLED_LINE_DEBUG, buf, false);
+            }
+            break; // this cal point is done, move to the next
+        }
+        if (dac_value > BATTEMU_DAC_NEXT_STEP) dac_value -= BATTEMU_DAC_NEXT_STEP;
+        else dac_value = 0; // triggers error
+        if (dac_value == 0) {
+            snprintf(buf, LINE_MAX_LENGTH, "bemu E2: %u %u mV", dac_value, ctx._lut[i].vbat_mv);
+            oled_print(OLED_LINE_DEBUG, buf, true);
+            error_set = true;
         }
     }
 
     // leave the battery emulator set to a low voltage
     ctx.vbat_mv = ctx._lut[0].vbat_mv;
-    max_hdr1.single_ended_dac_write(MAX11300::PIXI_PORT9, ctx._lut[0].dac);
+    max_hdr1.single_ended_dac_write(MAX11300::PIXI_PORT9, BATTEMU_DAC_START);
+    delay(BATTEMU_SETTLE_MS);
+
     ctx.vbat_connect = false;
 
     if (!error_set) {
         ctx.cal_done = true;
         return 0;
-    } else {
-        snprintf(buf, LINE_MAX_LENGTH, "bemu ERR2: error_set");
-        oled_print(OLED_LINE_DEBUG, buf, false);        
-        return -1;
     }
+    return -1;
+}
+
+// return batt emulator lut
+String debug_batt_emu(void) {
+    DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
+
+    JsonArray vbatArray = doc.createNestedArray("vbat");
+    JsonArray dacArray = doc.createNestedArray("dac");
+    //for (int i = 0; i < LUT_NUM_ENTRIES; i++) {
+    // NOTE: not all the values can fit in the buffer so take snapshot
+    for (int i = 0; i < 10; i++) {
+        uint16_t vbat_mv = ctx._lut[i].vbat_mv;
+        uint16_t dac = ctx._lut[i].dac;
+        vbatArray.add(vbat_mv);
+        dacArray.add(dac);
+    }
+
+    return _response(doc);  // always the last line of RPC API
 }
 
 String vbat_set(uint16_t mv) {
     DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
-
     char _buf[LINE_MAX_LENGTH];
+
+    // DEBUG Battery Emulator
+    // Provides a way to set the DAC so the board can be tested
+    if (false) {
+        max_hdr1.single_ended_dac_write(MAX11300::PIXI_PORT9, mv);
+        delay(100);
+        uint16_t vbat = _vbat_mv();
+        snprintf(_buf, LINE_MAX_LENGTH, "DAC %u -> %u mV", mv, vbat);
+        oled_print(OLED_LINE_RPC, _buf, false);
+        return _response(doc);  // always the last line of RPC API
+    }
+
     if (!ctx.cal_done) {
         snprintf(_buf, LINE_MAX_LENGTH, "%s init", __func__);
         oled_print(OLED_LINE_RPC, _buf, true);
@@ -141,7 +181,7 @@ String vbat_set(uint16_t mv) {
     max_hdr1.single_ended_dac_write(MAX11300::PIXI_PORT9, ctx._lut[i].dac);
     delay(50);
     uint16_t vbat = _vbat_mv();
-    snprintf(_buf, LINE_MAX_LENGTH, "%s %u mV", __func__, vbat);
+    snprintf(_buf, LINE_MAX_LENGTH, "%s %u / %u mV", __func__, mv, vbat);
     oled_print(OLED_LINE_RPC, _buf, false);
 
     doc["result"]["mv"] = mv;
