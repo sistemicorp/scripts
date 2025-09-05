@@ -338,6 +338,7 @@ void setup(void) {
 
   ina219_vbat.setShuntSizeInOhms(INA220_VBAT_SHUNT_OHMS);
   ina219_vbat.setBusRange(BRNG_16);
+  ina219_vbat.setADCMode(SAMPLE_MODE_16);
   ina219_vbat.setMeasureMode(TRIGGERED);
 
   if (!ina219_vbus.init()) {
@@ -349,6 +350,7 @@ void setup(void) {
 
   ina219_vbus.setShuntSizeInOhms(INA220_VBUS_SHUNT_OHMS);
   ina219_vbus.setBusRange(BRNG_16);
+  ina219_vbus.setADCMode(SAMPLE_MODE_16);
   ina219_vbus.setMeasureMode(TRIGGERED);
 
   // Battery Emulator

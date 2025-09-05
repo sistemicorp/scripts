@@ -27,6 +27,8 @@
         {"id": "P1110_voltage_check",  "enable": true, "voltage": "V5V" },
         {"id": "P1110_voltage_check",  "enable": true, "voltage": "V3V3A" },
         {"id": "P1110_voltage_check",  "enable": true, "voltage": "V3V3D" },
+        {"id": "P1120_vbat_check",     "enable": true, "voltage_mv": 3000 },
+        {"id": "P1120_vbat_check",     "enable": true, "voltage_mv": 4000 },
       ]
     }
   ]

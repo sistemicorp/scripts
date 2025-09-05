@@ -570,6 +570,86 @@ class bond_P00xx(TestItem):
 
         self.item_end(measurement_results)  # always last line of test
 
+    def P1120_vbat_check(self):
+        """ Check VBAT at voltage, and self test load
+
+        {"id": "P1120_vbat_check",      "enable": true, "voltage_mv": 3000 },
+
+        """
+        ctx = self.item_start()  # always first line of test
+        SELFTEST_LOAD_OHMS = 200.0
+        TOLERANCE_V = 0.1
+        TOLERANCE_MA = 1.0
+
+        measurement_results = []
+
+        response = self.teensy.vbat_set(ctx.item.voltage_mv)
+        if not response['success']:
+            self.logger.error(response)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        response = self.teensy.vbat_set(ctx.item.voltage_mv)
+        if not response['success']:
+            self.logger.error(response)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        response = self.teensy.iox_selftest(True)
+        if not response['success']:
+            self.logger.error(response)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        response = self.teensy.iox_vbat_con(True)
+        if not response['success']:
+            self.logger.error(response)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        time.sleep(0.1)
+
+        response = self.teensy.vbat_read()
+        if not response['success']:
+            self.logger.error(response)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        _v = float(round(response['result']['v'], 3))
+        _min = round(ctx.item.voltage_mv / 1000.0 - TOLERANCE_V, 3)
+        _max = round(ctx.item.voltage_mv / 1000.0 + TOLERANCE_V, 3)
+        success, _result, _bullet  = ctx.record.measurement(f"{ctx.item.voltage_mv}_V",
+                                                            _v,
+                                                            unit=ResultAPI.UNIT_VOLTS,
+                                                            min=_min,
+                                                            max=_max)
+        self.log_bullet(_bullet)
+        measurement_results.append(_result)
+
+        _ima_expected = float(round(ctx.item.voltage_mv / SELFTEST_LOAD_OHMS, 1))
+        _ma_measured = round(response['result']['ima'], 2)
+        success, _result, _bullet  = ctx.record.measurement(f"{ctx.item.voltage_mv}_mA",
+                                                            _ma_measured,
+                                                            unit=ResultAPI.UNIT_MILLIAMPS,
+                                                            min=_ima_expected - TOLERANCE_MA,
+                                                            max=_ima_expected + TOLERANCE_MA)
+        self.log_bullet(_bullet)
+        measurement_results.append(_result)
+
+        response = self.teensy.iox_vbat_con(False)
+        if not response['success']:
+            self.logger.error(response)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        response = self.teensy.iox_selftest(False)
+        if not response['success']:
+            self.logger.error(response)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        self.item_end(measurement_results)  # always last line of test
+
     def P1200_DAC(self):
         """ Set BOND DAC pin
 

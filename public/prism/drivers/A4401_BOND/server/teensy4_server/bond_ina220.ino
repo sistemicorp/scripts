@@ -12,7 +12,9 @@
  */
 String vbus_read() {
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
-  
+
+  ina219_vbus.startSingleMeasurement();
+
   doc["result"]["v"] = ina219_vbus.getBusVoltage_V();
   doc["result"]["ima"] = ina219_vbus.getCurrent_mA();
 
@@ -25,7 +27,9 @@ String vbus_read() {
  */
 String vbat_read() {
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
-  
+
+  ina219_vbat.startSingleMeasurement();
+
   doc["result"]["v"] = ina219_vbat.getBusVoltage_V();
   doc["result"]["ima"] = ina219_vbat.getCurrent_mA();
 
