@@ -1,5 +1,6 @@
 # Sistemi (a44) Bed of Nails Design (BOND) Developer Guide
 
+NOTE: When working with Prism scripts, the Arduino IDE must be closed or else bad things may happen.
 
 See the readme in `server` folder for developing on BOND's Teensy (with Arduino IDE).
 

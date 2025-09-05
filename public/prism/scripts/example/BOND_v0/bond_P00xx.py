@@ -146,7 +146,7 @@ class bond_P00xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def P300_Verify(self):
+    def P300_Reconnect(self):
         """ Verify Teensy
         - by verifying that we can install instance of driver
 
@@ -383,7 +383,23 @@ class bond_P00xx(TestItem):
 
         # (re)create an instance of Teensy()
         self.teensy = A4401_BOND(port, loggerIn=logging.getLogger("teensy.try"))
-        success = self.teensy.init()
+
+        # get the header_def_filename from script drivers section
+        header_def_filename = None
+        for i in ctx.config.drivers:
+            print(i)
+            if "hwdrv_A4401_BOND" in i[0]:
+                header_def_filename = i[1]
+                break
+        if header_def_filename is None:
+            self.logger.error(f"header_def_filename: {header_def_filename}")
+            self.log_bullet(f"Failed header_def_filename")
+            self.shared_lock(DRIVER_TYPE).release()
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+        self.logger.info(f"header_def_filename: {header_def_filename}")
+
+        success = self.teensy.init(header_def_filename)
         if not success:
             self.log_bullet(f"Failed init")
             self.logger.error("failed on {}...".format(self._teensy_port))

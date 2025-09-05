@@ -108,6 +108,7 @@ class ChanCon(object):
 
     def item_start(self):
         d = {"item": self._item,
+             "config": self.script["config"],
              # item dict from the script, ex {"id": "TST000", "enable": true,  "args": {"min": 0, "max": 2}}
              "options": self._options,  # options dict from the script, ex { "fail_fast": false }
              "record": self.record,
