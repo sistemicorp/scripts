@@ -526,11 +526,49 @@ class bond_P00xx(TestItem):
 
         success, _result, _bullet  = ctx.record.measurement(f"adc_cal_hdr_{ctx.item.hdr}",
                                                             response['result']['mV'],
+                                                            unit=ResultAPI.UNIT_MILLIVOLTS,
                                                             min=EXPECTED_MV - TOLERANCE_MV,
                                                             max=EXPECTED_MV + TOLERANCE_MV)
         self.log_bullet(_bullet)
 
         self.item_end()  # always last line of test
+
+    def P1110_voltage_check(self):
+        """ Check BOND voltage rails
+        - these voltages are checked when BOND driver is installed, see
+          the A4401_BOND.init() function.
+        - the names of the voltages are "V6V", "V5V", "V3V3A", "V3V3D", see A4401_BOND.BIST_VOLTAGES
+
+        {"id": "P1110_voltage_check",      "enable": true, "voltage": "V6V" },
+
+        """
+        ctx = self.item_start()  # always first line of test
+        measurement_results = []
+
+        if ctx.item.voltage not in self.teensy.BIST_VOLTAGES:
+            self.logger.error(f"invalid voltage name {ctx.item.voltage} not in {self.teensy.BIST_VOLTAGES}")
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        response = self.teensy.bist_voltage(ctx.item.voltage)
+        if not response['success']:
+            self.logger.error(response)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        success, _result, _bullet  = ctx.record.measurement(f"{ctx.item.voltage}",
+                                                            response['result']['mv'],
+                                                            unit=ResultAPI.UNIT_MILLIVOLTS)
+        self.log_bullet(_bullet)
+        measurement_results.append(_result)
+
+        success, _result, _bullet  = ctx.record.measurement(f"{ctx.item.voltage}_pass",
+                                                            response['result']['pass'],
+                                                            unit=ResultAPI.UNIT_BOOLEAN)
+        self.log_bullet(_bullet)
+        measurement_results.append(_result)
+
+        self.item_end(measurement_results)  # always last line of test
 
     def P1200_DAC(self):
         """ Set BOND DAC pin

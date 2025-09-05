@@ -1,7 +1,5 @@
-// BOND Example test Script
+// BOND Example self test Script
 // Note BOND Header pin configuration definition to match Pogo board and DUT
-// Manual Setup for testing
-// - Jumper Header 2 pin 6 (DAC) to Header 2 pin 14 (ADC)
 {
   "info": {
     "product": "BOND",
@@ -25,9 +23,10 @@
         {"id": "P1100_ADC_check",      "enable": true, "hdr": 2 },
         {"id": "P1100_ADC_check",      "enable": true, "hdr": 3 },
         {"id": "P1100_ADC_check",      "enable": true, "hdr": 4 },
-        {"id": "P1200_DAC",            "enable": true, "hdr": 2, "pin": 6, "mv": 3300 },
-        {"id": "P1300_ADC",            "enable": true, "hdr": 2, "pin": 14,
-                                                       "min": 3200, "max": 3400 },
+        {"id": "P1110_voltage_check",  "enable": true, "voltage": "V6V" },
+        {"id": "P1110_voltage_check",  "enable": true, "voltage": "V5V" },
+        {"id": "P1110_voltage_check",  "enable": true, "voltage": "V3V3A" },
+        {"id": "P1110_voltage_check",  "enable": true, "voltage": "V3V3D" },
       ]
     }
   ]
