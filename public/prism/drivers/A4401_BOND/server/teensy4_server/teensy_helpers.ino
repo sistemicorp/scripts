@@ -1,4 +1,4 @@
-/*  Sistemi Corporation, copyright, all rights reserved, 2021-2023
+/*  Sistemi Corporation, copyright, all rights reserved, 2021-2025
  *  Martin Guthrie
  *  
  *  Functions related to Teensy's internal capabilities
@@ -10,8 +10,9 @@
 #define BIST_VOLTAGE_V6V_NAME              "V6V"
 #define BIST_VOLTAGE_ADC_SAMPLES           10
 #define BIST_VOLTAGE_ADC_SAMPLE_RATE_MS    2
+#define BIST_VOLTAGE_TOLERANCE_MV          200  // FIXME: change to 100mV for BOND r2
 
-unsigned int _read_adc(unsigned int pin_number, unsigned int sample_num, unsigned int sample_rate) {
+static unsigned int _read_adc(unsigned int pin_number, unsigned int sample_num, unsigned int sample_rate) {
   unsigned long currentMillis = millis();
   unsigned long previousMillis = 0;  // =0 causes sample to be taken right away
   unsigned int accumulator = 0;
@@ -28,6 +29,7 @@ unsigned int _read_adc(unsigned int pin_number, unsigned int sample_num, unsigne
 
   return (unsigned int)(accumulator / sample_num);
 }
+
 /* read_adc
  *  - read ADC value on a Teensy pin
  *  
@@ -125,19 +127,24 @@ String bist_voltage(String name) {
 
   unsigned int mv = 0;
   unsigned int pin = 0;
+  unsigned int expected_mv = 0;
   char *p = const_cast<char*>(name.c_str());
 
   if (strcmp(p, BIST_VOLTAGE_V3V3A_NAME) == 0) {
     pin = BIST_VOLTAGE_V3V3A_PIN;
+    expected_mv = 3300;
 
   } else if (strcmp(p, BIST_VOLTAGE_V3V3D_NAME) == 0) {
     pin = BIST_VOLTAGE_V3V3D_PIN;
+    expected_mv = 3300;
 
   } else if (strcmp(p, BIST_VOLTAGE_V5V_NAME) == 0) {
     pin = BIST_VOLTAGE_V5V_PIN;
+    expected_mv = 5000;
 
   } else if (strcmp(p, BIST_VOLTAGE_V6V_NAME) == 0) {
     pin = BIST_VOLTAGE_V6V_PIN;
+    expected_mv = 6000;
 
   } else {
     doc["result"]["error"] = "Unknown name";
@@ -149,5 +156,14 @@ String bist_voltage(String name) {
   mv = (adc_raw * 3300 * 3) / 1024;  // * 3 for resistor divider, 10k / (10k + 20k)
   doc["result"]["mv"] = mv;
 
+  doc["result"]["tol_mv"] = BIST_VOLTAGE_TOLERANCE_MV;
+
+  if ((mv > (expected_mv + BIST_VOLTAGE_TOLERANCE_MV)) || (mv < (expected_mv - BIST_VOLTAGE_TOLERANCE_MV))) {
+    doc["result"]["pass"] = false;
+  } else {
+    doc["result"]["pass"] = true;
+  }
+
   return _response(doc);  // always the last line of RPC API
 }
+

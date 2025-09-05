@@ -46,6 +46,8 @@
 #define SETUP_FAIL_INA219_VBUS  3
 #define SETUP_FAIL_MAX_IOX      4
 #define SETUP_FAIL_RESET        5
+#define SETUP_FAIL_6V           6
+
 static uint16_t setup_fail_code = 0;
 
 extern uint32_t external_psram_size;
@@ -286,6 +288,35 @@ void setup(void) {
   pinMode(BIST_VOLTAGE_V5V_PIN, INPUT);    // analog input
   pinMode(BIST_VOLTAGE_V6V_PIN, INPUT);    // analog input
 
+  // Check 6V to see if BOND is powered
+  // See code in teensy_helpers.ino... really they should use the same API...
+  // For now this is hardcoded here...
+  {
+    // wait on BIST_VOLTAGE_V6V_PIN voltage being correct, means BOND is powered
+    #define BIST_VOLTAGE_V6V_PIN_TOL_MV  150
+    int count_down = 10;
+    int count_good_measures = 2;
+    while (count_down > 0) {
+      unsigned int adc_raw = _read_adc(BIST_VOLTAGE_V6V_PIN, 10, 2);
+      unsigned int mv = (adc_raw * 3300 * 3) / 1024;  // * 3 for resistor divider, 10k / (10k + 20k)
+      if ((mv < (6000 + BIST_VOLTAGE_V6V_PIN_TOL_MV)) && (mv > (6000 - BIST_VOLTAGE_V6V_PIN_TOL_MV))) {
+         // the voltage is in range
+         count_good_measures--;
+         if (count_good_measures == 0) break;
+      }
+      count_down--;
+      delay(20);
+    }
+    // there must be count_good_measures before count_down expires to pass this test
+    // in this way we hope to catch case where 6V is above tolerance
+    if (count_down == 0) {
+      setup_fail_code |= (0x1 << SETUP_FAIL_6V);
+      oled_print(OLED_LINE_STATUS, "SETUP:FAIL_6V", true);
+      blink_error_count = SETUP_FAIL_6V;
+      goto fail;
+    }
+  }
+
   // check VSYS_PG_PIN
   { // fixes build error
       uint8_t vsys_pg_pin = digitalRead(VSYS_PG_PIN);
@@ -324,6 +355,8 @@ void setup(void) {
   // - DO NOT INIT HERE, because the MAX11311 DAC for battery emulator
   //   is not initialized yet, and thats only done when the client side
   //   JSON config is applied.  It takes a while to figure that out!
+  // - BONDr2 will move the DAC to the IOX and therefore calibration
+  //   can be moved here.
 
   // reset also puts the YELLOW LED back to off
   if (_reset()) {
@@ -333,7 +366,7 @@ void setup(void) {
     goto fail;
   }
 
-  // TODO: add voltage checks here, A_V6V, V_3V3D, etc...
+  // Add more startup checks here...
 
   oled_print(OLED_LINE_STATUS, "SETUP: COMPLETE", false);
 

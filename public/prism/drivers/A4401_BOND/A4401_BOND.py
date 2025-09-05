@@ -55,6 +55,8 @@ class A4401_BOND:
     GPIO_NUMBER_MIN = 0
     GPIO_NUMBER_MAX = 41
 
+    BIST_VOLTAGES = ["V6V", "V5V", "V3V3A", "V3V3D"]
+
     # For Teensy FW version checking the SAME (c code) header file that created the Teensy4
     # firmware is used to check if that firmware is now running (deployed) on Teensy4.
     # if that FW is not running, there is probably a problem!  See method init().
@@ -132,20 +134,33 @@ class A4401_BOND:
             self.logger.error(f"Failed to init MAX11311 pins")
             return False
 
-        success = self.iox_vbat_con(False)
-        if not success:
-            self.logger.error(f"iox_vbat_con {success}")
+        status_response = self.iox_vbat_con(False)
+        if not status_response["success"]:
+            self.logger.error(f"iox_vbat_con {status_response}")
             return False
 
-        success = self.iox_vbus_en(False)
-        if not success:
-            self.logger.error(f"iox_vbat_con {success}")
+        status_response = self.iox_vbus_en(False)
+        if not status_response["success"]:
+            self.logger.error(f"iox_vbat_con {status_response}")
             return False
 
-        success = self.iox_selftest(False)
-        if not success:
-            self.logger.error(f"iox_vbat_con {success}")
+        status_response = self.iox_selftest(False)
+        if not status_response["success"]:
+            self.logger.error(f"iox_vbat_con {status_response}")
             return False
+
+        # check bist voltages
+        for _v in self.BIST_VOLTAGES:
+            status_response = self.bist_voltage(_v)
+            if not status_response["success"]:
+                self.logger.error(f"bist_voltage {_v} {success}")
+                return False
+
+            if not status_response["result"]["pass"]:
+                self.logger.error(f"bist_voltage {_v} {status_response}")
+                return False
+
+            self.logger.info(f"bist_voltage {_v} {status_response}")
 
         # finally, all is well
         self.logger.info("Installed A4401BOND on port {}".format(self.port))
@@ -465,7 +480,7 @@ class A4401_BOND:
     def bist_voltage(self, name):
         """ Read BIST voltage
 
-        :param name: one of V6V, V5V, V3V3A, V3V3D
+        :param name: one of V6V, V5V, V3V3A, V3V3D (checked by teensy server side)
         :return: {'success': True, 'method': 'bist_voltage', 'result': {'name': 'V5V', 'mv': 0}}
         """
         with self._lock:
