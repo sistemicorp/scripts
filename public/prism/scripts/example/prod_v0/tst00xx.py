@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2019-2023
+Sistemi Corporation, copyright, all rights reserved, 2019-2025
 Martin Guthrie
 
 """
@@ -36,8 +36,8 @@ class tst00xx(TestItem):
         #                                          {"fid": "TST000-1", "msg": "Component banana R1"}] },
         #
         # ctx = self.item_start()  # always first line of test
-        #  - use ctx (context) to extract information to drive the test program (see above)
-        #  - ctx (context) is a namespace of content from the test script
+        #  - ctx (context) is a namespace of content from the test script, returned as a python dict,
+        #  - ctx.config = script config section
         #  - ctx.item = {"id": "TST000", "enable": True,  "args": {"min": 0, "max": 10}}
         #  - ctx.item.args = {"min": 0, "max": 10}
         #  - ctx.item.args.max = 10
