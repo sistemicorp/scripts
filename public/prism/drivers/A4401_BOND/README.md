@@ -256,9 +256,9 @@ The BOND CLI has many commands, use `--help` to see all of them.
           return _response(doc);
         }  
         
-        digitalWrite(MAX11311_COPNVERT_Pin, LOW);
+        digitalWrite(MAX11311_CONVERT_Pin, LOW);
         delayMicroseconds(2);
-        digitalWrite(MAX11311_COPNVERT_Pin, HIGH);
+        digitalWrite(MAX11311_CONVERT_Pin, HIGH);
         delayMicroseconds(100);
       
         uint16_t data = 0;

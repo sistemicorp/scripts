@@ -8,17 +8,18 @@
 #include "bond_max_hdr.h"
 #include "src/oled/bond_oled.h"
 
+// default IOX MAX11311 resgisters, set on init
 static _init_regs_t init_regs[] = {
   {.r = device_control, .d = 0x8000}, // reset
   {.r = device_control, .d = 0xc0 & 0x40b0},
   {.r = device_control, .d = 0xc0 & 0x40fc},
-  {.r = dac_data_port_01, .d = 0x0666}, // VBUS_FAULT input, threshold 1V
+  {.r = dac_data_port_01, .d = 0x0666}, // Not Connected
   {.r = dac_data_port_05, .d = 0x0666}, // VBUS_PG input, threshold 1V
-  {.r = dac_data_port_00, .d = 0x0547}, // VBUS_SWEN output, 3.3V
+  {.r = dac_data_port_00, .d = 0x0547}, // Not Connected
   {.r = dac_data_port_02, .d = 0x0547}, // VBAT_CON output, 3.3V
   {.r = dac_data_port_03, .d = 0x0547}, // VBAT_EN output, 3.3V
   {.r = dac_data_port_04, .d = 0x0547}, // VBUS_EN output, 3.3V
-  {.r = dac_data_port_06, .d = 0x0547}, // RESETb (active LOW) output, 3.3V
+  {.r = dac_data_port_06, .d = 0x0547}, // Not Connected
   {.r = dac_data_port_07, .d = 0x0547}, // SELFTEST output, 3.3V
   {.r = dac_data_port_08, .d = 0x0547}, // GREEN output, 3.3V
   {.r = dac_data_port_09, .d = 0x0547}, // YELLOW output, 3.3V
@@ -55,23 +56,24 @@ int init_max_iox(void) {
      values, sequence, and delay.  That is used here as a template.
   */
   unsigned int i = 0;
+  char buf[LINE_MAX_LENGTH];
 
-  max_iox.begin(SPI_MOSI_Pin, SPI_MISO_Pin, SPI_SCLK_Pin, SPI_CS_IOX_Pin, MAX11311_COPNVERT_Pin); 
+  max_iox.begin(SPI_MOSI_Pin, SPI_MISO_Pin, SPI_SCLK_Pin, SPI_CS_IOX_Pin, MAX11311_CONVERT_Pin);
+
+  // read device_control to see if writing worked, else return error
+  uint16_t _dev_id = max_iox.read_register(dev_id);
+  if (_dev_id != 0x424) {  // see datasheet for expected result value
+    snprintf(buf, LINE_MAX_LENGTH, "init_max_iox:id %x", _dev_id);
+    oled_print(OLED_LINE_RPC, buf, true);
+    return -1;
+  }
 
   for (i = 0; i < sizeof(init_regs) / sizeof(_init_regs_t); i++) {
     max_iox.write_register(init_regs[i].r, init_regs[i].d);
     delay(1);
+    snprintf(buf, LINE_MAX_LENGTH, "init_max_iox:%02x %04x", init_regs[i].r, init_regs[i].d);
+    oled_print(OLED_LINE_RPC, buf, false);
   }
-  // read device_control to see if writing worked, else return error
-  uint16_t _device_control = max_iox.read_register(device_control);
-  if (_device_control != 0xc0) {
-    return -1;
-  }
-
-  // toggle RESETb to USB
-  max_iox.gpio_write(MAX11300::PIXI_PORT6, 0);
-  delay(5);
-  max_iox.gpio_write(MAX11300::PIXI_PORT6, 1);
 
   oled_print(OLED_LINE_RPC, __func__, false);
   return 0;

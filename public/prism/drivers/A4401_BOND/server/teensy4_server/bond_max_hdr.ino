@@ -167,7 +167,7 @@ String bond_max_hdr_init(int hdr,  // 1-4
   }
 
   uint8_t cs_pin = _get_max_cs_from_hdr(hdr);
-  max->begin(SPI_MOSI_Pin, SPI_MISO_Pin, SPI_SCLK_Pin, cs_pin, MAX11311_COPNVERT_Pin);
+  max->begin(SPI_MOSI_Pin, SPI_MISO_Pin, SPI_SCLK_Pin, cs_pin, MAX11311_CONVERT_Pin);
   for(unsigned int k = 0; k < i; k++) {
     if (init_regs[k].r != reserved_6a) {  // reserved_6a is flag for just delay
       max->write_register(init_regs[k].r, init_regs[k].d);
@@ -209,9 +209,9 @@ String bond_max_hdr_adc_cal(int hdr) {
     return _response(doc);
   }  
   
-  digitalWrite(MAX11311_COPNVERT_Pin, LOW);
+  digitalWrite(MAX11311_CONVERT_Pin, LOW);
   delayMicroseconds(2);
-  digitalWrite(MAX11311_COPNVERT_Pin, HIGH);
+  digitalWrite(MAX11311_CONVERT_Pin, HIGH);
   delayMicroseconds(100);
 
   uint16_t data = 0;
@@ -241,9 +241,9 @@ String bond_max_hdr_adc(int hdr, int port) {
     return _response(doc);
   }  
   
-  digitalWrite(MAX11311_COPNVERT_Pin, LOW);
+  digitalWrite(MAX11311_CONVERT_Pin, LOW);
   delayMicroseconds(2);
-  digitalWrite(MAX11311_COPNVERT_Pin, HIGH);
+  digitalWrite(MAX11311_CONVERT_Pin, HIGH);
   delayMicroseconds(100);
 
   uint16_t data = 0;

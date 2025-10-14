@@ -23,13 +23,14 @@
 #define INA220_VBAT_SHUNT_OHMS  0.11f
 #define INA220_VBUS_SHUNT_OHMS  0.11f
 
-#define VSYS_EN_PIN             41
-#define VSYS_PG_PIN             40
+#define VSYS_EN_PIN             31
+#define VDUTSMPS_INT            40
 
 #define BIST_VOLTAGE_V3V3A_PIN  23
 #define BIST_VOLTAGE_V3V3D_PIN  22
 #define BIST_VOLTAGE_V5V_PIN    25
 #define BIST_VOLTAGE_V6V_PIN    24
+#define BIST_VOLTAGE_NEG2V5_PIN 41
 #define SPI_CS_IOX_Pin          33
 #define SPI_CS_HRD1_Pin         38
 #define SPI_CS_HDR2_Pin         37
@@ -39,9 +40,9 @@
 #define SPI_MOSI_Pin            26
 #define SPI_MISO_Pin            39
 #define SPI_SCLK_Pin            27
-#define MAX11311_COPNVERT_Pin   8
+#define MAX11311_CONVERT_Pin    8
 
-#define SETUP_FAIL_VSYS_PG_PIN  1
+#define SETUP_FAIL_USEME        1
 #define SETUP_FAIL_INA219_VBAT  2
 #define SETUP_FAIL_INA219_VBUS  3
 #define SETUP_FAIL_MAX_IOX      4
@@ -236,7 +237,6 @@ void setup(void) {
 
   // set BOND pins
   pinMode(VSYS_EN_PIN, OUTPUT);
-  pinMode(VSYS_PG_PIN, INPUT);
 
   // toggle (power reset) VSYS (~6V) - powers rest of system
   digitalWrite(VSYS_EN_PIN, LOW);
@@ -276,7 +276,7 @@ void setup(void) {
   if (success != 0) {
     setup_fail_code |= (0x1 << SETUP_FAIL_MAX_IOX);
     oled_print(OLED_LINE_STATUS, "SETUP:init_max_iox", true);
-    blink_error_count = 2;
+    blink_error_count = SETUP_FAIL_MAX_IOX;
     goto fail;
   }
   // turn on YELLOW while setup is running
@@ -286,6 +286,7 @@ void setup(void) {
   pinMode(BIST_VOLTAGE_V3V3A_PIN, INPUT);  // analog input
   pinMode(BIST_VOLTAGE_V3V3D_PIN, INPUT);  // analog input
   pinMode(BIST_VOLTAGE_V5V_PIN, INPUT);    // analog input
+  pinMode(BIST_VOLTAGE_V6V_PIN, INPUT);    // analog input
   pinMode(BIST_VOLTAGE_V6V_PIN, INPUT);    // analog input
 
   // Check 6V to see if BOND is powered
@@ -315,17 +316,6 @@ void setup(void) {
       blink_error_count = SETUP_FAIL_6V;
       goto fail;
     }
-  }
-
-  // check VSYS_PG_PIN
-  { // fixes build error
-      uint8_t vsys_pg_pin = digitalRead(VSYS_PG_PIN);
-      if (vsys_pg_pin == 0) {
-        setup_fail_code |= (0x1 << SETUP_FAIL_VSYS_PG_PIN);
-        oled_print(OLED_LINE_STATUS, "SETUP:VSYS_PG_PIN", true);
-        blink_error_count = SETUP_FAIL_VSYS_PG_PIN;
-        goto fail;
-      }
   }
 
   // configure INA220s
@@ -391,10 +381,29 @@ fail:
     digitalWrite(LED_BUILTIN, HIGH);
     delay(blink_delay_ms * 2);
     digitalWrite(LED_BUILTIN, LOW);
+    delay(blink_delay_ms * 2);
   }
 }
 
+static unsigned long lastTime = 0;
+static bool lastTimeSpinner = false;
 void loop(void) {
+ 
+  // Display status
+  if (millis() - lastTime > 1000) {
+    lastTime = millis();
+    if (setup_fail_code == 0) {
+      if (lastTimeSpinner) oled_print(OLED_LINE_DEBUG, "X", false);
+      else oled_print(OLED_LINE_DEBUG, "+", false);
+    } else {
+      // error - show code
+      char _buf[LINE_MAX_LENGTH];
+      if (lastTimeSpinner) snprintf(_buf, LINE_MAX_LENGTH, "X setupfailcode %d", setup_fail_code);
+      else snprintf(_buf, LINE_MAX_LENGTH, "+ setupfailcode %d", setup_fail_code);
+      oled_print(OLED_LINE_DEBUG, _buf, false);
+    }
+    lastTimeSpinner = !lastTimeSpinner;
+  }
 
   // interface() is non-blocking
   // NOTE: !! the function name and string beginning must match !!
