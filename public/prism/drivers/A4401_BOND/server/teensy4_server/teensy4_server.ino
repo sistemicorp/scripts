@@ -361,6 +361,7 @@ void setup(void) {
   // Add more startup checks here...
 
   oled_print(OLED_LINE_STATUS, "SETUP: COMPLETE", false);
+  spinner_update();
 
   // blink the TEENSY LED to let people know we started, 2 fast blinks
   digitalWrite(LED_BUILTIN, HIGH);
@@ -386,23 +387,18 @@ fail:
 }
 
 static unsigned long lastTime = 0;
-static bool lastTimeSpinner = false;
 void loop(void) {
  
   // Display status
-  if (millis() - lastTime > 1000) {
+  if (millis() - lastTime > 2000) {
     lastTime = millis();
-    if (setup_fail_code == 0) {
-      if (lastTimeSpinner) oled_print(OLED_LINE_DEBUG, "X", false);
-      else oled_print(OLED_LINE_DEBUG, "+", false);
-    } else {
+    if (setup_fail_code) {
       // error - show code
       char _buf[LINE_MAX_LENGTH];
-      if (lastTimeSpinner) snprintf(_buf, LINE_MAX_LENGTH, "X setupfailcode %d", setup_fail_code);
-      else snprintf(_buf, LINE_MAX_LENGTH, "+ setupfailcode %d", setup_fail_code);
-      oled_print(OLED_LINE_DEBUG, _buf, false);
+      snprintf(_buf, LINE_MAX_LENGTH, "setupfailcode %d", setup_fail_code);
+      oled_print(OLED_LINE_DEBUG, _buf, true);
     }
-    lastTimeSpinner = !lastTimeSpinner;
+    spinner_update();
   }
 
   // interface() is non-blocking

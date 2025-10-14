@@ -13,6 +13,7 @@
 #define OLED_LINE_MEM       3
 #define OLED_LINE_RPC       4
 
+void spinner_update(void);
 int oled_print(uint32_t line, const char *buf, bool invert);
 void oled_clear(void);
 void oled_init(void);
