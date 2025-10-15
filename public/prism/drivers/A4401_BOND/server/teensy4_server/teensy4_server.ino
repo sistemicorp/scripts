@@ -16,6 +16,7 @@
 #include "src/MAX11311/MAX11300.h"
 #include "bond_max_iox.h"
 #include "bond_max_hdr.h"
+#include "bond_vdut.h"
 #include "src/oled/bond_oled.h"
 
 #define INA220_VBAT_I2C_ADDRESS 0x40
@@ -41,6 +42,8 @@
 #define SPI_MISO_Pin            39
 #define SPI_SCLK_Pin            27
 #define MAX11311_CONVERT_Pin    8
+#define VDUT_SMPS_EN_PIN        10
+#define VDUT_CONNECT_PIN        11
 
 #define SETUP_FAIL_USEME        1
 #define SETUP_FAIL_INA219_VBAT  2
@@ -48,6 +51,7 @@
 #define SETUP_FAIL_MAX_IOX      4
 #define SETUP_FAIL_RESET        5
 #define SETUP_FAIL_6V           6
+#define SETUP_FAIL_VDUT         7
 
 static uint16_t setup_fail_code = 0;
 
@@ -193,6 +197,7 @@ int _reset(void) {
 
   max_iox.gpio_write(MAX11300::PIXI_PORT2, 0); // vbat disconnect
   max_iox.gpio_write(MAX11300::PIXI_PORT7, 0); // self test disable
+  digitalWrite(VDUT_CONNECT_PIN, LOW);
 
   // flash all LEDs
   max_iox.gpio_write(MAX11300::PIXI_PORT8, 0);  // GREEN
@@ -287,7 +292,10 @@ void setup(void) {
   pinMode(BIST_VOLTAGE_V3V3D_PIN, INPUT);  // analog input
   pinMode(BIST_VOLTAGE_V5V_PIN, INPUT);    // analog input
   pinMode(BIST_VOLTAGE_V6V_PIN, INPUT);    // analog input
-  pinMode(BIST_VOLTAGE_V6V_PIN, INPUT);    // analog input
+  pinMode(BIST_VOLTAGE_NEG2V5_PIN, INPUT); // analog input
+
+  // other pin modes
+  pinMode(VDUT_CONNECT_PIN, OUTPUT);
 
   // Check 6V to see if BOND is powered
   // See code in teensy_helpers.ino... really they should use the same API...
@@ -349,6 +357,13 @@ void setup(void) {
   //   JSON config is applied.  It takes a while to figure that out!
   // - BONDr2 will move the DAC to the IOX and therefore calibration
   //   can be moved here.
+
+  if (vdut_init()) {
+    setup_fail_code |= (0x1 << SETUP_FAIL_VDUT);
+    oled_print(OLED_LINE_STATUS, "SETUP:vdut", true);
+    blink_error_count = SETUP_FAIL_VDUT;
+    goto fail;    
+  }
 
   // reset also puts the YELLOW LED back to off
   if (_reset()) {
@@ -428,6 +443,9 @@ void loop(void) {
     vbus_read, "vbus_read: Read VBUS current and voltage",
     vbat_read, "vbat_read: Read VBAT current and voltage",
     vbat_set, "vbat_set: Set VBAT voltage mV",
+    vdut_set, "vdut_set: Set VDUT voltage mV",
+    vdut_get_fault, "vdut_get_fault: Get faults reported by TPS55289",
+    vdut_reset, "vdut_reset: reset TPS55289",
     iox_reset, "iox_reset: IOX reset (USB Hub) pin",
     iox_led_green, "iox_led_green: green led",
     iox_led_yellow, "iox_led_yellow: yellow led",
