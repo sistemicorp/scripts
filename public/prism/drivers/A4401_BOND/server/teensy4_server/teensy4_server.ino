@@ -20,9 +20,9 @@
 #include "src/oled/bond_oled.h"
 
 #define INA220_VBAT_I2C_ADDRESS 0x40
-#define INA220_VBUS_I2C_ADDRESS 0x41
+#define INA220_VDUT_I2C_ADDRESS 0x41
 #define INA220_VBAT_SHUNT_OHMS  0.11f
-#define INA220_VBUS_SHUNT_OHMS  0.11f
+#define INA220_VDUT_SHUNT_OHMS  0.11f
 
 #define VSYS_EN_PIN             31
 #define VDUTSMPS_INT            40
@@ -47,18 +47,36 @@
 
 #define SETUP_FAIL_USEME        1
 #define SETUP_FAIL_INA219_VBAT  2
-#define SETUP_FAIL_INA219_VBUS  3
+#define SETUP_FAIL_INA219_VDUT  3
 #define SETUP_FAIL_MAX_IOX      4
 #define SETUP_FAIL_RESET        5
-#define SETUP_FAIL_6V           6
+#define SETUP_FAIL_VOLTAGE      6
 #define SETUP_FAIL_VDUT         7
 
 static uint16_t setup_fail_code = 0;
 
 extern uint32_t external_psram_size;
 
+typedef struct {
+  uint8_t pin;
+  uint16_t mv;
+  char name[6];
+} _bist_voltages;
+static _bist_voltages bist_voltages[] = {
+  {.pin = BIST_VOLTAGE_V6V_PIN,    .mv = 6000, .name = "V6V"},
+  {.pin = BIST_VOLTAGE_V3V3A_PIN,  .mv = 3300, .name = "V3V3A"},
+  {.pin = BIST_VOLTAGE_V3V3D_PIN,  .mv = 3300, .name = "V3V3D"},
+  {.pin = BIST_VOLTAGE_V5V_PIN,    .mv = 5000, .name = "V5V"},
+
+  // Note the resistor divider on BOND level shifts the -2.5V
+  // to a positive value so that Teensy ADC can read it. The
+  // correct mv value is obscured by usng the same voltage
+  // divider math for al the other pins.  TODO: validate this with math
+  {.pin = BIST_VOLTAGE_NEG2V5_PIN, .mv = 4079, .name = "V2V5N"},
+};
+
 INA219_WE ina219_vbat = INA219_WE(INA220_VBAT_I2C_ADDRESS);
-INA219_WE ina219_vbus = INA219_WE(INA220_VBUS_I2C_ADDRESS);
+INA219_WE ina219_vdut = INA219_WE(INA220_VDUT_I2C_ADDRESS);
 
 // Original Repo: https://github.com/sistemicorp/MAX11300/tree/master
 // Clone the repo and documentation can be found in "extras"
@@ -239,6 +257,7 @@ String reset(){
 void setup(void) {
   unsigned int blink_delay_ms = 100;
   unsigned int blink_error_count = 0;
+  char buf[LINE_MAX_LENGTH];
 
   // set BOND pins
   pinMode(VSYS_EN_PIN, OUTPUT);
@@ -284,8 +303,8 @@ void setup(void) {
     blink_error_count = SETUP_FAIL_MAX_IOX;
     goto fail;
   }
-  // turn on YELLOW while setup is running
-  max_iox.gpio_write(MAX11300::PIXI_PORT9, 1);  // YELLOW
+  snprintf(buf, LINE_MAX_LENGTH, "max_iox");
+  oled_print(OLED_LINE_DEBUG, buf, false);
 
   // ADC
   pinMode(BIST_VOLTAGE_V3V3A_PIN, INPUT);  // analog input
@@ -297,32 +316,46 @@ void setup(void) {
   // other pin modes
   pinMode(VDUT_CONNECT_PIN, OUTPUT);
 
-  // Check 6V to see if BOND is powered
-  // See code in teensy_helpers.ino... really they should use the same API...
-  // For now this is hardcoded here...
+  // reset also puts the YELLOW LED back to off
+  if (_reset()) {
+    setup_fail_code |= (0x1 << SETUP_FAIL_RESET);
+    oled_print(OLED_LINE_STATUS, "SETUP:reset", true);
+    blink_error_count = SETUP_FAIL_RESET;
+    goto fail;
+  }
+  // turn on YELLOW while setup is running
+  max_iox.gpio_write(MAX11300::PIXI_PORT9, 1);  // YELLOW
+
+  // Check all BIST voltages...
+  // note this code has delay on reading, allowing for voltages
+  // to reach steady state... TODO: is delay really needed?
   {
-    // wait on BIST_VOLTAGE_V6V_PIN voltage being correct, means BOND is powered
-    #define BIST_VOLTAGE_V6V_PIN_TOL_MV  150
-    int count_down = 10;
-    int count_good_measures = 2;
-    while (count_down > 0) {
-      unsigned int adc_raw = _read_adc(BIST_VOLTAGE_V6V_PIN, 10, 2);
-      unsigned int mv = (adc_raw * 3300 * 3) / 1024;  // * 3 for resistor divider, 10k / (10k + 20k)
-      if ((mv < (6000 + BIST_VOLTAGE_V6V_PIN_TOL_MV)) && (mv > (6000 - BIST_VOLTAGE_V6V_PIN_TOL_MV))) {
-         // the voltage is in range
-         count_good_measures--;
-         if (count_good_measures == 0) break;
+    for(uint8_t i=0; i < sizeof(bist_voltages) / sizeof(_bist_voltages); i++) {
+      #define BIST_VOLTAGE_TOL_MV  50
+      unsigned int mv = 0;
+      int count_down = 10;
+      int count_good_measures = 2;
+      while (count_down > 0) {
+        unsigned int adc_raw = _read_adc(bist_voltages[i].pin, 10, 2);
+        mv = (adc_raw * 3300 * 3) / 1024;  // * 3 for resistor divider, 10k / (10k + 20k)
+        if ((mv < (bist_voltages[i].mv + BIST_VOLTAGE_TOL_MV)) && (mv > (bist_voltages[i].mv - BIST_VOLTAGE_TOL_MV))) {
+          // the voltage is in range
+          count_good_measures--;
+          if (count_good_measures == 0) break;
+        }
+        count_down--;
+        delay(20);
       }
-      count_down--;
-      delay(20);
-    }
-    // there must be count_good_measures before count_down expires to pass this test
-    // in this way we hope to catch case where 6V is above tolerance
-    if (count_down == 0) {
-      setup_fail_code |= (0x1 << SETUP_FAIL_6V);
-      oled_print(OLED_LINE_STATUS, "SETUP:FAIL_6V", true);
-      blink_error_count = SETUP_FAIL_6V;
-      goto fail;
+      // there must be count_good_measures before count_down expires to pass this test
+      if (count_down == 0) {
+        setup_fail_code |= (0x1 << SETUP_FAIL_VOLTAGE);
+        snprintf(buf, LINE_MAX_LENGTH, "voltage %s %u", bist_voltages[i].name, mv);
+        oled_print(OLED_LINE_DEBUG, buf, true);
+        blink_error_count = SETUP_FAIL_VOLTAGE;
+        goto fail;
+      }
+      snprintf(buf, LINE_MAX_LENGTH, "voltage %s %u", bist_voltages[i].name, mv);
+      oled_print(OLED_LINE_DEBUG, buf, false);
     }
   }
 
@@ -333,23 +366,25 @@ void setup(void) {
     blink_error_count = SETUP_FAIL_INA219_VBAT;
     goto fail;
   }
+  oled_print(OLED_LINE_DEBUG, "ina219_vbat.init", false);
 
   ina219_vbat.setShuntSizeInOhms(INA220_VBAT_SHUNT_OHMS);
   ina219_vbat.setBusRange(BRNG_16);
   ina219_vbat.setADCMode(SAMPLE_MODE_16);
   ina219_vbat.setMeasureMode(TRIGGERED);
 
-  if (!ina219_vbus.init()) {
-    setup_fail_code |= (0x1 << SETUP_FAIL_INA219_VBUS);
-    oled_print(OLED_LINE_STATUS, "SETUP:INA219_VBUS", true);
-    blink_error_count = SETUP_FAIL_INA219_VBUS;
+  if (!ina219_vdut.init()) {
+    setup_fail_code |= (0x1 << SETUP_FAIL_INA219_VDUT);
+    oled_print(OLED_LINE_STATUS, "SETUP:INA219_VDUT", true);
+    blink_error_count = SETUP_FAIL_INA219_VDUT;
     goto fail;
   }
+  oled_print(OLED_LINE_DEBUG, "ina219_vdut.init", false);
 
-  ina219_vbus.setShuntSizeInOhms(INA220_VBUS_SHUNT_OHMS);
-  ina219_vbus.setBusRange(BRNG_16);
-  ina219_vbus.setADCMode(SAMPLE_MODE_16);
-  ina219_vbus.setMeasureMode(TRIGGERED);
+  ina219_vdut.setShuntSizeInOhms(INA220_VDUT_SHUNT_OHMS);
+  ina219_vdut.setBusRange(BRNG_16);
+  ina219_vdut.setADCMode(SAMPLE_MODE_16);
+  ina219_vdut.setMeasureMode(TRIGGERED);
 
   // Battery Emulator
   // - DO NOT INIT HERE, because the MAX11311 DAC for battery emulator
@@ -365,14 +400,6 @@ void setup(void) {
     goto fail;    
   }
 
-  // reset also puts the YELLOW LED back to off
-  if (_reset()) {
-    setup_fail_code |= (0x1 << SETUP_FAIL_RESET);
-    oled_print(OLED_LINE_STATUS, "SETUP:reset", true);
-    blink_error_count = SETUP_FAIL_RESET;
-    goto fail;
-  }
-
   // Add more startup checks here...
 
   oled_print(OLED_LINE_STATUS, "SETUP: COMPLETE", false);
@@ -386,6 +413,10 @@ void setup(void) {
   digitalWrite(LED_BUILTIN, HIGH);
   delay(blink_delay_ms);
   digitalWrite(LED_BUILTIN, LOW);
+
+  // turn off YELLOW setup is done
+  max_iox.gpio_write(MAX11300::PIXI_PORT9, 0);  // YELLOW
+
   return;
 
 fail:
@@ -440,7 +471,7 @@ void loop(void) {
     bond_max_hdr_dac, "bond_max_hdr_dac: write DAC voltage on header port",
     bond_batt_emu_cal, "bond_batt_emu_cal: calibrate battery emulator",
 
-    vbus_read, "vbus_read: Read VBUS current and voltage",
+    vdut_read, "vbus_read: Read VDUT current and voltage",
     vbat_read, "vbat_read: Read VBAT current and voltage",
     vbat_set, "vbat_set: Set VBAT voltage mV",
     vdut_set, "vdut_set: Set VDUT voltage mV",

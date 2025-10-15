@@ -10,13 +10,13 @@
 /* vbus_read
  *  - return INA bus voltage and current
  */
-String vbus_read() {
+String vdut_read() {
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
 
-  ina219_vbus.startSingleMeasurement();
+  ina219_vdut.startSingleMeasurement();
 
-  doc["result"]["v"] = ina219_vbus.getBusVoltage_V();
-  doc["result"]["ima"] = ina219_vbus.getCurrent_mA();
+  doc["result"]["v"] = ina219_vdut.getBusVoltage_V();
+  doc["result"]["ima"] = ina219_vdut.getCurrent_mA();
 
   oled_print(OLED_LINE_RPC, __func__, !doc["success"]);
   return _response(doc);  // always the last line of RPC API
