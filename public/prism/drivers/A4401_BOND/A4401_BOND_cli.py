@@ -117,7 +117,7 @@ def parse_args():
                            required=True,
                            default=500)
 
-    vbus_read = subp.add_parser('vbus_read')
+    vbus_read = subp.add_parser('vdut_read')
 
     iox_led_green = subp.add_parser('iox_led_green',
                                     description="Enable/Disable Green LED (PASS indicator on Jig)")
@@ -301,10 +301,10 @@ def bist_voltage(args):
     return response["success"]
 
 
-def vbus_read(args):
-    logging.info("vbus_read: {}".format(args))
+def vdut_read(args):
+    logging.info("vdut_read: {}".format(args))
 
-    response = teensy.vbus_read()
+    response = teensy.vdut_read()
     logging.info("{}".format(response))
     return response["success"]
 
@@ -450,8 +450,8 @@ if __name__ == '__main__':
     elif args._cmd == 'vbat_read':
         success = vbat_read(args)
 
-    elif args._cmd == 'vbus_read':
-        success = vbus_read(args)
+    elif args._cmd == 'vdut_read':
+        success = vdut_read(args)
 
     elif args._cmd == 'iox_led_green':
         success = iox_led_green(args)

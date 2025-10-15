@@ -488,13 +488,13 @@ class A4401_BOND:
             answer = self.rpc.call_method('bist_voltage', name.encode())
             return self._rpc_validate(answer)
 
-    def vbus_read(self):
-        """ Read INA220 for VBUS
+    def vdut_read(self):
+        """ Read INA220 for VDUT
 
         :return: {'success': True, 'method': 'vbus_read', 'result': {'v': 0, 'ima': 0.050000001}}
         """
         with self._lock:
-            self.logger.info(f"vbus_read")
+            self.logger.info(f"vdut_read")
             answer = self.rpc.call_method('vbus_read')
             return self._rpc_validate(answer)
 
