@@ -117,7 +117,15 @@ def parse_args():
                            required=True,
                            default=500)
 
-    vbus_read = subp.add_parser('vdut_read')
+    vdut_read = subp.add_parser('vdut_read')
+    vdut_set = subp.add_parser('vdut_set')
+    vdut_set.add_argument('--mv',
+                           dest="_mv",
+                           action='store',
+                           type=int,
+                           help='voltage, 1000-9000 mV',
+                           required=True,
+                           default=500)
 
     iox_led_green = subp.add_parser('iox_led_green',
                                     description="Enable/Disable Green LED (PASS indicator on Jig)")
@@ -403,6 +411,13 @@ def vbat_set(args):
     logging.info("{}".format(response))
     return response["success"]
 
+def vdut_set(args):
+    logging.info("vdut_set: {}".format(args))
+
+    response = teensy.vdut_set(args._mv)
+    logging.info("{}".format(response))
+    return response["success"]
+
 def debug_batt_emu(args):
     logging.info("debug_batt_emu: {}".format(args))
 
@@ -485,6 +500,9 @@ if __name__ == '__main__':
 
     elif args._cmd == 'vbat_set':
         success = vbat_set(args)
+
+    elif args._cmd == 'vdut_set':
+        success = vdut_set(args)
 
     elif args._cmd == 'debug_batt_emu':
         success = debug_batt_emu(args)

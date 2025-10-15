@@ -498,6 +498,16 @@ class A4401_BOND:
             answer = self.rpc.call_method('vbus_read')
             return self._rpc_validate(answer)
 
+    def vdut_set(self, mv: int):
+        """ Set VDUT Voltage in mV
+
+        :return: {'success': True, 'method': 'vdut_set', 'result': {'v': 0, 'ima': 0.050000001}}
+        """
+        with self._lock:
+            self.logger.info(f"vdut_set")
+            answer = self.rpc.call_method('vdut_set', mv)
+            return self._rpc_validate(answer)
+
     def vbat_read(self):
         """ Read INA220 for VBAT
 

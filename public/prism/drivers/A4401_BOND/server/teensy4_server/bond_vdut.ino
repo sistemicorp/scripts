@@ -116,13 +116,25 @@ String vdut_set(uint16_t mv) {
 	 * ...then use milli-Volts... and integer friendly form
 	 */
 	vdut_ctx.vmain_set_mv = mv;
-	vdut_ctx.vmain_set_vref = (mv - 798) / 10;
+	vdut_ctx.vmain_set_vref = (mv - 798 + 5) / 10;
   snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "vref %u %u mV", vdut_ctx.vmain_set_vref, mv);
   oled_print(OLED_LINE_DEBUG, vdut_ctx.buf, error_set);
 
+  uint8_t data_set[3];
+  data_set[0] = REG_VREF;
+  data_set[1] = vdut_ctx.vmain_set_vref & 0xFF;
+  data_set[2] = (vdut_ctx.vmain_set_vref >> 8) & 0x7;
+  int rc = _i2c_writer(data_set, 3);
+  if (rc) {
+    snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "i2cwrite %d %d", rc, __LINE__);
+    oled_print(OLED_LINE_DEBUG, vdut_ctx.buf, true);    
+    doc["success"] = false;
+    doc["result"]["error"] = "_i2c_writer error code TODO";      
+    return _response(doc);  // always the last line of RPC API
+  }
+
   snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "%s %u mV", __func__, mv);
   oled_print(OLED_LINE_RPC, vdut_ctx.buf, error_set);
-
   return _response(doc);  // always the last line of RPC API
 }
 
