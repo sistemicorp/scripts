@@ -52,6 +52,7 @@
 #define SETUP_FAIL_RESET        5
 #define SETUP_FAIL_VOLTAGE      6
 #define SETUP_FAIL_VDUT         7
+#define SETUP_FAIL_BATTEM       8
 
 static uint16_t setup_fail_code = 0;
 
@@ -204,6 +205,38 @@ String status() {
   doc["result"]["stack_kb"] = stack;
   doc["result"]["heap_kb"] = heap;
   doc["result"]["psram_kb"] = psram;
+
+  oled_print(OLED_LINE_RPC, __func__, false);
+  return _response(doc);  // always the last line of RPC API
+}
+
+/* vdut_con
+ *  - set VDUT_EN pin, which is active (asserted) HIGH
+ *  - connects VDUT to the DUT
+ */
+String vdut_con(bool assert) {
+  DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
+
+  digitalWrite(VDUT_CONNECT_PIN, assert ? HIGH : LOW);
+
+  doc["result"]["assert"] = assert;
+  doc["result"]["level"] = assert;
+
+  oled_print(OLED_LINE_RPC, __func__, false);
+  return _response(doc);  // always the last line of RPC API
+}
+
+/* vdut_en
+ *  - set VDUTSMPS_EN pin, which is active (asserted) HIGH
+ *  - enables TPS55289
+ */
+String vdut_en(bool assert) {
+  DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
+
+  digitalWrite(VDUT_SMPS_EN_PIN, assert ? HIGH : LOW);
+
+  doc["result"]["assert"] = assert;
+  doc["result"]["level"] = assert;
 
   oled_print(OLED_LINE_RPC, __func__, false);
   return _response(doc);  // always the last line of RPC API
@@ -400,6 +433,13 @@ void setup(void) {
     goto fail;    
   }
 
+  if (battemu_init()) {
+    setup_fail_code |= (0x1 << SETUP_FAIL_BATTEM);
+    oled_print(OLED_LINE_STATUS, "SETUP:battemu_init", true);
+    blink_error_count = SETUP_FAIL_BATTEM;
+    goto fail;      
+  }
+
   // Add more startup checks here...
 
   oled_print(OLED_LINE_STATUS, "SETUP: COMPLETE", false);
@@ -477,12 +517,13 @@ void loop(void) {
     vdut_set, "vdut_set: Set VDUT voltage mV",
     vdut_get_fault, "vdut_get_fault: Get faults reported by TPS55289",
     vdut_reset, "vdut_reset: reset TPS55289",
+    vdut_con, "vdut_con: Connect VDUT to target",
+    vdut_en, "vdut_en: Enable VDUT TPS55289",
     iox_reset, "iox_reset: IOX reset (USB Hub) pin",
     iox_led_green, "iox_led_green: green led",
     iox_led_yellow, "iox_led_yellow: yellow led",
     iox_led_red, "iox_led_red: red led",
     iox_led_blue, "iox_led_blue: blue led",
-    iox_vbus_en, "iox_vbus_en: VBUS Enable",
     iox_vbat_en, "iox_vbat_en: VBAT Enable",
     iox_vbat_con, "iox_vbat_con: VBAT Connect",
     iox_selftest, "iox_selftest: Self test Enable",

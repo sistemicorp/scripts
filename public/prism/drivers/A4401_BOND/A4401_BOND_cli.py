@@ -159,9 +159,9 @@ def parse_args():
                            help='Assert LED BLUE',
                            default=False)
 
-    iox_vbus_en = subp.add_parser('iox_vbus_en',
+    vdut_en = subp.add_parser('vdut_en',
                                   description="Enable/Disable VBUS")
-    iox_vbus_en.add_argument('--enable',
+    vdut_en.add_argument('--enable',
                            dest="_enable",
                            action='store_true',
                            help='Assert VBUS_EN',
@@ -357,10 +357,10 @@ def iox_led_blue(args):
     return response["success"]
 
 
-def iox_vbus_en(args):
-    logging.info("iox_vbus_en: {}".format(args))
+def vdut_en(args):
+    logging.info("vdut_en: {}".format(args))
 
-    response = teensy.iox_vbus_en(args._enable)
+    response = teensy.vdut_en(args._enable)
     logging.info("{}".format(response))
     return response["success"]
 
@@ -480,8 +480,8 @@ if __name__ == '__main__':
     elif args._cmd == 'iox_led_blue':
         success = iox_led_blue(args)
 
-    elif args._cmd == 'iox_vbus_en':
-        success = iox_vbus_en(args)
+    elif args._cmd == 'vdut_en':
+        success = vdut_en(args)
 
     elif args._cmd == 'iox_vbat_en':
         success = iox_vbat_en(args)

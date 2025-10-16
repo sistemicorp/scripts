@@ -8,17 +8,19 @@
 #include "bond_max_hdr.h"
 #include "src/oled/bond_oled.h"
 
-// default IOX MAX11311 resgisters, set on init
+// default IOX MAX11311 resisters, set on init
+// (I think) there is Maxim PC side tool that created this list
+// that I have since lost, and didn't document.
 static _init_regs_t init_regs[] = {
   {.r = device_control, .d = 0x8000}, // reset
   {.r = device_control, .d = 0xc0 & 0x40b0},
   {.r = device_control, .d = 0xc0 & 0x40fc},
   {.r = dac_data_port_01, .d = 0x0666}, // Not Connected
-  {.r = dac_data_port_05, .d = 0x0666}, // VBUS_PG input, threshold 1V
+  {.r = dac_data_port_05, .d = 0x0666}, // Hdr 1 LDO (U12) Adjust, 3.3V
   {.r = dac_data_port_00, .d = 0x0547}, // Not Connected
   {.r = dac_data_port_02, .d = 0x0547}, // VBAT_CON output, 3.3V
   {.r = dac_data_port_03, .d = 0x0547}, // VBAT_EN output, 3.3V
-  {.r = dac_data_port_04, .d = 0x0547}, // VBUS_EN output, 3.3V
+  {.r = dac_data_port_04, .d = 0x0547}, // Battery Emulator Adjust, 3.3V
   {.r = dac_data_port_06, .d = 0x0547}, // Not Connected
   {.r = dac_data_port_07, .d = 0x0547}, // SELFTEST output, 3.3V
   {.r = dac_data_port_08, .d = 0x0547}, // GREEN output, 3.3V
@@ -28,13 +30,13 @@ static _init_regs_t init_regs[] = {
   {.r = dac_preset_data_1, .d = 0x0}, 
   {.r = dac_preset_data_2, .d = 0x0}, 
   {.r = port_cfg_01, .d = (MAX11300::MODE_1 << 12)}, 
-  {.r = port_cfg_05, .d = (MAX11300::MODE_1 << 12)}, 
+  {.r = port_cfg_05, .d = (MAX11300::MODE_5 << 12) | (1 << 8)},
   {.r = gpo_data_10_to_0, .d = 0x0}, 
   {.r = gpo_data_11, .d = 0x0}, 
   {.r = port_cfg_00, .d = (MAX11300::MODE_3 << 12)}, 
   {.r = port_cfg_02, .d = (MAX11300::MODE_3 << 12)}, 
   {.r = port_cfg_03, .d = (MAX11300::MODE_3 << 12)}, 
-  {.r = port_cfg_04, .d = (MAX11300::MODE_3 << 12)}, 
+  {.r = port_cfg_04, .d = (MAX11300::MODE_5 << 12) | (1 << 8)},
   {.r = port_cfg_06, .d = (MAX11300::MODE_3 << 12)}, 
   {.r = port_cfg_07, .d = (MAX11300::MODE_3 << 12)}, 
   {.r = port_cfg_08, .d = (MAX11300::MODE_3 << 12)}, 
@@ -114,19 +116,6 @@ String iox_vbat_en(bool assert) {
   max_iox.gpio_write(MAX11300::PIXI_PORT3, (assert ? 1 : 0));
   doc["result"]["assert"] = assert;
   doc["result"]["level"] = assert;  
-
-  oled_print(OLED_LINE_RPC, __func__, false);
-  return _response(doc);  // always the last line of RPC API
-}
-
-/* iox_vbus_en
- *  - set VBUS_EN pin, which is active (asserted) HIGH
- */
-String iox_vbus_en(bool assert) {
-  DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
-  max_iox.gpio_write(MAX11300::PIXI_PORT4, (assert ? 1 : 0));
-  doc["result"]["assert"] = assert;
-  doc["result"]["level"] = assert;
 
   oled_print(OLED_LINE_RPC, __func__, false);
   return _response(doc);  // always the last line of RPC API

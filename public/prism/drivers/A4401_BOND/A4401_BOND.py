@@ -139,7 +139,7 @@ class A4401_BOND:
             self.logger.error(f"iox_vbat_con {status_response}")
             return False
 
-        status_response = self.iox_vbus_en(False)
+        status_response = self.vdut_en(False)
         if not status_response["success"]:
             self.logger.error(f"iox_vbat_con {status_response}")
             return False
@@ -529,6 +529,28 @@ class A4401_BOND:
             answer = self.rpc.call_method('vbat_set', mv)
             return self._rpc_validate(answer)
 
+    def vdut_en(self, state: bool):
+        """ VDUT SMPS Enable/Disable
+
+        :return: {'success': True, 'method': 'vdut_en',
+                  'result': {'assert': False, 'level': False}
+        """
+        with self._lock:
+            self.logger.info(f"vdut_en {state}")
+            answer = self.rpc.call_method('vdut_en', state)
+            return self._rpc_validate(answer)
+
+    def vdut_con(self, state: bool):
+        """ VDUT SMPS Connect to DUT
+
+        :return: {'success': True, 'method': 'vdut_con',
+                  'result': {'assert': False, 'level': False}
+        """
+        with self._lock:
+            self.logger.info(f"vdut_con {state}")
+            answer = self.rpc.call_method('vdut_con', state)
+            return self._rpc_validate(answer)
+
     def iox_reset(self, state: bool):
         """ MAX11311 IOX
 
@@ -581,17 +603,6 @@ class A4401_BOND:
         with self._lock:
             self.logger.info(f"iox_led_blue {state}")
             answer = self.rpc.call_method('iox_led_blue', state)
-            return self._rpc_validate(answer)
-
-    def iox_vbus_en(self, state: bool):
-        """ MAX11311 IOX
-
-        :return: {'success': True, 'method': 'iox_vbus_en',
-                  'result': {'assert': False, 'level': False}
-        """
-        with self._lock:
-            self.logger.info(f"iox_vbus_en {state}")
-            answer = self.rpc.call_method('iox_vbus_en', state)
             return self._rpc_validate(answer)
 
     def iox_selftest(self, state: bool):
