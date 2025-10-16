@@ -306,23 +306,23 @@ void setup(void) {
   delay(100);
 
   // set SPI interface pin modes
-  digitalWrite(SPI_CS_IOX_Pin, HIGH); // SPI CS inactive high
   pinMode (SPI_CS_IOX_Pin, OUTPUT);   // ensure SPI CS is driven output
-  digitalWrite(SPI_CS_HRD1_Pin, HIGH); 
+  digitalWrite(SPI_CS_IOX_Pin, HIGH); // SPI CS inactive high
   pinMode (SPI_CS_HRD1_Pin, OUTPUT); 
-  digitalWrite(SPI_CS_HDR2_Pin, HIGH); 
+  digitalWrite(SPI_CS_HRD1_Pin, HIGH); 
   pinMode (SPI_CS_HDR2_Pin, OUTPUT); 
-  digitalWrite(SPI_CS_HDR3_Pin, HIGH); 
+  digitalWrite(SPI_CS_HDR2_Pin, HIGH); 
   pinMode (SPI_CS_HDR3_Pin, OUTPUT); 
-  digitalWrite(SPI_CS_HDR4_Pin, HIGH); 
+  digitalWrite(SPI_CS_HDR3_Pin, HIGH); 
   pinMode (SPI_CS_HDR4_Pin, OUTPUT); 
-  digitalWrite(SPI_CS2_HDR4_Pin, HIGH); 
+  digitalWrite(SPI_CS_HDR4_Pin, HIGH); 
   pinMode (SPI_CS2_HDR4_Pin, OUTPUT);          
-  digitalWrite(SPI_MOSI_Pin, LOW);
+  digitalWrite(SPI_CS2_HDR4_Pin, HIGH); 
   pinMode (SPI_MOSI_Pin, OUTPUT);
-  pinMode (SPI_MISO_Pin, INPUT);
-  digitalWrite(SPI_SCLK_Pin, LOW);
+  digitalWrite(SPI_MOSI_Pin, LOW);
   pinMode (SPI_SCLK_Pin, OUTPUT);
+  digitalWrite(SPI_SCLK_Pin, LOW);
+  pinMode (SPI_MISO_Pin, INPUT);
 
   Serial.begin(115200);
   Wire.begin();

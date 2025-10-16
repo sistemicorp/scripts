@@ -60,10 +60,9 @@ class MAX11300
 {
     public:
     
-    ///MAX11300 Ports
+    ///MAX11300 Ports - used to index port in GPIO mode
     enum MAX11300_Ports
     {
-        PIXI_PORT11 = 1,
         PIXI_PORT0 = 2,
         PIXI_PORT1 = 3,
         PIXI_PORT2 = 4,
@@ -75,7 +74,7 @@ class MAX11300
         PIXI_PORT8 = 13,
         PIXI_PORT9 = 14,
         PIXI_PORT10 = 15,
-        PIXI_PORT_MAX = 16,
+        PIXI_PORT11 = 0,
     };
     
     ///MAX11300 Port Modes
