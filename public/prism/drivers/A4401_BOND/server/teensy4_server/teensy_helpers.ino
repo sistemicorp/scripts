@@ -8,6 +8,7 @@
 #define BIST_VOLTAGE_V3V3D_NAME            "V3V3D"
 #define BIST_VOLTAGE_V5V_NAME              "V5V"
 #define BIST_VOLTAGE_V6V_NAME              "V6V"
+#define BIST_VOLTAGE_V2V5NEG_NAME          "V2V5NEG"
 #define BIST_VOLTAGE_ADC_SAMPLES           10
 #define BIST_VOLTAGE_ADC_SAMPLE_RATE_MS    2
 #define BIST_VOLTAGE_TOLERANCE_MV          200  // FIXME: change to 100mV for BOND r2
@@ -145,6 +146,10 @@ String bist_voltage(String name) {
   } else if (strcmp(p, BIST_VOLTAGE_V6V_NAME) == 0) {
     pin = BIST_VOLTAGE_V6V_PIN;
     expected_mv = 6000;
+
+  } else if (strcmp(p, BIST_VOLTAGE_V2V5NEG_NAME) == 0) {
+    pin = BIST_VOLTAGE_NEG2V5_PIN;
+    expected_mv = 4079;
 
   } else {
     doc["result"]["error"] = "Unknown name";

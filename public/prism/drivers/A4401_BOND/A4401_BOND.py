@@ -55,7 +55,7 @@ class A4401_BOND:
     GPIO_NUMBER_MIN = 0
     GPIO_NUMBER_MAX = 41
 
-    BIST_VOLTAGES = ["V6V", "V5V", "V3V3A", "V3V3D"]
+    BIST_VOLTAGES = ["V6V", "V5V", "V3V3A", "V3V3D", "V2V5NEG"]
 
     # For Teensy FW version checking the SAME (c code) header file that created the Teensy4
     # firmware is used to check if that firmware is now running (deployed) on Teensy4.
@@ -135,11 +135,6 @@ class A4401_BOND:
             return False
 
         status_response = self.iox_vbat_con(False)
-        if not status_response["success"]:
-            self.logger.error(f"iox_vbat_con {status_response}")
-            return False
-
-        status_response = self.vdut_en(False)
         if not status_response["success"]:
             self.logger.error(f"iox_vbat_con {status_response}")
             return False
@@ -480,7 +475,7 @@ class A4401_BOND:
     def bist_voltage(self, name):
         """ Read BIST voltage
 
-        :param name: one of V6V, V5V, V3V3A, V3V3D (checked by teensy server side)
+        :param name: one of V6V, V5V, V3V3A, V3V3D, V2V5NEG (checked by teensy server side)
         :return: {'success': True, 'method': 'bist_voltage', 'result': {'name': 'V5V', 'mv': 0}}
         """
         with self._lock:

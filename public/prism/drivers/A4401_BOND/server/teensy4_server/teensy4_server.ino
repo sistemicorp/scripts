@@ -24,27 +24,27 @@
 #define INA220_VBAT_SHUNT_OHMS  0.11f
 #define INA220_VDUT_SHUNT_OHMS  0.11f
 
-#define VSYS_EN_PIN             31
-#define VDUTSMPS_INT            40
-#define BIST_VOLTAGE_V3V3A_PIN  23  // ADC input
-#define BIST_VOLTAGE_V3V3D_PIN  22  // ADC input
-#define BIST_VOLTAGE_V5V_PIN    25  // ADC input
-#define BIST_VOLTAGE_V6V_PIN    24  // ADC input
-#define BIST_VOLTAGE_NEG2V5_PIN 41  // ADC input
-#define SPI_CS_IOX_Pin          33
-#define SPI_CS_HRD1_Pin         38
-#define SPI_CS_HDR2_Pin         37
-#define SPI_CS_HDR3_Pin         36
-#define SPI_CS_HDR4_Pin         35  
-#define SPI_CS2_HDR4_Pin        34 
-#define SPI_MOSI_Pin            26
-#define SPI_MISO_Pin            39
-#define SPI_SCLK_Pin            27
+#define BUTTON1_PIN             6   // Jig Closed Detection
+#define BUTTON2_PIN             7   // User defined
 #define MAX11311_CONVERT_Pin    8
 #define VDUT_SMPS_EN_PIN        10  // schematic name VDUTSMPS_EN
 #define VDUT_CONNECT_PIN        11  // schematic name VDUT_EN
-#define BUTTON1_PIN             6   // Jig Closed Detection
-#define BUTTON2_PIN             7   // User defined
+#define BIST_VOLTAGE_V3V3D_PIN  22  // ADC input
+#define BIST_VOLTAGE_V3V3A_PIN  23  // ADC input
+#define BIST_VOLTAGE_V6V_PIN    24  // ADC input
+#define BIST_VOLTAGE_V5V_PIN    25  // ADC input
+#define SPI_MOSI_Pin            26
+#define SPI_SCLK_Pin            27
+#define VSYS_EN_PIN             31
+#define SPI_CS_IOX_Pin          33
+#define SPI_CS2_HDR4_Pin        34 
+#define SPI_CS_HDR4_Pin         35  
+#define SPI_CS_HDR3_Pin         36
+#define SPI_CS_HDR2_Pin         37
+#define SPI_CS_HRD1_Pin         38
+#define SPI_MISO_Pin            39
+#define VDUTSMPS_INT            40
+#define BIST_VOLTAGE_NEG2V5_PIN 41  // ADC input
 
 #define SETUP_FAIL_USEME        1
 #define SETUP_FAIL_INA219_VBAT  2
@@ -290,10 +290,11 @@ void setup(void) {
   unsigned int blink_error_count = 0;
   char buf[LINE_MAX_LENGTH];
 
-  // set Teensy BOND pins
+  // set Teensy BOND pins, disable where application
   pinMode(VSYS_EN_PIN, OUTPUT);
   pinMode(VDUT_CONNECT_PIN, OUTPUT);
-  pinMode(VDUT_SMPS_EN_PIN, OUTPUT); 
+  pinMode(VDUT_SMPS_EN_PIN, OUTPUT);
+  digitalWrite(VDUT_SMPS_EN_PIN, LOW); 
   pinMode(MAX11311_CONVERT_Pin, OUTPUT); 
   pinMode(VDUTSMPS_INT, INPUT); 
   pinMode(BUTTON1_PIN, INPUT);

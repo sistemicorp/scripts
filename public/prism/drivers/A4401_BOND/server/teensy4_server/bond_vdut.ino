@@ -151,10 +151,10 @@ String vdut_set(uint16_t mv) {
     doc["result"]["error"] = "set vdut beyond tolerance limit";      
     return _response(doc);  // always the last line of RPC API
   }
-  snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "vdut %u %u", mv, vdut_mv);
+  snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "vdut %u %u mV", mv, vdut_mv);
   oled_print(OLED_LINE_DEBUG, vdut_ctx.buf, false);  
 
-  snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "%s %u/%u mV", __func__, mv, vdut_mv);
+  snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "%s %u/%u", __func__, mv, vdut_mv);
   oled_print(OLED_LINE_RPC, vdut_ctx.buf, error_set);
   return _response(doc);  // always the last line of RPC API
 }
@@ -172,7 +172,8 @@ int _vdut_oe(bool en) {
 /* @brief VDUT (TPS55289) output Enable
  * - this is not BOND's header output enable, this is the TPS55289 OE
  *   and its enabled by default during vdut_init().
- * - TODO: this api may be removed in the future...?
+ * - TODO: this api may be removed in the future...? Because BOND has a separate 
+ *         FET for connection.
  */
 String vdut_oe(bool oe) {
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
@@ -252,17 +253,9 @@ String vdut_get_fault(void) {
 static void _vdut_reset(void) {
   // toggle EN pin to reset
   digitalWrite(VDUT_SMPS_EN_PIN, LOW);
-  delay(50);
+  delay(5);
   digitalWrite(VDUT_SMPS_EN_PIN, HIGH);
-  delay(50);
-}
-
-String vdut_reset(void) {
-  DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
-  _vdut_reset();
-  snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "%s", __func__);
-  oled_print(OLED_LINE_RPC, vdut_ctx.buf, false);
-  return _response(doc);  // always the last line of RPC API
+  delay(5);
 }
 
 /* Init VDUT (See SCH), TPS55289
@@ -329,4 +322,19 @@ fail:
   snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "%s", __func__);
   oled_print(OLED_LINE_RPC, vdut_ctx.buf, true);
   return -1;
+}
+
+String vdut_reset(void) {
+  DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
+  _vdut_reset();
+  if (vdut_init()) {
+    snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "%s", __func__);
+    oled_print(OLED_LINE_RPC, vdut_ctx.buf, true);
+    doc["success"] = false;
+    doc["result"]["error"] = "vdut_init failed";  
+    return _response(doc);  // always the last line of RPC API
+  }
+  snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "%s", __func__);
+  oled_print(OLED_LINE_RPC, vdut_ctx.buf, false);
+  return _response(doc);  // always the last line of RPC API
 }
