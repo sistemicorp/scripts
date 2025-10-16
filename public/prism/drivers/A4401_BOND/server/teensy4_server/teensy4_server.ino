@@ -26,12 +26,11 @@
 
 #define VSYS_EN_PIN             31
 #define VDUTSMPS_INT            40
-
-#define BIST_VOLTAGE_V3V3A_PIN  23
-#define BIST_VOLTAGE_V3V3D_PIN  22
-#define BIST_VOLTAGE_V5V_PIN    25
-#define BIST_VOLTAGE_V6V_PIN    24
-#define BIST_VOLTAGE_NEG2V5_PIN 41
+#define BIST_VOLTAGE_V3V3A_PIN  23  // ADC input
+#define BIST_VOLTAGE_V3V3D_PIN  22  // ADC input
+#define BIST_VOLTAGE_V5V_PIN    25  // ADC input
+#define BIST_VOLTAGE_V6V_PIN    24  // ADC input
+#define BIST_VOLTAGE_NEG2V5_PIN 41  // ADC input
 #define SPI_CS_IOX_Pin          33
 #define SPI_CS_HRD1_Pin         38
 #define SPI_CS_HDR2_Pin         37
@@ -42,8 +41,10 @@
 #define SPI_MISO_Pin            39
 #define SPI_SCLK_Pin            27
 #define MAX11311_CONVERT_Pin    8
-#define VDUT_SMPS_EN_PIN        10
-#define VDUT_CONNECT_PIN        11
+#define VDUT_SMPS_EN_PIN        10  // schematic name VDUTSMPS_EN
+#define VDUT_CONNECT_PIN        11  // schematic name VDUT_EN
+#define BUTTON1_PIN             6   // Jig Closed Detection
+#define BUTTON2_PIN             7   // User defined
 
 #define SETUP_FAIL_USEME        1
 #define SETUP_FAIL_INA219_VBAT  2
@@ -249,21 +250,18 @@ int _reset(void) {
   max_iox.gpio_write(MAX11300::PIXI_PORT2, 0); // vbat disconnect
   max_iox.gpio_write(MAX11300::PIXI_PORT7, 0); // self test disable
   digitalWrite(VDUT_CONNECT_PIN, LOW);
+  iox_vbat_con(false);
 
   // flash all LEDs
-  max_iox.gpio_write(MAX11300::PIXI_PORT8, 0);  // GREEN
-  max_iox.gpio_write(MAX11300::PIXI_PORT9, 0);  // YELLOW
-  max_iox.gpio_write(MAX11300::PIXI_PORT10, 0); // RED
-  max_iox.gpio_write(MAX11300::PIXI_PORT11, 0); // BLUE
-  max_iox.gpio_write(MAX11300::PIXI_PORT8, 1);  // GREEN
-  max_iox.gpio_write(MAX11300::PIXI_PORT9, 1);  // YELLOW
-  max_iox.gpio_write(MAX11300::PIXI_PORT10, 1); // RED
-  max_iox.gpio_write(MAX11300::PIXI_PORT11, 1); // BLUE
+  iox_led_yellow(true);
+  iox_led_red(true);
+  iox_led_green(true);
+  iox_led_blue(true);
   delay(200);
-  max_iox.gpio_write(MAX11300::PIXI_PORT8, 0);  // GREEN
-  max_iox.gpio_write(MAX11300::PIXI_PORT9, 0);  // YELLOW
-  max_iox.gpio_write(MAX11300::PIXI_PORT10, 0); // RED
-  max_iox.gpio_write(MAX11300::PIXI_PORT11, 0); // BLUE
+  iox_led_yellow(false);
+  iox_led_red(false);
+  iox_led_green(false);
+  iox_led_blue(false);
 
   return 0;
 }
@@ -292,25 +290,22 @@ void setup(void) {
   unsigned int blink_error_count = 0;
   char buf[LINE_MAX_LENGTH];
 
-  // set BOND pins
+  // set Teensy BOND pins
   pinMode(VSYS_EN_PIN, OUTPUT);
+  pinMode(VDUT_CONNECT_PIN, OUTPUT);
+  pinMode(VDUT_SMPS_EN_PIN, OUTPUT); 
+  pinMode(MAX11311_CONVERT_Pin, OUTPUT); 
+  pinMode(VDUTSMPS_INT, INPUT); 
+  pinMode(BUTTON1_PIN, INPUT);
+  pinMode(BUTTON2_PIN, INPUT);
 
   // toggle (power reset) VSYS (~6V) - powers rest of system
   digitalWrite(VSYS_EN_PIN, LOW);
-  delay(100);
+  delay(10);
   digitalWrite(VSYS_EN_PIN, HIGH);
   delay(100);
 
-  Serial.begin(115200);
-  Wire.begin();
-  Wire.setClock(400000);
-  pinMode(LED_BUILTIN, OUTPUT);
-
-  oled_init();
-  oled_print(OLED_LINE_STATUS, "SETUP:BOOTING...", false);
-
   // set SPI interface pin modes
-  // TODO: probably don't need this as MAX11300 inits pins
   digitalWrite(SPI_CS_IOX_Pin, HIGH); // SPI CS inactive high
   pinMode (SPI_CS_IOX_Pin, OUTPUT);   // ensure SPI CS is driven output
   digitalWrite(SPI_CS_HRD1_Pin, HIGH); 
@@ -329,6 +324,14 @@ void setup(void) {
   digitalWrite(SPI_SCLK_Pin, LOW);
   pinMode (SPI_SCLK_Pin, OUTPUT);
 
+  Serial.begin(115200);
+  Wire.begin();
+  Wire.setClock(400000);
+  pinMode(LED_BUILTIN, OUTPUT);
+
+  oled_init();
+  oled_print(OLED_LINE_STATUS, "SETUP:BOOTING...", false);
+
   int success = init_max_iox();
   if (success != 0) {
     setup_fail_code |= (0x1 << SETUP_FAIL_MAX_IOX);
@@ -339,17 +342,7 @@ void setup(void) {
   snprintf(buf, LINE_MAX_LENGTH, "max_iox");
   oled_print(OLED_LINE_DEBUG, buf, false);
 
-  // ADC
-  pinMode(BIST_VOLTAGE_V3V3A_PIN, INPUT);  // analog input
-  pinMode(BIST_VOLTAGE_V3V3D_PIN, INPUT);  // analog input
-  pinMode(BIST_VOLTAGE_V5V_PIN, INPUT);    // analog input
-  pinMode(BIST_VOLTAGE_V6V_PIN, INPUT);    // analog input
-  pinMode(BIST_VOLTAGE_NEG2V5_PIN, INPUT); // analog input
-
-  // other pin modes
-  pinMode(VDUT_CONNECT_PIN, OUTPUT);
-
-  // reset also puts the YELLOW LED back to off
+  // reset 
   if (_reset()) {
     setup_fail_code |= (0x1 << SETUP_FAIL_RESET);
     oled_print(OLED_LINE_STATUS, "SETUP:reset", true);
@@ -357,7 +350,14 @@ void setup(void) {
     goto fail;
   }
   // turn on YELLOW while setup is running
-  max_iox.gpio_write(MAX11300::PIXI_PORT9, 1);  // YELLOW
+  iox_led_yellow(true);
+
+  // ADC
+  pinMode(BIST_VOLTAGE_V3V3A_PIN, INPUT);  // analog input
+  pinMode(BIST_VOLTAGE_V3V3D_PIN, INPUT);  // analog input
+  pinMode(BIST_VOLTAGE_V5V_PIN, INPUT);    // analog input
+  pinMode(BIST_VOLTAGE_V6V_PIN, INPUT);    // analog input
+  pinMode(BIST_VOLTAGE_NEG2V5_PIN, INPUT); // analog input
 
   // Check all BIST voltages...
   // note this code has delay on reading, allowing for voltages
@@ -419,19 +419,13 @@ void setup(void) {
   ina219_vdut.setADCMode(SAMPLE_MODE_16);
   ina219_vdut.setMeasureMode(TRIGGERED);
 
-  // Battery Emulator
-  // - DO NOT INIT HERE, because the MAX11311 DAC for battery emulator
-  //   is not initialized yet, and thats only done when the client side
-  //   JSON config is applied.  It takes a while to figure that out!
-  // - BONDr2 will move the DAC to the IOX and therefore calibration
-  //   can be moved here.
-
   if (vdut_init()) {
     setup_fail_code |= (0x1 << SETUP_FAIL_VDUT);
     oled_print(OLED_LINE_STATUS, "SETUP:vdut", true);
     blink_error_count = SETUP_FAIL_VDUT;
     goto fail;    
   }
+  oled_print(OLED_LINE_DEBUG, "vdut_init", false);
 
   if (battemu_init()) {
     setup_fail_code |= (0x1 << SETUP_FAIL_BATTEM);
@@ -455,7 +449,7 @@ void setup(void) {
   digitalWrite(LED_BUILTIN, LOW);
 
   // turn off YELLOW setup is done
-  max_iox.gpio_write(MAX11300::PIXI_PORT9, 0);  // YELLOW
+  iox_led_yellow(false);
 
   return;
 
@@ -519,7 +513,6 @@ void loop(void) {
     vdut_reset, "vdut_reset: reset TPS55289",
     vdut_con, "vdut_con: Connect VDUT to target",
     vdut_en, "vdut_en: Enable VDUT TPS55289",
-    iox_reset, "iox_reset: IOX reset (USB Hub) pin",
     iox_led_green, "iox_led_green: green led",
     iox_led_yellow, "iox_led_yellow: yellow led",
     iox_led_red, "iox_led_red: red led",

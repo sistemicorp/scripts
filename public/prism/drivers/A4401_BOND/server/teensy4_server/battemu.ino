@@ -30,7 +30,7 @@ typedef struct {
 } _batt_ctx_t;
 static _batt_ctx_t batt_ctx;
 
-uint16_t _vbat_mv(void) {
+static uint16_t _vbat_mv(void) {
     ina219_vbat.startSingleMeasurement();
     float tmp = ina219_vbat.getBusVoltage_V();
     return (uint16_t)(tmp * 1000.0f);
@@ -187,7 +187,7 @@ String vbat_set(uint16_t mv) {
 
     doc["result"]["mv"] = mv;
     doc["result"]["measured_mv"] = vbat;
-    doc["result"]["i"] = i;
+    doc["result"]["lut_index"] = i;
     doc["result"]["dac"] = batt_ctx._lut[i].dac;
     //doc["result"]["dac1"] = batt_ctx._lut[LUT_NUM_ENTRIES - 1].dac;
     //doc["result"]["dac2"] = batt_ctx._lut[LUT_NUM_ENTRIES - 2].dac;

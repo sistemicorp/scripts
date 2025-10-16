@@ -28,38 +28,38 @@
 
 MAX11300RegAddress_t _reg_dac_data_port(int port) {
   switch (port) {
-    case 0: return dac_data_port_00;
-    case 1: return dac_data_port_01;
-    case 2: return dac_data_port_02;
-    case 3: return dac_data_port_03;
-    case 4: return dac_data_port_04;
-    case 5: return dac_data_port_05;
-    case 6: return dac_data_port_06;
-    case 7: return dac_data_port_07;
-    case 8: return dac_data_port_08;
-    case 9: return dac_data_port_09;
-    case 10: return dac_data_port_10;
-    case 11: return dac_data_port_11;
+    case 0: return dac_data_port_p0;
+    case 1: return dac_data_port_p1;
+    case 2: return dac_data_port_p2;
+    case 3: return dac_data_port_p3;
+    case 4: return dac_data_port_p4;
+    case 5: return dac_data_port_p5;
+    case 6: return dac_data_port_p6;
+    case 7: return dac_data_port_p7;
+    case 8: return dac_data_port_p8;
+    case 9: return dac_data_port_p9;
+    case 10: return dac_data_port_p10;
+    case 11: return dac_data_port_p11;
   }
-  return dac_data_port_00;  // squelch build warning
+  return dac_data_port_p0;  // squelch build warning
 }
 
 MAX11300RegAddress_t _reg_port_config_port(int port) {
   switch (port) {
-    case 0: return port_cfg_00;
-    case 1: return port_cfg_01;
-    case 2: return port_cfg_02;
-    case 3: return port_cfg_03;
-    case 4: return port_cfg_04;
-    case 5: return port_cfg_05;
-    case 6: return port_cfg_06;
-    case 7: return port_cfg_07;
-    case 8: return port_cfg_08;
-    case 9: return port_cfg_09;
-    case 10: return port_cfg_10;
-    case 11: return port_cfg_11;
+    case 0: return port_cfg_p0;
+    case 1: return port_cfg_p1;
+    case 2: return port_cfg_p2;
+    case 3: return port_cfg_p3;
+    case 4: return port_cfg_p4;
+    case 5: return port_cfg_p5;
+    case 6: return port_cfg_p6;
+    case 7: return port_cfg_p7;
+    case 8: return port_cfg_p8;
+    case 9: return port_cfg_p9;
+    case 10: return port_cfg_p10;
+    case 11: return port_cfg_p11;
   }  
-  return port_cfg_00;  // squelch build warning
+  return port_cfg_p0;  // squelch build warning
 }
 
 MAX11300::MAX11300_Ports _get_port_from_int(int port) {
@@ -127,11 +127,11 @@ String bond_max_hdr_init(int hdr,  // 1-4
     init_regs[i].r = _reg_port_config_port(gpis[j]); init_regs[i].d = d; i++;
   }
   // delay 200us * num pins in mode 1 -> just delay 2ms!
-  init_regs[i].r = reserved_6a; init_regs[i].d = 0x0; i++;  // !! DELAY 1 ms !!
-  init_regs[i].r = reserved_6a; init_regs[i].d = 0x0; i++;  // !! DELAY 1 ms !!
+  init_regs[i].r = reserved_6A; init_regs[i].d = 0x0; i++;  // !! DELAY 1 ms !!
+  init_regs[i].r = reserved_6A; init_regs[i].d = 0x0; i++;  // !! DELAY 1 ms !!
   // GPODAT for ports in mode 3
-  init_regs[i].r = gpo_data_10_to_0; init_regs[i].d = 0x0; i++;
-  init_regs[i].r = gpo_data_11; init_regs[i].d = 0x0; i++;
+  init_regs[i].r = gpo_data_P10P6_P5P0; init_regs[i].d = 0x0; i++;
+  init_regs[i].r = gpo_data_P11; init_regs[i].d = 0x0; i++;
   // GPOs
   d = 0x3000;
   for (int j = 0; j < gpo_len; j++) {
@@ -143,9 +143,9 @@ String bond_max_hdr_init(int hdr,  // 1-4
     init_regs[i].r = _reg_port_config_port(dacs[j]); init_regs[i].d = d; i++;
   }  
   // IRQ modes
-  init_regs[i].r = gpi_irqmode_5_to_0; init_regs[i].d = 0x0; i++;
-  init_regs[i].r = gpi_irqmode_10_to_6; init_regs[i].d = 0x0; i++;
-  init_regs[i].r = gpi_irqmode_11; init_regs[i].d = 0x0; i++;
+  init_regs[i].r = gpi_irqmode_P5_P0; init_regs[i].d = 0x0; i++;
+  init_regs[i].r = gpi_irqmode_P10_P6; init_regs[i].d = 0x0; i++;
+  init_regs[i].r = gpi_irqmode_P11; init_regs[i].d = 0x0; i++;
   // ADCs
   d = 0x7100;  // TODO: where this come from?
   for (int j = 0; j < adc_len; j++) {
@@ -169,7 +169,7 @@ String bond_max_hdr_init(int hdr,  // 1-4
   uint8_t cs_pin = _get_max_cs_from_hdr(hdr);
   max->begin(SPI_MOSI_Pin, SPI_MISO_Pin, SPI_SCLK_Pin, cs_pin, MAX11311_CONVERT_Pin);
   for(unsigned int k = 0; k < i; k++) {
-    if (init_regs[k].r != reserved_6a) {  // reserved_6a is flag for just delay
+    if (init_regs[k].r != reserved_6A) {  // reserved_6a is flag for just delay
       max->write_register(init_regs[k].r, init_regs[k].d);
     }
     delay(1);

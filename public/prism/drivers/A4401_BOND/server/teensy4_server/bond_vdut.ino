@@ -45,6 +45,7 @@
 
 #define VDUT_MAX_MV               9000
 #define VDUT_MIN_MV               1000
+#define VDUT_TOL_MV                 25
 
 typedef struct {
 	uint8_t data_set[3];
@@ -72,6 +73,12 @@ static int _i2c_reader(uint8_t *buf, uint16_t s) {
     idx++;
   }
   return 0;
+}
+
+static uint16_t _vdut_mv(void) {
+    ina219_vdut.startSingleMeasurement();
+    float tmp = ina219_vdut.getBusVoltage_V();
+    return (uint16_t)(tmp * 1000.0f);
 }
 
 String vdut_set(uint16_t mv) {
@@ -126,14 +133,28 @@ String vdut_set(uint16_t mv) {
   data_set[2] = (vdut_ctx.vmain_set_vref >> 8) & 0x7;
   int rc = _i2c_writer(data_set, 3);
   if (rc) {
-    snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "i2cwrite %d %d", rc, __LINE__);
+    snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "i2cwrite %d ln%d", rc, __LINE__);
     oled_print(OLED_LINE_DEBUG, vdut_ctx.buf, true);    
     doc["success"] = false;
-    doc["result"]["error"] = "_i2c_writer error code TODO";      
+    doc["result"]["error"] = vdut_ctx.buf;      
     return _response(doc);  // always the last line of RPC API
   }
 
-  snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "%s %u mV", __func__, mv);
+  uint16_t vdut_mv = _vdut_mv();
+  doc["result"]["mv"] = mv;
+  doc["result"]["measured_mv"] = vdut_mv;
+
+  if (vdut_mv > mv + VDUT_TOL_MV || vdut_mv < mv - VDUT_TOL_MV) {
+    snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "vdut tol %u %u", mv, vdut_mv);
+    oled_print(OLED_LINE_DEBUG, vdut_ctx.buf, true);    
+    doc["success"] = false;
+    doc["result"]["error"] = "set vdut beyond tolerance limit";      
+    return _response(doc);  // always the last line of RPC API
+  }
+  snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "vdut %u %u", mv, vdut_mv);
+  oled_print(OLED_LINE_DEBUG, vdut_ctx.buf, false);  
+
+  snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "%s %u/%u mV", __func__, mv, vdut_mv);
   oled_print(OLED_LINE_RPC, vdut_ctx.buf, error_set);
   return _response(doc);  // always the last line of RPC API
 }

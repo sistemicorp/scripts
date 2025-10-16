@@ -133,20 +133,20 @@ uint16_t MAX11300::read_register(MAX11300RegAddress_t reg)
 MAX11300RegAddressEnum MAX11300::_get_adc_data_port(MAX11300_Ports port)
 {
     switch(port) {
-    case PIXI_PORT0: return adc_data_port_00;
-    case PIXI_PORT1: return adc_data_port_01;
-    case PIXI_PORT2: return adc_data_port_02;
-    case PIXI_PORT3: return adc_data_port_03;
-    case PIXI_PORT4: return adc_data_port_04;
-    case PIXI_PORT5: return adc_data_port_05;
-    case PIXI_PORT6: return adc_data_port_06;
-    case PIXI_PORT7: return adc_data_port_07;
-    case PIXI_PORT8: return adc_data_port_08;
-    case PIXI_PORT9: return adc_data_port_09;
-    case PIXI_PORT10: return adc_data_port_10;
-    case PIXI_PORT11: return adc_data_port_11;
+    case PIXI_PORT0: return adc_data_port_p0;
+    case PIXI_PORT1: return adc_data_port_p1;
+    case PIXI_PORT2: return adc_data_port_p2;
+    case PIXI_PORT3: return adc_data_port_p3;
+    case PIXI_PORT4: return adc_data_port_p4;
+    case PIXI_PORT5: return adc_data_port_p5;
+    case PIXI_PORT6: return adc_data_port_p6;
+    case PIXI_PORT7: return adc_data_port_p7;
+    case PIXI_PORT8: return adc_data_port_p8;
+    case PIXI_PORT9: return adc_data_port_p9;
+    case PIXI_PORT10: return adc_data_port_p10;
+    case PIXI_PORT11: return adc_data_port_p11;
     default:
-        return adc_data_port_00;
+        return adc_data_port_p0;
     }
 }
 
@@ -154,20 +154,20 @@ MAX11300RegAddressEnum MAX11300::_get_adc_data_port(MAX11300_Ports port)
 MAX11300RegAddressEnum MAX11300::_get_dac_data_port(MAX11300_Ports port)
 {
     switch(port) {
-    case PIXI_PORT0: return dac_data_port_00;
-    case PIXI_PORT1: return dac_data_port_01;
-    case PIXI_PORT2: return dac_data_port_02;
-    case PIXI_PORT3: return dac_data_port_03;
-    case PIXI_PORT4: return dac_data_port_04;
-    case PIXI_PORT5: return dac_data_port_05;
-    case PIXI_PORT6: return dac_data_port_06;
-    case PIXI_PORT7: return dac_data_port_07;
-    case PIXI_PORT8: return dac_data_port_08;
-    case PIXI_PORT9: return dac_data_port_09;
-    case PIXI_PORT10: return dac_data_port_10;
-    case PIXI_PORT11: return dac_data_port_11;
+    case PIXI_PORT0: return dac_data_port_p0;
+    case PIXI_PORT1: return dac_data_port_p1;
+    case PIXI_PORT2: return dac_data_port_p2;
+    case PIXI_PORT3: return dac_data_port_p3;
+    case PIXI_PORT4: return dac_data_port_p4;
+    case PIXI_PORT5: return dac_data_port_p5;
+    case PIXI_PORT6: return dac_data_port_p6;
+    case PIXI_PORT7: return dac_data_port_p7;
+    case PIXI_PORT8: return dac_data_port_p8;
+    case PIXI_PORT9: return dac_data_port_p9;
+    case PIXI_PORT10: return dac_data_port_p10;
+    case PIXI_PORT11: return dac_data_port_p11;
     default:
-        return dac_data_port_00;
+        return dac_data_port_p0;
     }
 }
 
@@ -199,7 +199,7 @@ MAX11300::CmdResult MAX11300::gpio_write(MAX11300_Ports port, uint8_t state)
     if (port != MAX11300::PIXI_PORT11)
     {
         port_mask = (1 << port);
-        temp = read_register(gpo_data_10_to_0);
+        temp = read_register(gpo_data_P10P6_P5P0);
         if(state & 0x01)
         {
             temp |= port_mask;
@@ -208,12 +208,12 @@ MAX11300::CmdResult MAX11300::gpio_write(MAX11300_Ports port, uint8_t state)
         {
             temp &= ~port_mask;
         }
-        write_register(gpo_data_10_to_0, temp);
+        write_register(gpo_data_P10P6_P5P0, temp);
     }
     else
     {
         port_mask = 0x1;
-        temp = read_register(gpo_data_11);
+        temp = read_register(gpo_data_P11);
         if(state & 0x01)
         {
             temp |= port_mask;
@@ -222,7 +222,7 @@ MAX11300::CmdResult MAX11300::gpio_write(MAX11300_Ports port, uint8_t state)
         {
             temp &= ~port_mask;
         }
-        write_register(gpo_data_11, temp);
+        write_register(gpo_data_P11, temp);
     }
 
     //result = MAX11300::Success;
@@ -237,11 +237,11 @@ MAX11300::CmdResult MAX11300::gpio_read(MAX11300_Ports port, uint8_t &state)
     
     if(port != MAX11300::PIXI_PORT11)
     {
-        state = (read_register(gpi_data_10_to_0) >> port);
+        state = (read_register(gpo_data_P10P6_P5P0) >> port);
     }
     else
     {
-        state = (read_register(gpi_data_11) >> (port - MAX11300::PIXI_PORT11));
+        state = (read_register(gpo_data_P11) >> (port - MAX11300::PIXI_PORT11));
     }
 
     result = MAX11300::Success;

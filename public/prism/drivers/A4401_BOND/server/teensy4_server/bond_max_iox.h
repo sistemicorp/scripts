@@ -7,13 +7,11 @@
 */
 
 int init_max_iox(void);
-String iox_reset(bool assert);
 String iox_led_blue(bool assert);
 String iox_led_red(bool assert);
 String iox_led_yellow(bool assert);
 String iox_led_green(bool assert);
 String iox_selftest(bool assert);
-String iox_vbus_en(bool assert);
 String iox_vbat_en(bool assert);
 String iox_vbat_con(bool assert);
-String iox_reset(bool assert);
+

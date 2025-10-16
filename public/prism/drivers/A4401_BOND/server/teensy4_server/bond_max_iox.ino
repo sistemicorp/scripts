@@ -9,44 +9,41 @@
 #include "src/oled/bond_oled.h"
 
 // default IOX MAX11311 resisters, set on init
-// (I think) there is Maxim PC side tool that created this list
-// that I have since lost, and didn't document.
+// this array is pulling from init code that auto generated from
+// MAX11300/01/11/12 Configuration Software (Ver. 1.1.0.5) 16/10/2025 17:41
+// The file a4402-MAX11300Design_iox_01.mpix is the source file for the tool.
+// Then generate the header file, and then pull out the programming sequence.
 static _init_regs_t init_regs[] = {
   {.r = device_control, .d = 0x8000}, // reset
   {.r = device_control, .d = 0xc0 & 0x40b0},
   {.r = device_control, .d = 0xc0 & 0x40fc},
-  {.r = dac_data_port_01, .d = 0x0666}, // Not Connected
-  {.r = dac_data_port_05, .d = 0x0666}, // Hdr 1 LDO (U12) Adjust, 3.3V
-  {.r = dac_data_port_00, .d = 0x0547}, // Not Connected
-  {.r = dac_data_port_02, .d = 0x0547}, // VBAT_CON output, 3.3V
-  {.r = dac_data_port_03, .d = 0x0547}, // VBAT_EN output, 3.3V
-  {.r = dac_data_port_04, .d = 0x0547}, // Battery Emulator Adjust, 3.3V
-  {.r = dac_data_port_06, .d = 0x0547}, // Not Connected
-  {.r = dac_data_port_07, .d = 0x0547}, // SELFTEST output, 3.3V
-  {.r = dac_data_port_08, .d = 0x0547}, // GREEN output, 3.3V
-  {.r = dac_data_port_09, .d = 0x0547}, // YELLOW output, 3.3V
-  {.r = dac_data_port_10, .d = 0x0547}, // RED output, 3.3V
-  {.r = dac_data_port_11, .d = 0x0547}, // BLUE output, 3.3V
+  {.r = dac_data_port_p2, .d = 0x0547}, // GPO VBAT_CON
+  {.r = dac_data_port_p3, .d = 0x0547}, // GPO VBAT_EN
+  {.r = dac_data_port_p7, .d = 0x0547}, // GPO SELFTEST
+  {.r = dac_data_port_p8, .d = 0x0547}, // GPO LED GREEN
+  {.r = dac_data_port_p9, .d = 0x0547}, // GPO LED YELLOW
+  {.r = dac_data_port_p10,.d = 0x0547}, // GPO LED RED
+  {.r = dac_data_port_p11,.d = 0x0547}, // GPO LED BLUE
+  {.r = dac_data_port_p4, .d = 0x019a}, // DAC VBAT_ADJ
+  {.r = dac_data_port_p5, .d = 0x019a}, // DAC HDR1 LDO ADJ
   {.r = dac_preset_data_1, .d = 0x0}, 
-  {.r = dac_preset_data_2, .d = 0x0}, 
-  {.r = port_cfg_01, .d = (MAX11300::MODE_1 << 12)}, 
-  {.r = port_cfg_05, .d = (MAX11300::MODE_5 << 12) | (1 << 8)},
-  {.r = gpo_data_10_to_0, .d = 0x0}, 
-  {.r = gpo_data_11, .d = 0x0}, 
-  {.r = port_cfg_00, .d = (MAX11300::MODE_3 << 12)}, 
-  {.r = port_cfg_02, .d = (MAX11300::MODE_3 << 12)}, 
-  {.r = port_cfg_03, .d = (MAX11300::MODE_3 << 12)}, 
-  {.r = port_cfg_04, .d = (MAX11300::MODE_5 << 12) | (1 << 8)},
-  {.r = port_cfg_06, .d = (MAX11300::MODE_3 << 12)}, 
-  {.r = port_cfg_07, .d = (MAX11300::MODE_3 << 12)}, 
-  {.r = port_cfg_08, .d = (MAX11300::MODE_3 << 12)}, 
-  {.r = port_cfg_09, .d = (MAX11300::MODE_3 << 12)}, 
-  {.r = port_cfg_10, .d = (MAX11300::MODE_3 << 12)}, 
-  {.r = port_cfg_11, .d = (MAX11300::MODE_3 << 12)}, 
-  {.r = gpi_irqmode_5_to_0, .d = 0x0}, 
-  {.r = gpi_irqmode_10_to_6, .d = 0x0}, 
-  {.r = gpi_irqmode_11, .d = 0x0},   
-  {.r = device_control, .d = 0xc0},  // data val used to confirm in init 
+  {.r = dac_preset_data_2, .d = 0x0},
+  {.r = gpo_data_P10P6_P5P0, .d = 0x0},
+  {.r = gpo_data_P11, .d = 0x0},
+  {.r = port_cfg_p2, .d = 0x3000},
+  {.r = port_cfg_p3, .d = 0x3000},
+  {.r = port_cfg_p7, .d = 0x3000},
+  {.r = port_cfg_p8, .d = 0x3000},
+  {.r = port_cfg_p9, .d = 0x3000},
+  {.r = port_cfg_p10, .d = 0x3000},
+  {.r = port_cfg_p11, .d = 0x3000},
+  {.r = port_cfg_p4, .d = 0x5100},
+  {.r = port_cfg_p5, .d = 0x5100},
+  {.r = gpi_irqmode_P5_P0, .d = 0x0},
+  {.r = gpi_irqmode_P10_P6, .d = 0x0},
+  {.r = gpi_irqmode_P11, .d = 0x0},
+  {.r = device_control, .d = 0xc0},
+  {.r = interrupt_mask, .d = 0xffff},
 };
 
 int init_max_iox(void) {

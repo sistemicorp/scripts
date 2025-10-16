@@ -551,16 +551,6 @@ class A4401_BOND:
             answer = self.rpc.call_method('vdut_con', state)
             return self._rpc_validate(answer)
 
-    def iox_reset(self, state: bool):
-        """ MAX11311 IOX
-
-        :return: {'success': True, 'method': 'iox_reset'}
-        """
-        with self._lock:
-            self.logger.info(f"iox_reset {state}")
-            answer = self.rpc.call_method('iox_reset')
-            return self._rpc_validate(answer)
-
     def iox_led_green(self, state: bool):
         """ MAX11311 IOX
 
