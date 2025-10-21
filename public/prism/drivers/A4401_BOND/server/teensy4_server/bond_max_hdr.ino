@@ -5,6 +5,9 @@
 #include "bond_max_hdr.h"
 #include "src/oled/bond_oled.h"
 
+#define BIST_VREF_TOL_MV    20
+#define BIST_VREF_MV        2500
+
 // default IOX MAX11311 resisters, set on init
 // this array is pulling from init code that auto generated from
 // MAX11300/01/11/12 Configuration Software (Ver. 1.1.0.5) 16/10/2025 17:41
@@ -318,23 +321,24 @@ int init_max_hdr_bist(void) {
         return -1;
       }
 
+      // NOTE: Tried to use the output of the MAX11311 config tool to set MAX11311
+      //       but it did NOT WORK.  Switched to this method, using bond_max_hdr_init()
+      //       and this did work.
+      int adcs[] = {11}; int adc_len = 1;
+      int dacs[] = {0}; int dac_len = 0;
+      int gpos[] = {0}; int gpo_len = 0;
+      int gpis[] = {0}; int gpi_len = 0;
+      int gpo_mv = 3300;
+      int gpi_mv = 0;
 
-
-      for (i = 0; i < sizeof(init_hdr_regs) / sizeof(_init_regs_t); i++) {
-        max->write_register(init_hdr_regs[i].r, init_hdr_regs[i].d);
-        delay(1);
-        snprintf(buf, LINE_MAX_LENGTH, "hdr %u reg:%02x %04x", hdr, init_hdr_regs[i].r, init_hdr_regs[i].d);
-        oled_print(OLED_LINE_DEBUG, buf, false);
-      }
+      bond_max_hdr_init(hdr, adcs, adc_len, dacs, dac_len, gpos, gpo_len, gpis, gpi_len, gpo_mv, gpi_mv);
+      snprintf(buf, LINE_MAX_LENGTH, "hdr %u", hdr);
+      oled_print(OLED_LINE_DEBUG, buf, false);
   }
 
   // measure PORT11 voltage on all MAX11311a
   for(hdr = 1; hdr < 5; hdr++) {
       MAX11300 *max = _get_max_from_hdr(hdr);
-
-      //uint8_t cs_pin = _get_max_cs_from_hdr(hdr);
-      //max->begin(SPI_MOSI_Pin, SPI_MISO_Pin, SPI_SCLK_Pin, cs_pin, MAX11311_CONVERT_Pin);
-
       uint16_t data = 0;
       MAX11300::CmdResult result = max->single_ended_adc_read(MAX11300::PIXI_PORT11, &data);
       if (result != MAX11300::Success) {
@@ -345,8 +349,13 @@ int init_max_hdr_bist(void) {
 
       uint32_t mv = ((uint32_t)data * 10000 + 2048) / 4096;  // raw * 10000mV / 4096
       snprintf(buf, LINE_MAX_LENGTH, "hdr %u %u %u mV", hdr, data, mv);
+
+      if (mv > (BIST_VREF_MV + BIST_VREF_TOL_MV) || mv < (BIST_VREF_MV - BIST_VREF_TOL_MV)) {
+        oled_print(OLED_LINE_DEBUG, buf, true);
+        return -1;
+      } 
       oled_print(OLED_LINE_DEBUG, buf, false);
-      delay(200); // just to see display
+      delay(100); // just to see display
   }
 
   oled_print(OLED_LINE_RPC, __func__, false);
