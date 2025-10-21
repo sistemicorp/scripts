@@ -54,6 +54,7 @@
 #define SETUP_FAIL_VOLTAGE      6
 #define SETUP_FAIL_VDUT         7
 #define SETUP_FAIL_BATTEM       8
+#define SETUP_FAIL_MAX_HDR      9
 
 static uint16_t setup_fail_code = 0;
 
@@ -403,9 +404,9 @@ void setup(void) {
   oled_print(OLED_LINE_DEBUG, "ina219_vbat.init", false);
 
   ina219_vbat.setShuntSizeInOhms(INA220_VBAT_SHUNT_OHMS);
-  ina219_vbat.setBusRange(BRNG_16);
-  ina219_vbat.setADCMode(SAMPLE_MODE_16);
-  ina219_vbat.setMeasureMode(TRIGGERED);
+  ina219_vbat.setBusRange(INA219_BRNG_16);
+  ina219_vbat.setADCMode(INA219_SAMPLE_MODE_16);
+  ina219_vbat.setMeasureMode(INA219_TRIGGERED);
 
   if (!ina219_vdut.init()) {
     setup_fail_code |= (0x1 << SETUP_FAIL_INA219_VDUT);
@@ -416,9 +417,9 @@ void setup(void) {
   oled_print(OLED_LINE_DEBUG, "ina219_vdut.init", false);
 
   ina219_vdut.setShuntSizeInOhms(INA220_VDUT_SHUNT_OHMS);
-  ina219_vdut.setBusRange(BRNG_16);
-  ina219_vdut.setADCMode(SAMPLE_MODE_16);
-  ina219_vdut.setMeasureMode(TRIGGERED);
+  ina219_vdut.setBusRange(INA219_BRNG_16);
+  ina219_vdut.setADCMode(INA219_SAMPLE_MODE_16);
+  ina219_vdut.setMeasureMode(INA219_TRIGGERED);
 
   if (vdut_init()) {
     setup_fail_code |= (0x1 << SETUP_FAIL_VDUT);
@@ -427,6 +428,13 @@ void setup(void) {
     goto fail;    
   }
   oled_print(OLED_LINE_DEBUG, "vdut_init", false);
+
+  if (init_max_hdr_bist()) {
+    setup_fail_code |= (0x1 << SETUP_FAIL_MAX_HDR);
+    oled_print(OLED_LINE_STATUS, "SETUP:._max_hdr_bist", true);
+    blink_error_count = SETUP_FAIL_MAX_HDR;
+    goto fail;     
+  }
 
   if (battemu_init()) {
     setup_fail_code |= (0x1 << SETUP_FAIL_BATTEM);

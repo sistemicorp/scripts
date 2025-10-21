@@ -5,6 +5,20 @@
 #include "bond_max_hdr.h"
 #include "src/oled/bond_oled.h"
 
+// default IOX MAX11311 resisters, set on init
+// this array is pulling from init code that auto generated from
+// MAX11300/01/11/12 Configuration Software (Ver. 1.1.0.5) 16/10/2025 17:41
+// The file a4402-MAX11300Design_hdr_01.mpix is the source file for the tool.
+// Then generate the header file, and then pull out the programming sequence.
+static _init_regs_t init_hdr_regs[] = {
+  {.r = device_control, .d = 0x8000}, // reset
+  {.r = device_control, .d = 0xc0 & 0x40b0},
+  {.r = port_cfg_p11, .d = 0x7100},
+  {.r = device_control, .d = 0xc0 & 0x40FF},
+  {.r = device_control, .d = 0xc0},
+  {.r = interrupt_mask, .d = 0xffff},
+};
+
 
  MAX11300 *_get_max_from_hdr(int hdr) {
   switch (hdr) {
@@ -209,11 +223,6 @@ String bond_max_hdr_adc_cal(int hdr) {
     return _response(doc);
   }  
   
-  digitalWrite(MAX11311_CONVERT_Pin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(MAX11311_CONVERT_Pin, HIGH);
-  delayMicroseconds(100);
-
   uint16_t data = 0;
   MAX11300::CmdResult result = max->single_ended_adc_read(MAX11300::PIXI_PORT11, &data);
   if (result != MAX11300::Success) {
@@ -222,7 +231,7 @@ String bond_max_hdr_adc_cal(int hdr) {
     return _response(doc);    
   }
 
-  doc["result"]["mV"] = (data * 10000) / 4096  ;  // raw * 10000mV / 4096
+  doc["result"]["mV"] = (data * 10000 + 2048) / 4096  ;  // raw * 10000mV / 4096
 
   oled_print(OLED_LINE_RPC, __func__, !doc["success"]);
   return _response(doc);  // always the last line of RPC API
@@ -240,11 +249,6 @@ String bond_max_hdr_adc(int hdr, int port) {
     doc["success"] = false;
     return _response(doc);
   }  
-  
-  digitalWrite(MAX11311_CONVERT_Pin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(MAX11311_CONVERT_Pin, HIGH);
-  delayMicroseconds(100);
 
   uint16_t data = 0;
   MAX11300::CmdResult result = max->single_ended_adc_read(_get_port_from_int(port), &data);
@@ -254,7 +258,7 @@ String bond_max_hdr_adc(int hdr, int port) {
     return _response(doc);    
   }
 
-  doc["result"]["mV"] = ((uint32_t)data * 10000) / 4096;  // raw * 10000mV / 4096
+  doc["result"]["mV"] = ((uint32_t)data * 10000 + 2048) / 4096;  // raw * 10000mV / 4096
 
   oled_print(OLED_LINE_RPC, __func__, !doc["success"]);
   return _response(doc);  // always the last line of RPC API
@@ -287,4 +291,64 @@ String bond_max_hdr_dac(int hdr, int port, int mv) {
 
   oled_print(OLED_LINE_RPC, __func__, !doc["success"]);
   return _response(doc);  // always the last line of RPC API
+}
+
+int init_max_hdr_bist(void) {
+  /* Each MAX11311 on a header has port 11 mapped as an ADC which is
+     Connected to BOND's Vref (2.5V).  On power up, setup() will init
+     all headers with PORT 11 mapped as ADC and this voltage is checked.
+  */
+  unsigned int i = 0;
+  unsigned int hdr = 0;
+
+  char buf[LINE_MAX_LENGTH];
+
+  // configure all the MAX11311s
+  for(hdr = 1; hdr < 5; hdr++) {
+      MAX11300 *max = _get_max_from_hdr(hdr);
+      uint8_t cs_pin = _get_max_cs_from_hdr(hdr);
+
+      max->begin(SPI_MOSI_Pin, SPI_MISO_Pin, SPI_SCLK_Pin, cs_pin, MAX11311_CONVERT_Pin);
+
+      // read device_control to see if writing worked, else return error
+      uint16_t _dev_id = max->read_register(dev_id);
+      if (_dev_id != 0x424) {  // see datasheet for expected result value
+        snprintf(buf, LINE_MAX_LENGTH, "init_max_hdr %u:id %x", hdr, _dev_id);
+        oled_print(OLED_LINE_DEBUG, buf, true);
+        return -1;
+      }
+
+
+
+      for (i = 0; i < sizeof(init_hdr_regs) / sizeof(_init_regs_t); i++) {
+        max->write_register(init_hdr_regs[i].r, init_hdr_regs[i].d);
+        delay(1);
+        snprintf(buf, LINE_MAX_LENGTH, "hdr %u reg:%02x %04x", hdr, init_hdr_regs[i].r, init_hdr_regs[i].d);
+        oled_print(OLED_LINE_DEBUG, buf, false);
+      }
+  }
+
+  // measure PORT11 voltage on all MAX11311a
+  for(hdr = 1; hdr < 5; hdr++) {
+      MAX11300 *max = _get_max_from_hdr(hdr);
+
+      //uint8_t cs_pin = _get_max_cs_from_hdr(hdr);
+      //max->begin(SPI_MOSI_Pin, SPI_MISO_Pin, SPI_SCLK_Pin, cs_pin, MAX11311_CONVERT_Pin);
+
+      uint16_t data = 0;
+      MAX11300::CmdResult result = max->single_ended_adc_read(MAX11300::PIXI_PORT11, &data);
+      if (result != MAX11300::Success) {
+        snprintf(buf, LINE_MAX_LENGTH, "init_max_hdr:adc %u", data);
+        oled_print(OLED_LINE_DEBUG, buf, true);
+        return -1;
+      }
+
+      uint32_t mv = ((uint32_t)data * 10000 + 2048) / 4096;  // raw * 10000mV / 4096
+      snprintf(buf, LINE_MAX_LENGTH, "hdr %u %u %u mV", hdr, data, mv);
+      oled_print(OLED_LINE_DEBUG, buf, false);
+      delay(200); // just to see display
+  }
+
+  oled_print(OLED_LINE_RPC, __func__, false);
+  return 0;
 }
