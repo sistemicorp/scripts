@@ -353,7 +353,7 @@ int init_max_hdr_bist(void) {
       if (mv > (BIST_VREF_MV + BIST_VREF_TOL_MV) || mv < (BIST_VREF_MV - BIST_VREF_TOL_MV)) {
         oled_print(OLED_LINE_DEBUG, buf, true);
         return -1;
-      } 
+      }
       oled_print(OLED_LINE_DEBUG, buf, false);
       delay(100); // just to see display
   }

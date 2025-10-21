@@ -39,7 +39,7 @@ static uint16_t _vbat_mv(void) {
                                      // See DDR - cannot use value that results in output less than 1.19V
 #define BATTEMU_DAC_START      800  // 800 maps to ~1.43V with R36=5.1K, R34=6.8K
 #define BATTEMU_DAC_STEP       1
-#define BATTEMU_DAC_NEXT_STEP  4
+#define BATTEMU_DAC_NEXT_STEP  6
 #define BATTEMU_SETTLE_MS      4
 int battemu_init(void) {
     uint16_t dac_value = BATTEMU_DAC_START;
@@ -88,7 +88,7 @@ int battemu_init(void) {
                 }
             }
             // debug print to display
-            if (!error_set && batt_ctx._lut[i].vbat_mv % 500 == 0) {  // squelch
+            if (!error_set && batt_ctx._lut[i].vbat_mv % 50 == 0) {  // squelch
                 snprintf(buf, LINE_MAX_LENGTH, "bemu: %4u %4u mV", dac_value, batt_ctx._lut[i].vbat_mv);
                 oled_print(OLED_LINE_DEBUG, buf, false);
             }
@@ -158,6 +158,8 @@ String vbat_set(uint16_t mv) {
         doc["result"]["error"] = "init/cal not done";
         return _response(doc);  // always the last line of RPC API
     }
+
+    // TODO: support LUT extrapolation
 
     if (mv % VBAT_STEP_MV != 0 || mv > VBAT_STOP_MV || mv < VBAT_START_MV) {
         snprintf(_buf, LINE_MAX_LENGTH, "%s %u", __func__, mv);

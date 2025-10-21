@@ -21,8 +21,10 @@
 
 #define INA220_VBAT_I2C_ADDRESS 0x40
 #define INA220_VDUT_I2C_ADDRESS 0x41
-#define INA220_VBAT_SHUNT_OHMS  0.11f
-#define INA220_VDUT_SHUNT_OHMS  0.11f
+#define INA220_VBAT_SHUNT_OHMS  0.2f
+#define INA220_VDUT_SHUNT_OHMS  0.2f
+
+#define SELF_TEST_LOAD_RESISTOR 200.0f
 
 #define BUTTON1_PIN             6   // Jig Closed Detection
 #define BUTTON2_PIN             7   // User defined
@@ -55,6 +57,7 @@
 #define SETUP_FAIL_VDUT         7
 #define SETUP_FAIL_BATTEM       8
 #define SETUP_FAIL_MAX_HDR      9
+#define SETUP_FAIL_SELFTEST     10
 
 static uint16_t setup_fail_code = 0;
 
@@ -283,6 +286,70 @@ String reset(){
   return _response(doc);  // always the last line of RPC API
 }
 
+/* _self_test
+ *  - asserts the SELF_TEST signal on BOND
+ *  - measures the VDUT and VBUS voltage and current to confirm operation
+*/
+int _self_test(void) {
+  char buf[LINE_MAX_LENGTH];
+
+  // check VDUT
+  #define VDUT_SELF_TEST_MV_TOL        0.05f
+  #define VDUT_SELF_TEST_MA_TOL        0.5f
+  #define VDUT_SELF_TEST_MA_NOLOAD_MAX 0.5f
+
+  uint16_t voltages[] = {2000, 4000};
+  float ma_max_no_load = 0.25f;
+  for(int i = 0; i < sizeof(voltages) / sizeof(uint16_t); i++) {
+    vdut_set(voltages[i]);
+    ina219_vdut.startSingleMeasurement();  
+    delay(1);      
+    float v = ina219_vdut.getBusVoltage_V();
+    float ma = ina219_vdut.getCurrent_mA();
+    float vf = voltages[i] / 1000.0f;
+    snprintf(buf, LINE_MAX_LENGTH, "vdut1 %.2f %.2f %0.2f", vf, v, ma);
+    if (v > (vf + VDUT_SELF_TEST_MV_TOL) || v < (vf - VDUT_SELF_TEST_MV_TOL)) {
+      oled_print(OLED_LINE_DEBUG, buf, true);
+      delay(500);  // use for debug on display
+      return -1;
+    }
+    if (ma > VDUT_SELF_TEST_MA_NOLOAD_MAX) {
+      oled_print(OLED_LINE_DEBUG, buf, true);
+      delay(500);  // use for debug on display
+      return -1;
+    }    
+    oled_print(OLED_LINE_DEBUG, buf, false);
+    delay(100);  // use for debug on display
+
+    // set SELF_TEST and check current
+    iox_selftest(true);
+    vdut_con(true);
+    ina219_vdut.startSingleMeasurement();      
+    delay(1);
+    v = ina219_vdut.getBusVoltage_V();
+    ma = ina219_vdut.getCurrent_mA();
+    vf = voltages[i] / 1000.0f;
+    float ma_expected = (vf / SELF_TEST_LOAD_RESISTOR) * 1000.0;  // 200 ohm load resistor
+    snprintf(buf, LINE_MAX_LENGTH, "vdut2 %.2f %.2f %0.2f", v, ma, ma_expected);
+    if (v > (vf + VDUT_SELF_TEST_MV_TOL) || v < (vf - VDUT_SELF_TEST_MV_TOL)) {
+      oled_print(OLED_LINE_DEBUG, buf, true);
+      delay(500);  // use for debug on display
+      return -1;
+    }
+    if (ma > (ma_expected + VDUT_SELF_TEST_MA_TOL) || ma < (ma_expected - VDUT_SELF_TEST_MA_TOL)) {
+      oled_print(OLED_LINE_DEBUG, buf, true);
+      delay(500);  // use for debug on display
+      return -1;
+    }    
+    oled_print(OLED_LINE_DEBUG, buf, false);
+    iox_selftest(false);
+    vdut_con(false);
+    delay(100);  // use for debug on display
+  }
+
+  return 0;
+}
+
 //-------------------------------------------------------------------------------------------------------------
 //set-up/loop Functions
 
@@ -442,6 +509,13 @@ void setup(void) {
     blink_error_count = SETUP_FAIL_BATTEM;
     goto fail;      
   }
+
+  if (_self_test()) {
+    setup_fail_code |= (0x1 << SETUP_FAIL_SELFTEST);
+    oled_print(OLED_LINE_STATUS, "SETUP:self_test", true);
+    blink_error_count = SETUP_FAIL_SELFTEST;
+    goto fail;      
+  }  
 
   // Add more startup checks here...
 

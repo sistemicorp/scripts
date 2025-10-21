@@ -183,6 +183,14 @@ def parse_args():
                            help='Assert VBAT_CON',
                            default=False)
 
+    iox_selftest = subp.add_parser('iox_selftest',
+                                  description="Enable/Disable SELFTEST")
+    iox_selftest.add_argument('--enable',
+                           dest="_enable",
+                           action='store_true',
+                           help='Assert SELFTEST',
+                           default=False)
+
     bond_max_hdr_adc_cal = subp.add_parser('bond_max_hdr_adc_cal',
                                            description="Read Header Calibration voltage, 2500mV")
     bond_max_hdr_adc_cal.add_argument('--header',
@@ -381,6 +389,14 @@ def iox_vbat_con(args):
     return response["success"]
 
 
+def iox_selftest(args):
+    logging.info("iox_selftest_en: {}".format(args))
+
+    response = teensy.iox_selftest(args._enable)
+    logging.info("{}".format(response))
+    return response["success"]
+
+
 def bond_max_hdr_adc(args):
     logging.info("bond_max_hdr_adc: {}".format(args))
 
@@ -488,6 +504,9 @@ if __name__ == '__main__':
 
     elif args._cmd == 'iox_vbat_con':
         success = iox_vbat_con(args)
+
+    elif args._cmd == 'iox_selftest':
+        success = iox_selftest(args)
 
     elif args._cmd == 'bond_max_hdr_adc_cal':
         success = bond_max_hdr_adc_cal(args)
