@@ -13,10 +13,10 @@
 String vdut_read() {
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
 
-  ina219_vdut.startSingleMeasurement();
+  ina226_vdut.startSingleMeasurement();
 
-  doc["result"]["v"] = ina219_vdut.getBusVoltage_V();
-  doc["result"]["ima"] = ina219_vdut.getCurrent_mA();
+  doc["result"]["v"] = ina226_vdut.getBusVoltage_V();
+  doc["result"]["ima"] = ina226_vdut.getCurrent_mA();
 
   oled_print(OLED_LINE_RPC, __func__, !doc["success"]);
   return _response(doc);  // always the last line of RPC API
@@ -28,10 +28,10 @@ String vdut_read() {
 String vbat_read() {
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
 
-  ina219_vbat.startSingleMeasurement();
+  ina226_vbat.startSingleMeasurement();
 
-  doc["result"]["v"] = ina219_vbat.getBusVoltage_V();
-  doc["result"]["ima"] = ina219_vbat.getCurrent_mA();
+  doc["result"]["v"] = ina226_vbat.getBusVoltage_V();
+  doc["result"]["ima"] = ina226_vbat.getCurrent_mA();
 
   oled_print(OLED_LINE_RPC, __func__, !doc["success"]);
   return _response(doc);  // always the last line of RPC API

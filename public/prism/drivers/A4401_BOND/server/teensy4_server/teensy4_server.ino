@@ -4,15 +4,15 @@
  *  Dedicated functions for the BOND design, a4401. 
  *
  *  Notes:
- *  1) functions begining with "_" are considered "private" and should not
+ *  1) functions beginning with "_" are considered "private" and should not
  *     be called thru the RPC API.  These are "supporting" functions.
- *  2) "Bond"
+ *
 */
 #include <Wire.h>
 #include <simpleRPC.h>
 #include <ArduinoJson.h>
 #include "version.h"  // holds the "version" of this code, !update when code is changed!
-#include <INA219_WE.h>
+#include <INA226_WE.h>
 #include "src/MAX11311/MAX11300.h"
 #include "bond_max_iox.h"
 #include "bond_max_hdr.h"
@@ -20,10 +20,11 @@
 #include "src/oled/bond_oled.h"
 #include "src/tmp1075/TMP1075.h"
 
-#define INA220_VBAT_I2C_ADDRESS 0x40
-#define INA220_VDUT_I2C_ADDRESS 0x41
-#define INA220_VBAT_SHUNT_OHMS  0.2f
-#define INA220_VDUT_SHUNT_OHMS  0.2f
+#define INA226_VBAT_I2C_ADDRESS 0x40
+#define INA226_VDUT_I2C_ADDRESS 0x41
+#define INA226_VBAT_SHUNT_OHMS  0.2f
+#define INA226_CURRENT_RANGE_A  1.0f
+#define INA226_VDUT_SHUNT_OHMS  0.2f
 
 #define SELF_TEST_LOAD_RESISTOR 200.0f
 
@@ -82,12 +83,12 @@ static _bist_voltages bist_voltages[] = {
   {.pin = BIST_VOLTAGE_NEG2V5_PIN, .mv = 4079, .name = "V2V5N"},
 };
 
-INA219_WE ina219_vbat = INA219_WE(INA220_VBAT_I2C_ADDRESS);
-INA219_WE ina219_vdut = INA219_WE(INA220_VDUT_I2C_ADDRESS);
+INA226_WE ina226_vbat = INA226_WE(INA226_VBAT_I2C_ADDRESS);
+INA226_WE ina226_vdut = INA226_WE(INA226_VDUT_I2C_ADDRESS);
 
 // Original Repo: https://github.com/sistemicorp/MAX11300/tree/master
 // Clone the repo and documentation can be found in "extras"
-MAX11300 max_iox = MAX11300();
+MAX11300 max_iox = MAX11300();   // IO Expander
 MAX11300 max_hdr1 = MAX11300();
 MAX11300 max_hdr2 = MAX11300();
 MAX11300 max_hdr3 = MAX11300();
@@ -311,24 +312,27 @@ int _self_test(void) {
   #define VDUT_SELF_TEST_MA_TOL        1.0f
   #define VDUT_SELF_TEST_MA_NOLOAD_MAX 0.5f
 
-  uint16_t voltages[] = {2000, 4000};
+  uint16_t vdut_voltages[] = {2000, 4000, 6000, 8000};
   float ma_max_no_load = 0.25f;
-  for(int i = 0; i < sizeof(voltages) / sizeof(uint16_t); i++) {
-    vdut_set(voltages[i]);
-    ina219_vdut.startSingleMeasurement();  
-    delay(1);      
-    float v = ina219_vdut.getBusVoltage_V();
-    float ma = ina219_vdut.getCurrent_mA();
-    float vf = voltages[i] / 1000.0f;
+  for(int i = 0; i < sizeof(vdut_voltages) / sizeof(uint16_t); i++) {
+    int rc = _vdut_set(vdut_voltages[i]);
+    if (rc) {
+      snprintf(buf, LINE_MAX_LENGTH, "_vdut_set err");
+      oled_print(OLED_LINE_DEBUG, buf, true);
+      return -1;
+    }
+    delay(100);
+    ina226_vdut.startSingleMeasurement();   
+    float v = ina226_vdut.getBusVoltage_V();
+    float ma = ina226_vdut.getCurrent_mA();
+    float vf = (float)vdut_voltages[i] / 1000.0f;
     snprintf(buf, LINE_MAX_LENGTH, "vdut1 %.2f %.2f %0.2f", vf, v, ma);
     if (v > (vf + VDUT_SELF_TEST_MV_TOL) || v < (vf - VDUT_SELF_TEST_MV_TOL)) {
       oled_print(OLED_LINE_DEBUG, buf, true);
-      delay(500);  // use for debug on display
       return -1;
     }
     if (ma > VDUT_SELF_TEST_MA_NOLOAD_MAX) {
       oled_print(OLED_LINE_DEBUG, buf, true);
-      delay(500);  // use for debug on display
       return -1;
     }    
     oled_print(OLED_LINE_DEBUG, buf, false);
@@ -337,21 +341,18 @@ int _self_test(void) {
     // set SELF_TEST and check current
     iox_selftest(true);
     vdut_con(true);
-    ina219_vdut.startSingleMeasurement();      
-    delay(1);
-    v = ina219_vdut.getBusVoltage_V();
-    ma = ina219_vdut.getCurrent_mA();
-    vf = voltages[i] / 1000.0f;
+    ina226_vdut.startSingleMeasurement();
+    v = ina226_vdut.getBusVoltage_V();
+    ma = ina226_vdut.getCurrent_mA();
+    vf = (float)vdut_voltages[i] / 1000.0f;
     float ma_expected = (vf / SELF_TEST_LOAD_RESISTOR) * 1000.0;  // 200 ohm load resistor
     snprintf(buf, LINE_MAX_LENGTH, "vdut2 %.2f %.2f %0.2f", v, ma, ma_expected);
     if (v > (vf + VDUT_SELF_TEST_MV_TOL) || v < (vf - VDUT_SELF_TEST_MV_TOL)) {
       oled_print(OLED_LINE_DEBUG, buf, true);
-      delay(500);  // use for debug on display
       return -1;
     }
     if (ma > (ma_expected + VDUT_SELF_TEST_MA_TOL) || ma < (ma_expected - VDUT_SELF_TEST_MA_TOL)) {
       oled_print(OLED_LINE_DEBUG, buf, true);
-      delay(500);  // use for debug on display
       return -1;
     }    
     oled_print(OLED_LINE_DEBUG, buf, false);
@@ -361,22 +362,20 @@ int _self_test(void) {
   }
 
   // check VBAT
-  for(int i = 0; i < sizeof(voltages) / sizeof(uint16_t); i++) {
-    vbat_set(voltages[i]);
-    ina219_vbat.startSingleMeasurement();  
-    delay(1);      
-    float v = ina219_vbat.getBusVoltage_V();
-    float ma = ina219_vbat.getCurrent_mA();
-    float vf = voltages[i] / 1000.0f;
+  uint16_t vbat_voltages[] = {2000, 4000};
+  for(int i = 0; i < sizeof(vbat_voltages) / sizeof(uint16_t); i++) {
+    vbat_set(vbat_voltages[i]);
+    ina226_vbat.startSingleMeasurement();
+    float v = ina226_vbat.getBusVoltage_V();
+    float ma = ina226_vbat.getCurrent_mA();
+    float vf = (float)vbat_voltages[i] / 1000.0f;
     snprintf(buf, LINE_MAX_LENGTH, "vbat1 %.2f %.2f %0.2f", vf, v, ma);
     if (v > (vf + VDUT_SELF_TEST_MV_TOL) || v < (vf - VDUT_SELF_TEST_MV_TOL)) {
       oled_print(OLED_LINE_DEBUG, buf, true);
-      delay(500);  // use for debug on display
       return -1;
     }
     if (ma > VDUT_SELF_TEST_MA_NOLOAD_MAX) {
       oled_print(OLED_LINE_DEBUG, buf, true);
-      delay(500);  // use for debug on display
       return -1;
     }    
     oled_print(OLED_LINE_DEBUG, buf, false);
@@ -385,21 +384,19 @@ int _self_test(void) {
     // set SELF_TEST and check current
     iox_selftest(true);
     iox_vbat_con(true);
-    ina219_vbat.startSingleMeasurement();      
-    delay(1);
-    v = ina219_vbat.getBusVoltage_V();
-    ma = ina219_vbat.getCurrent_mA();
-    vf = voltages[i] / 1000.0f;
+    ina226_vbat.startSingleMeasurement();
+    v = ina226_vbat.getBusVoltage_V();
+    ma = ina226_vbat.getCurrent_mA();
+    vf = (float)vbat_voltages[i] / 1000.0f;
     float ma_expected = (vf / SELF_TEST_LOAD_RESISTOR) * 1000.0;  // 200 ohm load resistor
     snprintf(buf, LINE_MAX_LENGTH, "vbat2 %.2f %.2f %0.2f", v, ma, ma_expected);
     if (v > (vf + VDUT_SELF_TEST_MV_TOL) || v < (vf - VDUT_SELF_TEST_MV_TOL)) {
       oled_print(OLED_LINE_DEBUG, buf, true);
-      delay(500);  // use for debug on display
       return -1;
     }
     if (ma > (ma_expected + VDUT_SELF_TEST_MA_TOL) || ma < (ma_expected - VDUT_SELF_TEST_MA_TOL)) {
       oled_print(OLED_LINE_DEBUG, buf, true);
-      delay(500);  // use for debug on display
+
       return -1;
     }    
     oled_print(OLED_LINE_DEBUG, buf, false);
@@ -523,31 +520,27 @@ void setup(void) {
   }
 
   // configure INA220s
-  if (!ina219_vbat.init()) {
+  if (!ina226_vbat.init()) {
     setup_fail_code |= (0x1 << SETUP_FAIL_INA219_VBAT);
     oled_print(OLED_LINE_STATUS, "SETUP:INA219_VBAT", true);
     blink_error_count = SETUP_FAIL_INA219_VBAT;
     goto fail;
   }
-  oled_print(OLED_LINE_DEBUG, "ina219_vbat.init", false);
+  oled_print(OLED_LINE_DEBUG, "ina226_vbat.init", false);
 
-  ina219_vbat.setShuntSizeInOhms(INA220_VBAT_SHUNT_OHMS);
-  ina219_vbat.setBusRange(INA219_BRNG_16);
-  ina219_vbat.setADCMode(INA219_SAMPLE_MODE_16);
-  ina219_vbat.setMeasureMode(INA219_TRIGGERED);
+  ina226_vbat.setResistorRange(INA226_VBAT_SHUNT_OHMS, INA226_CURRENT_RANGE_A);
+  ina226_vbat.setMeasureMode(INA226_TRIGGERED);
 
-  if (!ina219_vdut.init()) {
+  if (!ina226_vdut.init()) {
     setup_fail_code |= (0x1 << SETUP_FAIL_INA219_VDUT);
     oled_print(OLED_LINE_STATUS, "SETUP:INA219_VDUT", true);
     blink_error_count = SETUP_FAIL_INA219_VDUT;
     goto fail;
   }
-  oled_print(OLED_LINE_DEBUG, "ina219_vdut.init", false);
+  oled_print(OLED_LINE_DEBUG, "ina226_vdut.init", false);
 
-  ina219_vdut.setShuntSizeInOhms(INA220_VDUT_SHUNT_OHMS);
-  ina219_vdut.setBusRange(INA219_BRNG_16);
-  ina219_vdut.setADCMode(INA219_SAMPLE_MODE_16);
-  ina219_vdut.setMeasureMode(INA219_TRIGGERED);
+  ina226_vdut.setResistorRange(INA226_VDUT_SHUNT_OHMS, INA226_CURRENT_RANGE_A);
+  ina226_vdut.setMeasureMode(INA226_TRIGGERED);
 
   tmp1075.begin(); 
   tmp1075.setConversionTime(TMP1075::ConversionTime220ms);
@@ -602,6 +595,7 @@ void setup(void) {
 
 fail:
   iox_led_red(true);
+  delay(1500);  // allow error string to be shown for long time
   // On error, LED blinks 3x (slower), then count the error code
   blink_delay_ms *= 2;
   digitalWrite(LED_BUILTIN, LOW);
@@ -628,6 +622,8 @@ void loop(void) {
     }
     spinner_update();
   }
+
+  // TODO: if setup_fail_code should we not support any RPC?
 
   // interface() is non-blocking
   // NOTE: !! the function name and string beginning must match !!

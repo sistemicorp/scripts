@@ -31,8 +31,8 @@ typedef struct {
 static _batt_ctx_t batt_ctx;
 
 static uint16_t _vbat_mv(void) {
-    ina219_vbat.startSingleMeasurement();
-    float tmp = ina219_vbat.getBusVoltage_V();
+    ina226_vbat.startSingleMeasurement();
+    float tmp = ina226_vbat.getBusVoltage_V();
     return (uint16_t)(tmp * 1000.0f);
 }
 
@@ -110,11 +110,10 @@ int battemu_init(void) {
 
     batt_ctx.vbat_connect = false;
 
-    if (!error_set) {
-        batt_ctx.cal_done = true;
-        return 0;
-    }
-    return -1;
+    if (error_set) return -1;
+
+    batt_ctx.cal_done = true;
+    return 0;
 }
 
 // return batt emulator lut

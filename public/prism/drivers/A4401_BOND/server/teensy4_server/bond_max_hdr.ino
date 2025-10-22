@@ -301,7 +301,6 @@ int init_max_hdr_bist(void) {
      Connected to BOND's Vref (2.5V).  On power up, setup() will init
      all headers with PORT 11 mapped as ADC and this voltage is checked.
   */
-  unsigned int i = 0;
   unsigned int hdr = 0;
 
   char buf[LINE_MAX_LENGTH];

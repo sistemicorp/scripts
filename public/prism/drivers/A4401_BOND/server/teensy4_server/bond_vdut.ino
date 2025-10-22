@@ -76,41 +76,12 @@ static int _i2c_reader(uint8_t *buf, uint16_t s) {
 }
 
 static uint16_t _vdut_mv(void) {
-    ina219_vdut.startSingleMeasurement();
-    float tmp = ina219_vdut.getBusVoltage_V();
+    ina226_vdut.startSingleMeasurement();
+    float tmp = ina226_vdut.getBusVoltage_V();
     return (uint16_t)(tmp * 1000.0f);
 }
 
-String vdut_set(uint16_t mv) {
-  DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
-  bool error_set = false;
-
-	if (mv > VDUT_MAX_MV) {
-    error_set = true;
-    snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "vdut_set:%u > %u", mv, VDUT_MAX_MV);
-    oled_print(OLED_LINE_DEBUG, vdut_ctx.buf, error_set);
-
-    snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "%s %u mV", __func__, mv);
-    oled_print(OLED_LINE_RPC, vdut_ctx.buf, error_set);
-
-    doc["success"] = false;
-    doc["result"]["error"] = "invalid arg exceeds maximum";    
-    return _response(doc);  // always the last line of RPC API
-	}
-
-	if (mv < VDUT_MIN_MV) {
-    error_set = true;
-    snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "vdut_set:%u < %u", mv, VDUT_MIN_MV);
-    oled_print(OLED_LINE_DEBUG, vdut_ctx.buf, error_set);
-
-    snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "%s %u mV", __func__, mv);
-    oled_print(OLED_LINE_RPC, vdut_ctx.buf, error_set);
-
-    doc["success"] = false;
-    doc["result"]["error"] = "invalid arg exceeds minmum";    
-    return _response(doc);  // always the last line of RPC API
-	}
-
+int _vdut_set(uint16_t mv) {
 	// don't operate near the buck/boost switching point
 	// which is ~15V for BOND, given max voltage is 9V, should be good.
 	/* From TPS55289 DS
@@ -124,8 +95,8 @@ String vdut_set(uint16_t mv) {
 	 */
 	vdut_ctx.vmain_set_mv = mv;
 	vdut_ctx.vmain_set_vref = (mv - 798 + 5) / 10;
-  snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "vref %u %u mV", vdut_ctx.vmain_set_vref, mv);
-  oled_print(OLED_LINE_DEBUG, vdut_ctx.buf, error_set);
+  snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "tps55289 %u %u", vdut_ctx.vmain_set_vref, mv);
+  oled_print(OLED_LINE_DEBUG, vdut_ctx.buf, false);
 
   uint8_t data_set[3];
   data_set[0] = REG_VREF;
@@ -134,19 +105,54 @@ String vdut_set(uint16_t mv) {
   int rc = _i2c_writer(data_set, 3);
   if (rc) {
     snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "i2cwrite %d ln%d", rc, __LINE__);
-    oled_print(OLED_LINE_DEBUG, vdut_ctx.buf, true);    
+    oled_print(OLED_LINE_DEBUG, vdut_ctx.buf, true); 
+    return -1;
+  }
+  return 0;
+}
+
+String vdut_set(uint16_t mv) {
+  DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
+
+	if (mv > VDUT_MAX_MV) {
+    snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "vdut_set:%u > %u", mv, VDUT_MAX_MV);
+    oled_print(OLED_LINE_DEBUG, vdut_ctx.buf, true);
+
+    snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "%s %u mV", __func__, mv);
+    oled_print(OLED_LINE_RPC, vdut_ctx.buf, true);
+    doc["success"] = false;
+    doc["result"]["error"] = "invalid arg exceeds maximum";    
+    return _response(doc);  // always the last line of RPC API
+	}
+
+	if (mv < VDUT_MIN_MV) {
+    snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "vdut_set:%u < %u", mv, VDUT_MIN_MV);
+    oled_print(OLED_LINE_DEBUG, vdut_ctx.buf, true);
+
+    snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "%s %u mV", __func__, mv);
+    oled_print(OLED_LINE_RPC, vdut_ctx.buf, true);
+    doc["success"] = false;
+    doc["result"]["error"] = "invalid arg exceeds minmum";    
+    return _response(doc);  // always the last line of RPC API
+	}
+
+  int rc = _vdut_set(mv);
+  if (rc) {
+    snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "_vdut_set %d ln%d", rc, __LINE__);
+    oled_print(OLED_LINE_DEBUG, vdut_ctx.buf, true); 
     doc["success"] = false;
     doc["result"]["error"] = vdut_ctx.buf;      
     return _response(doc);  // always the last line of RPC API
   }
 
+  delay(10);  // allow to settle
   uint16_t vdut_mv = _vdut_mv();
   doc["result"]["mv"] = mv;
   doc["result"]["measured_mv"] = vdut_mv;
 
   if (vdut_mv > mv + VDUT_TOL_MV || vdut_mv < mv - VDUT_TOL_MV) {
     snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "vdut tol %u %u", mv, vdut_mv);
-    oled_print(OLED_LINE_DEBUG, vdut_ctx.buf, true);    
+    oled_print(OLED_LINE_DEBUG, vdut_ctx.buf, true);      
     doc["success"] = false;
     doc["result"]["error"] = "set vdut beyond tolerance limit";      
     return _response(doc);  // always the last line of RPC API
@@ -155,7 +161,7 @@ String vdut_set(uint16_t mv) {
   oled_print(OLED_LINE_DEBUG, vdut_ctx.buf, false);  
 
   snprintf(vdut_ctx.buf, LINE_MAX_LENGTH, "%s %u/%u", __func__, mv, vdut_mv);
-  oled_print(OLED_LINE_RPC, vdut_ctx.buf, error_set);
+  oled_print(OLED_LINE_RPC, vdut_ctx.buf, false);
   return _response(doc);  // always the last line of RPC API
 }
 
