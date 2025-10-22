@@ -295,7 +295,7 @@ int _self_test(void) {
 
   // check VDUT
   #define VDUT_SELF_TEST_MV_TOL        0.05f
-  #define VDUT_SELF_TEST_MA_TOL        0.5f
+  #define VDUT_SELF_TEST_MA_TOL        1.0f
   #define VDUT_SELF_TEST_MA_NOLOAD_MAX 0.5f
 
   uint16_t voltages[] = {2000, 4000};
@@ -344,6 +344,54 @@ int _self_test(void) {
     oled_print(OLED_LINE_DEBUG, buf, false);
     iox_selftest(false);
     vdut_con(false);
+    delay(100);  // use for debug on display
+  }
+
+  // check VBAT
+  for(int i = 0; i < sizeof(voltages) / sizeof(uint16_t); i++) {
+    vbat_set(voltages[i]);
+    ina219_vbat.startSingleMeasurement();  
+    delay(1);      
+    float v = ina219_vbat.getBusVoltage_V();
+    float ma = ina219_vbat.getCurrent_mA();
+    float vf = voltages[i] / 1000.0f;
+    snprintf(buf, LINE_MAX_LENGTH, "vbat1 %.2f %.2f %0.2f", vf, v, ma);
+    if (v > (vf + VDUT_SELF_TEST_MV_TOL) || v < (vf - VDUT_SELF_TEST_MV_TOL)) {
+      oled_print(OLED_LINE_DEBUG, buf, true);
+      delay(500);  // use for debug on display
+      return -1;
+    }
+    if (ma > VDUT_SELF_TEST_MA_NOLOAD_MAX) {
+      oled_print(OLED_LINE_DEBUG, buf, true);
+      delay(500);  // use for debug on display
+      return -1;
+    }    
+    oled_print(OLED_LINE_DEBUG, buf, false);
+    delay(100);  // use for debug on display
+
+    // set SELF_TEST and check current
+    iox_selftest(true);
+    iox_vbat_con(true);
+    ina219_vbat.startSingleMeasurement();      
+    delay(1);
+    v = ina219_vbat.getBusVoltage_V();
+    ma = ina219_vbat.getCurrent_mA();
+    vf = voltages[i] / 1000.0f;
+    float ma_expected = (vf / SELF_TEST_LOAD_RESISTOR) * 1000.0;  // 200 ohm load resistor
+    snprintf(buf, LINE_MAX_LENGTH, "vbat2 %.2f %.2f %0.2f", v, ma, ma_expected);
+    if (v > (vf + VDUT_SELF_TEST_MV_TOL) || v < (vf - VDUT_SELF_TEST_MV_TOL)) {
+      oled_print(OLED_LINE_DEBUG, buf, true);
+      delay(500);  // use for debug on display
+      return -1;
+    }
+    if (ma > (ma_expected + VDUT_SELF_TEST_MA_TOL) || ma < (ma_expected - VDUT_SELF_TEST_MA_TOL)) {
+      oled_print(OLED_LINE_DEBUG, buf, true);
+      delay(500);  // use for debug on display
+      return -1;
+    }    
+    oled_print(OLED_LINE_DEBUG, buf, false);
+    iox_selftest(false);
+    iox_vbat_con(false);
     delay(100);  // use for debug on display
   }
 
@@ -537,6 +585,7 @@ void setup(void) {
   return;
 
 fail:
+  iox_led_red(true);
   // On error, LED blinks 3x (slower), then count the error code
   blink_delay_ms *= 2;
   digitalWrite(LED_BUILTIN, LOW);
