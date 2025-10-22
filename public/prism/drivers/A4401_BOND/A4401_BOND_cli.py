@@ -14,6 +14,7 @@ Example:  (note the starting folder)
 """
 import logging
 import argparse
+import time
 
 from A4401_BOND import A4401_BOND
 
@@ -245,6 +246,9 @@ def parse_args():
     debug_batt_emu = subp.add_parser('debug_batt_emu',
                                      description="BOND debug battery emulator")
 
+    sequence = subp.add_parser('sequence',
+                                       description="Runs commands in sequence")
+
     # add new commands here...
 
     args = parser.parse_args()
@@ -420,12 +424,14 @@ def bond_max_hdr_dac(args):
     logging.info("{}".format(response))
     return response["success"]
 
+
 def vbat_set(args):
     logging.info("vbat_set: {}".format(args))
 
     response = teensy.vbat_set(args._mv)
     logging.info("{}".format(response))
     return response["success"]
+
 
 def vdut_set(args):
     logging.info("vdut_set: {}".format(args))
@@ -434,12 +440,41 @@ def vdut_set(args):
     logging.info("{}".format(response))
     return response["success"]
 
+
 def debug_batt_emu(args):
     logging.info("debug_batt_emu: {}".format(args))
 
     response = teensy.bond_debug_batt_emu()
     logging.info("{}".format(response))
     return response["success"]
+
+
+def sequence(args):
+    logging.info("sequence: {}".format(args))
+
+    # Create a sequence of commands to run
+
+    response = teensy.vbat_set(2000)
+    logging.info("{}".format(response))
+    response = teensy.iox_vbat_con(True)
+    logging.info("{}".format(response))
+    response = teensy.iox_selftest(True)
+    logging.info("{}".format(response))
+
+    try:
+        while True:
+            time.sleep(1)
+            response = teensy.vbat_read()
+            logging.info("{}".format(response))
+
+    except KeyboardInterrupt:
+        logging.info("Exiting")
+
+    response = teensy.iox_vbat_con(False)
+    logging.info("{}".format(response))
+
+    return response["success"]
+
 
 if __name__ == '__main__':
     args = parse_args()
@@ -525,6 +560,9 @@ if __name__ == '__main__':
 
     elif args._cmd == 'debug_batt_emu':
         success = debug_batt_emu(args)
+
+    elif args._cmd == 'sequence':
+        success = sequence(args)
 
     if success:
         logging.info("Success")
