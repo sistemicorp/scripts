@@ -493,6 +493,16 @@ class A4401_BOND:
             answer = self.rpc.call_method('vbus_read')
             return self._rpc_validate(answer)
 
+    def temperature(self):
+        """ Read TMP1075
+
+        :return: {'success': True, 'method': 'temperature', 'result': {'temp_degC': 30.3125}}
+        """
+        with self._lock:
+            self.logger.info(f"temperature")
+            answer = self.rpc.call_method('temperature')
+            return self._rpc_validate(answer)
+
     def vdut_set(self, mv: int):
         """ Set VDUT Voltage in mV
 

@@ -246,8 +246,14 @@ def parse_args():
     debug_batt_emu = subp.add_parser('debug_batt_emu',
                                      description="BOND debug battery emulator")
 
+    status = subp.add_parser('status',
+                                       description="Get status")
+
     sequence = subp.add_parser('sequence',
                                        description="Runs commands in sequence")
+
+    temperature = subp.add_parser('temperature',
+                                       description="Get temperature")
 
     # add new commands here...
 
@@ -449,6 +455,22 @@ def debug_batt_emu(args):
     return response["success"]
 
 
+def status(args):
+    logging.info("status: {}".format(args))
+
+    response = teensy.status()
+    logging.info("{}".format(response))
+    return response["success"]
+
+
+def temperature(args):
+    logging.info("temperature: {}".format(args))
+
+    response = teensy.temperature()
+    logging.info("{}".format(response))
+    return response["success"]
+
+
 def sequence(args):
     logging.info("sequence: {}".format(args))
 
@@ -561,8 +583,14 @@ if __name__ == '__main__':
     elif args._cmd == 'debug_batt_emu':
         success = debug_batt_emu(args)
 
+    elif args._cmd == 'status':
+        success = status(args)
+
     elif args._cmd == 'sequence':
         success = sequence(args)
+
+    elif args._cmd == 'temperature':
+        success = temperature(args)
 
     if success:
         logging.info("Success")

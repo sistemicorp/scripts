@@ -18,6 +18,7 @@
 #include "bond_max_hdr.h"
 #include "bond_vdut.h"
 #include "src/oled/bond_oled.h"
+#include "src/tmp1075/TMP1075.h"
 
 #define INA220_VBAT_I2C_ADDRESS 0x40
 #define INA220_VDUT_I2C_ADDRESS 0x41
@@ -91,6 +92,8 @@ MAX11300 max_hdr1 = MAX11300();
 MAX11300 max_hdr2 = MAX11300();
 MAX11300 max_hdr3 = MAX11300();
 MAX11300 max_hdr4 = MAX11300();
+
+TMP1075::TMP1075 tmp1075 = TMP1075::TMP1075(Wire);
 
 //-------------------------------------------------------------------------------------------------------------
 // Teensy "on board" RPC functions
@@ -200,8 +203,6 @@ void mem_info(uint32_t *stack, uint32_t *heap, uint32_t *psram) {
 String status() {
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
 
-  // TODO: might optionally (re-)run BIST here
-
   doc["result"]["setup_fail_code"] = setup_fail_code;
 
   uint32_t stack = 0, heap = 0, psram = 0;
@@ -214,6 +215,18 @@ String status() {
   oled_print(OLED_LINE_RPC, __func__, false);
   return _response(doc);  // always the last line of RPC API
 }
+
+/* temperature from BOND TMP1075
+ */
+String temperature() {
+  DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
+
+  doc["result"]["temp_degC"] = tmp1075.getTemperatureCelsius();
+
+  oled_print(OLED_LINE_RPC, __func__, false);
+  return _response(doc);  // always the last line of RPC API
+}
+
 
 /* vdut_con
  *  - set VDUT_EN pin, which is active (asserted) HIGH
@@ -536,6 +549,9 @@ void setup(void) {
   ina219_vdut.setADCMode(INA219_SAMPLE_MODE_16);
   ina219_vdut.setMeasureMode(INA219_TRIGGERED);
 
+  tmp1075.begin(); 
+  tmp1075.setConversionTime(TMP1075::ConversionTime220ms);
+
   if (vdut_init()) {
     setup_fail_code |= (0x1 << SETUP_FAIL_VDUT);
     oled_print(OLED_LINE_STATUS, "SETUP:vdut", true);
@@ -628,6 +644,7 @@ void loop(void) {
     write_gpio, "write_gpio: Writes GPIO (HIGH or LOW).",
     reset, "reset: Resets Teensy.",
     status, "status: status flags",
+    temperature, "temperature: Get temperature degC",
     bist_voltage, "bist_voltage: Reads internal voltage",
 
     // A44BOND APIs
