@@ -440,28 +440,61 @@ void setup(void) {
   digitalWrite(VSYS_EN_PIN, HIGH);
   delay(100);
 
+  // ADC
+  pinMode(BIST_VOLTAGE_V3V3A_PIN, INPUT);  // analog input
+  pinMode(BIST_VOLTAGE_V3V3D_PIN, INPUT);  // analog input
+  pinMode(BIST_VOLTAGE_V5V_PIN, INPUT);    // analog input
+  pinMode(BIST_VOLTAGE_V6V_PIN, INPUT);    // analog input
+  pinMode(BIST_VOLTAGE_NEG2V5_PIN, INPUT); // analog input
+
+  // Wait on V6V t0 be present, indicating USB-PD is on
+  // Can't use I2C while CYPD3176 is waiting for USB-PD
+  {
+    #define V6V_IDX               0
+    #define BIST_VOLTAGE_TOL_MV  50
+    unsigned int mv = 0;
+    int count_down = 100;
+    int count_good_measures = 2;
+    while (count_down > 0) {
+      unsigned int adc_raw = _read_adc(bist_voltages[V6V_IDX].pin, 10, 2);
+      mv = (adc_raw * 3300 * 3) / 1024;  // * 3 for resistor divider, 10k / (10k + 20k)
+      if ((mv < (bist_voltages[V6V_IDX].mv + BIST_VOLTAGE_TOL_MV)) && (mv > (bist_voltages[V6V_IDX].mv - BIST_VOLTAGE_TOL_MV))) {
+        // the voltage is in range
+        count_good_measures--;
+        if (count_good_measures == 0) break;
+      }
+      count_down--;
+      delay(20);
+      digitalWrite(LED_BUILTIN, HIGH);
+      delay(100); 
+      digitalWrite(LED_BUILTIN, LOW);
+      delay(200);
+    }
+    // there must be count_good_measures before count_down expires to pass this test
+    if (count_down == 0) {
+      setup_fail_code |= (0x1 << SETUP_FAIL_VOLTAGE);
+      //snprintf(buf, LINE_MAX_LENGTH, "voltage %s %u", bist_voltages[i].name, mv);
+      //oled_print(OLED_LINE_DEBUG, buf, true);
+      blink_error_count = SETUP_FAIL_VOLTAGE;
+      goto fail;
+    }
+  }
+
   Serial.begin(115200);
+
+  // I2C
   Wire.begin();
   Wire.setClock(400000);
-
-  //pinMode(18, INPUT);
-  //pinMode(19, INPUT);
-
-  //digitalWrite(18, LOW);
-  //digitalWrite(19, LOW);
+  oled_init();
+  oled_print(OLED_LINE_STATUS, "SETUP:SUPPLY CHECK", false);
 
   // Check all BIST voltages...
   // note this code has delay on reading, allowing for voltages
   // to reach steady state... TODO: is delay really needed?
   {
     for(uint8_t i=0; i < sizeof(bist_voltages) / sizeof(_bist_voltages); i++) {
-      #define BIST_VOLTAGE_TOL_MV  50
       unsigned int mv = 0;
       int count_down = 10;
-      // if V6V then we wait longer and show message because
-      // maybe USB-PD has not been plugged in yet
-      if (i == 0) count_down = 100;
-
       int count_good_measures = 2;
       while (count_down > 0) {
         unsigned int adc_raw = _read_adc(bist_voltages[i].pin, 10, 2);
@@ -473,36 +506,19 @@ void setup(void) {
         }
         count_down--;
         delay(20);
-        if (i == 0) {  // if V6V show waiting progress
-            snprintf(buf, LINE_MAX_LENGTH, "V6V wait %u mV %u", mv, count_down);
-            oled_print(OLED_LINE_DEBUG, buf, false);
-            digitalWrite(LED_BUILTIN, HIGH);
-            delay(100);  // wait longer if V6V
-            digitalWrite(LED_BUILTIN, LOW);
-            delay(100);  // wait longer if V6V
-        }
       }
       // there must be count_good_measures before count_down expires to pass this test
       if (count_down == 0) {
         setup_fail_code |= (0x1 << SETUP_FAIL_VOLTAGE);
         snprintf(buf, LINE_MAX_LENGTH, "voltage %s %u", bist_voltages[i].name, mv);
-        //oled_print(OLED_LINE_DEBUG, buf, true);
+        oled_print(OLED_LINE_DEBUG, buf, true);
         blink_error_count = SETUP_FAIL_VOLTAGE;
         goto fail;
       }
       snprintf(buf, LINE_MAX_LENGTH, "voltage %s %u", bist_voltages[i].name, mv);
-      //oled_print(OLED_LINE_DEBUG, buf, false);
+      oled_print(OLED_LINE_DEBUG, buf, false);
     }
   }
-
-  //pinMode(18, OUTPUT);
-  //pinMode(19, OUTPUT);
-
-
-
-
-  oled_init();
-  oled_print(OLED_LINE_STATUS, "SETUP:SUPPLY CHECK", false);
 
   oled_print(OLED_LINE_STATUS, "SETUP:CONFIGURE", false);
 
@@ -568,13 +584,6 @@ void setup(void) {
   }
   // turn on YELLOW while setup is running
   iox_led_yellow(true);
-
-  // ADC
-  pinMode(BIST_VOLTAGE_V3V3A_PIN, INPUT);  // analog input
-  pinMode(BIST_VOLTAGE_V3V3D_PIN, INPUT);  // analog input
-  pinMode(BIST_VOLTAGE_V5V_PIN, INPUT);    // analog input
-  pinMode(BIST_VOLTAGE_V6V_PIN, INPUT);    // analog input
-  pinMode(BIST_VOLTAGE_NEG2V5_PIN, INPUT); // analog input
 
   oled_print(OLED_LINE_STATUS, "SETUP:BIST", false);
 
