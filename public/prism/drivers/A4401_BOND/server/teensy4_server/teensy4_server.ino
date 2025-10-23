@@ -544,6 +544,9 @@ void setup(void) {
 
   tmp1075.begin(); 
   tmp1075.setConversionTime(TMP1075::ConversionTime220ms);
+  snprintf(buf, LINE_MAX_LENGTH, "TMP1075 %.2f degC", tmp1075.getTemperatureCelsius());
+  oled_print(OLED_LINE_DEBUG, buf, false);
+  delay(100);
 
   if (vdut_init()) {
     setup_fail_code |= (0x1 << SETUP_FAIL_VDUT);
