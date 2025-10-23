@@ -19,6 +19,7 @@
 #include "bond_vdut.h"
 #include "src/oled/bond_oled.h"
 #include "src/tmp1075/TMP1075.h"
+#include "src/cypd3176/cypd3176.h"
 
 #define INA226_VBAT_I2C_ADDRESS 0x40
 #define INA226_VDUT_I2C_ADDRESS 0x41
@@ -60,6 +61,7 @@
 #define SETUP_FAIL_BATTEM       8
 #define SETUP_FAIL_MAX_HDR      9
 #define SETUP_FAIL_SELFTEST     10
+#define SETUP_FAIL_CYPD3176     11
 
 static uint16_t setup_fail_code = 0;
 
@@ -71,7 +73,11 @@ typedef struct {
   char name[6];
 } _bist_voltages;
 static _bist_voltages bist_voltages[] = {
+  // Note this voltage appears when USB-PD is present at 15V
+  // setup() will wait on this voltage before continuing, assuming
+  // that the voltage has not yet been applied
   {.pin = BIST_VOLTAGE_V6V_PIN,    .mv = 6000, .name = "V6V"},
+
   {.pin = BIST_VOLTAGE_V3V3A_PIN,  .mv = 3300, .name = "V3V3A"},
   {.pin = BIST_VOLTAGE_V3V3D_PIN,  .mv = 3300, .name = "V3V3D"},
   {.pin = BIST_VOLTAGE_V5V_PIN,    .mv = 5000, .name = "V5V"},
@@ -95,6 +101,7 @@ MAX11300 max_hdr3 = MAX11300();
 MAX11300 max_hdr4 = MAX11300();
 
 TMP1075::TMP1075 tmp1075 = TMP1075::TMP1075(Wire);
+CYPD3176::CYPD3176 cypd3176 = CYPD3176::CYPD3176(Wire);
 
 //-------------------------------------------------------------------------------------------------------------
 // Teensy "on board" RPC functions
@@ -425,12 +432,79 @@ void setup(void) {
   pinMode(VDUTSMPS_INT, INPUT); 
   pinMode(BUTTON1_PIN, INPUT);
   pinMode(BUTTON2_PIN, INPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
 
   // toggle (power reset) VSYS (~6V) - powers rest of system
   digitalWrite(VSYS_EN_PIN, LOW);
   delay(10);
   digitalWrite(VSYS_EN_PIN, HIGH);
   delay(100);
+
+  Serial.begin(115200);
+  Wire.begin();
+  Wire.setClock(400000);
+
+  //pinMode(18, INPUT);
+  //pinMode(19, INPUT);
+
+  //digitalWrite(18, LOW);
+  //digitalWrite(19, LOW);
+
+  // Check all BIST voltages...
+  // note this code has delay on reading, allowing for voltages
+  // to reach steady state... TODO: is delay really needed?
+  {
+    for(uint8_t i=0; i < sizeof(bist_voltages) / sizeof(_bist_voltages); i++) {
+      #define BIST_VOLTAGE_TOL_MV  50
+      unsigned int mv = 0;
+      int count_down = 10;
+      // if V6V then we wait longer and show message because
+      // maybe USB-PD has not been plugged in yet
+      if (i == 0) count_down = 100;
+
+      int count_good_measures = 2;
+      while (count_down > 0) {
+        unsigned int adc_raw = _read_adc(bist_voltages[i].pin, 10, 2);
+        mv = (adc_raw * 3300 * 3) / 1024;  // * 3 for resistor divider, 10k / (10k + 20k)
+        if ((mv < (bist_voltages[i].mv + BIST_VOLTAGE_TOL_MV)) && (mv > (bist_voltages[i].mv - BIST_VOLTAGE_TOL_MV))) {
+          // the voltage is in range
+          count_good_measures--;
+          if (count_good_measures == 0) break;
+        }
+        count_down--;
+        delay(20);
+        if (i == 0) {  // if V6V show waiting progress
+            snprintf(buf, LINE_MAX_LENGTH, "V6V wait %u mV %u", mv, count_down);
+            oled_print(OLED_LINE_DEBUG, buf, false);
+            digitalWrite(LED_BUILTIN, HIGH);
+            delay(100);  // wait longer if V6V
+            digitalWrite(LED_BUILTIN, LOW);
+            delay(100);  // wait longer if V6V
+        }
+      }
+      // there must be count_good_measures before count_down expires to pass this test
+      if (count_down == 0) {
+        setup_fail_code |= (0x1 << SETUP_FAIL_VOLTAGE);
+        snprintf(buf, LINE_MAX_LENGTH, "voltage %s %u", bist_voltages[i].name, mv);
+        //oled_print(OLED_LINE_DEBUG, buf, true);
+        blink_error_count = SETUP_FAIL_VOLTAGE;
+        goto fail;
+      }
+      snprintf(buf, LINE_MAX_LENGTH, "voltage %s %u", bist_voltages[i].name, mv);
+      //oled_print(OLED_LINE_DEBUG, buf, false);
+    }
+  }
+
+  //pinMode(18, OUTPUT);
+  //pinMode(19, OUTPUT);
+
+
+
+
+  oled_init();
+  oled_print(OLED_LINE_STATUS, "SETUP:SUPPLY CHECK", false);
+
+  oled_print(OLED_LINE_STATUS, "SETUP:CONFIGURE", false);
 
   // set SPI interface pin modes
   pinMode (SPI_CS_IOX_Pin, OUTPUT);   // ensure SPI CS is driven output
@@ -451,20 +525,36 @@ void setup(void) {
   digitalWrite(SPI_SCLK_Pin, LOW);
   pinMode (SPI_MISO_Pin, INPUT);
 
-  Serial.begin(115200);
-  Wire.begin();
-  Wire.setClock(400000);
-  pinMode(LED_BUILTIN, OUTPUT);
+  {
+    // check CYPD3176 USB PD state
+    uint16_t cypd3176_id = cypd3176.getDeviceId();
+    snprintf(buf, LINE_MAX_LENGTH, "cypd3176 id 0x%x", cypd3176_id);
+    if (cypd3176_id != 0x2011) {
+      oled_print(OLED_LINE_DEBUG, buf, true);
+      setup_fail_code |= (0x1 << SETUP_FAIL_CYPD3176);
+      oled_print(OLED_LINE_STATUS, "SETUP:CYPD3176", true);
+      blink_error_count = SETUP_FAIL_CYPD3176;
+      goto fail;      
+    }
+    oled_print(OLED_LINE_DEBUG, buf, false);
+    delay(100);  
 
-  oled_init();
-  oled_print(OLED_LINE_STATUS, "SETUP:BOOTING...", false);
+    // FIXME: see notes in cypd3176 driver
+    //uint32_t pd_bus_voltage_mv = cypd3176.getBusVoltageMV();
+    //snprintf(buf, LINE_MAX_LENGTH, "cypd3176 bus %lu mV", pd_bus_voltage_mv);
+    //oled_print(OLED_LINE_DEBUG, buf, false);
+    //delay(2000);   
+    // When this is working, gate setup() until VIN is 15V. 
+  }
 
-  int success = init_max_iox();
-  if (success != 0) {
-    setup_fail_code |= (0x1 << SETUP_FAIL_MAX_IOX);
-    oled_print(OLED_LINE_STATUS, "SETUP:init_max_iox", true);
-    blink_error_count = SETUP_FAIL_MAX_IOX;
-    goto fail;
+  {
+    int success = init_max_iox();
+    if (success != 0) {
+      setup_fail_code |= (0x1 << SETUP_FAIL_MAX_IOX);
+      oled_print(OLED_LINE_STATUS, "SETUP:init_max_iox", true);
+      blink_error_count = SETUP_FAIL_MAX_IOX;
+      goto fail;
+    }
   }
   snprintf(buf, LINE_MAX_LENGTH, "max_iox");
   oled_print(OLED_LINE_DEBUG, buf, false);
@@ -486,38 +576,7 @@ void setup(void) {
   pinMode(BIST_VOLTAGE_V6V_PIN, INPUT);    // analog input
   pinMode(BIST_VOLTAGE_NEG2V5_PIN, INPUT); // analog input
 
-  // Check all BIST voltages...
-  // note this code has delay on reading, allowing for voltages
-  // to reach steady state... TODO: is delay really needed?
-  {
-    for(uint8_t i=0; i < sizeof(bist_voltages) / sizeof(_bist_voltages); i++) {
-      #define BIST_VOLTAGE_TOL_MV  50
-      unsigned int mv = 0;
-      int count_down = 10;
-      int count_good_measures = 2;
-      while (count_down > 0) {
-        unsigned int adc_raw = _read_adc(bist_voltages[i].pin, 10, 2);
-        mv = (adc_raw * 3300 * 3) / 1024;  // * 3 for resistor divider, 10k / (10k + 20k)
-        if ((mv < (bist_voltages[i].mv + BIST_VOLTAGE_TOL_MV)) && (mv > (bist_voltages[i].mv - BIST_VOLTAGE_TOL_MV))) {
-          // the voltage is in range
-          count_good_measures--;
-          if (count_good_measures == 0) break;
-        }
-        count_down--;
-        delay(20);
-      }
-      // there must be count_good_measures before count_down expires to pass this test
-      if (count_down == 0) {
-        setup_fail_code |= (0x1 << SETUP_FAIL_VOLTAGE);
-        snprintf(buf, LINE_MAX_LENGTH, "voltage %s %u", bist_voltages[i].name, mv);
-        oled_print(OLED_LINE_DEBUG, buf, true);
-        blink_error_count = SETUP_FAIL_VOLTAGE;
-        goto fail;
-      }
-      snprintf(buf, LINE_MAX_LENGTH, "voltage %s %u", bist_voltages[i].name, mv);
-      oled_print(OLED_LINE_DEBUG, buf, false);
-    }
-  }
+  oled_print(OLED_LINE_STATUS, "SETUP:BIST", false);
 
   // configure INA220s
   if (!ina226_vbat.init()) {
@@ -563,6 +622,7 @@ void setup(void) {
     goto fail;     
   }
 
+  oled_print(OLED_LINE_STATUS, "SETUP:BATTEM CAL", false);
   if (battemu_init()) {
     setup_fail_code |= (0x1 << SETUP_FAIL_BATTEM);
     oled_print(OLED_LINE_STATUS, "SETUP:battemu_init", true);
@@ -570,6 +630,7 @@ void setup(void) {
     goto fail;      
   }
 
+  oled_print(OLED_LINE_STATUS, "SETUP:BIST", false);
   if (_self_test()) {
     setup_fail_code |= (0x1 << SETUP_FAIL_SELFTEST);
     oled_print(OLED_LINE_STATUS, "SETUP:self_test", true);
@@ -579,7 +640,7 @@ void setup(void) {
 
   // Add more startup checks here...
 
-  oled_print(OLED_LINE_STATUS, "SETUP: COMPLETE", false);
+  oled_print(OLED_LINE_STATUS, "SETUP:COMPLETE", false);
   spinner_update();
 
   // blink the TEENSY LED to let people know we started, 2 fast blinks
