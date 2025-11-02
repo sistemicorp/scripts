@@ -48,7 +48,10 @@ void spinner_update(void) {
 
 int oled_print(uint32_t line, const char *buf, bool invert) {
     snprintf(_buf, LINE_MAX_LENGTH, "%-20s", buf);
-    //er_oled_string(0, line * LINE_VERTICAL_SIZE, "                     ", 12, 1, oled_buf);  // clr line
+    if (line == OLED_LINE_RPC) {
+       er_oled_string(0, line * LINE_VERTICAL_SIZE, "                     ", 12, 1, oled_buf);  // clr line
+       er_oled_display(oled_buf);
+    }
     er_oled_string(0, line * LINE_VERTICAL_SIZE, _buf, 12, (invert ? 0 : 1), oled_buf);
     er_oled_display(oled_buf);
 
