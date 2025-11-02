@@ -69,9 +69,9 @@ int init_max_iox(void) {
 
   for (i = 0; i < sizeof(init_regs) / sizeof(_init_regs_t); i++) {
     max_iox.write_register(init_regs[i].r, init_regs[i].d);
-    delay(1);
-    snprintf(buf, LINE_MAX_LENGTH, "init_max_iox:%02x %04x", init_regs[i].r, init_regs[i].d);
-    oled_print(OLED_LINE_RPC, buf, false);
+    delay(1);  // required by MAX11311 programming guide
+    //snprintf(buf, LINE_MAX_LENGTH, "init_max_iox:%02x %04x", init_regs[i].r, init_regs[i].d);
+    //oled_print(OLED_LINE_RPC, buf, false);
   }
 
   oled_print(OLED_LINE_RPC, __func__, false);
