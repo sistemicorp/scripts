@@ -486,6 +486,10 @@ void setup(void) {
   Wire.begin();
   Wire.setClock(400000);
   oled_init();
+
+  snprintf(buf, LINE_MAX_LENGTH, "version %s", VERSION);
+  oled_print(OLED_LINE_MEM, buf, false);
+
   oled_print(OLED_LINE_STATUS, "SETUP:SUPPLY CHECK", false);
 
   // Check all BIST voltages...
