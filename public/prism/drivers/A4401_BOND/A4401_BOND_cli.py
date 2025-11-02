@@ -480,8 +480,8 @@ def sequence(args):
     logging.info("{}".format(response))
     response = teensy.iox_vbat_con(True)
     logging.info("{}".format(response))
-    response = teensy.iox_selftest(True)
-    logging.info("{}".format(response))
+    #response = teensy.iox_selftest(True)
+    #logging.info("{}".format(response))
 
     try:
         while True:
