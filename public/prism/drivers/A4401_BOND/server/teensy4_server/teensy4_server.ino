@@ -425,6 +425,7 @@ void setup(void) {
 
   // set Teensy BOND pins, disable where application
   pinMode(VSYS_EN_PIN, OUTPUT);
+  digitalWrite(VSYS_EN_PIN, LOW);  // disable VSYS on boot
   pinMode(VDUT_CONNECT_PIN, OUTPUT);
   pinMode(VDUT_SMPS_EN_PIN, OUTPUT);
   digitalWrite(VDUT_SMPS_EN_PIN, LOW); 
@@ -433,12 +434,6 @@ void setup(void) {
   pinMode(BUTTON1_PIN, INPUT);
   pinMode(BUTTON2_PIN, INPUT);
   pinMode(LED_BUILTIN, OUTPUT);
-
-  // toggle (power reset) VSYS (~6V) - powers rest of system
-  digitalWrite(VSYS_EN_PIN, LOW);
-  delay(10);
-  digitalWrite(VSYS_EN_PIN, HIGH);
-  delay(100);
 
   // ADC
   pinMode(BIST_VOLTAGE_V3V3A_PIN, INPUT);  // analog input
@@ -449,6 +444,10 @@ void setup(void) {
 
   // Wait on V6V t0 be present, indicating USB-PD is on
   // Can't use I2C while CYPD3176 is waiting for USB-PD
+  // toggle VSYS_EN_PIN VSYS (~6V) - powers rest of system  
+  // NOTE: when VIN is not present, there is back powering
+  //       of CYPD3176 causing it NOT to negotiate USB-PD and
+  //       toggling VSYS_EN_PIN fixes this problem
   {
     #define V6V_IDX               0
     #define BIST_VOLTAGE_TOL_MV  50
@@ -456,6 +455,8 @@ void setup(void) {
     int count_down = 100;
     int count_good_measures = 2;
     while (count_down > 0) {
+      digitalWrite(VSYS_EN_PIN, HIGH);
+      delay(100);
       unsigned int adc_raw = _read_adc(bist_voltages[V6V_IDX].pin, 10, 2);
       mv = (adc_raw * 3300 * 3) / 1024;  // * 3 for resistor divider, 10k / (10k + 20k)
       if ((mv < (bist_voltages[V6V_IDX].mv + BIST_VOLTAGE_TOL_MV)) && (mv > (bist_voltages[V6V_IDX].mv - BIST_VOLTAGE_TOL_MV))) {
@@ -464,6 +465,7 @@ void setup(void) {
         if (count_good_measures == 0) break;
       }
       count_down--;
+      digitalWrite(VSYS_EN_PIN, LOW);
       delay(20);
       digitalWrite(LED_BUILTIN, HIGH);
       delay(100); 
@@ -546,6 +548,20 @@ void setup(void) {
   pinMode (SPI_MISO_Pin, INPUT);
 
   {
+    int success = init_max_iox();
+    if (success != 0) {
+      setup_fail_code |= (0x1 << SETUP_FAIL_MAX_IOX);
+      oled_print(OLED_LINE_STATUS, "SETUP:init_max_iox", true);
+      blink_error_count = SETUP_FAIL_MAX_IOX;
+      goto fail;
+    }
+  }
+  snprintf(buf, LINE_MAX_LENGTH, "max_iox");
+  oled_print(OLED_LINE_DEBUG, buf, false);
+  // turn on YELLOW while setup is running
+  iox_led_yellow(true);
+
+  {
     // check CYPD3176 USB PD state
     uint16_t cypd3176_id = cypd3176.getDeviceId();
     snprintf(buf, LINE_MAX_LENGTH, "cypd3176 id 0x%x", cypd3176_id);
@@ -567,18 +583,6 @@ void setup(void) {
     // When this is working, gate setup() until VIN is 15V. 
   }
 
-  {
-    int success = init_max_iox();
-    if (success != 0) {
-      setup_fail_code |= (0x1 << SETUP_FAIL_MAX_IOX);
-      oled_print(OLED_LINE_STATUS, "SETUP:init_max_iox", true);
-      blink_error_count = SETUP_FAIL_MAX_IOX;
-      goto fail;
-    }
-  }
-  snprintf(buf, LINE_MAX_LENGTH, "max_iox");
-  oled_print(OLED_LINE_DEBUG, buf, false);
-
   // reset 
   if (_reset()) {
     setup_fail_code |= (0x1 << SETUP_FAIL_RESET);
@@ -586,6 +590,7 @@ void setup(void) {
     blink_error_count = SETUP_FAIL_RESET;
     goto fail;
   }
+  // reset clears LEDs, so turn YELLOW back on
   // turn on YELLOW while setup is running
   iox_led_yellow(true);
 
