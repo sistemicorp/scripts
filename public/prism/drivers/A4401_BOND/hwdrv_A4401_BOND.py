@@ -107,8 +107,7 @@ class HWDriver(object):
             _teensy['close'] = _teensy['hwdrv'].close
 
             # NOTE: !! If not using jig_closed_detect this should be NONE !!
-            #_teensy['play'] = _teensy['hwdrv'].jig_closed_detect
-            _teensy['play'] = None
+            _teensy['play'] = _teensy['hwdrv'].jig_closed_detect
 
             _teensy['show_pass_fail'] = _teensy['hwdrv'].show_pass_fail
             _teensy['jig_reset'] = _teensy['hwdrv'].jig_reset

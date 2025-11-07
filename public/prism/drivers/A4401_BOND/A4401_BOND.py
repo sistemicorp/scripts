@@ -469,9 +469,14 @@ class A4401_BOND:
         :return: success = True/False, method = read_gpio, result = state = 1/0
         """
         with self._lock:
-            self.logger.info(f"read_gpio {pin_number}")
+            if pin_number == self.JIG_CLOSE_GPIO:  # squelch jig closed polling
+                squelch = True
+            else:
+                self.logger.info(f"read_gpio {pin_number}")
+                squelch = False
+
             answer = self.rpc.call_method('read_gpio', pin_number)
-            return self._rpc_validate(answer)
+            return self._rpc_validate(answer, squelch)
 
     def write_gpio(self, pin_number, state: bool):
         """ Set GPIO
@@ -771,19 +776,20 @@ class A4401_BOND:
             self.logger.error("No rpc handler returning None")
             return None
 
-        answer = json.loads(self.rpc.call_method('read_gpio', self.JIG_CLOSE_GPIO))
+        answer = self.read_gpio(self.JIG_CLOSE_GPIO)
         if not answer['success']:
             self.logger.error("Failed to detect Jig Close GPIO")
             return None
+        #self.logger.info(answer)
 
         # Example uses an Active LOW for indicating jig is closed
-        if answer['result']['state'] != 1:
+        if answer['result']['state'] == 1:
             self.logger.info("Jig close detected")
         else:
             # squelched log line to avoid flooding log
             self.logger.debug("Jig close NOT detected")
 
-        return not answer['result']['state']
+        return answer['result']['state']
 
     def show_pass_fail(self, p=False, f=False, o=False):
         """ Set pass/fail indicator
