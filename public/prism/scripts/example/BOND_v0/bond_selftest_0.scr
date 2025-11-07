@@ -1,5 +1,5 @@
 // BOND Example self test Script
-// Note BOND Header pin configuration definition to match Pogo board and DUT
+// - NO POGO board or DUT should be connected to BOND
 {
   "info": {
     "product": "BOND",

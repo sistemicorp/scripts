@@ -6,6 +6,7 @@ Owen Li, Martin Guthrie
 
 """
 import os
+import traceback
 import json
 import jstyleson
 import threading
@@ -181,7 +182,7 @@ class A4401_BOND:
     # - functions are all private to this class
 
     def _init_maxs(self, header_def_filename):
-        # read the json-like header defintion file
+        # read the json-like header definition file
         self.logger.info(f"Attempting to read MAX11311 config from {header_def_filename}...")
         try:
             with open(header_def_filename) as f:
@@ -191,6 +192,7 @@ class A4401_BOND:
 
         except Exception as e:
             self.logger.error(e)
+            self.logger.error(traceback.format_exc())
             return False
 
         self.logger.info(self.a44BOND_max_config)
@@ -202,13 +204,23 @@ class A4401_BOND:
             ports_adc = [11]  # all headers use MAX port11 for self test
             ports_gpo = []
             ports_gpi = []
-            for _pin in range(1, 21):
-                pin = str(_pin)
-                self.logger.info(f"HDR {k} pin {pin} init {v[pin]}")
-                if v[pin]["mode"] is None: continue
+            pins_configured = []
+            for pin, config in v.items():
+                # some items in the JSON are not pins, skip them
+                if not pin.isdigit():
+                    continue
 
-                modes = [m for m in v[pin]["mode"].split(",")]
-                ports = [int(p) for p in v[pin]["port"].split(",")]
+                if pin in pins_configured:
+                    self.logger.error(f"HDR {k}, DUPLICATE pin {pin}, config {config}")
+                    return False
+                pins_configured.append(pin)
+
+                self.logger.info(f"HDR {k}, pin {pin}, config {config}")
+
+                if config["mode"] is None: continue
+
+                modes = [m for m in config["mode"].split(",")]
+                ports = [int(p) for p in config["port"].split(",")]
                 if len(ports) != len(modes):
                     self.logger.error(f"modes and ports must be equal lengths")
                     continue

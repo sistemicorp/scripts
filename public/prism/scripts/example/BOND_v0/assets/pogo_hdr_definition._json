@@ -5,6 +5,7 @@
 // This file allows pins to be configured for DUT connected thru Pogo board.
 // Modified JSON-like file, lines starting with '//' are stripped
 // Comment lines start with '//', comments must be on their own line
+// This configuration file is EXAMPLE ONLY and doesn't map to any Pogo board or product.
 {
   // HDR #1
   "1": {
@@ -148,19 +149,11 @@
      "12": {"mode": null, "port": null},
      "17": {"mode": null, "port": null},
      "18": {"mode": null, "port": null},
-     // Expansion Header
-     "1":  {"mode": null, "port": null},
-     "2":  {"mode": null, "port": null},
-     "3":  {"mode": null, "port": null},
-     "4":  {"mode": null, "port": null},
-     "5":  {"mode": null, "port": null},
-     "6":  {"mode": null, "port": null},
-     "7":  {"mode": null, "port": null},
-     "8":  {"mode": null, "port": null},
-     "10": {"mode": null, "port": null},
-     "20": {"mode": null, "port": null},
-     // BNC
-     "19": {"mode": null, "port": null},
+     // N/C
+     "1": {"mode": null, "port": null},
+     "3": {"mode": null, "port": null},
+     "5": {"mode": null, "port": null},
+     "7": {"mode": null, "port": null},
 
      // -------------------------------------------
      // User configurable, change mode as required
@@ -170,6 +163,15 @@
      "14": {"mode": "GPO",    "port": "3"},
      "15": {"mode": "ADC",    "port": "1"},
      "16": {"mode": "ADC",    "port": "2"},
+
+     // BNC
+     "19": {"mode": null, "port": null},
+
+     // Expansion Mezenene Header (J15)
+     "2":  {"mode": null, "port": "8"},
+     "4":  {"mode": null, "port": "7"},
+     "6":  {"mode": null, "port": "5"},
+     "8":  {"mode": null, "port": "4"},
 
      // TODO: GPO output voltage, for all GPOs
      // TODO: GPI threshold voltage, for all GPIs
