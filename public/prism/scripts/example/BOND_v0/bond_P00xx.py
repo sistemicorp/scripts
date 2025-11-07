@@ -27,7 +27,8 @@ class bond_P00xx(TestItem):
 
     Tests:
         P000-P999: For Teensy management (updating)
-        P1000-P9999: For BOND test functions
+        P1000-P1999: Example BOND testing (Can be deleted)
+        P2000-P9999: Your product specific tests
 
     Helpful:
     https://forum.pjrc.com/threads/66942-Program-Teensy-4-from-command-line-without-pushing-the-button?highlight=bootloader
@@ -600,7 +601,7 @@ class bond_P00xx(TestItem):
     def P1120_vbat_check(self):
         """ Check VBAT at voltage, and self test load
 
-        {"id": "P1120_vbat_check",      "enable": true, "voltage_mv": 3000 },
+            {"id": "P1120_vbat_check",      "enable": true, "voltage_mv": 3000 },
         """
         ctx = self.item_start()  # always first line of test
         SELFTEST_LOAD_OHMS = 200.0
@@ -608,12 +609,6 @@ class bond_P00xx(TestItem):
         TOLERANCE_MA = 1.0
 
         measurement_results = []
-
-        response = self.teensy.vbat_set(ctx.item.voltage_mv)
-        if not response['success']:
-            self.logger.error(response)
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
 
         response = self.teensy.vbat_set(ctx.item.voltage_mv)
         if not response['success']:
@@ -695,6 +690,80 @@ class bond_P00xx(TestItem):
         self.log_bullet(_bullet)
         self.item_end(_result)  # always last line of test
 
+    def P1140_vdut_check(self):
+        """ Check VDUT at voltage, and self test load
+
+            {"id": "P1140_vdut_check",      "enable": true, "voltage_mv": 3000 },
+        """
+        ctx = self.item_start()  # always first line of test
+        SELFTEST_LOAD_OHMS = 200.0
+        TOLERANCE_V = 0.1
+        TOLERANCE_MA = 1.0
+
+        measurement_results = []
+
+        response = self.teensy.vdut_set(ctx.item.voltage_mv)
+        if not response['success']:
+            self.logger.error(response)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        response = self.teensy.iox_selftest(True)
+        if not response['success']:
+            self.logger.error(response)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        response = self.teensy.vdut_con(True)
+        if not response['success']:
+            self.logger.error(response)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        time.sleep(0.01)
+
+        response = self.teensy.vdut_read()
+        if not response['success']:
+            self.logger.error(response)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        _v = float(round(response['result']['v'], 3))
+        _min = round(ctx.item.voltage_mv / 1000.0 - TOLERANCE_V, 3)
+        _max = round(ctx.item.voltage_mv / 1000.0 + TOLERANCE_V, 3)
+        success, _result, _bullet  = ctx.record.measurement(f"{ctx.item.voltage_mv}_V",
+                                                            _v,
+                                                            unit=ResultAPI.UNIT_VOLTS,
+                                                            min=_min,
+                                                            max=_max)
+        self.log_bullet(_bullet)
+        measurement_results.append(_result)
+
+        _ima_expected = float(round(ctx.item.voltage_mv / SELFTEST_LOAD_OHMS, 1))
+        _ma_measured = round(response['result']['ima'], 2)
+        success, _result, _bullet  = ctx.record.measurement(f"{ctx.item.voltage_mv}_mA",
+                                                            _ma_measured,
+                                                            unit=ResultAPI.UNIT_MILLIAMPS,
+                                                            min=_ima_expected - TOLERANCE_MA,
+                                                            max=_ima_expected + TOLERANCE_MA)
+        self.log_bullet(_bullet)
+        measurement_results.append(_result)
+
+        response = self.teensy.vdut_con(False)
+        if not response['success']:
+            self.logger.error(response)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        response = self.teensy.iox_selftest(False)
+        if not response['success']:
+            self.logger.error(response)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        self.item_end(measurement_results)  # always last line of test
+
+
     def P1200_DAC(self):
         """ Set BOND DAC pin
 
@@ -742,7 +811,7 @@ class bond_P00xx(TestItem):
         self.item_end()  # always last line of test
 
 
-    def P9000_TEARDOWN(self):
+    def P1900_TEARDOWN(self):
         """ teardown BOND
 
         """

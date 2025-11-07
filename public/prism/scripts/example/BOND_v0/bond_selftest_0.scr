@@ -32,7 +32,9 @@
         {"id": "P1110_voltage_check",  "enable": true, "voltage": "V3V3D" },
         {"id": "P1120_vbat_check",     "enable": true, "voltage_mv": 3000 },
         {"id": "P1120_vbat_check",     "enable": true, "voltage_mv": 4000 },
-        {"id": "P9000_TEARDOWN",       "enable": true }
+        {"id": "P1140_vdut_check",     "enable": true, "voltage_mv": 3000 },
+        {"id": "P1140_vdut_check",     "enable": true, "voltage_mv": 4000 },
+        {"id": "P1900_TEARDOWN",       "enable": true }
       ]
     }
   ]
