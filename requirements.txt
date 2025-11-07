@@ -18,7 +18,7 @@ pycryptodome==3.17
 py-bcrypt==0.4
 peewee==3.16.3
 filehash==0.2.dev1
-deepdiff==6.4.1
+deepdiff==8.6.1
 email-validator==2.0.0.post2
 python-rapidjson==1.10
 pyudev==0.24.1
