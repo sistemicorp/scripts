@@ -381,6 +381,7 @@ class bond_P00xx(TestItem):
         - by verifying that we can re-install instance of driver after the update
         - this is difficult because on USB re-enumeration teensy may be on a different
           serial port.  So use the usb_path to find the correct port.
+        - NOTE when BOND boots it has a long self test to run, so there is a large delay
 
         {"id": "P700_Verify",         "enable": true, "delay": 5 },
 
@@ -389,7 +390,17 @@ class bond_P00xx(TestItem):
 
         # Teensy should be re-enumerating on USB, using a simple delay to let that happen
         self.log_bullet(f"{ctx.item.delay}s wait for boot")
-        time.sleep(ctx.item.delay)
+        TIME_WAIT_FOR_BOOT_S = 0
+        TIME_STEP_S = 4
+        while TIME_WAIT_FOR_BOOT_S < ctx.item.delay:
+            time.sleep(TIME_STEP_S)
+            TIME_WAIT_FOR_BOOT_S += TIME_STEP_S
+            self.log_bullet(f"{TIME_WAIT_FOR_BOOT_S}s waited")
+            if self.timeout:
+                self.shared_lock(DRIVER_TYPE).release()
+                self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+                return
+
         self.log_bullet("done wait")
 
         port = self._find_matching_ttyACM_from_usb_path(self._teensy_usb_path)
@@ -407,7 +418,6 @@ class bond_P00xx(TestItem):
         # get the header_def_filename from script drivers section
         header_def_filename = None
         for i in ctx.config.drivers:
-            print(i)
             if "hwdrv_A4401_BOND" in i[0]:
                 header_def_filename = i[1]
                 break
