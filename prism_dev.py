@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2019-2023
+Sistemi Corporation, copyright, all rights reserved, 2019-2025
 Martin Guthrie
 
 """
@@ -108,6 +108,7 @@ class ChanCon(object):
 
     def item_start(self):
         d = {"item": self._item,
+             "config": self.script["config"],
              # item dict from the script, ex {"id": "TST000", "enable": true,  "args": {"min": 0, "max": 2}}
              "options": self._options,  # options dict from the script, ex { "fail_fast": false }
              "record": self.record,
@@ -316,10 +317,10 @@ def parse_args():
     """
     epilog = """
 Usage examples:
-    python3 prism_dev.py --script ./public/prism/scripts/example/prod_v0/prod_0.scr 
-    python3 prism_dev.py --script ./public/prism/scripts/example/pybrd_v0/pybrd_0.scr 
+    python prism_dev.py --script ./public/prism/scripts/example/prod_v0/prod_0.scr 
+    python prism_dev.py --script ./public/prism/scripts/example/pybrd_v0/pybrd_0.scr 
 
-Sistemi Corporation, copyright, all rights reserved, 2019
+Sistemi Corporation, copyright, all rights reserved, 2019-2025
     """
     parser = argparse.ArgumentParser(description='prism_dev',
                                      formatter_class=argparse.RawDescriptionHelpFormatter,

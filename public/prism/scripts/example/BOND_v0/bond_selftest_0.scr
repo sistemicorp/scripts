@@ -1,0 +1,41 @@
+// BOND Example self test Script
+// - NO POGO board or DUT should be connected to BOND
+// - uses self test signals as example
+{
+  "info": {
+    "product": "BOND",
+    "bom": "a4401",
+    "lot": "NA",
+    "location": "here"
+  },
+  "config": {
+    "fail_fast": true,
+    "drivers": [["public.prism.drivers.A4401_BOND.hwdrv_A4401_BOND",
+                 "public/prism/scripts/example/BOND_v0/assets/pogo_hdr_definition._json"]]
+  },
+  "tests": [
+    {
+      "module": "public.prism.scripts.example.BOND_v0.bond_P00xx",
+      "options": {},
+      "items": [
+        {"id": "P1000_SETUP",          "enable": true },
+        {"id": "P010_led",             "enable": true, "set": true },
+        {"id": "P1130_version",        "enable": true },
+        {"id": "P010_led",             "enable": true, "set": false },
+        {"id": "P1100_ADC_check",      "enable": true, "hdr": 1 },
+        {"id": "P1100_ADC_check",      "enable": true, "hdr": 2 },
+        {"id": "P1100_ADC_check",      "enable": true, "hdr": 3 },
+        {"id": "P1100_ADC_check",      "enable": true, "hdr": 4 },
+        {"id": "P1110_voltage_check",  "enable": true, "voltage": "V6V" },
+        {"id": "P1110_voltage_check",  "enable": true, "voltage": "V5V" },
+        {"id": "P1110_voltage_check",  "enable": true, "voltage": "V3V3A" },
+        {"id": "P1110_voltage_check",  "enable": true, "voltage": "V3V3D" },
+        {"id": "P1120_vbat_check",     "enable": true, "voltage_mv": 3000 },
+        {"id": "P1120_vbat_check",     "enable": true, "voltage_mv": 4000 },
+        {"id": "P1140_vdut_check",     "enable": true, "voltage_mv": 3000 },
+        {"id": "P1140_vdut_check",     "enable": true, "voltage_mv": 4000 },
+        {"id": "P1900_TEARDOWN",       "enable": true }
+      ]
+    }
+  ]
+}

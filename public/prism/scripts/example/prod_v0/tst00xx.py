@@ -25,7 +25,7 @@ class tst00xx(TestItem):
 
     def __init__(self, controller, chan, shared_state):
         super().__init__(controller, chan, shared_state)
-        self.logger = logging.getLogger("{}.{}".format(__name__, self.chan))
+        self.logger = logging.getLogger("tst00xx.{}".format(self.chan))
 
         # ------------------------------------------------------------------------
         # API Reference:
@@ -42,7 +42,8 @@ class tst00xx(TestItem):
         #  - ctx.item.args = {"min": 0, "max": 10}
         #  - ctx.item.args.max = 10
         #  - ctx.options = { "fail_fast": False }
-        #  - ctx.options.fail_fast = False
+        #  - ctx.options.fail_fast = <True|False>
+        #  - ctx.fail_fast = <True|False>  # From script "config" (lower precedence) "options" (higher)
         #
         #  - record functions
         #    - ctx.record.measurement(name, value, unit, min=None, max=None)

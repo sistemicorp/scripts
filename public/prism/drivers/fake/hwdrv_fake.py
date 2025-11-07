@@ -12,7 +12,8 @@ from core.sys_log import pub_notice
 # import your hardware driver class, and details
 from public.prism.drivers.fake.Fake import Fake, VERSION, DRIVER_TYPE
 
-NUM_CHANNELS = 1  # set this to simulate multiple channels, range 1-4
+NUM_CHANNELS = 1  # set this to simulate multiple channels, range 1-8
+                  # Note this can be changed in Prism GUI, see Menu->Demo
 
 
 class HWDriver(object):

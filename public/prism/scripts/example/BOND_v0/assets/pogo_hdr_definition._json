@@ -1,0 +1,183 @@
+// BOND Header Configuration for MAX11311 pins
+// Refer to BOND Schematic for all header pin functions.
+// Some Header pins have fixed function and should not be changed.
+// Other pins are general purpose and can be configured as ADC, DAC, GPO, or GPI
+// This file allows pins to be configured for DUT connected thru Pogo board.
+// Modified JSON-like file, lines starting with '//' are stripped
+// Comment lines start with '//', comments must be on their own line
+// This configuration file is EXAMPLE ONLY and doesn't map to any Pogo board or product.
+{
+  // HDR #1
+  "1": {
+     // HDR Pin // : { "mode": <>, "port": <> }
+     // Not configurable pins - DO NOT CHANGE
+     // GNDs
+     "11": {"mode": null, "port": null},
+     "12": {"mode": null, "port": null},
+     "17": {"mode": null, "port": null},
+     "18": {"mode": null, "port": null},
+     // VBUS
+     "19": {"mode": null, "port": null},
+     // N/C
+     "15": {"mode": null, "port": null},
+     // VBAT
+     "20": {"mode": null, "port": null},
+
+     // Special functions - DO NOT CHANGE
+     // UART Level shifter VCC
+     "3": {"mode": null, "port": null},
+     // UART RX TX
+     "5": {"mode": null, "port": null},
+     "7": {"mode": null, "port": null},
+     // LDO Output
+     "1": {"mode": "DAC,GPO", "port": "10,1"},
+     // Open Drain FETs
+     "2": {"mode": "GPO",     "port": "7"},
+     "4": {"mode": "GPO",     "port": "8"},
+     // VBAT Adjustment DAC
+     "6": {"mode": "DAC",     "port": "9"},
+     // LDO Output Feedback
+     "9": {"mode": "ADC",     "port": "6"},
+
+     // -------------------------------------------
+     // User configurable, change mode as required
+     // mode = ADC, DAC, GPO, GPI
+     "8":  {"mode": "DAC",    "port": "5"},
+     "10": {"mode": "GPO",    "port": "4"},
+     "13": {"mode": "GPI",    "port": "0"},
+     "14": {"mode": "ADC",    "port": "3"},
+     "16": {"mode": "ADC",    "port": "2"},
+
+     // TODO: GPO output voltage, for all GPOs
+     // TODO: GPI threshold voltage, for all GPIs
+     "gpo_mv": 3300,
+     "gpi_mv": 1000
+     // -------------------------------------------
+   },
+
+  // HDR #2
+  "2": {
+     // HDR Pin // : { "mode": <>, "port": <> }
+     // Not configurable pins - DO NOT CHANGE
+     "1": {"mode": null, "port": null},
+     // GNDs
+     "11": {"mode": null, "port": null},
+     "12": {"mode": null, "port": null},
+     "17": {"mode": null, "port": null},
+     "18": {"mode": null, "port": null},
+     // VBUS
+     "19": {"mode": null, "port": null},
+     // VBAT
+     "20": {"mode": null, "port": null},
+     // N/C
+     "7": {"mode": null, "port": null},
+
+     // Special functions - DO NOT CHANGE
+     // I2C SDA SCL
+     "3": {"mode": null, "port": null},
+     "5": {"mode": null, "port": null},
+
+     // -------------------------------------------
+     // User configurable, change mode as required
+     // mode = ADC, DAC, GPO, GPI
+     "2":  {"mode": "DAC",    "port": "8"},
+     "4":  {"mode": "DAC",    "port": "7"},
+     "6":  {"mode": "DAC",    "port": "9"},
+     "8":  {"mode": "DAC",    "port": "5"},
+     "9":  {"mode": "DAC",    "port": "6"},
+     "10": {"mode": "GPO",    "port": "4"},
+     "13": {"mode": "GPI",    "port": "0"},
+     "14": {"mode": "ADC",    "port": "3"},
+     "15": {"mode": "ADC",    "port": "1"},
+     "16": {"mode": "ADC",    "port": "2"},
+
+     // TODO: GPO output voltage, for all GPOs
+     // TODO: GPI threshold voltage, for all GPIs
+     "gpo_mv": 3300,
+     "gpi_mv": 1000
+     // -------------------------------------------
+  },
+
+  // HDR #3
+  "3": {
+     // HDR Pin // : { "mode": <>, "port": <> }
+     // Not configurable pins - DO NOT CHANGE
+     // GNDs
+     "11": {"mode": null, "port": null},
+     "12": {"mode": null, "port": null},
+     "17": {"mode": null, "port": null},
+     "18": {"mode": null, "port": null},
+     // VBUS
+     "16": {"mode": null, "port": null},
+
+     // Special functions - DO NOT CHANGE
+     // JTAG VCC, SDIO CLK RESET
+     "1": {"mode": null, "port": null},
+     "3": {"mode": null, "port": null},
+     "5": {"mode": null, "port": null},
+     "7": {"mode": null, "port": null},
+     // USB D+/-
+     "19": {"mode": null, "port": null},
+     "20": {"mode": null, "port": null},
+
+     // -------------------------------------------
+     // User configurable, change mode as required
+     // mode = ADC, DAC, GPO, GPI
+     "2":  {"mode": "DAC",    "port": "8"},
+     "4":  {"mode": "DAC",    "port": "7"},
+     "6":  {"mode": "DAC",    "port": "1"},
+     "8":  {"mode": "ADC",    "port": "2"},
+     "9":  {"mode": "DAC",    "port": "6"},
+     "10": {"mode": "ADC",    "port": "3"},
+     "13": {"mode": "GPI",    "port": "0"},
+     "14": {"mode": "GPO",    "port": "4"},
+     "15": {"mode": "ADC",    "port": "5"},
+
+     // TODO: GPO output voltage, for all GPOs
+     // TODO: GPI threshold voltage, for all GPIs
+     "gpo_mv": 3300,
+     "gpi_mv": 1000
+     // -------------------------------------------
+  },
+
+  // HDR #4
+  "4": {
+     // HDR Pin // : { "mode": <>, "port": <> }
+     // Not configurable pins - DO NOT CHANGE
+     // GNDs
+     "11": {"mode": null, "port": null},
+     "12": {"mode": null, "port": null},
+     "17": {"mode": null, "port": null},
+     "18": {"mode": null, "port": null},
+     // N/C
+     "1": {"mode": null, "port": null},
+     "3": {"mode": null, "port": null},
+     "5": {"mode": null, "port": null},
+     "7": {"mode": null, "port": null},
+
+     // -------------------------------------------
+     // User configurable, change mode as required
+     // mode = ADC, DAC, GPO, GPI
+     "9":  {"mode": "DAC",    "port": "6"},
+     "13": {"mode": "GPI",    "port": "0"},
+     "14": {"mode": "GPO",    "port": "3"},
+     "15": {"mode": "ADC",    "port": "1"},
+     "16": {"mode": "ADC",    "port": "2"},
+
+     // BNC
+     "19": {"mode": null, "port": null},
+
+     // Expansion Mezenene Header (J15)
+     "2":  {"mode": null, "port": "8"},
+     "4":  {"mode": null, "port": "7"},
+     "6":  {"mode": null, "port": "5"},
+     "8":  {"mode": null, "port": "4"},
+
+     // TODO: GPO output voltage, for all GPOs
+     // TODO: GPI threshold voltage, for all GPIs
+     "gpo_mv": 3300,
+     "gpi_mv": 1000
+     // -------------------------------------------
+  },
+  "calibrate_battery_emulator": true
+}

@@ -19,6 +19,11 @@
 
 ## teensy4_v0
 * Various Teensy4 scripts and examples.
+* Teensy4 information can be found here: https://www.pjrc.com/store/teensy41.html
+
+## BOND
+* Example Bed of Nails Design, a Sistemi open source Board Level Tester (BLT)
+* BOND is based on the Teensy4
 
 ## brother_v0
 * Example

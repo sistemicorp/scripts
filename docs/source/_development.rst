@@ -174,6 +174,19 @@ Change README.md
 Change this file to suit your needs.  For example, document your script/program naming strategy.
 
 
+Installing Python
+=================
+
+Prism uses Python version 3.10 (see `Here <https://www.python.org/downloads/release/python-31017/>`_) inside its Docker container, and therefor that specific version should be used
+for development.  Research how to install Python on Ubuntu alongside the main global Python. Install dependancies
+from `requirements.txt`
+
+::
+
+        sudo apt install python3.10-dev
+        python -m pip install -r requirements.txt
+
+
 Command Line Development
 ************************
 
@@ -184,23 +197,29 @@ The command line help,
 
 ::
 
-    computer:~/git/scripts$ python3 prism_dev.py --help
-    usage: prism_dev.py [-h] --script SCRIPT
+        (.venv) martin@computer:~/git/scripts$ python prism_dev.py --help
+        usage: prism_dev.py [-h] --script SCRIPT [--result-scan]
 
-    prism_dev
+        prism_dev
 
-    optional arguments:
-      -h, --help       show this help message and exit
-      --script SCRIPT  Path to script file to run
+        options:
+          -h, --help       show this help message and exit
+          --script SCRIPT  Path to script file to run
+          --result-scan    Scan result file for correctness
 
-    Usage examples:
-        python3 prism_dev.py --script ./public/prism/scripts/example/prod_v0/prod_0.scr
+        Usage examples:
+            python prism_dev.py --script ./public/prism/scripts/example/prod_v0/prod_0.scr
+            python prism_dev.py --script ./public/prism/scripts/example/pybrd_v0/pybrd_0.scr
+
+        Sistemi Corporation, copyright, all rights reserved, 2019-2025
+
 
 Notes about the command line development environment,
 
 * parallel, multi-threaded, multiple test jigs are not supported
 
   * script is run as a single thread - cannot test parallelism
+  * however your code will run multiple jigs in parallel within the Prism GUI
 
 * Results are NOT sent to the Lente Server, however a local Result file with the results
   will be created for inspection purposes.

@@ -1,0 +1,35 @@
+// Example: BOND example script to program attached BOND (Teensy4s)
+// !! NOTE: Only works if there is a Teensy 4 board on USB !!
+// !!       See public/prism/drivers/teensy4/README.txt for provision instructions
+// !!
+// 1) Only ONE Teensy should be plugged in at a time for this script.
+//    TODO: support multiple devices plugged in.
+// 2) The Teensy is a "fresh" (never programmed before) unit.  Or has been Memory Wiped.
+// 3) As an alternative to this script, use
+//    martin@martin-virtual-machine:~/git/scripts/public/prism/scripts/example/teensy4_v0$ ../../../drivers/teensy4/server/teensy_loader_cli --mcu=TEENSY41 -w -v assets/teensy4_server.ino.hex
+{
+  "info": {
+    "product": "BOND",
+    "bom": "a4401",
+    "lot": "NA",
+    "location": "here"
+  },
+  "config": {
+    "fail_fast": true,
+    "drivers": [["public.prism.drivers.A4401_BOND.hwdrv_A4401_BOND",
+                 "public/prism/scripts/example/BOND_v0/assets/pogo_hdr_definition._json"]]
+  },
+  "tests": [
+    {
+      "module": "public.prism.scripts.example.BOND_v0.bond_P00xx",
+      "options": {
+      },
+      "items": [
+        {"id": "P000_SETUP",          "enable": true },
+        {"id": "P100_Check",          "enable": true },
+        {"id": "P200_Program",        "enable": true, "file": "teensy4_server.ino.hex" },
+        {"id": "P300_Verify",         "enable": true, "delay": 10 },
+      ]
+    }
+  ]
+}

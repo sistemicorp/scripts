@@ -20,7 +20,7 @@ class tst01xx(TestItem):
 
     def __init__(self, controller, chan, shared_state):
         super().__init__(controller, chan, shared_state)
-        self.logger = logging.getLogger("{}.{}".format(__name__, self.chan))
+        self.logger = logging.getLogger("tst01xx.{}".format(self.chan))
 
     def TST1xxSETUP(self):
         """  Setup up for testing

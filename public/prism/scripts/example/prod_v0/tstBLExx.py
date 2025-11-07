@@ -23,7 +23,7 @@ class tstBLExx(TestItem):
 
     def __init__(self, controller, chan, shared_state):
         super().__init__(controller, chan, shared_state)
-        self.logger = logging.getLogger("{}.{}".format(__name__, self.chan))
+        self.logger = logging.getLogger("tstBLExx.{}".format(self.chan))
 
         self.hw_fake = None
         self.hw_ble = None

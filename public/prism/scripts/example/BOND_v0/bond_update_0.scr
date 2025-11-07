@@ -1,0 +1,37 @@
+// !! CAN ONLY RUN THIS ONCE IN PRISM !!
+//
+// Example: Teensy 4 board example script to program attached Teensy4s
+// !! NOTE: Only works if there is a Teensy 4 board on USB !!
+// !!       See public/prism/drivers/teensy4/README.txt for provision instructions
+// !!
+// 1) The Teensy has been previously programmed with teensy4_server.ino.hex
+// 2) Can only run once in prism because after firmware update, USB re-enumeration
+//    may cause the Teensy to change ports, and mess up the hwdrv init.
+// 3) Arduino IDE must not be running else it will jump in and mess things up when Teensy reboots.
+//
+// !! CAN ONLY RUN THIS ONCE IN PRISM !!
+{
+  "info": {
+    "product": "BOND",
+    "bom": "a4401",
+    "lot": "NA",
+    "location": "here"
+  },
+  "config": {
+    "fail_fast": true,
+    "drivers": [["public.prism.drivers.A4401_BOND.hwdrv_A4401_BOND",
+                 "public/prism/scripts/example/BOND_v0/assets/pogo_hdr_definition._json"]]
+  },
+  "tests": [
+    {
+      "module": "public.prism.scripts.example.BOND_v0.bond_P00xx",
+      "options": {
+      },
+      "items": [
+        {"id": "P500_SETUP",          "enable": true, "timeout": 30 },
+        {"id": "P600_Update",         "enable": true, "file": "teensy4_server.ino.hex" },
+        {"id": "P700_Verify",         "enable": true, "delay": 24, "timeout": 30 },
+      ]
+    }
+  ]
+}
