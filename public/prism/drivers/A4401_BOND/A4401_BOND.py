@@ -517,6 +517,7 @@ class A4401_BOND:
 
     def vdut_set(self, mv: int):
         """ Set VDUT Voltage in mV
+        - BOND has a 10ms internal settling time
 
         :return: {'success': True, 'method': 'vdut_set', 'result': {'v': 0, 'ima': 0.050000001}}
         """
@@ -537,6 +538,7 @@ class A4401_BOND:
 
     def vbat_set(self, mv: int):
         """ Set VBAT (Battery emulator)
+        - BOND has a 50ms internal settling time
 
         :return: {'success': True, 'method': 'vbat_set',
                   'result': {'mV': <int>, 'measured_mv': <int> }
@@ -559,6 +561,7 @@ class A4401_BOND:
 
     def vdut_con(self, state: bool):
         """ VDUT SMPS Connect to DUT
+        - there is no delay on BOND for voltages to settle
 
         :return: {'success': True, 'method': 'vdut_con',
                   'result': {'assert': False, 'level': False}
@@ -640,6 +643,7 @@ class A4401_BOND:
 
     def iox_vbat_con(self, state: bool):
         """ Connect VBAT to DUT
+        - there is no delay on BOND for voltages to settle
 
         :return: {'success': True, 'method': 'iox_vbat_con',
                   'result': {'assert': False, 'level': False}
