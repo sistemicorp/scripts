@@ -48,10 +48,13 @@ void spinner_update(void) {
 
 int oled_print(uint32_t line, const char *buf, bool invert) {
     snprintf(_buf, LINE_MAX_LENGTH, "%-20s", buf);
-    if (line == OLED_LINE_RPC) {
-       er_oled_string(0, line * LINE_VERTICAL_SIZE, "                     ", 12, 1, oled_buf);  // clr line
-       er_oled_display(oled_buf);
-    }
+
+    // causes tests to take too long to run because Prism calls into show_pass_fail() a lot
+    //if (line == OLED_LINE_RPC) {
+    //   er_oled_string(0, line * LINE_VERTICAL_SIZE, "                     ", 12, 1, oled_buf);  // clr line
+    //   er_oled_display(oled_buf);
+    //}
+
     er_oled_string(0, line * LINE_VERTICAL_SIZE, _buf, 12, (invert ? 0 : 1), oled_buf);
     er_oled_display(oled_buf);
 

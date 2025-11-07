@@ -277,17 +277,6 @@ int _reset(void) {
   digitalWrite(VDUT_CONNECT_PIN, LOW);
   iox_vbat_con(false);
 
-  // flash all LEDs
-  iox_led_yellow(true);
-  iox_led_red(true);
-  iox_led_green(true);
-  iox_led_blue(true);
-  delay(200);
-  iox_led_yellow(false);
-  iox_led_red(false);
-  iox_led_green(false);
-  iox_led_blue(false);
-
   return 0;
 }
 
@@ -558,6 +547,18 @@ void setup(void) {
   }
   snprintf(buf, LINE_MAX_LENGTH, "max_iox");
   oled_print(OLED_LINE_DEBUG, buf, false);
+
+  // flash all LEDs
+  iox_led_yellow(true);
+  iox_led_red(true);
+  iox_led_green(true);
+  iox_led_blue(true);
+  delay(200);
+  iox_led_yellow(false);
+  iox_led_red(false);
+  iox_led_green(false);
+  iox_led_blue(false);
+
   // turn on YELLOW while setup is running
   iox_led_yellow(true);
 

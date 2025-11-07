@@ -25,6 +25,10 @@ class bond_P00xx(TestItem):
 
     BOND uses the Teensy4 example as a starting point.
 
+    Tests:
+        P000-P999: For Teensy management (updating)
+        P1000-P9999: For BOND test functions
+
     Helpful:
     https://forum.pjrc.com/threads/66942-Program-Teensy-4-from-command-line-without-pushing-the-button?highlight=bootloader
     https://forum.pjrc.com/threads/71624-teensy_loader_cli-with-multiple-Teensys-connected?p=316838#post316838
@@ -56,6 +60,21 @@ class bond_P00xx(TestItem):
         msg = "teensy4: {} {}, chan {}".format(driver, id, self.chan)
         self.logger.info(msg)
         self.log_bullet(f"teensy4 {driver['type']} ch {self.chan}")
+
+        self.item_end()  # always last line of test
+
+    def P010_led(self):
+        """ Turn on/off LED
+
+            {"id": "P010_led",             "enable": true, "set": true },
+        """
+        ctx = self.item_start()  # always first line of test
+
+        response = self.teensy.led(ctx.item.set)
+        if not response['success']:
+            self.logger.error(response)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
 
         self.item_end()  # always last line of test
 
@@ -469,6 +488,14 @@ class bond_P00xx(TestItem):
 
         self.item_end()  # always last line of test
 
+    def P900_TEARDOWN(self):
+        """ teardown for programming BOND
+
+        """
+        ctx = self.item_start()  # always first line of test
+
+        self.item_end()  # always last line of test
+
     def P1000_SETUP(self):
         """ Setup for testing DUT
 
@@ -574,7 +601,6 @@ class bond_P00xx(TestItem):
         """ Check VBAT at voltage, and self test load
 
         {"id": "P1120_vbat_check",      "enable": true, "voltage_mv": 3000 },
-
         """
         ctx = self.item_start()  # always first line of test
         SELFTEST_LOAD_OHMS = 200.0
@@ -607,7 +633,7 @@ class bond_P00xx(TestItem):
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
-        time.sleep(0.1)
+        time.sleep(0.01)
 
         response = self.teensy.vbat_read()
         if not response['success']:
@@ -650,6 +676,25 @@ class bond_P00xx(TestItem):
 
         self.item_end(measurement_results)  # always last line of test
 
+    def P1130_version(self):
+        """ Get Bond firmware version
+
+            {"id": "P1130_version",        "enable": true },
+        """
+        ctx = self.item_start()  # always first line of test
+
+        response = self.teensy.version()
+        if not response['success']:
+            self.logger.error(response)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        success, _result, _bullet  = ctx.record.measurement(None,
+                                                            response['result']['version'],
+                                                            unit=ResultAPI.UNIT_STRING)
+        self.log_bullet(_bullet)
+        self.item_end(_result)  # always last line of test
+
     def P1200_DAC(self):
         """ Set BOND DAC pin
 
@@ -672,7 +717,7 @@ class bond_P00xx(TestItem):
         self.item_end()  # always last line of test
 
     def P1300_ADC(self):
-        """ read BOND ADC pint
+        """ read BOND ADC pin
 
         {"id": "P1300_ADC",            "enable": true, "hdr": 2, "pin": 14,
                                                        "min": 3200, "max": 3400 },
@@ -696,3 +741,24 @@ class bond_P00xx(TestItem):
 
         self.item_end()  # always last line of test
 
+
+    def P9000_TEARDOWN(self):
+        """ teardown BOND
+
+        """
+        ctx = self.item_start()  # always first line of test
+
+        # disconnect all power to the DUT
+        response = self.teensy.iox_vbat_con(False)
+        if not response['success']:
+            self.logger.error(response)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        response = self.teensy.vdut_con(False)
+        if not response['success']:
+            self.logger.error(response)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        self.item_end()  # always last line of test

@@ -1,5 +1,6 @@
 // BOND Example self test Script
 // - NO POGO board or DUT should be connected to BOND
+// - uses self test signals as example
 {
   "info": {
     "product": "BOND",
@@ -15,10 +16,12 @@
   "tests": [
     {
       "module": "public.prism.scripts.example.BOND_v0.bond_P00xx",
-      "options": {
-      },
+      "options": {},
       "items": [
         {"id": "P1000_SETUP",          "enable": true },
+        {"id": "P010_led",             "enable": true, "set": true },
+        {"id": "P1130_version",        "enable": true },
+        {"id": "P010_led",             "enable": true, "set": false },
         {"id": "P1100_ADC_check",      "enable": true, "hdr": 1 },
         {"id": "P1100_ADC_check",      "enable": true, "hdr": 2 },
         {"id": "P1100_ADC_check",      "enable": true, "hdr": 3 },
@@ -29,6 +32,7 @@
         {"id": "P1110_voltage_check",  "enable": true, "voltage": "V3V3D" },
         {"id": "P1120_vbat_check",     "enable": true, "voltage_mv": 3000 },
         {"id": "P1120_vbat_check",     "enable": true, "voltage_mv": 4000 },
+        {"id": "P9000_TEARDOWN",       "enable": true }
       ]
     }
   ]

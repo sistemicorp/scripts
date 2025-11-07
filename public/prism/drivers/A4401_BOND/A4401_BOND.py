@@ -365,7 +365,7 @@ class A4401_BOND:
 
     def version(self):
         """ Version
-        :return: success = True/False, method = version, version = version#
+        :return: {'success': True, 'method': 'version', 'result': {'version': '0.1.0'}}
         """
         with self._lock:
             self.logger.info(f"version")
@@ -528,7 +528,7 @@ class A4401_BOND:
     def vbat_read(self):
         """ Read INA220 for VBAT
 
-        :return: {'success': True, 'method': 'vbat_read', 'result': {'v': 0, 'ima': 0.050000001}}
+        :return: {'success': True, 'method': 'vbat_read', 'result': {'v': 3.99875, 'ima': 20.50781}}
         """
         with self._lock:
             self.logger.info(f"vbat_read")
