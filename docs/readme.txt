@@ -40,3 +40,4 @@ Good links for info:
 https://www.docslikecode.com/articles/github-pages-python-sphinx/
 https://github.com/sphinx-doc/sphinx/issues/3382
 
+ver
