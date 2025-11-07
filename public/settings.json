@@ -42,6 +42,42 @@
   // network interface to use, used by VPNs
   //"net_iface": "tun0",
 
+  // Send log files on startup for diagnostic purposes
+  "send_logs_on_startup": true,
+
+  // Health checks
+  // Levels: Warn, Error, Critical (case insensitive)
+  // "Warn" and "Error" only appear in the notification log
+  // "Critical" additionally prevents new test sessions from starting
+  // First rule that matches for each health check is reported
+  "health_checks": {
+    "disk_space": {
+      "enable": true,
+      "rules": [
+        // free format: <value> [MB|GB|%]
+        {"free": "10%",    "level": "Critical"},
+        {"free": "100 MB", "level": "Error"},
+        {"free": "200 MB", "level": "Warn"}
+      ]
+    }
+  },
+
+  // OPCUA Configuration
+  "opcua_server": {
+    "enable": false,
+    "security_policies":[
+      "NoSecurity",
+      "Basic256Sha256_Sign",
+      "Basic256Sha256_SignAndEncrypt"
+    ],
+    "certificates": {
+      "enable": false,
+      // "path": "public",
+      // "certificate_file": "cert.pem",
+      // "private_key_file": "key.pem",
+    }
+  },
+
   // ------------------------------------------------------------------
   // Below are only used by Lente and can be removed for Prism stations
 
@@ -64,24 +100,8 @@
       // !! This user/pw must match your postgres deployment too,
       "user": "postgres",
       "pw": "qwerty",
-
       // ip address of the postgres database, use `127.0.0.1` if locahost
       "ip": "127.0.0.1"
-    }
-  },
-
-  "opcua_server": {
-    "enable": false,
-    "security_policies":[
-      "NoSecurity",
-      "Basic256Sha256_Sign",
-      "Basic256Sha256_SignAndEncrypt"
-    ],
-    "certificates": {
-      "enable": false,
-      // "path": "public",
-      // "certificate_file": "cert.pem",
-      // "private_key_file": "key.pem",
     }
   }
 }

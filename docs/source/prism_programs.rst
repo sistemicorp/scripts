@@ -188,7 +188,11 @@ example program is distributed with the system, and may be more up to date than 
 
     #! /usr/bin/env python
     # -*- coding: utf-8 -*-
+    """
+    Sistemi Corporation, copyright, all rights reserved, 2019-2025
+    Martin Guthrie
 
+    """
     import logging
     from core.test_item import TestItem
     from public.prism.api import ResultAPI
@@ -220,8 +224,8 @@ example program is distributed with the system, and may be more up to date than 
             #                                          {"fid": "TST000-1", "msg": "Component banana R1"}] },
             #
             # ctx = self.item_start()  # always first line of test
-            #  - use ctx (context) to extract information to drive the test program (see above)
-            #  - ctx (context) is a namespace of content from the test script
+            #  - ctx (context) is a namespace of content from the test script, returned as a python dict,
+            #  - ctx.config = script config section
             #  - ctx.item = {"id": "TST000", "enable": True,  "args": {"min": 0, "max": 10}}
             #  - ctx.item.args = {"min": 0, "max": 10}
             #  - ctx.item.args.max = 10
@@ -250,6 +254,9 @@ example program is distributed with the system, and may be more up to date than 
             # self.timeout
             #   - boolean indicating if a timeout has occurred
             #   - use in while/for loops to check if a timeout has occurred
+            #     - all loops must check self.timeout and exit loop if asserted
+            #   - use self.timeout_start() to restart the running timer
+            #     - provide optional new value (float seconds)
             #
             # self.item_end([result[s]]) # always last line of test
             #  - result is one of ResultAPI.RECORD_* constants
@@ -643,6 +650,7 @@ example program is distributed with the system, and may be more up to date than 
                 return
 
             self.item_end()  # always last line of test
+
 
 
 And here is the script that drives the program,

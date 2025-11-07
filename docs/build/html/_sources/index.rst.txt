@@ -1,10 +1,18 @@
 Welcome to Sistemi's Lente/Prism documentation!
 ===============================================
 
-The Sistemi platform is a manufacturing test system that provides a framework for creating
-test programs to test your product, and a backend dashboard to monitor production.  The
-platform is intended to allow you to focus on testing your product, rather than the
-infrastructure to manage the data, scripts, users, roles, reporting and other mundane stuff.
+The Prism/Lente platform is a manufacturing test system that provides a framework for creating
+test programs to test your product.
+
+The platform is intended to allow you to focus on testing your product, rather than the
+infrastructure to manage the data, scripts, users, roles, version control, reporting and other mundane stuff.
+
+Prism is the production floor test runner.
+
+Lente is the backend manager and dB.
+
+EMAIL: info@sistemi.ca for more information.
+
 
 .. image:: static/lente_splash.png
 
@@ -22,3 +30,4 @@ infrastructure to manage the data, scripts, users, roles, reporting and other mu
    _security
    _deployment
    _mes_integration
+   _version_history
