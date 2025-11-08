@@ -11,7 +11,7 @@ import pyudev
 from core.sys_log import pub_notice
 
 from public.prism.drivers.stlinkv3mods.STLINK import STLINKprog, DRIVER_TYPE
-# switch path when testing
+# switch path when debugging, see main code at bottom
 #from STLINK import STLINKprog, DRIVER_TYPE
 
 # Information:
@@ -97,6 +97,14 @@ class HWDriver(object):
                     _stlink['unique_id'] = sn
                     _stlink['usb_path'] = device.device_path
                     _stlink['version'] = self.VERSION
+
+                    # test the driver
+                    version = _stlink['hwdrv'].version()
+                    self.logger.info(f"version: {version}")
+                    if version.returncode != 0:
+                        self.logger.error(f"version rc: {version.returncode}")
+                        continue
+
                     self.stlinks.append(_stlink)
 
         # sort based on USB path, slot 0, 1, 2, etc
