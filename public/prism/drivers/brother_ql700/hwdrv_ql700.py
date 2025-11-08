@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2020-2024
+Sistemi Corporation, copyright, all rights reserved, 2020-2025
 Vivian Guthrie, Martin Guthrie
 
 USB Permissions:
@@ -19,15 +19,12 @@ import qrcode
 import os
 import subprocess
 import base64
-import usb
+import pyudev
 from core.const import PUB
 from core.sys_log import pub_notice
 from threading import Lock
 
 VERSION = "0.0.1"
-
-NUM_CHANNELS = 1  # set this to simulate multiple channels, range 1-4
-
 DRIVER_TYPE = "Brother_QL-700"
 
 
@@ -160,6 +157,7 @@ class HWDriver(object):
     def __init__(self):
         self.logger = logging.getLogger("{}".format(self.SFN))
         self.logger.info("Start")
+        self._num_chan = 0
 
     def discover_channels(self):
         """ Determine the number of channels, and populate hw drivers into shared state
@@ -197,18 +195,32 @@ class HWDriver(object):
                   list of drivers
         """
         drivers = []
-
         id = 0
-        dev = usb.core.find(find_all=True)
-        for d in dev:
-            #print(d) #to see all the attributes
-            try:
-                manu = usb.util.get_string(d, d.iManufacturer)
-                prod = usb.util.get_string(d, d.iProduct)
-                if manu == "Brother" and prod in ["QL-700", ]:
-                    self.logger.info("Found {} {}".format(manu, prod))
+        context = pyudev.Context()
 
-                    p = '/dev/usb/lp0'  # FIXME: when multiple printers exist, need to find file association
+        for device in context.list_devices():
+            if device.attributes.get("manufacturer", False) and "Brother" in device.attributes.get("manufacturer").decode('utf-8'):
+                if "QL-700" in str(device.attributes.get("product")):
+
+                    if False: # run snippet to show all kinds of useful stuff
+                        for a in device.attributes.available_attributes:
+                            self.logger.info(f"{a} - {str(device.attributes.get(a))}")
+                        friendly_name = None
+                        if 'ID_MODEL' in device:
+                            friendly_name = device['ID_MODEL']
+                        elif 'ID_MODEL_ENC' in device:
+                            friendly_name = device['ID_MODEL_ENC']
+                        elif 'ID_VENDOR' in device:
+                            friendly_name = device['ID_VENDOR']
+                        elif 'ID_USB_PRODUCT' in device:
+                            friendly_name = device['ID_USB_PRODUCT']
+                        elif 'ID_FS_LABEL' in device:  # For file systems/storage devices
+                            friendly_name = device['ID_FS_LABEL']
+                        self.logger.info(f"friendly_name: {friendly_name}")
+
+                    # TODO: find the path programmatically
+                    # TODO: support multiple printers
+                    p = '/dev/usb/lp0'
 
                     drivers.append({"id": id,
                                     "version": VERSION,
@@ -219,15 +231,13 @@ class HWDriver(object):
                                     "close": None})
                     id += 1
 
-            except Exception as e:
-                self.logger.warning(e)
-
         if not drivers:
             self.logger.error("printer not found")
             pub_notice("HWDriver:{}: Error none found".format(self.SFN), sender="discover_channels", type=PUB.NOTICES_ERROR)
             return -1, DRIVER_TYPE, []
 
         # do not allow the test script validation step to succeed if can't print a test label
+        # TODO: make printing a test label a parameter from the script config
         for d in drivers:
             id, path = d["hwdrv"].get_id_path()
             success = d["hwdrv"].print_ruid_barcode("id{}-{}".format(id, path))
@@ -236,8 +246,33 @@ class HWDriver(object):
                 pub_notice("HWDriver:{}: failed to print".format(self.SFN), sender="discover_channels", type=PUB.NOTICES_ERROR)
                 return -1, DRIVER_TYPE, []
 
-            pub_notice("HWDriver:{}: found {} {}".format(self.SFN, id, path), sender="discover_channels", type=PUB.NOTICES_NORMAL)
+            #pub_notice("HWDriver:{}: found {} {}".format(self.SFN, id, path), sender="discover_channels", type=PUB.NOTICES_NORMAL)
+
+        # Setting number of channels to zero means this device is shared across all test fixtures
+        # TODO: change when support for printer per test jig is required/used
+        self._num_chan = 0
 
         # by returning 0, it means this return values DOES not represent number of channels
         return 0, DRIVER_TYPE, drivers
 
+    def num_channels(self):
+        return self._num_chan
+
+    def close(self):
+        self.logger.info("closed")
+
+# ===============================================================================================
+# Debugging code
+# - Test your hardware discover here by running this file from PyCharm (be sure to set the working
+#   directory as ~/git/scripts, else imports will fail)
+# - the purpose is to valid discover_channels() is working
+# - you will have to comment out pub_notice() and the core import whilst using this
+#
+if __name__ == '__main__':
+    logging.basicConfig()
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+
+    d = HWDriver()
+    d.discover_channels()
+    logger.info("Number channels: {}".format(d.num_channels()))
