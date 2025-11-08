@@ -1,0 +1,23 @@
+// Check to see if STLINK-V3MODS is working
+{
+  "info": {
+    "product": "stlink_check",
+    "bom": "None",
+    "lot": "None",
+    "location": "None"
+  },
+  "config": {
+    "fail_fast": true,
+    "drivers": ["public.prism.drivers.stlinkv3mods.hwdrv_stlinkv3mods"]
+  },
+  "tests": [
+    {
+      "module": "public.prism.scripts.example.stlinkv3mods.tst00xx",
+      "options": {},
+      "items": [
+        {"id": "TST0xxSETUP",           "enable": true },
+        {"id": "TST0xxTEARDOWN",        "enable": true }
+      ]
+    }
+  ],
+}
