@@ -21,7 +21,6 @@ except:
     # run from prism
     from public.prism.drivers.common.stublogger import StubLogger
 
-
 DRIVER_TYPE = "A4401_BOND"
 DRIVER_TYPE_PROG = "A4401_BOND_PROG"
 
@@ -66,8 +65,10 @@ class A4401_BOND:
     def __init__(self, port, loggerIn=None):
         self.lock = threading.Lock()
 
-        if loggerIn: self.logger = loggerIn
-        else: self.logger = StubLogger()
+        if loggerIn:
+            self.logger = loggerIn
+        else:
+            self.logger = StubLogger()
 
         self._lock = threading.Lock()
         self.port = port
@@ -106,7 +107,9 @@ class A4401_BOND:
             return False
 
         if self.my_version != version_response["result"]["version"]:
-            self.logger.error("version does not match, Python: {} Arduino: {}".format(self.my_version, version_response["result"]["version"]))
+            self.logger.error("version does not match, Python: {} Arduino: {}".format(self.my_version,
+                                                                                      version_response["result"][
+                                                                                          "version"]))
             return False
 
         status_response = self.status()
@@ -164,7 +167,7 @@ class A4401_BOND:
 
     def close(self):
         """  Close connection
-          
+
         :return:
         """
         if self.rpc is None:
@@ -228,14 +231,20 @@ class A4401_BOND:
                     if "DAC" == m:
                         ports_dac.append(p)
 
-                    if "ADC" == m:
+                    elif "ADC" == m:
                         ports_adc.append(p)
 
-                    if "GPO" == m:
+                    elif "GPO" == m:
                         ports_gpo.append(p)
 
-                    if "GPI" == m:
+                    elif "GPI" == m:
                         ports_gpi.append(p)
+
+                    elif m in [None, "null", "None", "none"]:
+                        pass
+
+                    else:
+                        self.logger.error(f"invalid mode {m}")
 
             ports_dac.sort()
             ports_adc.sort()
@@ -257,7 +266,8 @@ class A4401_BOND:
                 self.logger.error(f"failed to init: {answer}")
                 return False
 
-        if "calibrate_battery_emulator" in self.a44BOND_max_config and self.a44BOND_max_config['calibrate_battery_emulator']:
+        if "calibrate_battery_emulator" in self.a44BOND_max_config and self.a44BOND_max_config[
+            'calibrate_battery_emulator']:
             self.logger.info("Calibrating Battery Emulator...")
             answer = self.rpc.call_method('bond_batt_emu_cal')
             answer = self._rpc_validate(answer)
@@ -694,7 +704,7 @@ class A4401_BOND:
         if config['mode'] != mode:
             self.logger.error(f'Invalid mode hdr {hdr} pin {pin} mode {config["mode"]}')
             return False, None, {'success': False, 'method': 'bond_max_hdr_adc',
-                                'result': {'error': f'Invalid mode hdr {hdr} pin {pin} mode {config["mode"]}'}}
+                                 'result': {'error': f'Invalid mode hdr {hdr} pin {pin} mode {config["mode"]}'}}
 
         port = config["port"]
         return True, port, None
@@ -780,7 +790,7 @@ class A4401_BOND:
         if not answer['success']:
             self.logger.error("Failed to detect Jig Close GPIO")
             return None
-        #self.logger.info(answer)
+        # self.logger.info(answer)
 
         # Example uses an Active LOW for indicating jig is closed
         if answer['result']['state'] == 1:
@@ -828,4 +838,3 @@ class A4401_BOND:
     # - APIs to features that are off the Teensy module
     # - for example, I2C component APIs, etc
     #
-

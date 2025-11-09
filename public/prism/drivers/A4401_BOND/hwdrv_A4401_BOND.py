@@ -9,7 +9,6 @@ import os
 import logging
 import pyudev
 from core.sys_log import pub_notice
-from public.prism.drivers.common.list_serial import serial_ports
 
 from public.prism.drivers.A4401_BOND.A4401_BOND import A4401_BOND, DRIVER_TYPE
 
@@ -69,9 +68,25 @@ class HWDriver(object):
         """
         sender = "{}.{}".format(self.SFN, __class__.__name__)  # for debug purposes
 
-        port_candidates = serial_ports()
-        self.logger.info("Serial Ports to look for Teensy {}".format(port_candidates))
+        port_candidates = []
+        context = pyudev.Context()
+        # Iterate through all available tty devices
+        for device in context.list_devices(subsystem='tty'):
+            # We are only interested in ttyACM devices
+            if 'ttyACM' in device.device_node:
+                # Walk up the device tree to find the parent USB device.
+                # The 'usb_device' is the main device, and 'usb' is the subsystem.
+                usb_device = device.find_parent('usb', 'usb_device')
+                if usb_device:
+                    manufacturer = usb_device.attributes.get('manufacturer')
+                    # Check if the manufacturer is "Teensyduino"
+                    if manufacturer and manufacturer.decode('utf-8') == 'Teensyduino':
+                        # If it is, we've found our device. Return its node.
+                        self.logger.info(f"device node: {device.device_node}")
+                        port = device.device_node
+                        port_candidates.append(port)
 
+        self.logger.info("Serial Ports to look for Teensy {}".format(port_candidates))
         for port in port_candidates:
             if "ttyACM" not in port:  # this does not work on Windows as only see "COM#"
                 self.logger.info("skipping port {}...".format(port))
@@ -113,7 +128,6 @@ class HWDriver(object):
             _teensy['jig_reset'] = _teensy['hwdrv'].jig_reset
 
             # add USB port location
-            context = pyudev.Context()
             for device in context.list_devices(subsystem='tty'):
                 _node = str(device.device_node)
                 if port in _node:
