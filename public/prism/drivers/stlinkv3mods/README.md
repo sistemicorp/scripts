@@ -8,23 +8,7 @@ https://www.st.com/en/development-tools/stm32cubeprog.html
 ## Installing ST-LINK/V3 drivers
 
 * Install STMCubeProgrammer from STM website
-* Copy over these files to the bin folder (`./public/prism/drivers/stlinkv3mods/bin`),
-
-
-    libcrypto.so.1.1
-    libhsmp11.so
-    libicudata.so.56
-    libicui18n.so.56
-    libicuuc.so.56
-    libQt6Core.so.6
-    libQt6Network.so.6
-    libQt6Qml.so.6
-    libQt6SerialPort.so.6
-    libQt6Xml.so.6
-    libSTLinkUSBDriver.so
-    STM32_Programmer_CLI
-
-
+* Copy over the files to this folder (`./public/prism/drivers/stlinkv3mods/STM32CubeProgrammer`),
 * In order to debug running the STM32CubeProgrammer_CLI you can do the following,
   * Edit the `hwdrv_stlinkv3mods.py` file by changing the import and commenting out the `pub_notice()` function
   * Run the script locally from the command line, 

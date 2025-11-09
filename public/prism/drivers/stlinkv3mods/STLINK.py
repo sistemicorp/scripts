@@ -17,6 +17,7 @@ class STLINKprog:
     """ STLink V3MODS Prog Tool driver
     - executes the subprocess commands
     """
+    STLINK_CLI_PATH = os.path.join('./public/prism/drivers/stlinkv3mods/STM32CubeProgrammer/bin', 'STM32_Programmer_CLI')
 
     def __init__(self, serial_num):
         """ init
@@ -58,12 +59,12 @@ class STLINKprog:
         """ get driver version
         - this is used to test if the driver is working
         """
-        cmd = [os.path.join('./public/prism/drivers/stlinkv3mods/bin', 'STM32_Programmer_CLI'), f"sn={self.serial_num}", "--version"]
+        cmd = [self.STLINK_CLI_PATH, f"sn={self.serial_num}", "--version"]
         msg = " ".join(cmd)
         self.logger.info(msg)
 
         my_env = os.environ.copy()
-        my_env["LD_LIBRARY_PATH"] = './public/prism/drivers/stlinkv3mods/bin'
+        #my_env["LD_LIBRARY_PATH"] = './public/prism/drivers/stlinkv3mods/STM32CubeProgrammer/bin'
         result = subprocess.run(cmd, capture_output=True, text=True, check=False, env=my_env)
         return result
 
@@ -71,14 +72,15 @@ class STLINKprog:
         """ execute cli command built from client
         - cmd should be list of strings
         """
-        _cmd = [os.path.join('./public/prism/drivers/stlinkv3mods/bin', 'STM32_Programmer_CLI'), f"sn={self.serial_num}"]
+        _cmd = [self.STLINK_CLI_PATH, f"sn={self.serial_num}"]
         _cmd.extend(cmd)
 
-        msg = " ".join(cmd)
+        msg = " ".join(_cmd)
         self.logger.info(msg)
 
         my_env = os.environ.copy()
-        my_env["LD_LIBRARY_PATH"] = './public/prism/drivers/stlinkv3mods/bin'
+        #my_env["LD_LIBRARY_PATH"] = './public/prism/drivers/stlinkv3mods/STM32CubeProgrammer/bin'
+        my_env["LD_LIBRARY_PATH"] = '.'
         result = subprocess.run(_cmd, capture_output=True, text=True, check=False, env=my_env)
         return result
 
