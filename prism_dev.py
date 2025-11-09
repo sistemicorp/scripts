@@ -147,8 +147,9 @@ class ChanCon(object):
 
         # process HW drivers
         num_channels = -1
+        play = None
         for hwdrv in self.script["config"]["drivers"]:
-            self.logger.info("HWDRV: {}".format(hwdrv))
+            self.logger.info("Installing HWDRV: {}".format(hwdrv))
 
             if isinstance(hwdrv, list):
                 _hwd, _args = hwdrv[0], hwdrv[1]
@@ -171,12 +172,8 @@ class ChanCon(object):
 
                 # call the player function if exist, ignore result, but see logs
                 if drivers:
-                    if drivers[0].get('play', None):
-                        play = drivers[0].get('play')()
-                        while not play:
-                            play = drivers[0].get("play")()
-                            self.logger.info("player: {}".format(play))
-                            if not play: time.sleep(1)
+                    if drivers[0].get('play', None) and play is None:
+                        play = drivers[0].get('play')
 
                     if show_pass_fail is None:
                         show_pass_fail = drivers[0].get("show_pass_fail", None)
@@ -201,6 +198,13 @@ class ChanCon(object):
         if self.num_channels < 1:
             self.logger.error("Invalid number of channels, must be >0")
             raise ValueError('Invalid number of channels')
+
+        if play is not None and callable(play):
+            _play = False
+            while not _play:
+                _play = play()
+                self.logger.info("player: {}".format(_play))
+                if not _play: time.sleep(1)
 
         for test in self.script["tests"]:
             fail_fast = self.script["config"].get("fail_fast", True)
