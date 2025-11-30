@@ -1,26 +1,24 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Scripts &#8212; Sistemi Lente/Prism Test System 0.8.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=2bf1fcf8" />
     
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
+    <script src="_static/documentation_options.js?v=486e5634"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Programs" href="prism_programs.html" />
     <link rel="prev" title="Software Architecture" href="prism_sw_arch.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -44,13 +42,13 @@
           <div class="body" role="main">
             
   <section id="scripts">
-<h1>Scripts<a class="headerlink" href="#scripts" title="Permalink to this headline">¶</a></h1>
+<h1>Scripts<a class="headerlink" href="#scripts" title="Link to this heading">¶</a></h1>
 <p><code class="docutils literal notranslate"><span class="pre">Scripts</span></code></p>
 <ul class="simple">
 <li><p>define the test sequence and operating modes of the test being run</p></li>
 <li><p>are in human readable JSON file format</p>
 <ul>
-<li><p>JSON is used so that non-programmers may be able to read/edit <a class="footnote-reference brackets" href="#id2" id="id1">1</a> the script without requiring a
+<li><p>JSON is used so that non-programmers may be able to read/edit <a class="footnote-reference brackets" href="#id2" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> the script without requiring a
 programming background.  This is useful in development or emergency situations.</p></li>
 </ul>
 </li>
@@ -71,7 +69,7 @@ the script to be documented</p></li>
 </pre></div>
 </div>
 <section id="subs">
-<h2>subs<a class="headerlink" href="#subs" title="Permalink to this headline">¶</a></h2>
+<h2>subs<a class="headerlink" href="#subs" title="Link to this heading">¶</a></h2>
 <p>This is a section of User configurable substitutions for variables in the script.  For example, if there was a test
 limit that could have two values, the values can be listed as a <cite>subs</cite> field and the user can select which one to use.</p>
 <p>In a production environment, operators are not typically allowed to arbitrarily change values of test
@@ -166,13 +164,13 @@ the <code class="docutils literal notranslate"><span class="pre">info</span></co
 </ul>
 </section>
 <section id="inner-subs">
-<h2>Inner Subs<a class="headerlink" href="#inner-subs" title="Permalink to this headline">¶</a></h2>
+<h2>Inner Subs<a class="headerlink" href="#inner-subs" title="Link to this heading">¶</a></h2>
 <p>Inner subs allow one User sub to be able to set multiple other subs.  An example is shown in the <code class="docutils literal notranslate"><span class="pre">subs</span></code> section
 above.  In the above example, when <cite>Location</cite> is selected by the user, <cite>TST000Min</cite> is assigned a value
 depending on the <cite>Location</cite> selected.</p>
 </section>
 <section id="info">
-<h2>info<a class="headerlink" href="#info" title="Permalink to this headline">¶</a></h2>
+<h2>info<a class="headerlink" href="#info" title="Link to this heading">¶</a></h2>
 <p>This section is a list of fields that correspond to fields that exist in the backend database and are typically
 used for database searches.</p>
 <p>You cannot add or delete fields from this section.  If there are missing fields, an error will occur downstream as the
@@ -199,7 +197,7 @@ in the Test Config view.</p>
 for specific sets of results.  This is important.</p>
 </section>
 <section id="config">
-<h2>config<a class="headerlink" href="#config" title="Permalink to this headline">¶</a></h2>
+<h2>config<a class="headerlink" href="#config" title="Link to this heading">¶</a></h2>
 <p>This section sets required variables that Prism uses to drive the test script.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span>
   <span class="s2">&quot;fail_fast&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
@@ -230,7 +228,7 @@ for example, in development of code</p></li>
 </ul>
 </section>
 <section id="tests">
-<h2>tests<a class="headerlink" href="#tests" title="Permalink to this headline">¶</a></h2>
+<h2>tests<a class="headerlink" href="#tests" title="Link to this heading">¶</a></h2>
 <p>This section has a list of test definitions</p>
 <ul class="simple">
 <li><p>each definition has fields <code class="docutils literal notranslate"><span class="pre">module</span></code>, <code class="docutils literal notranslate"><span class="pre">options</span></code>, <code class="docutils literal notranslate"><span class="pre">items</span></code></p></li>
@@ -301,11 +299,12 @@ one test definition will be shown later.</p>
 </ul>
 </li>
 </ul>
-<dl class="footnote brackets">
-<dt class="label" id="id2"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
-<dd><p><code class="docutils literal notranslate"><span class="pre">Scripts</span></code> CAN BE LOCKED DOWN so that a production user cannot change them.  Locking down the Prism is covered TBD.</p>
-</dd>
-</dl>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id2" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p><code class="docutils literal notranslate"><span class="pre">Scripts</span></code> CAN BE LOCKED DOWN so that a production user cannot change them.  Locking down the Prism is covered TBD.</p>
+</aside>
+</aside>
 </section>
 </section>
 
@@ -314,15 +313,19 @@ one test definition will be shown later.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="prism_sw_arch.html"
-                        title="previous chapter">Software Architecture</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="prism_programs.html"
-                        title="next chapter">Programs</a></p>
-<div id="searchbox" style="display: none" role="search">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="prism_sw_arch.html"
+                          title="previous chapter">Software Architecture</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="prism_programs.html"
+                          title="next chapter">Programs</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -330,13 +333,13 @@ one test definition will be shown later.</p>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -354,8 +357,8 @@ one test definition will be shown later.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2019-2025, Sistemi Corp, info@sistemi.ca.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+    &#169; Copyright 2019-2025, Sistemi Corp, info@sistemi.ca.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
     </div>
   </body>
 </html>

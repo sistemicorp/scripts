@@ -1,26 +1,24 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Development &#8212; Sistemi Lente/Prism Test System 0.8.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=2bf1fcf8" />
     
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
+    <script src="_static/documentation_options.js?v=486e5634"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Test Jigs" href="_jigs.html" />
     <link rel="prev" title="Results Database" href="_database.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -43,9 +41,9 @@
           <div class="body" role="main">
             
   <section id="development">
-<h1>Development<a class="headerlink" href="#development" title="Permalink to this headline">¶</a></h1>
+<h1>Development<a class="headerlink" href="#development" title="Link to this heading">¶</a></h1>
 <p>This section describes how to get started with your own development.</p>
-<div class="contents local topic" id="contents">
+<nav class="contents local" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#your-own-git-repo" id="id1">Your Own Git Repo</a></p></li>
 <li><p><a class="reference internal" href="#repo-setup" id="id2">Repo Setup</a></p>
@@ -53,13 +51,14 @@
 <li><p><a class="reference internal" href="#install-git-hooks" id="id3">Install Git Hooks</a></p></li>
 <li><p><a class="reference internal" href="#create-a-tag" id="id4">Create a Tag</a></p></li>
 <li><p><a class="reference internal" href="#change-readme-md" id="id5">Change README.md</a></p></li>
+<li><p><a class="reference internal" href="#installing-python" id="id6">Installing Python</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#command-line-development" id="id6">Command Line Development</a></p></li>
+<li><p><a class="reference internal" href="#command-line-development" id="id7">Command Line Development</a></p></li>
 </ul>
-</div>
+</nav>
 <section id="your-own-git-repo">
-<h2><a class="toc-backref" href="#id1">Your Own Git Repo</a><a class="headerlink" href="#your-own-git-repo" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Your Own Git Repo</a><a class="headerlink" href="#your-own-git-repo" title="Link to this heading">¶</a></h2>
 <p>You will want to begin with setting up your own Git repo.  If you are unfamiliar with Git,
 then you should read up on it, and/or do some tutorials.  It is beyond the scope
 of this documentation to teach Git.</p>
@@ -146,10 +145,10 @@ examples, drivers, etc.</p></li>
 </ul>
 </section>
 <section id="repo-setup">
-<h2><a class="toc-backref" href="#id2">Repo Setup</a><a class="headerlink" href="#repo-setup" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">Repo Setup</a><a class="headerlink" href="#repo-setup" title="Link to this heading">¶</a></h2>
 <p>Additional steps.</p>
 <section id="install-git-hooks">
-<h3><a class="toc-backref" href="#id3">Install Git Hooks</a><a class="headerlink" href="#install-git-hooks" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id3" role="doc-backlink">Install Git Hooks</a><a class="headerlink" href="#install-git-hooks" title="Link to this heading">¶</a></h3>
 <p><em>Git Hooks are generally replaced by Git Actions and are beyond the scope of these instructions</em></p>
 <p>In the <cite>scripts</cite> repo, there is a folder called <cite>hooks</cite>.  The contents of this folder
 needs to be copied to <cite>./.git/hooks</cite> folder of your repository.</p>
@@ -160,7 +159,7 @@ needs to be copied to <cite>./.git/hooks</cite> folder of your repository.</p>
 </div>
 </section>
 <section id="create-a-tag">
-<h3><a class="toc-backref" href="#id4">Create a Tag</a><a class="headerlink" href="#create-a-tag" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id4" role="doc-backlink">Create a Tag</a><a class="headerlink" href="#create-a-tag" title="Link to this heading">¶</a></h3>
 <p>The Sistemi system reports the version of things to help keep you organized, including the version of your scripts.</p>
 <p>On whatever branch you decide to “release” your scripts, for example, the “master” branch, create a
 tag on that branch.  The tag <strong>MUST</strong> be of this format,</p>
@@ -194,26 +193,40 @@ the minor version,</p>
 </div>
 </section>
 <section id="change-readme-md">
-<h3><a class="toc-backref" href="#id5">Change README.md</a><a class="headerlink" href="#change-readme-md" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id5" role="doc-backlink">Change README.md</a><a class="headerlink" href="#change-readme-md" title="Link to this heading">¶</a></h3>
 <p>Change this file to suit your needs.  For example, document your script/program naming strategy.</p>
+</section>
+<section id="installing-python">
+<h3><a class="toc-backref" href="#id6" role="doc-backlink">Installing Python</a><a class="headerlink" href="#installing-python" title="Link to this heading">¶</a></h3>
+<p>Prism uses Python version 3.10 (see <a class="reference external" href="https://www.python.org/downloads/release/python-31017/">Here</a>) inside its Docker container, and therefor that specific version should be used
+for development.  Research how to install Python on Ubuntu alongside the main global Python. Install dependancies
+from <cite>requirements.txt</cite></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">python3</span><span class="mf">.10</span><span class="o">-</span><span class="n">dev</span>
+<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">requirements</span><span class="o">.</span><span class="n">txt</span>
+</pre></div>
+</div>
 </section>
 </section>
 <section id="command-line-development">
-<h2><a class="toc-backref" href="#id6">Command Line Development</a><a class="headerlink" href="#command-line-development" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id7" role="doc-backlink">Command Line Development</a><a class="headerlink" href="#command-line-development" title="Link to this heading">¶</a></h2>
 <p>Initial development will be done in “headless” mode, whereupon coding is done outside of the GUI used in production.</p>
 <p>A command line version of the core engine of the system is at the top of the <cite>scripts</cite> folder, called <cite>prism_dev.py</cite>.
 The command line help,</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>computer:~/git/scripts$ python3 prism_dev.py --help
-usage: prism_dev.py [-h] --script SCRIPT
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(.venv) martin@computer:~/git/scripts$ python prism_dev.py --help
+usage: prism_dev.py [-h] --script SCRIPT [--result-scan]
 
 prism_dev
 
-optional arguments:
+options:
   -h, --help       show this help message and exit
   --script SCRIPT  Path to script file to run
+  --result-scan    Scan result file for correctness
 
 Usage examples:
-    python3 prism_dev.py --script ./public/prism/scripts/example/prod_v0/prod_0.scr
+    python prism_dev.py --script ./public/prism/scripts/example/prod_v0/prod_0.scr
+    python prism_dev.py --script ./public/prism/scripts/example/pybrd_v0/pybrd_0.scr
+
+Sistemi Corporation, copyright, all rights reserved, 2019-2025
 </pre></div>
 </div>
 <p>Notes about the command line development environment,</p>
@@ -221,6 +234,7 @@ Usage examples:
 <li><p>parallel, multi-threaded, multiple test jigs are not supported</p>
 <ul>
 <li><p>script is run as a single thread - cannot test parallelism</p></li>
+<li><p>however your code will run multiple jigs in parallel within the Prism GUI</p></li>
 </ul>
 </li>
 <li><p>Results are NOT sent to the Lente Server, however a local Result file with the results
@@ -243,15 +257,19 @@ to be modified per script it is used on.</p></li>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="_database.html"
-                        title="previous chapter">Results Database</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="_jigs.html"
-                        title="next chapter">Test Jigs</a></p>
-<div id="searchbox" style="display: none" role="search">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="_database.html"
+                          title="previous chapter">Results Database</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="_jigs.html"
+                          title="next chapter">Test Jigs</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -259,13 +277,13 @@ to be modified per script it is used on.</p></li>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -282,8 +300,8 @@ to be modified per script it is used on.</p></li>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2019-2025, Sistemi Corp, info@sistemi.ca.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+    &#169; Copyright 2019-2025, Sistemi Corp, info@sistemi.ca.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
     </div>
   </body>
 </html>

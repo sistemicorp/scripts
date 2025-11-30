@@ -1,26 +1,24 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Programs &#8212; Sistemi Lente/Prism Test System 0.8.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=2bf1fcf8" />
     
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
+    <script src="_static/documentation_options.js?v=486e5634"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Drivers" href="prism_drivers.html" />
     <link rel="prev" title="Scripts" href="prism_scripts.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -44,7 +42,7 @@
           <div class="body" role="main">
             
   <section id="programs">
-<h1>Programs<a class="headerlink" href="#programs" title="Permalink to this headline">¶</a></h1>
+<h1>Programs<a class="headerlink" href="#programs" title="Link to this heading">¶</a></h1>
 <p>Programs are Python code that implement <a class="reference internal" href="prism_scripts.html#tests"><span class="std std-ref">tests</span></a> <code class="docutils literal notranslate"><span class="pre">items</span></code>, and the location and name of the
 program file is given in field <code class="docutils literal notranslate"><span class="pre">module</span></code>.</p>
 <p>A very minimalist (“hello world”) (helloWorld.py) program file could look like this,</p>
@@ -112,7 +110,7 @@ database searches and filtering on.  See TBD-Planning</p></li>
 </li>
 </ul>
 <section id="program-class-structure">
-<h2>Program Class Structure<a class="headerlink" href="#program-class-structure" title="Permalink to this headline">¶</a></h2>
+<h2>Program Class Structure<a class="headerlink" href="#program-class-structure" title="Link to this heading">¶</a></h2>
 <p>Lets take a more detailed look at the program structrure,</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>! /usr/bin/env python
 # -*- coding: utf-8 -*-
@@ -135,7 +133,7 @@ class helloWorld(TestItem):
 </pre></div>
 </div>
 <section id="methods">
-<h3>methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
+<h3>methods<a class="headerlink" href="#methods" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p>if you are not already familiar with Python Classes, you should quickly take an online tutorial</p>
 <ul>
@@ -169,7 +167,7 @@ code in the <code class="docutils literal notranslate"><span class="pre">__init_
 </ul>
 </section>
 <section id="context">
-<h3>context<a class="headerlink" href="#context" title="Permalink to this headline">¶</a></h3>
+<h3>context<a class="headerlink" href="#context" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">context</span></code> is your programmatic view of the script, and retrieving it is the first line of every method</p></li>
 <li><p>consider a little more complicated script,</p></li>
@@ -202,7 +200,7 @@ code in the <code class="docutils literal notranslate"><span class="pre">__init_
 <ul class="simple">
 <li><p>And lets assume we are in the <code class="docutils literal notranslate"><span class="pre">TST000_Meas</span></code> method, then we can access (print) anything that is relevent,</p></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">TST000_Meas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">TST000_Meas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="n">context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="p">)</span>          <span class="c1"># = {&quot;id&quot;: &quot;TST000&quot;, &quot;enable&quot;: True,  &quot;args&quot;: {&quot;min&quot;: 0, &quot;max&quot;: 10}}</span>
@@ -223,31 +221,35 @@ overt he product life cycle, and its better to make those things editable by a n
 </section>
 </section>
 <section id="everything-example">
-<h2>Everything Example<a class="headerlink" href="#everything-example" title="Permalink to this headline">¶</a></h2>
+<h2>Everything Example<a class="headerlink" href="#everything-example" title="Link to this heading">¶</a></h2>
 <p>Here is a fully documented program example that shows just about every feature of the Lente system.  This
 example program is distributed with the system, and may be more up to date than here, so please consult that example.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#! /usr/bin/env python</span>
 <span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Sistemi Corporation, copyright, all rights reserved, 2019-2025</span>
+<span class="sd">Martin Guthrie</span>
 
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">from</span> <span class="nn">core.test_item</span> <span class="kn">import</span> <span class="n">TestItem</span>
-<span class="kn">from</span> <span class="nn">public.prism.api</span> <span class="kn">import</span> <span class="n">ResultAPI</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">import</span> <span class="nn">random</span>
-<span class="kn">import</span> <span class="nn">string</span>
-<span class="kn">import</span> <span class="nn">copy</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">core.test_item</span><span class="w"> </span><span class="kn">import</span> <span class="n">TestItem</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">public.prism.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResultAPI</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">string</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
 
 
-<span class="kn">from</span> <span class="nn">public.prism.drivers.fake.Fake</span> <span class="kn">import</span> <span class="n">DRIVER_TYPE</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">public.prism.drivers.fake.Fake</span><span class="w"> </span><span class="kn">import</span> <span class="n">DRIVER_TYPE</span>
 
 
 <span class="c1"># file and class name must match</span>
-<span class="k">class</span> <span class="nc">tst00xx</span><span class="p">(</span><span class="n">TestItem</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">tst00xx</span><span class="p">(</span><span class="n">TestItem</span><span class="p">):</span>
 
     <span class="n">DEMO_TIME_DELAY</span> <span class="o">=</span> <span class="mf">1.0</span>
     <span class="n">DEMO_TIME_RND_ENABLE</span> <span class="o">=</span> <span class="mi">1</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">controller</span><span class="p">,</span> <span class="n">chan</span><span class="p">,</span> <span class="n">shared_state</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">controller</span><span class="p">,</span> <span class="n">chan</span><span class="p">,</span> <span class="n">shared_state</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">controller</span><span class="p">,</span> <span class="n">chan</span><span class="p">,</span> <span class="n">shared_state</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">.</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">chan</span><span class="p">))</span>
 
@@ -260,8 +262,8 @@ example program is distributed with the system, and may be more up to date than 
         <span class="c1">#                                          {&quot;fid&quot;: &quot;TST000-1&quot;, &quot;msg&quot;: &quot;Component banana R1&quot;}] },</span>
         <span class="c1">#</span>
         <span class="c1"># ctx = self.item_start()  # always first line of test</span>
-        <span class="c1">#  - use ctx (context) to extract information to drive the test program (see above)</span>
-        <span class="c1">#  - ctx (context) is a namespace of content from the test script</span>
+        <span class="c1">#  - ctx (context) is a namespace of content from the test script, returned as a python dict,</span>
+        <span class="c1">#  - ctx.config = script config section</span>
         <span class="c1">#  - ctx.item = {&quot;id&quot;: &quot;TST000&quot;, &quot;enable&quot;: True,  &quot;args&quot;: {&quot;min&quot;: 0, &quot;max&quot;: 10}}</span>
         <span class="c1">#  - ctx.item.args = {&quot;min&quot;: 0, &quot;max&quot;: 10}</span>
         <span class="c1">#  - ctx.item.args.max = 10</span>
@@ -290,6 +292,9 @@ example program is distributed with the system, and may be more up to date than 
         <span class="c1"># self.timeout</span>
         <span class="c1">#   - boolean indicating if a timeout has occurred</span>
         <span class="c1">#   - use in while/for loops to check if a timeout has occurred</span>
+        <span class="c1">#     - all loops must check self.timeout and exit loop if asserted</span>
+        <span class="c1">#   - use self.timeout_start() to restart the running timer</span>
+        <span class="c1">#     - provide optional new value (float seconds)</span>
         <span class="c1">#</span>
         <span class="c1"># self.item_end([result[s]]) # always last line of test</span>
         <span class="c1">#  - result is one of ResultAPI.RECORD_* constants</span>
@@ -307,8 +312,8 @@ example program is distributed with the system, and may be more up to date than 
         <span class="c1">#</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hw_fake</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="nf">TST0xxSETUP</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;  Setup up for testing</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">TST0xxSETUP</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;  Setup up for testing</span>
 <span class="sd">        - main purpose is to get a local handle to the connected hardware</span>
 <span class="sd">        - store the ID of the hardware for tracking purposes</span>
 
@@ -334,8 +339,8 @@ example program is distributed with the system, and may be more up to date than 
         <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="n">_bullet</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">_result</span><span class="p">)</span>  <span class="c1"># always last line of test</span>
 
-    <span class="k">def</span> <span class="nf">TST0xxTEARDOWN</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;  Always called at the end of testing</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">TST0xxTEARDOWN</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;  Always called at the end of testing</span>
 <span class="sd">        - process any cleanup, closing, etc</span>
 
 <span class="sd">            {&quot;id&quot;: &quot;TST0xxTEARDOWN&quot;,        &quot;enable&quot;: true },</span>
@@ -344,8 +349,8 @@ example program is distributed with the system, and may be more up to date than 
         <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span>  <span class="c1"># always last line of test</span>
 
-    <span class="k">def</span> <span class="nf">TST000_Meas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Measurement example, simplest example</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">TST000_Meas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Measurement example, simplest example</span>
 
 <span class="sd">        {&quot;id&quot;: &quot;TST000_Meas&quot;,    &quot;enable&quot;: true, &quot;args&quot;: {&quot;min&quot;: 0, &quot;max&quot;: 10},</span>
 
@@ -362,8 +367,8 @@ example program is distributed with the system, and may be more up to date than 
         <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="n">_bullet</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">_result</span><span class="p">)</span>  <span class="c1"># always last line of test</span>
 
-    <span class="k">def</span> <span class="nf">TST001_Meas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Measurement example, with multiple failure messages</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">TST001_Meas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Measurement example, with multiple failure messages</span>
 <span class="sd">        - example of taking multiple measurements, and sending as a list of results</span>
 <span class="sd">        - example of measurement indicating possible failed components</span>
 
@@ -421,8 +426,8 @@ example program is distributed with the system, and may be more up to date than 
         <span class="c1"># Note that we can send a list of measurements</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">item_result_state</span><span class="o">=</span><span class="n">measurement_results</span><span class="p">)</span>  <span class="c1"># always last line of test</span>
 
-    <span class="k">def</span> <span class="nf">TST002_Skip</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Example of an item that is skipped</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">TST002_Skip</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Example of an item that is skipped</span>
 
 <span class="sd">        {&quot;id&quot;: &quot;TST002_Skip&quot;,           &quot;enable&quot;: false },</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -435,8 +440,8 @@ example program is distributed with the system, and may be more up to date than 
 
         <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span>  <span class="c1"># always last line of test</span>
 
-    <span class="k">def</span> <span class="nf">TST003_Buttons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Select one of three buttons</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">TST003_Buttons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Select one of three buttons</span>
 <span class="sd">        - capture the button index in the test record</span>
 
 <span class="sd">        {&quot;id&quot;: &quot;TST003_Buttons&quot;,        &quot;enable&quot;: true, &quot;timeout&quot;: 10 },</span>
@@ -461,8 +466,8 @@ example program is distributed with the system, and may be more up to date than 
 
         <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">_result</span><span class="p">)</span>  <span class="c1"># always last line of test</span>
 
-    <span class="k">def</span> <span class="nf">TST004_KeyAdd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; How use of keys: keys are things like serial numbers.</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">TST004_KeyAdd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; How use of keys: keys are things like serial numbers.</span>
 <span class="sd">        - every call to self.add_key(k,v) adds the &quot;k:v&quot; to the next available</span>
 <span class="sd">          key# in the record, you can force the slot though.  It depends how you will</span>
 <span class="sd">          manage the keys in the final database; either by convention force every slot</span>
@@ -480,8 +485,8 @@ example program is distributed with the system, and may be more up to date than 
 
         <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span>  <span class="c1"># always last line of test</span>
 
-    <span class="k">def</span> <span class="nf">TST005_KeyGet</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; How use of keys works</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">TST005_KeyGet</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; How use of keys works</span>
 <span class="sd">        - retrieve a previous key, otherwise fail test</span>
 
 <span class="sd">        {&quot;id&quot;: &quot;TST005_KeyGet&quot;,         &quot;enable&quot;: true },</span>
@@ -499,8 +504,8 @@ example program is distributed with the system, and may be more up to date than 
         <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;got key[0]: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">keys</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;key0&quot;</span><span class="p">,</span> <span class="s2">&quot;NOT FOUND!&quot;</span><span class="p">)))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span>  <span class="c1"># always last line of test</span>
 
-    <span class="k">def</span> <span class="nf">TST006_RsrcLock</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Demonstrate locking of a resource in shared_state</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">TST006_RsrcLock</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Demonstrate locking of a resource in shared_state</span>
 <span class="sd">        - lock a resource for some time, and then release</span>
 <span class="sd">        - note the hold time comes from the test script</span>
 <span class="sd">        - this is useful for a piece of test equipment that is shared across channels</span>
@@ -522,8 +527,8 @@ example program is distributed with the system, and may be more up to date than 
 
         <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span>  <span class="c1"># always last line of test</span>
 
-    <span class="k">def</span> <span class="nf">TST007_HWDriver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; How to get a driver that was initialized when script was loaded</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">TST007_HWDriver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; How to get a driver that was initialized when script was loaded</span>
 <span class="sd">        - when the script is loaded, HW driver are initialized and stored in the shared</span>
 <span class="sd">          state.  The format of the return data is,</span>
 
@@ -544,8 +549,8 @@ example program is distributed with the system, and may be more up to date than 
 
         <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span>  <span class="c1"># always last line of test</span>
 
-    <span class="k">def</span> <span class="nf">TST008_TextInput</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Text Input Box</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">TST008_TextInput</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Text Input Box</span>
 <span class="sd">        - input text boxes in production are probably a bad idea unless the data</span>
 <span class="sd">          is coming from a scanner.  User input error correction is not something</span>
 <span class="sd">          scalable in production setting.</span>
@@ -571,8 +576,8 @@ example program is distributed with the system, and may be more up to date than 
 
         <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">_result</span><span class="p">)</span>  <span class="c1"># always last line of test</span>
 
-    <span class="k">def</span> <span class="nf">TST009_LogPctProgress</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Demo a log bullet with increasing percent</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">TST009_LogPctProgress</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Demo a log bullet with increasing percent</span>
 
 <span class="sd">        {&quot;id&quot;: &quot;TST008_TextInput&quot;,      &quot;enable&quot;: true, &quot;timeout&quot;: 10 },</span>
 
@@ -589,8 +594,8 @@ example program is distributed with the system, and may be more up to date than 
 
         <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span>  <span class="c1"># always last line of test</span>
 
-    <span class="k">def</span> <span class="nf">TST010_BlobUnknown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Blob Unknown</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">TST010_BlobUnknown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Blob Unknown</span>
 <span class="sd">        - create a string of random characters using BLOB_UNKNOWN</span>
 
 <span class="sd">            {&quot;id&quot;: &quot;TST010_BlobUnknown&quot;,    &quot;enable&quot;: true },</span>
@@ -609,8 +614,8 @@ example program is distributed with the system, and may be more up to date than 
 
         <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span>  <span class="c1"># always last line of test</span>
 
-    <span class="k">def</span> <span class="nf">TST011_BlobXY</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Blob XY Plots</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">TST011_BlobXY</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Blob XY Plots</span>
 
 <span class="sd">        An example of creating a waveform, with a template to fit</span>
 <span class="sd">        - testing wave fitting the template is beyond the scope of this example</span>
@@ -618,7 +623,7 @@ example program is distributed with the system, and may be more up to date than 
 <span class="sd">        {&quot;id&quot;: &quot;TST011_BlobXY&quot;,    &quot;enable&quot;: true },</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>   <span class="c1"># always first line of test</span>
-        <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">sin</span><span class="p">,</span> <span class="n">arange</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="kn">import</span> <span class="n">sin</span><span class="p">,</span> <span class="n">arange</span>
 
         <span class="n">myPlotFigure</span> <span class="o">=</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">BLOB_BOKEH_FIGURE</span>
         <span class="n">myPlotFigure</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Voltage vs Current&quot;</span>
@@ -667,8 +672,8 @@ example program is distributed with the system, and may be more up to date than 
 
         <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span>  <span class="c1"># always last line of test</span>
 
-    <span class="k">def</span> <span class="nf">TST012_JSONB</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; postgres JSONB object example</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">TST012_JSONB</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; postgres JSONB object example</span>
 
 <span class="sd">        {&quot;id&quot;: &quot;TST012_JSONB&quot;,          &quot;enable&quot;: true },</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -749,14 +754,14 @@ example program is distributed with the system, and may be more up to date than 
 </div>
 </section>
 <section id="measurements">
-<h2>Measurements<a class="headerlink" href="#measurements" title="Permalink to this headline">¶</a></h2>
+<h2>Measurements<a class="headerlink" href="#measurements" title="Link to this heading">¶</a></h2>
 <p>Measurements are typically made by your test programs to decide on Pass/Fail.  Measurements are stored in
 a results (JSON) file and sent to a backend <cite>Lente</cite> database.  What measurements to save are up to your requirements.
 The Prism platform has an API to make storing measurements easy, and in a prescriptive way, so that these results
 can be analyzed from the backend SQL database.</p>
 <p>Example of measurement API is show in the example above, but are reviewed here in detail.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">measurement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_NONE</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">force_fail</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Check and store a measurement</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">measurement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_NONE</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">force_fail</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Check and store a measurement</span>
 <span class="sd">    - performs a check on the value, returning one of ResultAPI.RECORD_RESULT_*</span>
 <span class="sd">    - all values are stored as strings in the dB, converted here</span>
 
@@ -809,7 +814,7 @@ Type <cite>None</cite> is used for types of <code class="docutils literal notran
 is a boolean or string type, <cite>min</cite> and <cite>max</cite> must be None.</p>
 <p><code class="docutils literal notranslate"><span class="pre">units</span></code> - the units of measurement to be stored in the result.  The units of measurement are not
 used to determine the type of test to do on <code class="docutils literal notranslate"><span class="pre">value</span></code>. Valid units come from,</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ResultAPI</span><span class="p">(</span><span class="n">Const</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">ResultAPI</span><span class="p">(</span><span class="n">Const</span><span class="p">):</span>
     <span class="o">...</span>
     <span class="n">UNIT_OHMS</span> <span class="o">=</span> <span class="s2">&quot;Ohms&quot;</span>
     <span class="n">UNIT_DB</span> <span class="o">=</span> <span class="s2">&quot;dB&quot;</span>
@@ -838,7 +843,7 @@ used to determine the type of test to do on <code class="docutils literal notran
 </pre></div>
 </div>
 <p>Measurements are called thru the <code class="docutils literal notranslate"><span class="pre">ctx.record.measurement()</span></code> API like this,</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">myTest</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">myTest</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>   <span class="c1"># always first line of test</span>
 
     <span class="n">value</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">some_value_from_test_equipment</span><span class="o">&gt;</span>
@@ -869,7 +874,7 @@ by not sending the result to <code class="docutils literal notranslate"><span cl
 </ul>
 </section>
 <section id="binning-failures">
-<h2>Binning Failures<a class="headerlink" href="#binning-failures" title="Permalink to this headline">¶</a></h2>
+<h2>Binning Failures<a class="headerlink" href="#binning-failures" title="Link to this heading">¶</a></h2>
 <p>When a failure occurs in production, typically the DUTs are “binned” according to the failure type.  Then the
 “bin” is bulk processed at a later time.  Given this typical process, Prism provides a means of indicating
 a “binning code” when a failure occurs.</p>
@@ -898,8 +903,8 @@ This is coded in the constants <code class="docutils literal notranslate"><span 
 </pre></div>
 </div>
 <p>Program code,</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">TST000_Meas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Measurement example, with multiple failure messages</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">TST000_Meas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Measurement example, with multiple failure messages</span>
 <span class="sd">    - example of taking multiple measurements, and sending as a list of results</span>
 <span class="sd">    - if any test fails, this test item fails</span>
 
@@ -966,15 +971,19 @@ production failures become understood.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="prism_scripts.html"
-                        title="previous chapter">Scripts</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="prism_drivers.html"
-                        title="next chapter">Drivers</a></p>
-<div id="searchbox" style="display: none" role="search">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="prism_scripts.html"
+                          title="previous chapter">Scripts</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="prism_drivers.html"
+                          title="next chapter">Drivers</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -982,13 +991,13 @@ production failures become understood.</p>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -1006,8 +1015,8 @@ production failures become understood.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2019-2025, Sistemi Corp, info@sistemi.ca.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+    &#169; Copyright 2019-2025, Sistemi Corp, info@sistemi.ca.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
     </div>
   </body>
 </html>

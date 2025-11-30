@@ -1,21 +1,11 @@
 Lente Demo
 ##########
 
-**Lente**
+.. _lente-full-install:
 
-This is the dashboard and backend processing database program.
+**Lente** is the dashboard and backend processing database program.
 
 The backend processor is a postgres Docker container, and it needs to be running before Lente can be started.
-
-The instructions are split into two catagories,
-
-* Basic
-
-  * Simplest and fastest way to see `Lente`
-
-* Full
-
-  * Uses `git` to clone a prescriptive directory structure used by `Lente`
 
 Sistemi Lente/Prism programs are deployed as Docker containers, which allows the programs to run in a virtual
 environment, and be independent of your host operating system.  This means, for example, that you don't have
@@ -68,54 +58,6 @@ every time the computer is booted, also run,
     $ sudo systemctl enable postgresql.service
 
 
-
-Basic
-*****
-
-Run Basic
-=========
-
-* First the **Lente** Docker container must be `pulled` from docker hub
-
-::
-
-    docker pull sistemicorp/lente
-
-
-* Run **Lente** container
-
-  * it doesn't matter which directory you are in.
-  * it is assumed Postgres is running on the same computer per above install
-
-::
-
-    docker run -d -p 6595:6595 sistemicorp/lente
-
-
-* Open Google Chrome to
-
-           http://127.0.0.1:6595
-
-  * Note on slower computers, it may take 5-15 seconds for the Lente window to display
-  * Lente login user/password is `admin@here.com`/`password`
-  * Other users passwords are `password`
-
-.. _lente-full-install:
-
-Full
-****
-
-The Full Demo assume you have followed the instructions for the basic_ demo.
-
-The Full Demo works by creating a local file structure and telling the ``lente`` Docker container to use that
-local file system.  This requires a more advanced `docker run` command.
-
-`Git <https://git-scm.com/>`_ and `Github <http://www.github.com>`_ are used.
-
-
-* Follow these instructions :ref:`prism_demo:Additional Requirements`
-
-
 Clone Sistemi Scripts
 =====================
 
@@ -124,7 +66,7 @@ Clone Sistemi Scripts
 * There is a prescriptive directory structure to use, and that is stored on `github` in a project called ``scripts``
 * This `github` repo is where you would ultimately store and version control your own scripts
 
-  * Instead of cloning the repo, you would *fork* [1]_ (copy) it, making it your own, and then add your own code
+  * Instead of cloning the repo, you would *fork* the `scripts` repo (copy it), making it your own, and then add your own code
 
 * The instructions below will create a folder called *git/scripts* which `git` will copy the required files into
 * If this is a Lente deployment, on a dedicated computer, then you want to clone the scripts repo you created.
@@ -136,24 +78,27 @@ Clone Sistemi Scripts
     git clone https://github.com/sistemicorp/scripts.git
 
 
-Run Full
-========
 
-* start postgres as described above.
+
+
+* the **Lente** Docker container must be `pulled` from docker hub
+
+::
+
+    docker pull sistemicorp/lente
+
+
 * Run Lente::
 
     cd ~/git/scripts/public
     ./lente.sh start
 
+
+
 * Open Google Chrome to
 
-        http://127.0.0.1:6595
+           http://127.0.0.1:6595
 
-
-The file `lente.json` can be edited to alter the Postgres location and password.
-
-
-.. [1] This is covered in section TBD
-
-
-
+  * Note on slower computers, it may take 5-15 seconds for the Lente window to display
+  * Lente login user/password is `admin@here.com`/`password`
+  * Other users passwords are `password`
