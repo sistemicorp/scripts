@@ -161,6 +161,11 @@ class A4401_BOND:
 
             self.logger.info(f"bist_voltage {_v} {status_response}")
 
+        status_response = self.reset()
+        if not status_response["success"]:
+            self.logger.error(f"reset {status_response}")
+            return False
+
         # finally, all is well
         self.logger.info("Installed A4401BOND on port {}".format(self.port))
         return True
@@ -584,6 +589,17 @@ class A4401_BOND:
         with self._lock:
             self.logger.info(f"vdut_con {state}")
             answer = self.rpc.call_method('vdut_con', state)
+            return self._rpc_validate(answer)
+
+    def vbus_en(self, state: bool):
+        """ VBUS passthru Enable/Disable on header 3
+
+        :return: {'success': True, 'method': 'vdut_en',
+                  'result': {'assert': False, 'level': False}
+        """
+        with self._lock:
+            self.logger.info(f"vbus_en {state}")
+            answer = self.rpc.call_method('vbus_en', state)
             return self._rpc_validate(answer)
 
     def iox_led_green(self, state: bool):

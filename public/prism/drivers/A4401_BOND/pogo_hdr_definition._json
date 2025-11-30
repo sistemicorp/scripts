@@ -106,7 +106,7 @@
      "17": {"mode": null, "port": null},
      "18": {"mode": null, "port": null},
      // VBUS
-     "16": {"mode": null, "port": null},
+     "16": {"mode": "GPO", "port": "9"},
 
      // Special functions - DO NOT CHANGE
      // JTAG VCC, SDIO CLK RESET

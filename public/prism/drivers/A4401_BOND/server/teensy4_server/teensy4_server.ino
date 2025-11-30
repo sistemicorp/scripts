@@ -268,6 +268,19 @@ String vdut_en(bool assert) {
   return _response(doc);  // always the last line of RPC API
 }
 
+/* vbus_en
+ *  - enable VBUS passthru on header 3
+ */
+String vbus_en(bool assert) {
+  DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
+  max_hdr3.gpio_write(MAX11300::PIXI_PORT9, (assert ? 0 : 1));
+  doc["result"]["assert"] = assert;
+  doc["result"]["level"] = assert;  
+
+  oled_print(OLED_LINE_RPC, __func__, false);
+  return _response(doc);  // always the last line of RPC API
+}
+
 int _reset(void) {
   // called on setup() and by API reset()
   // ... add any required resetting code here ...
@@ -276,6 +289,7 @@ int _reset(void) {
   max_iox.gpio_write(MAX11300::PIXI_PORT7, 0); // self test disable
   digitalWrite(VDUT_CONNECT_PIN, LOW);
   iox_vbat_con(false);
+  vbus_en(false);   // disable VBUS passthru
 
   return 0;
 }
@@ -741,6 +755,8 @@ void loop(void) {
     vdut_reset, "vdut_reset: reset TPS55289",
     vdut_con, "vdut_con: Connect VDUT to target",
     vdut_en, "vdut_en: Enable VDUT TPS55289",
+    vbus_en, "vbus_en: Enabled VBUS passthru",
+
     iox_led_green, "iox_led_green: green led",
     iox_led_yellow, "iox_led_yellow: yellow led",
     iox_led_red, "iox_led_red: red led",
