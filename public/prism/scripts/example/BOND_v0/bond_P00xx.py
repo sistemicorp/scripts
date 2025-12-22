@@ -141,7 +141,10 @@ class bond_P00xx(TestItem):
                                  '-v',
                                  '-s',
                                  file_path],
-                                stdout=subprocess.PIPE).stdout.decode('utf-8')
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE,
+                                 text=True)
+
         self.logger.info(result)
 
         self.shared_lock(DRIVER_TYPE_PROG).release()
@@ -154,13 +157,13 @@ class bond_P00xx(TestItem):
         # Booting
 
         # check for some key words to confirm success
-        if not result.count('Programming'):
-            self.log_bullet(f"Unexpected Programming")
+        if not result.stdout.count('Programming'):
+            self.log_bullet(f"'Programming' did not occur")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
-        if not result.count('Booting'):
-            self.log_bullet(f"Unexpected Booting")
+        if not result.stdout.count('Booting'):
+            self.log_bullet(f"'Booting' did not occur")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
@@ -190,19 +193,20 @@ class bond_P00xx(TestItem):
             self.logger.info("Trying teensy at {}...".format(port))
 
             # create an instance of Teensy()
+            # Bare minimum init -- does not require 'pogo_hdr_definition._json'
             _teensy = A4401_BOND(port, loggerIn=logging.getLogger("teensy.try"))
-            success = _teensy.init()
+            success = _teensy.init(skip_max11311=True)
             if not success:
-                self.log_bullet(f"Failed init")
+                self.log_bullet("Failed init")
                 self.logger.error("failed on {}...".format(port))
 
             else:
-                self.log_bullet(f"Found teensy")
+                self.log_bullet("Found teensy")
                 found_teensy = True
                 break
 
         if not found_teensy:
-            self.log_bullet(f"Teensy not found")
+            self.log_bullet("Teensy not found")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
@@ -310,7 +314,9 @@ class bond_P00xx(TestItem):
                                      '-w',
                                      '-v',
                                      file_path],
-                                    stdout=subprocess.PIPE).stdout.decode('utf-8')
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE,
+                                    text=True)
             self.logger.info(result)
 
             # expected output looks like,
@@ -324,7 +330,7 @@ class bond_P00xx(TestItem):
             #   Booting
 
             # check for some keywords to confirm success
-            if result.count('Programming') and result.count('Booting'):
+            if result.stdout.count('Programming') and result.stdout.count('Booting'):
                 success = True
                 break
 
@@ -412,24 +418,9 @@ class bond_P00xx(TestItem):
 
         self.logger.info("Trying teensy at {}...".format(port))
 
-        # (re)create an instance of Teensy()
-        self.teensy = A4401_BOND(port, loggerIn=logging.getLogger("teensy.try"))
-
-        # get the header_def_filename from script drivers section
-        header_def_filename = None
-        for i in ctx.config.drivers:
-            if "hwdrv_A4401_BOND" in i[0]:
-                header_def_filename = i[1]
-                break
-        if header_def_filename is None:
-            self.logger.error(f"header_def_filename: {header_def_filename}")
-            self.log_bullet(f"Failed header_def_filename")
-            self.shared_lock(DRIVER_TYPE).release()
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
-        self.logger.info(f"header_def_filename: {header_def_filename}")
-
-        success = self.teensy.init(header_def_filename)
+        # re-connect to teensy at new port
+        self.teensy.set_port(port)
+        success = self.teensy.init()
         if not success:
             self.log_bullet(f"Failed init")
             self.logger.error("failed on {}...".format(self._teensy_port))
