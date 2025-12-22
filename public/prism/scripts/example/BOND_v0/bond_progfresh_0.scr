@@ -27,7 +27,7 @@
         {"id": "P000_SETUP",          "enable": true },
         {"id": "P100_Check",          "enable": true },
         {"id": "P200_Program",        "enable": true, "file": "teensy4_server.ino.hex" },
-        {"id": "P300_Reconnect",      "enable": true, "timeout": 40, "delay": 30 },
+        {"id": "P300_Reconnect",      "enable": true, "timeout": 30, "delay": 24 },
         {"id": "P900_TEARDOWN",       "enable": true}
       ]
     }
