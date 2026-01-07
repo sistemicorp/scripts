@@ -62,13 +62,14 @@ class A4401_BOND:
     # if that FW is not running, there is probably a problem!  See method init().
     _version_file = os.path.join(os.path.dirname(__file__), "server/teensy4_server/version.h")
 
-    def __init__(self, port, loggerIn=None):
-        self.lock = threading.Lock()
+    def __init__(self, port, loggerIn=None, header_def_filename=None):
 
         if loggerIn:
             self.logger = loggerIn
         else:
             self.logger = StubLogger()
+
+        self._header_def_filename = header_def_filename
 
         self._lock = threading.Lock()
         self.port = port
@@ -82,14 +83,14 @@ class A4401_BOND:
     def set_port(self, port):
         self.port = port
 
-    def init(self, header_def_filename=None):
+    def init(self, skip_max11311=False):
         """ Init Teensy SimpleRPC connection
 
-        :param skip_init: True/False, skips MAX11311 setup, assume thats already done
+        :param skip_max11311: True/False, skips MAX11311 setup.  Allow access other functions
         :return: <True/False> whether Teensy SimpleRPC connection was created
         """
-        self.logger.info(f"installing BOND on port {self.port} using {header_def_filename}")
-        if header_def_filename is None:
+        self.logger.info(f"installing BOND on port {self.port} using {self._header_def_filename}")
+        if not skip_max11311 and self._header_def_filename is None:
             self.logger.error("MAX11311 port definition file must be specified")
             return False
 
@@ -107,9 +108,9 @@ class A4401_BOND:
             return False
 
         if self.my_version != version_response["result"]["version"]:
-            self.logger.error("version does not match, Python: {} Arduino: {}".format(self.my_version,
-                                                                                      version_response["result"][
-                                                                                          "version"]))
+            self.logger.error("version does not match, "
+                              f"Python: {self.my_version} "
+                              f"Arduino: {version_response["result"]["version"]}")
             return False
 
         status_response = self.status()
@@ -123,30 +124,28 @@ class A4401_BOND:
         # check if jig close has valid GPIOs
         self._jig_close_check()
 
-        if header_def_filename is None:
-            self.logger.error(f"Header pin definition filename not supplied")
-            return False
+        if not skip_max11311:
+            if not os.path.exists(self._header_def_filename):
+                self.logger.error(f"Header pin definition filename {self._header_def_filename} "
+                                  "does not exist")
+                return False
 
-        if not os.path.exists(header_def_filename):
-            self.logger.error(f"Header pin definition filename {header_def_filename} does not exist")
-            return False
+            # init MAX11311 pins per the JSON defintion
+            # also calibrates the battery emulator if needed
+            success = self._init_maxs(self._header_def_filename)
+            if not success:
+                self.logger.error("Failed to init MAX11311 pins")
+                return False
 
-        # init MAX11311 pins per the JSON defintion
-        # also calibrates the battery emulator if needed
-        success = self._init_maxs(header_def_filename)
-        if not success:
-            self.logger.error(f"Failed to init MAX11311 pins")
-            return False
+            status_response = self.iox_vbat_con(False)
+            if not status_response["success"]:
+                self.logger.error(f"iox_vbat_con {status_response}")
+                return False
 
-        status_response = self.iox_vbat_con(False)
-        if not status_response["success"]:
-            self.logger.error(f"iox_vbat_con {status_response}")
-            return False
-
-        status_response = self.iox_selftest(False)
-        if not status_response["success"]:
-            self.logger.error(f"iox_vbat_con {status_response}")
-            return False
+            status_response = self.iox_selftest(False)
+            if not status_response["success"]:
+                self.logger.error(f"iox_vbat_con {status_response}")
+                return False
 
         # check bist voltages
         for _v in self.BIST_VOLTAGES:

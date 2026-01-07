@@ -46,7 +46,7 @@ class HWDriver(object):
         self._num_chan = 0
         self.teensys = []
 
-    def discover_channels(self):
+    def discover_channels(self, scriptArgs=None):
         """ determine the number of channels, and populate hw drivers into shared state
 
         [ {"id": i,                    # ~slot number of the channel (see Note 1)

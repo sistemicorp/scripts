@@ -565,9 +565,9 @@ if __name__ == '__main__':
     else:
         logging.basicConfig(level=logging.DEBUG, format='%(filename)20s %(levelname)6s %(lineno)4s %(message)s')
 
-    teensy = A4401_BOND(args.port, loggerIn=logging)
+    teensy = A4401_BOND(args.port, loggerIn=logging, header_def_filename="pogo_hdr_definition._json")
 
-    success = teensy.init(header_def_filename="pogo_hdr_definition._json")
+    success = teensy.init()
     if not success:
         logging.error("Failed to create teensy instance")
         exit(1)

@@ -16,8 +16,7 @@
   },
   "config": {
     "fail_fast": true,
-    "drivers": [["public.prism.drivers.A4401_BOND.hwdrv_A4401_BOND",
-                 "public/prism/scripts/example/BOND_v0/assets/pogo_hdr_definition._json"]]
+    "drivers": ["public.prism.drivers.A4401_BOND.hwdrv_A4401_BOND_prog"]
   },
   "tests": [
     {
@@ -28,7 +27,8 @@
         {"id": "P000_SETUP",          "enable": true },
         {"id": "P100_Check",          "enable": true },
         {"id": "P200_Program",        "enable": true, "file": "teensy4_server.ino.hex" },
-        {"id": "P300_Verify",         "enable": true, "delay": 10 },
+        {"id": "P300_Reconnect",      "enable": true, "timeout": 30, "delay": 24 },
+        {"id": "P900_TEARDOWN",       "enable": true}
       ]
     }
   ]

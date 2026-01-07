@@ -31,6 +31,7 @@
         {"id": "P500_SETUP",          "enable": true, "timeout": 30 },
         {"id": "P600_Update",         "enable": true, "file": "teensy4_server.ino.hex" },
         {"id": "P700_Verify",         "enable": true, "delay": 24, "timeout": 30 },
+        {"id": "P900_TEARDOWN",       "enable": true}
       ]
     }
   ]
