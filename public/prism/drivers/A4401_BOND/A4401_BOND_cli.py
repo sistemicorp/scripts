@@ -28,18 +28,18 @@ def parse_args():
        python A4401_BOND_cli.py --port /dev/ttyACM0 led --on
 
     Port: Teensy4 when plugged into USB on Linux will show up as a ttyACM# device in /dev.
-          Use 'ls -al /dev/ttyACM*' to find the port. 
-          
+          Use 'ls -al /dev/ttyACM*' to find the port.
+
     Getting Help for a command:
     $ python3 A4401_BOND_cli.py --port /dev/ttyACM0 write_gpio --help
         usage: A4401_BOND_cli.py write_gpio [-h] --pin-number _PIN_NUMBER --state {True,False}
-    
+
         options:
         -h, --help            show this help message and exit
         --pin-number _PIN_NUMBER
                             GPIO number (0-41)
         --state {True,False}  True|False
-      
+
     Examples:
     (venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/A4401_BOND$ python A4401_BOND_cli.py -p /dev/ttyACM0 version
     (venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/A4401_BOND$ python A4401_BOND_cli.py -p /dev/ttyACM0 -n iox_led_green --enable
@@ -243,6 +243,45 @@ def parse_args():
                            required=True,
                            default=2500)
 
+    bond_max_hdr_gpo = subp.add_parser('bond_max_hdr_gpo',
+                                       description="Write Header Pin GPO")
+    bond_max_hdr_gpo.add_argument('--header',
+                           dest="_hdr",
+                           action='store',
+                           type=int,
+                           help='header, 1-4',
+                           required=True,
+                           default=1)
+    bond_max_hdr_gpo.add_argument('--pin',
+                           dest="_pin",
+                           action='store',
+                           type=int,
+                           help='pin, 1-20, but not all pins have function',
+                           required=True,
+                           default=1)
+    bond_max_hdr_gpo.add_argument('--state',
+                            dest="_state",
+                            choices=('1', '0'),
+                            help='True|False',
+                            required=True)
+
+    bond_max_hdr_gpi = subp.add_parser('bond_max_hdr_gpi',
+                                       description="Read Header Pin GPO")
+    bond_max_hdr_gpi.add_argument('--header',
+                           dest="_hdr",
+                           action='store',
+                           type=int,
+                           help='header, 1-4',
+                           required=True,
+                           default=1)
+    bond_max_hdr_gpi.add_argument('--pin',
+                           dest="_pin",
+                           action='store',
+                           type=int,
+                           help='pin, 1-20, but not all pins have function',
+                           required=True,
+                           default=1)
+
     debug_batt_emu = subp.add_parser('debug_batt_emu',
                                      description="BOND debug battery emulator")
 
@@ -431,6 +470,25 @@ def bond_max_hdr_dac(args):
     return response["success"]
 
 
+def bond_max_hdr_gpi(args):
+    logging.info("bond_max_hdr_gpi: {}".format(args))
+
+    response = teensy.bond_max_hdr_gpi(args._hdr, args._pin)
+    logging.info("{}".format(response))
+    return response["success"]
+
+
+def bond_max_hdr_gpo(args):
+    logging.info("bond_max_hdr_gpo: {}".format(args))
+
+    _state = True
+    if args._state == '0': _state = False
+
+    response = teensy.bond_max_hdr_gpo(args._hdr, args._pin, _state)
+    logging.info("{}".format(response))
+    return response["success"]
+
+
 def vbat_set(args):
     logging.info("vbat_set: {}".format(args))
 
@@ -573,6 +631,12 @@ if __name__ == '__main__':
 
     elif args._cmd == 'bond_max_hdr_dac':
         success = bond_max_hdr_dac(args)
+
+    elif args._cmd == 'bond_max_hdr_gpi':
+        success = bond_max_hdr_gpi(args)
+
+    elif args._cmd == 'bond_max_hdr_gpo':
+        success = bond_max_hdr_gpo(args)
 
     elif args._cmd == 'vbat_set':
         success = vbat_set(args)

@@ -1,7 +1,7 @@
 /*  Sistemi Corporation, copyright, all rights reserved, 2021-2025
  *  Martin Guthrie
- *  
- *  Dedicated functions for the BOND design, a4401. 
+ *
+ *  Dedicated functions for the BOND design, a4401.
  *
  *  Notes:
  *  1) functions beginning with "_" are considered "private" and should not
@@ -42,8 +42,8 @@
 #define SPI_SCLK_Pin            27
 #define VSYS_EN_PIN             31
 #define SPI_CS_IOX_Pin          33
-#define SPI_CS2_HDR4_Pin        34 
-#define SPI_CS_HDR4_Pin         35  
+#define SPI_CS2_HDR4_Pin        34
+#define SPI_CS_HDR4_Pin         35
 #define SPI_CS_HDR3_Pin         36
 #define SPI_CS_HDR2_Pin         37
 #define SPI_CS_HRD1_Pin         38
@@ -109,7 +109,7 @@ CYPD3176::CYPD3176 cypd3176 = CYPD3176::CYPD3176(Wire);
 
 /* _teensyMAC
  * - return the Teensy's MAC address as a string
- * 
+ *
  * char *unique_id : ptr to string buffer (must be of length MAX_STR_SIZE)
  */
 #define MAC_SIZE 6
@@ -132,7 +132,7 @@ String _teensyMAC(char *unique_id){
  */
 String unique_id() {
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
-  
+
   char unique_id[MAX_STR_SIZE];
   doc["result"]["unique_id"] = _teensyMAC(unique_id);
 
@@ -159,7 +159,7 @@ String reboot_to_bootloader() {
  */
 String version(){
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
- 
+
   doc["result"]["version"] = VERSION;
 
   oled_print(OLED_LINE_RPC, __func__, false);
@@ -183,7 +183,7 @@ String slot() {
   uint32_t m2 = HW_OCOTP_MAC0;
   uint32_t _id = m2 & 0xffff;
   doc["result"]["id"] = _id;
-  
+
   oled_print(OLED_LINE_RPC, __func__, false);
   return _response(doc);  // always the last line of RPC API
 }
@@ -275,7 +275,7 @@ String vbus_en(bool assert) {
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
   max_hdr3.gpio_write(MAX11300::PIXI_PORT9, (assert ? 0 : 1));
   doc["result"]["assert"] = assert;
-  doc["result"]["level"] = assert;  
+  doc["result"]["level"] = assert;
 
   oled_print(OLED_LINE_RPC, __func__, false);
   return _response(doc);  // always the last line of RPC API
@@ -332,7 +332,7 @@ int _self_test(void) {
       return -1;
     }
     delay(100);
-    ina226_vdut.startSingleMeasurement();   
+    ina226_vdut.startSingleMeasurement();
     float v = ina226_vdut.getBusVoltage_V();
     float ma = ina226_vdut.getCurrent_mA();
     float vf = (float)vdut_voltages[i] / 1000.0f;
@@ -344,7 +344,7 @@ int _self_test(void) {
     if (ma > VDUT_SELF_TEST_MA_NOLOAD_MAX) {
       oled_print(OLED_LINE_DEBUG, buf, true);
       return -1;
-    }    
+    }
     oled_print(OLED_LINE_DEBUG, buf, false);
     delay(100);  // use for debug on display
 
@@ -364,7 +364,7 @@ int _self_test(void) {
     if (ma > (ma_expected + VDUT_SELF_TEST_MA_TOL) || ma < (ma_expected - VDUT_SELF_TEST_MA_TOL)) {
       oled_print(OLED_LINE_DEBUG, buf, true);
       return -1;
-    }    
+    }
     oled_print(OLED_LINE_DEBUG, buf, false);
     iox_selftest(false);
     vdut_con(false);
@@ -387,7 +387,7 @@ int _self_test(void) {
     if (ma > VDUT_SELF_TEST_MA_NOLOAD_MAX) {
       oled_print(OLED_LINE_DEBUG, buf, true);
       return -1;
-    }    
+    }
     oled_print(OLED_LINE_DEBUG, buf, false);
     delay(100);  // use for debug on display
 
@@ -408,7 +408,7 @@ int _self_test(void) {
       oled_print(OLED_LINE_DEBUG, buf, true);
 
       return -1;
-    }    
+    }
     oled_print(OLED_LINE_DEBUG, buf, false);
     iox_selftest(false);
     iox_vbat_con(false);
@@ -431,9 +431,9 @@ void setup(void) {
   digitalWrite(VSYS_EN_PIN, LOW);  // disable VSYS on boot
   pinMode(VDUT_CONNECT_PIN, OUTPUT);
   pinMode(VDUT_SMPS_EN_PIN, OUTPUT);
-  digitalWrite(VDUT_SMPS_EN_PIN, LOW); 
-  pinMode(MAX11311_CONVERT_Pin, OUTPUT); 
-  pinMode(VDUTSMPS_INT, INPUT); 
+  digitalWrite(VDUT_SMPS_EN_PIN, LOW);
+  pinMode(MAX11311_CONVERT_Pin, OUTPUT);
+  pinMode(VDUTSMPS_INT, INPUT);
   pinMode(BUTTON1_PIN, INPUT);
   pinMode(BUTTON2_PIN, INPUT);
   pinMode(LED_BUILTIN, OUTPUT);
@@ -447,7 +447,7 @@ void setup(void) {
 
   // Wait on V6V t0 be present, indicating USB-PD is on
   // Can't use I2C while CYPD3176 is waiting for USB-PD
-  // toggle VSYS_EN_PIN VSYS (~6V) - powers rest of system  
+  // toggle VSYS_EN_PIN VSYS (~6V) - powers rest of system
   // NOTE: when VIN is not present, there is back powering
   //       of CYPD3176 causing it NOT to negotiate USB-PD and
   //       toggling VSYS_EN_PIN fixes this problem
@@ -471,7 +471,7 @@ void setup(void) {
       digitalWrite(VSYS_EN_PIN, LOW);
       delay(20);
       digitalWrite(LED_BUILTIN, HIGH);
-      delay(100); 
+      delay(100);
       digitalWrite(LED_BUILTIN, LOW);
       delay(200);
     }
@@ -534,16 +534,16 @@ void setup(void) {
   // set SPI interface pin modes
   pinMode (SPI_CS_IOX_Pin, OUTPUT);   // ensure SPI CS is driven output
   digitalWrite(SPI_CS_IOX_Pin, HIGH); // SPI CS inactive high
-  pinMode (SPI_CS_HRD1_Pin, OUTPUT); 
-  digitalWrite(SPI_CS_HRD1_Pin, HIGH); 
-  pinMode (SPI_CS_HDR2_Pin, OUTPUT); 
-  digitalWrite(SPI_CS_HDR2_Pin, HIGH); 
-  pinMode (SPI_CS_HDR3_Pin, OUTPUT); 
-  digitalWrite(SPI_CS_HDR3_Pin, HIGH); 
-  pinMode (SPI_CS_HDR4_Pin, OUTPUT); 
-  digitalWrite(SPI_CS_HDR4_Pin, HIGH); 
-  pinMode (SPI_CS2_HDR4_Pin, OUTPUT);          
-  digitalWrite(SPI_CS2_HDR4_Pin, HIGH); 
+  pinMode (SPI_CS_HRD1_Pin, OUTPUT);
+  digitalWrite(SPI_CS_HRD1_Pin, HIGH);
+  pinMode (SPI_CS_HDR2_Pin, OUTPUT);
+  digitalWrite(SPI_CS_HDR2_Pin, HIGH);
+  pinMode (SPI_CS_HDR3_Pin, OUTPUT);
+  digitalWrite(SPI_CS_HDR3_Pin, HIGH);
+  pinMode (SPI_CS_HDR4_Pin, OUTPUT);
+  digitalWrite(SPI_CS_HDR4_Pin, HIGH);
+  pinMode (SPI_CS2_HDR4_Pin, OUTPUT);
+  digitalWrite(SPI_CS2_HDR4_Pin, HIGH);
   pinMode (SPI_MOSI_Pin, OUTPUT);
   digitalWrite(SPI_MOSI_Pin, LOW);
   pinMode (SPI_SCLK_Pin, OUTPUT);
@@ -585,20 +585,20 @@ void setup(void) {
       setup_fail_code |= (0x1 << SETUP_FAIL_CYPD3176);
       oled_print(OLED_LINE_STATUS, "SETUP:CYPD3176", true);
       blink_error_count = SETUP_FAIL_CYPD3176;
-      goto fail;      
+      goto fail;
     }
     oled_print(OLED_LINE_DEBUG, buf, false);
-    delay(100);  
+    delay(100);
 
     // FIXME: see notes in cypd3176 driver
     //uint32_t pd_bus_voltage_mv = cypd3176.getBusVoltageMV();
     //snprintf(buf, LINE_MAX_LENGTH, "cypd3176 bus %lu mV", pd_bus_voltage_mv);
     //oled_print(OLED_LINE_DEBUG, buf, false);
-    //delay(2000);   
-    // When this is working, gate setup() until VIN is 15V. 
+    //delay(2000);
+    // When this is working, gate setup() until VIN is 15V.
   }
 
-  // reset 
+  // reset
   if (_reset()) {
     setup_fail_code |= (0x1 << SETUP_FAIL_RESET);
     oled_print(OLED_LINE_STATUS, "SETUP:reset", true);
@@ -634,7 +634,7 @@ void setup(void) {
   ina226_vdut.setResistorRange(INA226_VDUT_SHUNT_OHMS, INA226_CURRENT_RANGE_A);
   ina226_vdut.setMeasureMode(INA226_TRIGGERED);
 
-  tmp1075.begin(); 
+  tmp1075.begin();
   tmp1075.setConversionTime(TMP1075::ConversionTime220ms);
   snprintf(buf, LINE_MAX_LENGTH, "TMP1075 %.2f degC", tmp1075.getTemperatureCelsius());
   oled_print(OLED_LINE_DEBUG, buf, false);
@@ -644,7 +644,7 @@ void setup(void) {
     setup_fail_code |= (0x1 << SETUP_FAIL_VDUT);
     oled_print(OLED_LINE_STATUS, "SETUP:vdut", true);
     blink_error_count = SETUP_FAIL_VDUT;
-    goto fail;    
+    goto fail;
   }
   oled_print(OLED_LINE_DEBUG, "vdut_init", false);
 
@@ -652,7 +652,7 @@ void setup(void) {
     setup_fail_code |= (0x1 << SETUP_FAIL_MAX_HDR);
     oled_print(OLED_LINE_STATUS, "SETUP:._max_hdr_bist", true);
     blink_error_count = SETUP_FAIL_MAX_HDR;
-    goto fail;     
+    goto fail;
   }
 
   oled_print(OLED_LINE_STATUS, "SETUP:BATTEM CAL", false);
@@ -660,7 +660,7 @@ void setup(void) {
     setup_fail_code |= (0x1 << SETUP_FAIL_BATTEM);
     oled_print(OLED_LINE_STATUS, "SETUP:battemu_init", true);
     blink_error_count = SETUP_FAIL_BATTEM;
-    goto fail;      
+    goto fail;
   }
 
   oled_print(OLED_LINE_STATUS, "SETUP:BIST", false);
@@ -668,8 +668,8 @@ void setup(void) {
     setup_fail_code |= (0x1 << SETUP_FAIL_SELFTEST);
     oled_print(OLED_LINE_STATUS, "SETUP:self_test", true);
     blink_error_count = SETUP_FAIL_SELFTEST;
-    goto fail;      
-  }  
+    goto fail;
+  }
 
   // Add more startup checks here...
 
@@ -707,7 +707,7 @@ fail:
 
 static unsigned long lastTime = 0;
 void loop(void) {
- 
+
   // Display status
   if (millis() - lastTime > 2000) {
     lastTime = millis();
@@ -745,6 +745,10 @@ void loop(void) {
     bond_max_hdr_adc_cal, "bond_max_hdr_adc_cal: read port 11 cal voltage on header",
     bond_max_hdr_adc, "bond_max_hdr_adc: read ADC voltage on header port",
     bond_max_hdr_dac, "bond_max_hdr_dac: write DAC voltage on header port",
+    bond_max_hdr_gpi, "bond_max_hdr_gpi: read GPI on header port",
+    bond_max_hdr_gpo, "bond_max_hdr_gpo: write GPO on header port",
+
+
     bond_batt_emu_cal, "bond_batt_emu_cal: calibrate battery emulator",
 
     vdut_read, "vbus_read: Read VDUT current and voltage",
