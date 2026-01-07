@@ -767,7 +767,7 @@ class A4401_BOND:
         - get port from pin, and also check mode
 
         :return: {'success': True, 'method': 'bond_max_hdr_gpo',
-                  'result': {'mV': <int>, 'dac_raw': <int> }
+                  'result': {'state': <bool> }
         """
         success, port, error = self._bond_check_hdr_pin(hdr, pin, "GPO")
         if not success:
@@ -783,7 +783,7 @@ class A4401_BOND:
         - get port from pin, and also check mode
 
         :return: {'success': True, 'method': 'bond_max_hdr_gpi',
-                  'result': {'state': <int>}
+                  'result': {'state': <bool>}
         """
         success, port, error = self._bond_check_hdr_pin(hdr, pin, "GPI")
         if not success:
