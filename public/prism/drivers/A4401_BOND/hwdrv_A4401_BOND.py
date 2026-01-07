@@ -36,7 +36,7 @@ class HWDriver(object):
         self._num_chan = 0
         self.teensys = []  # holds a list of all objects found
 
-    def discover_channels(self, scriptArgs):
+    def discover_channels(self, scriptArgs=None):
         """ determine the number of channels, and populate hw drivers into shared state
 
         [ {"id": i,                    # ~slot number of the channel (see Note 1)
@@ -98,8 +98,10 @@ class HWDriver(object):
             #https: // stackoverflow.com / questions / 21050671 / how - to - check - if -device - is -connected - pyserial / 49450813
             # test if this COM port is really a Teensy
             # create an instance of Teensy()
-            _teensy['hwdrv'] = A4401_BOND(port, loggerIn=logging.getLogger("teensy.try"))
-            success = _teensy['hwdrv'].init(scriptArgs)
+            _teensy['hwdrv'] = A4401_BOND(port,
+                                          loggerIn=logging.getLogger("teensy.try"),
+                                          header_def_filename=scriptArgs)
+            success = _teensy['hwdrv'].init()
             if not success:
                 self.logger.error("failed on {}...".format(port))
                 continue

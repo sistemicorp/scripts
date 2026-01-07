@@ -28,18 +28,18 @@ def parse_args():
        python A4401_BOND_cli.py --port /dev/ttyACM0 led --on
 
     Port: Teensy4 when plugged into USB on Linux will show up as a ttyACM# device in /dev.
-          Use 'ls -al /dev/ttyACM*' to find the port. 
-          
+          Use 'ls -al /dev/ttyACM*' to find the port.
+
     Getting Help for a command:
     $ python3 A4401_BOND_cli.py --port /dev/ttyACM0 write_gpio --help
         usage: A4401_BOND_cli.py write_gpio [-h] --pin-number _PIN_NUMBER --state {True,False}
-    
+
         options:
         -h, --help            show this help message and exit
         --pin-number _PIN_NUMBER
                             GPIO number (0-41)
         --state {True,False}  True|False
-      
+
     Examples:
     (venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/A4401_BOND$ python A4401_BOND_cli.py -p /dev/ttyACM0 version
     (venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/A4401_BOND$ python A4401_BOND_cli.py -p /dev/ttyACM0 -n iox_led_green --enable
@@ -507,9 +507,9 @@ if __name__ == '__main__':
     else:
         logging.basicConfig(level=logging.DEBUG, format='%(filename)20s %(levelname)6s %(lineno)4s %(message)s')
 
-    teensy = A4401_BOND(args.port, loggerIn=logging)
+    teensy = A4401_BOND(args.port, loggerIn=logging, header_def_filename="pogo_hdr_definition._json")
 
-    success = teensy.init(header_def_filename="pogo_hdr_definition._json")
+    success = teensy.init()
     if not success:
         logging.error("Failed to create teensy instance")
         exit(1)
