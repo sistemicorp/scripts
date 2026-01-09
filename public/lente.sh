@@ -42,6 +42,9 @@ start () {
         docker run -d \
             --network=host \
             --hostname=${HOSTNAME} \
+            -e OPENBLAS_NUM_THREADS=1 \
+            --security-opt seccomp=unconfined \
+            --security-opt apparmor=unconfined \
             --restart=${flag_restart} \
             -v $(pwd):/app/public \
             --name lente \
@@ -50,6 +53,9 @@ start () {
         docker run -d \
             --network=host \
             --hostname=${HOSTNAME} \
+            -e OPENBLAS_NUM_THREADS=1 \
+            --security-opt seccomp=unconfined \
+            --security-opt apparmor=unconfined \                 
             -v $(pwd):/app/public \
             --name lente \
             --rm \
