@@ -83,7 +83,7 @@ class tst01xx(TestItem):
                                                            randint(0, 10),
                                                            ResultAPI.UNIT_DB,
                                                            ctx.item.args.min,
-                                                           ctx.item.args.min)
+                                                           ctx.item.args.max)
         if not success:
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
