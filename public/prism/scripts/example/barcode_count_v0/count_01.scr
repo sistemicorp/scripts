@@ -1,6 +1,8 @@
 // Example: Count barcoded items
 //          Barcode string looks like: P###-S#####
-//          Multiple Scanners into One Prism PC is supported
+//          Multiple Scanners into One Prism PC is supported.
+//          See example barcode_test_01.pdf for example barcodes used in this test.
+//          NOTE: To STOP the test, use the STOP Barcode
 {
   "subs": {
     "Lot": {
