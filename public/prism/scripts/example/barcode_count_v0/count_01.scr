@@ -2,7 +2,7 @@
 //          Barcode string looks like: P###-S#####
 //          Multiple Scanners into One Prism PC is supported
 {
-  "subs$": {
+  "subs": {
     "Lot": {
       "title": "Lot (format #####)",
       "type" : "str", "widget": "textinput", "regex": "\\d{5}", "default": "95035"
@@ -27,7 +27,7 @@
       "module": "public.prism.scripts.example.barcode_count_v0.tst00xx",
       "options": { "fail_fast": false },
       "items": [
-        {"id": "TST000_scan",           "enable": true, "regex": "^P\\d{3}-S\\d{5}$", "timeout": 10 },
+        {"id": "TST000_scan",           "enable": true, "regex": "^P\\d{3}-S\\d{5}$", "timeout": 100 },
         {"id": "TST0xxTEARDOWN",        "enable": true }
       ]
     }

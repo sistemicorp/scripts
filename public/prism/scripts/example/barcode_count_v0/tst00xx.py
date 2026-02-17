@@ -10,7 +10,7 @@ import logging
 from core.test_item import TestItem
 from public.prism.api import ResultAPI
 
-#from public.prism.drivers.fake.Fake import DRIVER_TYPE
+from public.prism.drivers.scanners.Scanners import DRIVER_TYPE as DRIVER_TYPE_SCANNER
 
 
 # file and class name must match
@@ -42,11 +42,25 @@ class tst00xx(TestItem):
         self.log_bullet("Scan barcode")
 
         user_text = self.input_textbox("Scan:", "change")
+        # Note input_textbox also has a timeout parameter which should be set to
+        # something just lower than the test item timeout.  If input_textbox
+        # has a timeout, then we should probably STOP Prism player just like below.
+
         if user_text["success"]:
             self.log_bullet(f"SCAN: {user_text['textbox']}")
 
+            # STOPPING - use a scanned "cookie" to indicate stop
+            if user_text["textbox"] == "P999-STOP":
+                # Stop Prism Player
+                self.log_bullet("STOPPING PRISM PLAYER")
+                drivers = self.shared_state.get_drivers(self.chan, type=DRIVER_TYPE_SCANNER)
+                drivers[0]["obj"]["hwdrv"].stop_prism_player()
+                self.item_end(ResultAPI.RECORD_RESULT_DISABLED)
+                return
+
             # qualify the text here
             if re.match(ctx.item.regex, user_text["textbox"]):
+
                 # Note: ResultAPI.UNIT_STRING is used to format the measurement correctly in JSON
                 _, _result, _bullet = ctx.record.measurement("input", user_text["textbox"], ResultAPI.UNIT_STRING)
 

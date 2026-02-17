@@ -87,9 +87,9 @@ class HWDriver(object):
                 if m in str(device.attributes.get("manufacturer")):
                     _scanner = {"id": 0} # this will get re-indexed below
                     _scanner['hwdrv'] = Scanner()
-                    _scanner['version'] = _scanner['hwdrv'].version()
+                    _scanner['version'] = None
                     _scanner['close'] = None
-                    _scanner['play'] = None
+                    _scanner['play'] = _scanner['hwdrv'].jig_closed_always
                     _scanner['show_pass_fail'] = None
                     _scanner['show_msg'] = None
                     _scanner['usb_path'] = device.device_path

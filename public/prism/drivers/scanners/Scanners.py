@@ -20,30 +20,30 @@ DRIVER_TYPE = "SCANNER"
 
 class Scanner(object):
     """ Scanners HW Driver
-    - this driver actually does nothing
+    - this driver actually does nothing (very little)
 
     """
-
     def __init__(self, loggerIn=None):
         if loggerIn: self.logger = loggerIn
         else: self.logger = StubLogger()
 
-    def version(self):
-        """ Version of this driver.  Typically this would be coming
-        from the remote hardware.  The version of remote software/hardware
-        should be something that is expected.
+        self._stop_prism_player = False
+        self._close = False
 
-        :return:
+    def stop_prism_player(self):
+        self._stop_prism_player = True
+        self.logger.info("stop_prism_player")
+
+    def jig_closed_always(self):
+        """ Always closed
+        - this is a stub implementation that always returns True which
+          causes the script to ALWAYS re-run the test sequence.
         """
-        return VERSION
+        if self._stop_prism_player:
+            self.logger.info(False)
+            return False
 
-    def close(self):
-        """ Always called at the end of a test sequence by Prism
-        - perform any reset, or closing of the hardware if the testing is done, or ended
-        - note the result state (Pass|Fail) of the DUT is not known and should not be assumed,
-          meaning that this hardware may be in an unknown state.  This close() function
-          allows you to get back to a known state, if required.
+        temp = self._close
+        self._close = not temp
 
-        :return: None
-        """
-        self.logger.info("closing")
+        return temp
