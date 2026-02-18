@@ -1,0 +1,39 @@
+// Example: Count barcoded items
+//          Barcode string looks like: P###-S#####
+//          info:product is filled in from the barcode
+//          dB key0 is used for the serial number
+//          Multiple Scanners into One Prism PC is supported.
+//          See example barcode_test_01.pdf for example barcodes used in this test.
+//          NOTE: To STOP the test, use the STOP Barcode
+{
+  "subs": {
+    "Lot": {
+      "title": "Lot (format #####)",
+      "type" : "str", "widget": "textinput", "regex": "\\d{5}", "default": "95035"
+    },
+    "Loc": {
+      "title": "Location",
+      "type" : "str", "widget": "select", "choices": ["canada/ontario/milton", "us/newyork/bufalo"]
+    }
+  },
+  "info": {
+    "product": "N/A",
+    "bom": "N/A",
+    "lot": "%%Lot",
+    "location": "%%Loc"
+  },
+  "config": {
+    "fail_fast": true,
+    "drivers": ["public.prism.drivers.scanners.hwdrv_scanners"]
+  },
+  "tests": [
+    {
+      "module": "public.prism.scripts.example.barcode_count_v0.tst00xx",
+      "options": { "fail_fast": false },
+      "items": [
+        {"id": "TST000_scan",           "enable": true, "regex": "^P\\d{3}-S\\d{5}$", "timeout": 100 },
+        {"id": "TST0xxTEARDOWN",        "enable": true }
+      ]
+    }
+  ]
+}
