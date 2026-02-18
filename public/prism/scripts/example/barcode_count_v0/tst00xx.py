@@ -61,8 +61,20 @@ class tst00xx(TestItem):
             # qualify the text here
             if re.match(ctx.item.regex, user_text["textbox"]):
 
+                # update the product from the scanned item
+                product = user_text["textbox"].split("-")[0]
+                _info = {"product": product,}
+                ctx.record.record_info_set(_info)
+
+                sn = user_text["textbox"].split("-")[1]
+                ctx.record.add_key("sn", sn, slot=0)
+                _result = ResultAPI.RECORD_RESULT_PASS
+
+                _bullet = f"Barcode: {user_text['textbox']}"
+
+                # Or could make a measurement
                 # Note: ResultAPI.UNIT_STRING is used to format the measurement correctly in JSON
-                _, _result, _bullet = ctx.record.measurement("input", user_text["textbox"], ResultAPI.UNIT_STRING)
+                #_, _result, _bullet = ctx.record.measurement("input", user_text["textbox"], ResultAPI.UNIT_STRING)
 
                 # Here, code could reach out to a dB and do some other kind of work
 

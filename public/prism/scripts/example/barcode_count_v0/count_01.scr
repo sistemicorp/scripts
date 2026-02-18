@@ -1,5 +1,7 @@
 // Example: Count barcoded items
 //          Barcode string looks like: P###-S#####
+//          info:product is filled in from the barcode
+//          dB key0 is used for the serial number
 //          Multiple Scanners into One Prism PC is supported.
 //          See example barcode_test_01.pdf for example barcodes used in this test.
 //          NOTE: To STOP the test, use the STOP Barcode

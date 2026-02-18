@@ -35,14 +35,16 @@ class Scanner(object):
         self.logger.info("stop_prism_player")
 
     def jig_closed_always(self):
-        """ Always closed
-        - this is a stub implementation that always returns True which
-          causes the script to ALWAYS re-run the test sequence.
+        """ "Auto" Jig Open/Close
+        - NOTE: because Prism calls here every 1sec and because Prism needs to
+                see the Jig Open/Close, it can take up to 2sec before Prism
+                is ready to Scan again
         """
         if self._stop_prism_player:
             self.logger.info(False)
             return False
 
+        # toggle response so that Prism thinks the jig is opening and closing.
         temp = self._close
         self._close = not temp
 
