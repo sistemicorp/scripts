@@ -30,6 +30,10 @@ class Scanner(object):
         self._stop_prism_player = False
         self._close = False
 
+    # TODO: function to send a command to the scanner to alert the User
+    #       that prism is ready for the user to scan.  Scanners
+    #       support this feature.
+
     def stop_prism_player(self):
         self._stop_prism_player = True
         self.logger.info("stop_prism_player")
