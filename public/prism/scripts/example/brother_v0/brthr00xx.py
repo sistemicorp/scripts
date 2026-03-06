@@ -1,14 +1,14 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2020
+Sistemi Corporation, copyright, all rights reserved, 2020-2026
 Martin Guthrie
 
 """
 import logging
 from core.test_item import TestItem
 from public.prism.api import ResultAPI
-
+from public.prism.drivers.brother_ql700.hwdrv_ql700 import DRIVER_TYPE as BROTHER_DRIVER
 
 # file and class name must match
 class brthr00xx(TestItem):
@@ -34,9 +34,9 @@ class brthr00xx(TestItem):
 
         """
         ctx = self.item_start()  # always first line of test
-        printer_info = self.shared_state.get_drivers(None, type="Brother_QL-700")
+        printer_info = self.shared_state.get_drivers(None, type=BROTHER_DRIVER)
         if not printer_info:
-            self.logger.error("Printer not found")
+            self.logger.error(f"driver {BROTHER_DRIVER} not found")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
