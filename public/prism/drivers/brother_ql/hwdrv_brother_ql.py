@@ -45,7 +45,7 @@ class BrotherQL(object):
     DRIVER_PATH = os.path.dirname(os.path.abspath(__file__))
     WORKING_PATH = os.path.join(DRIVER_PATH, "wip")
 
-    def __init__(self, id, path):
+    def __init__(self, id, path, model="QL-700"):
         self.logger = logging.getLogger("SC.{}".format(__class__.__name__))
         try:
             if not os.path.exists(self.WORKING_PATH):
@@ -63,6 +63,43 @@ class BrotherQL(object):
         self.lock = Lock()
         self.path = path  # this is the linux usb path, /dev/usb/lp0
         self.id = id
+        self.model = model
+
+    def _filter_known_stderr_noise(self, stderr_text):
+        """
+        Remove known harmless warnings from stderr while preserving all real errors.
+        """
+        suppressed_markers = [
+            "deprecation warning: brother_ql.devicedependent is deprecated",
+        ]
+
+        kept_lines = []
+        suppressed_count = 0
+
+        for line in stderr_text.splitlines():
+            low = line.lower()
+            if any(marker in low for marker in suppressed_markers):
+                suppressed_count += 1
+            else:
+                kept_lines.append(line)
+
+        return "\n".join(kept_lines).strip(), suppressed_count
+
+    def _log_filtered_stderr(self, prefix, stderr_bytes):
+        if not stderr_bytes:
+            return
+
+        stderr_text = str(stderr_bytes, "utf-8", errors="replace")
+        filtered_text, suppressed_count = self._filter_known_stderr_noise(stderr_text)
+
+        if filtered_text:
+            self.logger.error("%s: %s", prefix, filtered_text)
+        elif suppressed_count:
+            self.logger.debug(
+                "%s contained only suppressed warning(s): %d",
+                prefix,
+                suppressed_count
+            )
 
     def _create_barcode(self, string):
         qr = qrcode.QRCode(version=1,
@@ -116,19 +153,63 @@ class BrotherQL(object):
     def _print_label(self, img_path):
         brother_ql = os.path.abspath(self.DRIVER_PATH + "/brother_ql")
 
-        l_bin = subprocess.Popen(
-            ['python3 {}/brother_ql_create.py --model QL-700 {} > {}/label.bin'.format(brother_ql, img_path, self.WORKING_PATH)],
-            cwd='.', stdout=subprocess.PIPE, shell=True)
+        create_cmd = f'python3 {brother_ql}/brother_ql_create.py --model {self.model} {img_path} > {self.WORKING_PATH}/label.bin'
+        self.logger.debug("create_cmd: %s", create_cmd)
 
-        # brother_ql_create --model QL-700 label.png > label.bin
+        try:
+            l_bin = subprocess.Popen(
+                [create_cmd],
+                cwd='.',
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                shell=True
+            )
+            l_out, l_err = l_bin.communicate(timeout=30)
 
-        self.logger.info(str(l_bin.communicate()[0], 'utf-8'))
+        except subprocess.TimeoutExpired:
+            self.logger.exception("Timeout while creating label.bin")
+            return False
 
-        printing = subprocess.Popen(
-            ['python3', '{}/brother_ql_print.py'.format(brother_ql), '{}/label.bin'.format(self.WORKING_PATH), self.path],
-            cwd='.', stdout=subprocess.PIPE)
+        except Exception:
+            self.logger.exception("Unexpected error while creating label.bin")
+            return False
 
-        self.logger.info(str(printing.communicate()[0], 'utf-8'))
+        if l_out:
+            self.logger.info(str(l_out, 'utf-8', errors='replace'))
+        self._log_filtered_stderr("create stderr", l_err)
+
+        if l_bin.returncode:
+            self.logger.error("create.returncode: %s", l_bin.returncode)
+            return False
+
+        print_cmd = [
+            'python3',
+            '{}/brother_ql_print.py'.format(brother_ql),
+            '{}/label.bin'.format(self.WORKING_PATH),
+            self.path
+        ]
+        self.logger.debug("print_cmd: %s", " ".join(print_cmd))
+
+        try:
+            printing = subprocess.Popen(
+                print_cmd,
+                cwd='.',
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            p_out, p_err = printing.communicate(timeout=30)
+        except subprocess.TimeoutExpired:
+            self.logger.exception("Timeout while printing label")
+            return False
+
+        except Exception:
+            self.logger.exception("Unexpected error while printing label")
+            return False
+
+        if p_out:
+            self.logger.info(str(p_out, 'utf-8', errors='replace'))
+        self._log_filtered_stderr("print stderr", p_err)
+
         if printing.returncode:
             self.logger.error("printing.returncode: {}".format(printing.returncode))
             return False
