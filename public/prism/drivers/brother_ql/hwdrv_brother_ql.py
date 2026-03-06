@@ -42,8 +42,8 @@ class BrotherQL(object):
     """ Brother Ql-XXX Helper Class
 
     """
-    DRIVER_PATH = "./public/prism/drivers/brother_ql700/"
-    WORKING_PATH = DRIVER_PATH + "wip/"
+    DRIVER_PATH = os.path.dirname(os.path.abspath(__file__))
+    WORKING_PATH = os.path.join(DRIVER_PATH, "wip")
 
     def __init__(self, id, path):
         self.logger = logging.getLogger("SC.{}".format(__class__.__name__))
@@ -75,22 +75,22 @@ class BrotherQL(object):
         qr.add_data(encrypted_info)
         qr.make(fit=True)
         img = qr.make_image(fill_color="black", back_color="white")
-        img.save(self.WORKING_PATH + "qrcode.PNG")
-        img_filename = os.path.abspath(self.WORKING_PATH + "qrcode.PNG")
+        img_filename = os.path.join(self.WORKING_PATH, "qrcode.PNG")
+        img.save(img_filename)
         return img_filename
 
     def _create_text(self, ruid, chan):
         img = Image.new('RGB', (696, 309), color='white')
 
         d = ImageDraw.Draw(img)
-        font_path = self.DRIVER_PATH + 'TIMES.TTF'
+        font_path = os.path.join(self.DRIVER_PATH,'TIMES.TTF')
         self.logger.info(font_path)
         font = ImageFont.truetype(font_path, 50)
         d.text((10, 10), "RUID:{}".format(chan), fill=(0, 0, 0), font=font)
         font = ImageFont.truetype(font_path, 40)
         d.text((10, 54), "{}".format(ruid), fill=(0, 0, 0), font=font)
-        img.save(self.WORKING_PATH + 'pil_text.png')
-        img_file = os.path.abspath(self.WORKING_PATH + 'pil_text.png')
+        img_file = os.path.join(self.WORKING_PATH, 'pil_text.png')
+        img.save(img_file)
         return img_file
 
     def _create_label(self, text_path, barcode_path):
@@ -100,8 +100,8 @@ class BrotherQL(object):
         label = Image.new('RGBA', (696, 280), color="white")
         label.paste(text, (0, 0))
         label.paste(barcode, (540, 120))
-        label.save(self.WORKING_PATH + "label.png")
-        img_file = os.path.abspath(self.WORKING_PATH + 'label.png')
+        img_file = os.path.join(self.WORKING_PATH, 'label.png')
+        label.save(img_file)
         self.logger.info(img_file)
         self._save_as_base64(img_file)
         return img_file
@@ -109,7 +109,7 @@ class BrotherQL(object):
     def _save_as_base64(self, img_path):
         with open("{}".format(img_path), 'rb') as image:
             str = base64.b64encode(image.read())
-            file = open(self.WORKING_PATH + "img.txt", 'w')
+            file = open(os.path.join(self.WORKING_PATH, "img.txt"), 'w')
             file.write(str.decode("utf-8"))
             file.close()
 
@@ -117,7 +117,7 @@ class BrotherQL(object):
         brother_ql = os.path.abspath(self.DRIVER_PATH + "/brother_ql")
 
         l_bin = subprocess.Popen(
-            ['python3 {}/brother_ql_create.py --model QL-700 {} > {}label.bin'.format(brother_ql, img_path, self.WORKING_PATH)],
+            ['python3 {}/brother_ql_create.py --model QL-700 {} > {}/label.bin'.format(brother_ql, img_path, self.WORKING_PATH)],
             cwd='.', stdout=subprocess.PIPE, shell=True)
 
         # brother_ql_create --model QL-700 label.png > label.bin
@@ -125,7 +125,7 @@ class BrotherQL(object):
         self.logger.info(str(l_bin.communicate()[0], 'utf-8'))
 
         printing = subprocess.Popen(
-            ['python3', '{}/brother_ql_print.py'.format(brother_ql), '{}label.bin'.format(self.WORKING_PATH), self.path],
+            ['python3', '{}/brother_ql_print.py'.format(brother_ql), '{}/label.bin'.format(self.WORKING_PATH), self.path],
             cwd='.', stdout=subprocess.PIPE)
 
         self.logger.info(str(printing.communicate()[0], 'utf-8'))

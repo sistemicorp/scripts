@@ -8,7 +8,7 @@ Martin Guthrie
 import logging
 from core.test_item import TestItem
 from public.prism.api import ResultAPI
-from public.prism.drivers.brother_ql700.hwdrv_ql700 import DRIVER_TYPE as BROTHER_DRIVER
+from public.prism.drivers.brother_ql.hwdrv_brother_ql import DRIVER_TYPE as BROTHER_DRIVER
 
 # file and class name must match
 class brthr00xx(TestItem):
