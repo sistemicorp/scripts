@@ -1,4 +1,4 @@
-prev_commit=7e1a71a887bebb4d6e522de0c1efa3ba565d9dd7
-date=2026-03-06 12:46:07 -0500
+prev_commit=cba35ebe1c9b75983a6ee63e660d5ca4b0fb0249
+date=2026-03-06 13:13:41 -0500
 branch=43-brother-driver-has-hard-coded-file-path
-version=0.8-31-g7e1a71a8
+version=0.8-32-gcba35ebe

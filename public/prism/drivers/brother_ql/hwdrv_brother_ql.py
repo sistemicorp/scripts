@@ -83,23 +83,44 @@ class BrotherQL(object):
             else:
                 kept_lines.append(line)
 
-        return "\n".join(kept_lines).strip(), suppressed_count
+        return kept_lines, suppressed_count
 
     def _log_filtered_stderr(self, prefix, stderr_bytes):
         if not stderr_bytes:
             return
 
         stderr_text = str(stderr_bytes, "utf-8", errors="replace")
-        filtered_text, suppressed_count = self._filter_known_stderr_noise(stderr_text)
+        kept_lines, suppressed_count = self._filter_known_stderr_noise(stderr_text)
 
-        if filtered_text:
-            self.logger.error("%s: %s", prefix, filtered_text)
-        elif suppressed_count:
-            self.logger.debug(
-                "%s contained only suppressed warning(s): %d",
-                prefix,
-                suppressed_count
-            )
+        if not kept_lines:
+            if suppressed_count:
+                self.logger.debug("%s contained only suppressed warning(s): %d", prefix, suppressed_count)
+            return
+
+        info_lines = []
+        warning_lines = []
+        error_lines = []
+
+        for line in kept_lines:
+            stripped = line.strip()
+            upper = stripped.upper()
+
+            if upper.startswith("INFO:"):
+                info_lines.append(stripped)
+            elif upper.startswith("WARNING:"):
+                warning_lines.append(stripped)
+            elif upper.startswith("ERROR:") or upper.startswith("CRITICAL:"):
+                error_lines.append(stripped)
+            else:
+                # Unknown stderr format: keep conservative behavior.
+                error_lines.append(stripped)
+
+        if info_lines:
+            self.logger.info("%s: %s", prefix, "\n".join(info_lines))
+        if warning_lines:
+            self.logger.warning("%s: %s", prefix, "\n".join(warning_lines))
+        if error_lines:
+            self.logger.error("%s: %s", prefix, "\n".join(error_lines))
 
     def _create_barcode(self, string):
         qr = qrcode.QRCode(version=1,
@@ -198,6 +219,7 @@ class BrotherQL(object):
                 stderr=subprocess.PIPE
             )
             p_out, p_err = printing.communicate(timeout=30)
+
         except subprocess.TimeoutExpired:
             self.logger.exception("Timeout while printing label")
             return False
@@ -208,6 +230,7 @@ class BrotherQL(object):
 
         if p_out:
             self.logger.info(str(p_out, 'utf-8', errors='replace'))
+
         self._log_filtered_stderr("print stderr", p_err)
 
         if printing.returncode:
@@ -360,7 +383,7 @@ class HWDriver(object):
             self.logger.info("Found printer: %s %s at %s (usb=%s)", manufacturer, product, devnode, usb_sys_name)
             drivers.append({"id": id,
                             "version": VERSION,
-                            "hwdrv": BrotherQL(id, devnode),
+                            "hwdrv": BrotherQL(id, devnode, model=product),
                             "play": None,
                             "show_pass_fail": None,
                             "show_msg": None,
@@ -406,7 +429,8 @@ class HWDriver(object):
 # - you will have to comment out pub_notice() and the core import whilst using this
 #
 if __name__ == '__main__':
-    logging.basicConfig()
+    FORMAT = "%(relativeCreated)5d %(filename)30s:%(lineno)4d - %(name)30s:%(funcName)20s() %(levelname)-5.5s : %(message)s"
+    logging.basicConfig(level=logging.INFO, format=FORMAT )
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
 
