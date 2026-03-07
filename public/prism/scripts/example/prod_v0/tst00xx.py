@@ -117,11 +117,22 @@ class tst00xx(TestItem):
     def TST0xxTEARDOWN(self):
         """  Always called at the end of testing
         - process any cleanup, closing, etc
+        - if there was a FAIL of an earlier test item, this is STILL called
 
             {"id": "TST0xxTEARDOWN",        "enable": true },
 
         """
         ctx = self.item_start()  # always first line of test
+
+        # play sound based on whether passing or failing
+        # NOTE: playing these sounds could have also been placed
+        #       in the driver that implements player show_pass_fail()
+        meta_result = ctx.record.record_meta_get_result()
+        if meta_result == ResultAPI.RECORD_RESULT_PASS:
+            self.hw_fake.play_sound("pass")
+        else:
+            self.hw_fake.play_sound("fail")
+
         self.item_end()  # always last line of test
 
     def TST000_Meas(self):
