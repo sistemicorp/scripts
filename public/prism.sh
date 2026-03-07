@@ -85,6 +85,8 @@ start () {
             -v /var/run/dbus/:/var/run/dbus/:z \
             --device=/dev \
             --privileged \
+            --device /dev/snd \
+            --group-add audio \
             --name prism \
             sistemicorp/prism
     elif [[ $flag_restart == "no" ]]; then
@@ -98,6 +100,8 @@ start () {
             -v /var/run/dbus/:/var/run/dbus/:z \
             --device=/dev \
             --privileged \
+            --device /dev/snd \
+            --group-add audio \
             --name prism \
             --rm \
             sistemicorp/prism
