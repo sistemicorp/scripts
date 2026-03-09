@@ -26,6 +26,10 @@ fi
 
 # set defaults here
 flag_restart=no
+flag_instno=""
+flag_image="sistemicorp/lente"
+flag_network="host"
+flag_verbose=""
 
 start () {
     echo restart Lente: $flag_restart
@@ -36,49 +40,51 @@ start () {
         echo "--restart= must be always or no"
         exit 1
     fi
-    docker stop lente 2> /dev/null
-    docker rm lente 2> /dev/null
+    docker stop lente${flag_instno} 2> /dev/null
+    docker rm lente${flag_instno} 2> /dev/null
     if [[ $flag_restart == "always" ]]; then
         docker run -d \
-            --network=host \
-            --hostname=${HOSTNAME} \
-            -e OPENBLAS_NUM_THREADS=1 \
-            --security-opt seccomp=unconfined \
-            --security-opt apparmor=unconfined \
+            --network=${flag_network}\
+            --hostname=${HOSTNAME}${flag_instno} \
             --restart=${flag_restart} \
             -v $(pwd):/app/public \
-            --name lente \
-            sistemicorp/lente
+            --name lente${flag_instno} \
+            ${flag_image} \
+	    ${flag_verbose}
     elif [[ $flag_restart == "no" ]]; then
         docker run -d \
-            --network=host \
-            --hostname=${HOSTNAME} \
-            -e OPENBLAS_NUM_THREADS=1 \
-            --security-opt seccomp=unconfined \
-            --security-opt apparmor=unconfined \
+            --network=${flag_network}\
+            --hostname=${HOSTNAME}${flag_instno} \
             -v $(pwd):/app/public \
-            --name lente \
+            --name lente${flag_instno} \
             --rm \
-            sistemicorp/lente
+            ${flag_image} \
+	    ${flag_verbose}
     fi
 }
 
 docker_pull () {
-    echo docker pull latest
-    docker pull sistemicorp/lente:latest
-    docker update --restart=no lente
+    if [[ "${flag_image}" == *":"* ]]; then
+      pull_image=${flag_image}
+    else
+      pull_image=${flag_image}:latest
+    fi
+
+    echo docker pull ${pull_image}
+    docker pull ${pull_image}
+    docker update --restart=no lente${flag_instno}
     echo Stopping Lente...
-    docker stop lente
-    docker container rm lente
+    docker stop lente${flag_instno}
+    docker container rm lente${flag_instno}
     echo
     echo Now restart Lente: ./lente.sh --restart=always start
 }
 
 stop () {
     echo Stopping Lente...
-    docker update --restart=no lente
-    docker stop lente
-    docker container rm lente
+    docker update --restart=no lente${flag_instno}
+    docker stop lente${flag_instno}
+    docker container rm lente${flag_instno}
 }
 
 handle_command () {
@@ -110,6 +116,11 @@ handle_command () {
 while [ "$#" -gt 0 ]; do
   case "$1" in
     -r) flag_restart="$2"; shift 2;;
+    -n) flag_instno="$2"; shift 2;;
+    -i) flag_image="$2"; shift 2;;
+    -b) flag_network="bridge"; shift 1;;
+    -v) flag_verbose="--verbose"; shift 1;;
+
 
     --restart=*) flag_restart="${1#*=}"; shift 1;;
     --restart) echo "$1 requires an argument" >&2; exit 1;;
