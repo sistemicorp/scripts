@@ -23,5 +23,5 @@ email-validator==2.3.0
 python-rapidjson==1.22
 pyudev==0.24.4
 bleak==1.1.1
-cbor2==5.7.1
+cbor2==5.9.0
 simpleaudio==1.0.4
