@@ -13,7 +13,7 @@ arduino-simple-rpc==2.4.2
 wget==3.2
 PyPubSub==4.0.3
 fpdf==1.7.2
-requests==2.32.4
+requests==2.33.0
 pycryptodome==3.23.0
 py-bcrypt==0.4
 peewee==3.18.3
