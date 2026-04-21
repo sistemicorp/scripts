@@ -28,6 +28,9 @@ Prism & Lente
 
 * [BUGFIX] Fix/improve getting self IP address (implemented in 0.7.52)
 * Support for UPCUA, see `OPCUA <_mes_integration.html#_Manufacturing>`__
+* Python 3.12 is now default
+* Docker Images now use OS Ubuntu 24.04
+* Recommended Host OS is Ubuntu 24.04
 
 
 Prism
