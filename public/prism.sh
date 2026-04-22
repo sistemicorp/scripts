@@ -30,6 +30,10 @@ fi
 flag_server_ip=not_specified
 flag_hostname=$(hostname)
 flag_restart=no
+flag_instno=""
+flag_image="sistemicorp/prism"
+flag_network="host"
+
 IP4=$(ip route get 1 | sed -n 's/^.*src \([0-9.]*\) .*$/\1/p')
 
 function valid_ip() {
@@ -71,55 +75,66 @@ start () {
             exit 1
     fi
     echo Using Lente IP = $LENTEIP
-    docker stop prism 2> /dev/null
-    docker rm prism 2> /dev/null
+    echo Using Prism Image = $flag_image
+    docker stop prism${flag_instno} 2> /dev/null
+    docker rm prism${flag_instno} 2> /dev/null
     if [[ $flag_restart == "always" ]]; then
         docker run -d \
-            --network=host \
+            --network=${flag_network}\
+            --hostname=${HOSTNAME}${flag_instno} \
             --restart=${flag_restart} \
             -e LENTEIP=${LENTEIP} \
-            -e HOSTIP=${IP4} \
-            --hostname=${flag_hostname} \
+            --hostname=${flag_hostname}${flag_instno} \
             -v $(pwd):/app/public \
             -v /dev:/dev \
             -v /var/run/dbus/:/var/run/dbus/:z \
             --device=/dev \
             --privileged \
-            --name prism \
-            sistemicorp/prism
+            --device /dev/snd \
+            --group-add audio \
+            --name prism${flag_instno} \
+            ${flag_image}
     elif [[ $flag_restart == "no" ]]; then
         docker run -d \
-            --network=host \
+            --network=${flag_network}\
+            --hostname=${HOSTNAME}${flag_instno} \
             -e LENTEIP=${LENTEIP} \
             -e HOSTIP=${IP4} \
-            --hostname=${flag_hostname} \
+            --hostname=${flag_hostname}${flag_instno} \
             -v $(pwd):/app/public \
             -v /dev:/dev \
             -v /var/run/dbus/:/var/run/dbus/:z \
             --device=/dev \
             --privileged \
-            --name prism \
+            --device /dev/snd \
+            --group-add audio \
+            --name prism${flag_instno} \
             --rm \
-            sistemicorp/prism
+            ${flag_image}
     fi
 }
 
 docker_pull () {
-    echo docker pull latest...
-    docker pull sistemicorp/prism:latest
+    if [[ "${flag_image}" == *":"* ]]; then
+      pull_image=${flag_image}
+    else
+      pull_image=${flag_image}:latest
+    fi
+    echo docker pull ${pull_image}...
+    docker pull ${pull_image}
     echo "Stopping Prism... (if its running)"
-    docker update --restart=no prism
-    docker stop prism
-    docker container rm prism
+    docker update --restart=no prism${flag_instno}
+    docker stop prism${flag_instno}
+    docker container rm prism${flag_instno}
     echo
     echo Now restart Prism: ./prism.sh --server=? --restart=always start
 }
 
 stop () {
     echo "Stopping Prism... (if its running)"
-    docker update --restart=no prism
-    docker stop prism
-    docker container rm prism
+    docker update --restart=no prism${flag_instno}
+    docker stop prism${flag_instno}
+    docker container rm prism${flag_instno}
 }
 
 handle_command () {
@@ -153,6 +168,9 @@ while [ "$#" -gt 0 ]; do
     -r) flag_restart="$2"; shift 2;;
     -h) flag_hostname="$2"; shift 2;;
     -s) flag_server_ip="$2"; shift 2;;
+    -n) flag_instno="$2"; shift 2;;
+    -i) flag_image="$2"; shift 2;;
+    -b) flag_network="bridge"; shift 1;;
 
     --restart=*) flag_restart="${1#*=}"; shift 1;;
     --hostname=*) flag_hostname="${1#*=}"; shift 1;;
