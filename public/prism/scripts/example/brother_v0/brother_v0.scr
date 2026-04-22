@@ -11,7 +11,7 @@
   "config": {
     "fail_fast": false,
     "drivers": ["public.prism.drivers.fake.hwdrv_fake",
-                "public.prism.drivers.brother_ql700.hwdrv_ql700"]
+                ["public.prism.drivers.brother_ql.hwdrv_brother_ql", {"only_one": true}]]
   },
   "tests": [
     {

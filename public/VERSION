@@ -1,4 +1,4 @@
-prev_commit=8eb26cfe690a1f29bd8fc723d5a6e6356f3f58af
-date=2026-01-12 11:18:45 -0500
-branch=45-add-sound-support
-version=0.8-28-g8eb26cfe
+prev_commit=c66a5388e7bcb20879af8d86982c0f5c342b88b0
+date=2026-03-06 13:34:33 -0500
+branch=43-brother-driver-has-hard-coded-file-path
+version=0.8-33-gc66a538
