@@ -23,88 +23,51 @@ the command line interface of Git.  Consider these,
 
     https://git-scm.com/download/gui/linux  (list of others)
 
-To get started, create yourself a guthub account.
+Command Line (Mirroring)
+========================
 
-There are two ways to being using Sistemi Lente/Prism with Git,
+Use this method to create a private copy of a public repository that includes all branches and tags.
+(There are other approaches if you are familiar with git.)
 
-The first way, is to fork the `scripts` repo to your own github repo.  This is the
-easiest way to get started, but it has the draw back that all git forks must be
-public, and its very unlikely that you want that.  So the forking method will not be used
-below.
+1. Create a bare clone of the public repository
+-----------------------------------------------
 
-The second way is to clone scripts and push it to your own repo.  Detailed instructions
-are shown below
+This pulls down the underlying git data without creating a working directory.
 
-* Create a new repository at github.com. (this is **your** repository)
+.. code-block:: bash
 
-  * Give it the same name as Sistemi repository, `scripts`
-  * Don't initialize it with a README, .gitignore, or license.
+   git clone --bare https://github.com/sistemicorp/scripts
 
-* Clone the `scripts` repository repository to your local machine. (if you haven't done so already)
+2. Create a new private repository on GitHub
+--------------------------------------------
 
-::
+Go to GitHub and `create a new repository <https://github.com>`_.
 
-        git clone https://github.com/sistemicorp/scripts.git
+.. important::
+   * Do **not** initialize it with a README, .gitignore, or License.
+   * Set the visibility to **Private**.
 
-* Note that the `scripts` clone will be created under your current directory.
-  Some prefer all their (git) repositories to be under a common directory, so you might actually
-  do something like this,
+3. Mirror-push to your new private repository
+---------------------------------------------
 
-::
+Move into the bare clone directory and push everything to your new private URL.
 
-        mkdir ~/git
-        cd ~/git
-        git clone https://github.com/sistemicorp/scripts.git
-        cd scripts
-        sudo pip3 install -f requirements.txt
+.. code-block:: bash
 
-* Pip install will install all the Python modules needed to run Prism
+   cd scripts.git
+   git push --mirror https://github.com/yourname/private-repo.git
 
-  * **NOTE:** Do not use/install any other Python modules.
-  * If another module is needed, contact Sistemi to have it added to Prism.
+4. Clean up and clone locally
+-----------------------------
 
-* Rename the local repository's current 'origin' to 'upstream'
+Remove the temporary bare clone folder and perform a standard clone of your new private repo to begin working.
 
-::
+.. code-block:: bash
 
-        git remote rename origin upstream
+   cd ..
+   rm -rf scripts.git
+   git clone https://github.com/yourname/private-repo.git
 
-* Give the local repository an 'origin' that points to your repository
-
-::
-
-        git remote add origin https://github.com/your-account/scripts.git
-
-* Push the local repository to your repository on github
-
-::
-
-        git push origin master
-
-* Now 'origin' points to your repository & 'upstream' points to the other repository
-
-* Create a new branch for your changes with
-
-::
-
-        git checkout -b my-feature-branch
-
-* You can git commit as usual to your repository
-
-* To pull changes from Sistemi `scripts` to your master branch use,
-
-::
-
-        git pull upstream master
-
-* You want to be able to pull from Sistemi `scripts` occasionally to get Sistemi updates to scripts, and/or
-  examples, drivers, etc.
-
-
-Repo Setup
-**********
-
-Additional steps.
 
 
 Install Git Hooks
@@ -122,21 +85,24 @@ Depending on your directory structure, this example command may work,
     cd ~/git/scripts
     cp hooks/* ./git/hooks
 
+This githook will update `public/VERSION` file that Prism uses to display the version of the scripts.
+By using this githook, or some other mechanism, the script version is tracked by Prism.  The version
+number is derived from a tag.
+
 
 Create a Tag
 ============
 
 The Sistemi system reports the version of things to help keep you organized, including the version of your scripts.
 
-On whatever branch you decide to "release" your scripts, for example, the "master" branch, create a
+On whatever branch you decide to "release" your scripts, for example, the "main" branch, create a
 tag on that branch.  The tag **MUST** be of this format,
 
 ::
 
-        Name-V.v
+        V.v
 
         where:
-            Name - is anything you want, keep it short, say <8 characters
             V - is major revision, manually increased by YOU, be making a new Tag
             v - is minor revision, manually increased by YOU, be making a new Tag
 
@@ -145,7 +111,7 @@ Example commands to create (and push) a tag,
 ::
 
         git checkout master
-        git tag MyTest-1.0
+        git tag 1.0
         git push origin --tags
 
 **There should only be one tag in effect at a time, and `scripts` has a tag already, remove that tag,**
@@ -153,18 +119,7 @@ Example commands to create (and push) a tag,
 ::
 
         git checkout master
-        git tag --delete Scripts-0.1
-        git push origin --tags
-
-
-There should only be one tag in effect at a time, so remove a previous tag.  Here is the sequence to change
-the minor version,
-
-::
-
-        git checkout master
-        git tag --delete MyTest-1.0
-        git tag MyTest-1.1
+        git tag --delete 0.8
         git push origin --tags
 
 
@@ -177,13 +132,14 @@ Change this file to suit your needs.  For example, document your script/program 
 Installing Python
 =================
 
-Prism uses Python version 3.10 (see `Here <https://www.python.org/downloads/release/python-31017/>`_) inside its Docker container, and therefor that specific version should be used
-for development.  Research how to install Python on Ubuntu alongside the main global Python. Install dependancies
-from `requirements.txt`
+Prism uses Python version 3.12 inside its Docker container, and therefore that specific version should
+be used for development.  Research how to install Python on Ubuntu alongside the main global Python.
+
+Install dependencies from `requirements.txt`
 
 ::
 
-        sudo apt install python3.10-dev
+        sudo apt install python3.12-dev
         python -m pip install -r requirements.txt
 
 
