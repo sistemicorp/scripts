@@ -1,6 +1,6 @@
 /*  Sistemi Corporation, copyright, all rights reserved, 2023
  *  Martin Guthrie
- *  
+ *
 */
 #include "bond_max_hdr.h"
 #include "src/oled/bond_oled.h"
@@ -35,10 +35,10 @@ static _init_regs_t init_hdr_regs[] = {
 
  uint8_t _get_max_cs_from_hdr(int hdr) {
   switch (hdr) {
-  case 1: return SPI_CS_HRD1_Pin; 
-  case 2: return SPI_CS_HDR2_Pin; 
-  case 3: return SPI_CS_HDR3_Pin; 
-  case 4: return SPI_CS_HDR4_Pin;   
+  case 1: return SPI_CS_HRD1_Pin;
+  case 2: return SPI_CS_HDR2_Pin;
+  case 3: return SPI_CS_HDR3_Pin;
+  case 4: return SPI_CS_HDR4_Pin;
   }
   return 0;
  }
@@ -75,7 +75,7 @@ MAX11300RegAddress_t _reg_port_config_port(int port) {
     case 9: return port_cfg_p9;
     case 10: return port_cfg_p10;
     case 11: return port_cfg_p11;
-  }  
+  }
   return port_cfg_p0;  // squelch build warning
 }
 
@@ -93,8 +93,8 @@ MAX11300::MAX11300_Ports _get_port_from_int(int port) {
     case 9: return MAX11300::PIXI_PORT9;
     case 10: return MAX11300::PIXI_PORT10;
     case 11: return MAX11300::PIXI_PORT11;
-  }  
-  return MAX11300::PIXI_PORT0;  // squelch build warning  
+  }
+  return MAX11300::PIXI_PORT0;  // squelch build warning
 }
 
 String bond_max_hdr_init(int hdr,  // 1-4
@@ -104,7 +104,7 @@ String bond_max_hdr_init(int hdr,  // 1-4
                          int *gpis, int gpi_len,
                          int gpo_mv, int gpi_mv) {
   DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
-  
+
   MAX11300 *max = _get_max_from_hdr(hdr);
   if (max == NULL) {
     doc["result"]["error"] = "1 <= hdr <= 4, invalid parameter";
@@ -134,7 +134,7 @@ String bond_max_hdr_init(int hdr,  // 1-4
   d = 0x0666;  // TODO: this comes from ??
   for (int j = 0; j < dac_len; j++) {
     init_regs[i].r = _reg_dac_data_port(dacs[j]); init_regs[i].d = d; i++;
-  }  
+  }
   init_regs[i].r = dac_preset_data_1; init_regs[i].d = 0x0; i++;
   init_regs[i].r = dac_preset_data_2; init_regs[i].d = 0x0; i++;
   // Set reg PORT_CONFIG -----------------------------------------------------
@@ -158,7 +158,7 @@ String bond_max_hdr_init(int hdr,  // 1-4
   d = 0x5100;  // TODO: where this come from?
   for (int j = 0; j < dac_len; j++) {
     init_regs[i].r = _reg_port_config_port(dacs[j]); init_regs[i].d = d; i++;
-  }  
+  }
   // IRQ modes
   init_regs[i].r = gpi_irqmode_P5_P0; init_regs[i].d = 0x0; i++;
   init_regs[i].r = gpi_irqmode_P10_P6; init_regs[i].d = 0x0; i++;
@@ -167,7 +167,7 @@ String bond_max_hdr_init(int hdr,  // 1-4
   d = 0x7100;  // TODO: where this come from?
   for (int j = 0; j < adc_len; j++) {
     init_regs[i].r = _reg_port_config_port(adcs[j]); init_regs[i].d = d; i++;
-  }    
+  }
   init_regs[i].r = device_control; init_regs[i].d = 0xc1 & 0x40ff; i++;
   init_regs[i].r = device_control; init_regs[i].d = 0xc1; i++;
   init_regs[i].r = interrupt_mask; init_regs[i].d = 0xffff; i++;
@@ -179,7 +179,7 @@ String bond_max_hdr_init(int hdr,  // 1-4
     doc["result"]["len_gpi"] = gpi_len;
     doc["result"]["gpo_mv"] = gpo_mv;
     doc["result"]["gpi_mv"] = gpi_mv;
-    doc["result"]["i"] = i;  //  !! check i < MAX_INIT_SETTINGS !! 
+    doc["result"]["i"] = i;  //  !! check i < MAX_INIT_SETTINGS !!
     return _response(doc);
   }
 
@@ -211,7 +211,7 @@ String bond_batt_emu_cal(void) {
 
   oled_print(OLED_LINE_RPC, __func__, !doc["success"]);
   return _response(doc);  // always the last line of RPC API
-}  
+}
 
 /* Read Header <1-4> ADC Port 11 cal voltage
  * - all MAX11311's Port 11 is connected to 2500mV voltage reference
@@ -224,14 +224,14 @@ String bond_max_hdr_adc_cal(int hdr) {
     doc["result"]["error"] = "1 <= hdr <= 4, invalid parameter";
     doc["success"] = false;
     return _response(doc);
-  }  
-  
+  }
+
   uint16_t data = 0;
   MAX11300::CmdResult result = max->single_ended_adc_read(MAX11300::PIXI_PORT11, &data);
   if (result != MAX11300::Success) {
     doc["result"]["error"] = "single_ended_adc_read error";
     doc["success"] = false;
-    return _response(doc);    
+    return _response(doc);
   }
 
   doc["result"]["mV"] = (data * 10000 + 2048) / 4096  ;  // raw * 10000mV / 4096
@@ -251,14 +251,14 @@ String bond_max_hdr_adc(int hdr, int port) {
     doc["result"]["error"] = "1 <= hdr <= 4, invalid parameter";
     doc["success"] = false;
     return _response(doc);
-  }  
+  }
 
   uint16_t data = 0;
   MAX11300::CmdResult result = max->single_ended_adc_read(_get_port_from_int(port), &data);
   if (result != MAX11300::Success) {
     doc["result"]["error"] = "single_ended_adc_read error";
     doc["success"] = false;
-    return _response(doc);    
+    return _response(doc);
   }
 
   doc["result"]["mV"] = ((uint32_t)data * 10000 + 2048) / 4096;  // raw * 10000mV / 4096
@@ -278,11 +278,11 @@ String bond_max_hdr_dac(int hdr, int port, int mv) {
     doc["result"]["error"] = "1 <= hdr <= 4, invalid parameter";
     doc["success"] = false;
     return _response(doc);
-  }  
+  }
   if (mv < 0 || mv > 10000) {
     doc["result"]["error"] = "0 <= mv <= 10000, invalid parameter";
     doc["success"] = false;
-    return _response(doc);    
+    return _response(doc);
   }
 
   float _data = mv * 4096 / 10000;
@@ -291,6 +291,53 @@ String bond_max_hdr_dac(int hdr, int port, int mv) {
 
   doc["result"]["dac_raw"] = data;
   doc["result"]["mV"] = mv;
+
+  oled_print(OLED_LINE_RPC, __func__, !doc["success"]);
+  return _response(doc);  // always the last line of RPC API
+}
+
+String bond_max_hdr_gpo(int hdr, int port, bool state) {
+  DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
+
+  MAX11300 *max = _get_max_from_hdr(hdr);
+  if (max == NULL) {
+    doc["result"]["error"] = "1 <= hdr <= 4, invalid parameter";
+    doc["success"] = false;
+    return _response(doc);
+  }
+
+  MAX11300::CmdResult result = max->gpio_write(_get_port_from_int(port), (state ? 1 : 0));
+  if (result != MAX11300::Success) {
+    doc["result"]["error"] = "gpio_write error";
+    doc["success"] = false;
+    return _response(doc);
+  }
+
+  doc["result"]["state"] = state;
+
+  oled_print(OLED_LINE_RPC, __func__, !doc["success"]);
+  return _response(doc);  // always the last line of RPC API
+}
+
+String bond_max_hdr_gpi(int hdr, int port) {
+  DynamicJsonDocument doc = _helper(__func__);  // always first line of RPC API
+
+  MAX11300 *max = _get_max_from_hdr(hdr);
+  if (max == NULL) {
+    doc["result"]["error"] = "1 <= hdr <= 4, invalid parameter";
+    doc["success"] = false;
+    return _response(doc);
+  }
+
+  uint8_t state = 0;
+  MAX11300::CmdResult result = max->gpio_read(_get_port_from_int(port), state);
+  if (result != MAX11300::Success) {
+    doc["result"]["error"] = "gpio_read error";
+    doc["success"] = false;
+    return _response(doc);
+  }
+
+  doc["result"]["state"] = (state != 0x0);
 
   oled_print(OLED_LINE_RPC, __func__, !doc["success"]);
   return _response(doc);  // always the last line of RPC API
