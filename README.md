@@ -1,7 +1,6 @@
 # Sistemi Lente/Prism PCBA Production Test System
 
-* Now in **BETA**
-* A framework to develop automated production test fixtures
+* A framework to develop automated PCBA production test fixtures
 * Single PC can control multiple test fixtures
 * Write Python scripts to control measurement equipment and other fixtures
 * APIs for recording measurements, setting Pass/Fail, locking resources, etc
