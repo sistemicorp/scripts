@@ -45,4 +45,8 @@ for more details.  Note warning regarding public repositories)
 
 ![github_workflow1](assets/github_workflow_setup_1.png)
 
+## Run Example Test
+* TODO
+![github_prism_test_run_1](assets/github_prism_test_run_1.png)
+
 
