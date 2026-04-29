@@ -1,0 +1,41 @@
+# Example integration of Prism into a GitHub workflow for Continuous Integration (CI)
+name: GitHub-Prism CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  # push:
+  #   branches: [ "main" ]
+  # pull_request:
+  #   branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Create Artifact
+        run: echo "Hello World $(date)" > artifact.txt
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: my-artifact
+          path: artifact.txt
+
+  prism_ci_test:
+    needs: build
+    runs-on: self-hosted
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: my-artifact
+
+      - name: Play Prism Script passing artifact path
+        run: ~/git/a08_prism/public/prism/drivers/prism_play/prism_play_cli.py play -c 0 -a $GITHUB_WORKSPACE/artifact.txt -r $GITHUB_WORKFLOW_SHA
