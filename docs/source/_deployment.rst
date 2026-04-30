@@ -15,10 +15,29 @@ A deployment plan should be discussed with a Sistemi support engineer.
 
 .. _deployment-ubuntu-filesystem:
 
+
+System Requirements
+*******************
+
+* Computer Minimum
+
+  * x86, 8GB RAM, 2+ Cores
+  * 256GB Storage
+  * USB ports
+  * Display 1900x1280
+  * Laptop is recommended because it has battery backup, otherwise a UPS is recommended.
+
+* Host OS
+
+  * Ubuntu 24.04
+
+
+
 Ubuntu File System and Users
 ****************************
 
-* Install Ubuntu onto the computers and enable file system encryption
+* Install Ubuntu onto the computers
+* OPTIONAL: enable file system encryption
 
   * Note that enabling encryption will require a password to be entered for
     the computer to boot up.  Consider this for remote sites.
@@ -36,7 +55,7 @@ Ubuntu File System and Users
     * able to run Chrome
 
 
-  * Prism/Lente setup account
+  * Prism/Lente Admin account
 
     * hosts the Prism/Lente files
 
@@ -81,6 +100,7 @@ Settings.JSON File
   * In practice, most Prism computers can use the same file, and therefore the file
     should be stored in a separate place and used as a source when new Prism computers
     are added to the deployment.
+  * Remove `settings.json` from the `public` folder of your repo
 
 
 * This file is NOT propagated within the deployment by Lente.
