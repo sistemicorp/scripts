@@ -38,4 +38,4 @@ jobs:
           name: my-artifact
 
       - name: Play Prism Script passing artifact path
-        run: ~/git/a08_prism/public/prism/drivers/prism_play/prism_play_cli.py play -c 0 -a $GITHUB_WORKSPACE/artifact.txt -r $GITHUB_WORKFLOW_SHA
+        run: /home/andrew/git/a08-prism/public/prism/drivers/prism_play/prism_play_cli.py -c 0 -w actions-runner play  -a $GITHUB_WORKSPACE/artifact.txt -r $GITHUB_WORKFLOW_SHA
