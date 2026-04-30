@@ -174,7 +174,7 @@ class PrismPlayPipe():
                 os.open(self.pipe_write_path, flags=os.O_NONBLOCK | os.O_WRONLY), 'w'
             ) as pipe_write:
                 data = json.dumps(msg)
-                pipe_write.write(data)
+                pipe_write.write(data + "\n")
             return True
         except OSError as e:
             if e.errno == errno.ENXIO:
