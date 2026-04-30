@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Sistemi Corporation, copyright, all rights reserved, 2023-2026
-Martin Guthrie
+Andrew Oaks
 """
 
 import os
