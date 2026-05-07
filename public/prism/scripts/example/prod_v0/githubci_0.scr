@@ -1,0 +1,37 @@
+// Example: Shows integration of GitHub Workflow with Prism using the PrismPlay driver
+{
+  "info": {
+    // info is captured in the result record and can be searched/filtered in dB
+    // Cannot add fields here without updating the result record handler and backend database
+    "product": "FW_CI_TEST",
+    "bom": "",
+    "lot": "",
+    "location": "canada/ontario/milton"
+    // "config": "something"  (optional)
+  },
+  "config": {
+    // fail_fast: if true (default), testing will stop on first failed test
+    "fail_fast": true,
+    // list of driver code to initialize the test environment, must be specified
+    "drivers": [["public.prism.drivers.prism_play.hwdrv_prism_play",
+                  {"work_dir": "actions-runner", "channels": 1}]]
+  },
+  "tests": [
+    {
+      // module is path to python code supporting this test
+      "module": "public.prism.scripts.example.prod_v0.tstGitHubCIxx",
+      "options": {
+        // fail_fast: if true (default), testing will stop on first failed test, overrides config section
+        "fail_fast": true
+      },
+      "items": [
+        {"id": "TST0xxSETUP",           "enable": true },
+        {"id": "TST001_KeyAdd",         "enable": true},
+        {"id": "TST002_UseArtifact",    "enable": true},
+
+        // always called, no matter if test fails above
+        {"id": "TST0xxTEARDOWN",        "enable": true }
+      ]
+    }
+  ]
+}
