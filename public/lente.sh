@@ -46,6 +46,9 @@ start () {
         docker run -d \
             --network=${flag_network}\
             --hostname=${HOSTNAME}${flag_instno} \
+            -e OPENBLAS_NUM_THREADS=1 \
+            --security-opt seccomp=unconfined \
+            --security-opt apparmor=unconfined \
             --restart=${flag_restart} \
             -v $(pwd):/app/public \
             --name lente${flag_instno} \
@@ -55,6 +58,9 @@ start () {
         docker run -d \
             --network=${flag_network}\
             --hostname=${HOSTNAME}${flag_instno} \
+            -e OPENBLAS_NUM_THREADS=1 \
+            --security-opt seccomp=unconfined \
+            --security-opt apparmor=unconfined \
             -v $(pwd):/app/public \
             --name lente${flag_instno} \
             --rm \

@@ -23,3 +23,5 @@ public/prism/drivers/A4401_BOND/server/libraries/ArduinoJson/extras/
 public/prism/drivers/A4401_BOND/server/libraries/ArduinoJson/examples/
 
 public/prism/drivers/stlinkv3mods/STM32CubeProgrammer/
+
+public/.env

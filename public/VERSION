@@ -1,4 +1,4 @@
-prev_commit=b5e8f500467f40031a5e3916c97e2102ca653a6e
-date=2026-04-23 10:44:51 -0400
-branch=40-instructions-for-settingsjson
-version=0.8-44-gb5e8f50
+prev_commit=5e79d7ca8550f2bb89355508f25abebe51ef6f8b
+date=2026-06-18 12:38:57 -0400
+branch=55-lente-docker-start-script-needs-flags
+version=0.8-51-g5e79d7c
