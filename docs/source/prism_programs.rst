@@ -758,7 +758,7 @@ name is a unique identifier.
 
     It is important that test measurements have a unique `name` so that any particular measurement
     can be searched for in the SQL database.  If a duplicate `name` is used, `measurement()` will
-    fail with RECORD_RESULT_UNKNOWN.
+    fail with RECORD_RESULT_INTERNAL_ERROR.
 
 
 ``value`` - the quantity to be tested.  The instance type of the value determines the behaviour
