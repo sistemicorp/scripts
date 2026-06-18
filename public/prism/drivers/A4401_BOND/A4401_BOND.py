@@ -761,6 +761,38 @@ class A4401_BOND:
             answer = self.rpc.call_method('bond_max_hdr_dac', hdr, port, mv)
             return self._rpc_validate(answer)
 
+    def bond_max_hdr_gpo(self, hdr: int, pin: int, state: bool):
+        """ MAX11311 Header <1-4> write GPO Port <0-10> GPO state
+        - get port from pin, and also check mode
+
+        :return: {'success': True, 'method': 'bond_max_hdr_gpo',
+                  'result': {'state': <bool> }
+        """
+        success, port, error = self._bond_check_hdr_pin(hdr, pin, "GPO")
+        if not success:
+            return error
+
+        with self._lock:
+            self.logger.info(f"bond_max_hdr_gpo {hdr} {port} {state}")
+            answer = self.rpc.call_method('bond_max_hdr_gpo', hdr, port, state)
+            return self._rpc_validate(answer)
+
+    def bond_max_hdr_gpi(self, hdr: int, pin: int):
+        """ MAX11311 Header <1-4> read GPI Port <0-10>
+        - get port from pin, and also check mode
+
+        :return: {'success': True, 'method': 'bond_max_hdr_gpi',
+                  'result': {'state': <bool>}
+        """
+        success, port, error = self._bond_check_hdr_pin(hdr, pin, "GPI")
+        if not success:
+            return error
+
+        with self._lock:
+            self.logger.info(f"bond_max_hdr_gpi {hdr} {port}")
+            answer = self.rpc.call_method('bond_max_hdr_gpi', hdr, port)
+            return self._rpc_validate(answer)
+
     # DEBUG APIs
 
     def bond_debug_batt_emu(self):
