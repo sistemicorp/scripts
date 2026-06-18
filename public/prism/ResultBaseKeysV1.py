@@ -20,9 +20,9 @@ class ResultBaseKeysV1(ResultBaseClass):
 
     "add_key"
     - are meant to hold things like serial numbers, password keys, etc from the product
-    - there are 4 key slots that can be used
+    - there are 5 key slots that can be used (0..4)
     - are index in the backend SQL DB
-    - The DB record holds key0, key1, key2, .. up to key{}.format(MAX_KEYS)
+    - The DB record holds key0, key1, key2, .. up to key{}.format(MAX_KEYS - 1)
       The idea is that these keys would be mapped for specific purposes, and thus
       these key#s can serve arbitrary purposes.
     - The final dict will look like this:
@@ -38,7 +38,7 @@ class ResultBaseKeysV1(ResultBaseClass):
     - getter
 
     "get_key_num_slots"
-    - get maximum number of key slots available (2)
+    - get maximum number of key slots available (5)
     - this number will never be decreased in future versions
 
     "blob"

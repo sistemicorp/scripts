@@ -788,7 +788,7 @@ name is a unique identifier.</p>
 <p class="admonition-title">Note</p>
 <p>It is important that test measurements have a unique <cite>name</cite> so that any particular measurement
 can be searched for in the SQL database.  If a duplicate <cite>name</cite> is used, <cite>measurement()</cite> will
-fail with RECORD_RESULT_UNKNOWN.</p>
+fail with RECORD_RESULT_INTERNAL_ERROR.</p>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">value</span></code> - the quantity to be tested.  The instance type of the value determines the behaviour
 of the testing and the requirements of ‘min’ and ‘max’.  Valid types are int, float, bool, and str.</p>

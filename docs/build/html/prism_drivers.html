@@ -98,12 +98,13 @@ path can be used to synchronize the two lists.  This is done in the examples pro
 <span class="sd">    1) The hw driver objects are expected to have an &#39;slot&#39; field, the lowest</span>
 <span class="sd">       id is assigned to channel 0, the next highest to channel 1, etc</span>
 
-<span class="sd">    :return: &lt;#&gt;, &lt;list&gt;</span>
-<span class="sd">        where #: &gt;0 number of channels,</span>
-<span class="sd">                  0 does not indicate num channels, like a shared hardware driver</span>
-<span class="sd">                 &lt;0 error</span>
-
-<span class="sd">              list of drivers</span>
+<span class="sd">    :return: &lt;#&gt;, &lt;driver_type&gt;, &lt;list&gt;</span>
+<span class="sd">        where</span>
+<span class="sd">            #:      &gt;0 number of channels,</span>
+<span class="sd">                    0 does not indicate num channels, like a shared hardware driver</span>
+<span class="sd">                    &lt;0 error</span>
+<span class="sd">            driver_type: String constant identifying Installed drivers type</span>
+<span class="sd">            list:   List of installed driver dicts</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 </pre></div>
 </div>
