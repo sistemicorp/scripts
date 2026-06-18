@@ -52,7 +52,7 @@
 programming background.  This is useful in development or emergency situations.</p></li>
 </ul>
 </li>
-<li><p>extend JSON a little bit, by allowing comments, any line begining with <cite>#</cite> is a comment.  This allows
+<li><p>extend JSON a little bit, by allowing comments, any line begining with <cite>//</cite> is a comment.  This allows
 the script to be documented</p></li>
 </ul>
 <p>The <code class="docutils literal notranslate"><span class="pre">script</span></code> has the following sections,</p>
@@ -181,7 +181,7 @@ in the Test Config view.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;info&quot;</span><span class="p">:</span> <span class="p">{</span>
   <span class="s2">&quot;product&quot;</span><span class="p">:</span> <span class="s2">&quot;widget_1&quot;</span><span class="p">,</span>
   <span class="s2">&quot;bom&quot;</span><span class="p">:</span> <span class="s2">&quot;B00012-001&quot;</span><span class="p">,</span>
-  <span class="c1"># list fields present user choice or fill in</span>
+  <span class="o">//</span> <span class="nb">list</span> <span class="n">fields</span> <span class="n">present</span> <span class="n">user</span> <span class="n">choice</span> <span class="ow">or</span> <span class="n">fill</span> <span class="ow">in</span>
   <span class="s2">&quot;lot&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%%</span><span class="s2">Lot&quot;</span><span class="p">,</span>
   <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%%</span><span class="s2">Loc&quot;</span><span class="p">,</span>
   <span class="o">//</span> <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="s2">&quot;optional&quot;</span>
@@ -242,7 +242,7 @@ one test definition will be shown later.</p>
     <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;public.prism.scripts.prod_v0.tst00xx&quot;</span><span class="p">,</span>
     <span class="s2">&quot;options&quot;</span><span class="p">:</span> <span class="p">{</span>
       <span class="s2">&quot;fail_fast&quot;</span><span class="p">:</span> <span class="n">false</span>
-      <span class="c1"># add more key/value as required</span>
+      <span class="o">//</span> <span class="n">add</span> <span class="n">more</span> <span class="n">key</span><span class="o">/</span><span class="n">value</span> <span class="k">as</span> <span class="n">required</span>
     <span class="p">},</span>
     <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">[</span>
       <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST0xxSETUP&quot;</span><span class="p">,</span>           <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span> <span class="p">},</span>

@@ -9,7 +9,7 @@ Scripts
   * JSON is used so that non-programmers may be able to read/edit [1]_ the script without requiring a
     programming background.  This is useful in development or emergency situations.
 
-* extend JSON a little bit, by allowing comments, any line begining with `#` is a comment.  This allows
+* extend JSON a little bit, by allowing comments, any line begining with `//` is a comment.  This allows
   the script to be documented
 
 The ``script`` has the following sections,
@@ -153,7 +153,7 @@ in the Test Config view.
   "info": {
     "product": "widget_1",
     "bom": "B00012-001",
-    # list fields present user choice or fill in
+    // list fields present user choice or fill in
     "lot": "%%Lot",
     "location": "%%Loc",
     // "config": "optional"
@@ -224,7 +224,7 @@ See ``public/prism/scripts/example/prod_v0/tst00xx.py`` for usage.
       "module": "public.prism.scripts.prod_v0.tst00xx",
       "options": {
         "fail_fast": false
-        # add more key/value as required
+        // add more key/value as required
       },
       "items": [
         {"id": "TST0xxSETUP",           "enable": true },
