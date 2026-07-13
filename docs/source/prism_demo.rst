@@ -94,13 +94,12 @@ Clone Sistemi Scripts
 
     http://127.0.0.1:6590
 
-  * **Do Not use the browser BACK button, always use the page controls for navigation**
   * The Prism landing page should appear,
 
 .. image:: static/Screenshot_prism_demo_2.png
 
 
-* Press the Login button (upper left corner)
+* Press the Login button (upper right corner)
 
   * Prism login user/password is admin@here.com/password
   * Other users passwords are `password`
@@ -111,16 +110,16 @@ Clone Sistemi Scripts
   * In real production environment, the operator would scan a traveller to
     configure Prism to test a product.  Since this is a demo, we will select a
     test manually.
-  * Select button `Test Configuration` (1)
+  * Select the `Test Configuration` link in the left sidebar (1)
 
 .. image:: static/Screenshot_prism_demo_1.png
 
 * Run your first script after logging in,
 
-  * Select Group select `Example` (1)
+  * Select Group select `example` (1)
   * Select Script select `prod_0.scr` (2)
   * Press button `Validate` (3)
-  * If everything checked out, the `Start Testing` button will turn Green. (4)
+  * If everything checked out, the `Start Testing` button will become enabled, solid blue. (4)
   * The script that will be run is shown (5)
 
 .. image:: static/Screenshot_prism_demo_3.png
@@ -129,7 +128,7 @@ Clone Sistemi Scripts
 
 .. image:: static/Screenshot_prism_demo_4.png
 
-* Press the `TEST` (1) button to begin the test.
+* Press the `START ALL` (1) button to begin the test.
 * Logging from the test will be shown in the table (2).
 * Historical stats of your testing will be shown in the plot (3).
 * **Note:** Example tests have delays in them for demo effect.
@@ -138,13 +137,7 @@ Clone Sistemi Scripts
   * the user will be shown buttons to press, any button will pass.
   * the user will have to enter some text, any text will pass
 
-* this Demo shows only one active "Jig", if you want to display more,
-
-  * Access the Main menu and select Demo (Main->Demo)
-  * Change the number of "fake" jigs between 1-4.
-  * Go back to the Main page (Menu->Main)
-  * Repeat the steps above to re-run the demo test.
-
+* this Demo shows only one active "Jig".  Up to eight jigs are supported.
 
 * Prism can be stopped with this command,
 
