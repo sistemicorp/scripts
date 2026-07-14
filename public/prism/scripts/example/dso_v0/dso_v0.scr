@@ -10,7 +10,7 @@
   "config": {
     "fail_fast": false,
     "drivers": [
-      "public.prism.drivers.fake.fake",
+      "public.prism.drivers.fake.hwdrv_fake",
       "public.prism.drivers.agilent_dso_usb_1.hwdrv_agilent_dso_usb_1"
     ]
   },

@@ -36,7 +36,7 @@ Prism
 ~~~~~~
 
 * [BUGFIX] Fix/improve getting self IP address (implemented in 0.7.52)
-* Support for UPCUA, see `OPCUA <_mes_integration.html#_Manufacturing>`__
+* Support for UPCUA, see :ref:`OPCUA <mes-integration>`
 * Test portal layout supports up to 8 test channels (jigs per Prism PC) (implemented in 0.7.43)
 * Index page shows time and date (implemented in 0.7.56)
 * Auto config test on startup, see :ref:`settings.json <deploy-settings-file>` (implemented in 0.7.64)
@@ -52,7 +52,7 @@ Lente
 ~~~~~~
 
 * [BUGFIX] Fix/improve getting self IP address
-* Support for UPCUA, see `OPCUA <_mes_integration.html#_Manufacturing>`__
+* Support for UPCUA, see :ref:`OPCUA <mes-integration>`
 * Station Management portal can remotely,
 
   * request Prism Log (implemented in 0.7.48)

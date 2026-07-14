@@ -46,24 +46,24 @@
 <p>Programs are Python code that implement <a class="reference internal" href="prism_scripts.html#tests"><span class="std std-ref">tests</span></a> <code class="docutils literal notranslate"><span class="pre">items</span></code>, and the location and name of the
 program file is given in field <code class="docutils literal notranslate"><span class="pre">module</span></code>.</p>
 <p>A very minimalist (“hello world”) (helloWorld.py) program file could look like this,</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>! /usr/bin/env python
-# -*- coding: utf-8 -*-
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#! /usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
 
-import logging
-from core.test_item import TestItem
-from public.prism.api import ResultAPI
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">core.test_item</span> <span class="kn">import</span> <span class="n">TestItem</span>
+<span class="kn">from</span> <span class="nn">public.prism.api</span> <span class="kn">import</span> <span class="n">ResultAPI</span>
 
-# file name and class name must match
-class helloWorld(TestItem):
+<span class="c1"># file name and class name must match</span>
+<span class="k">class</span> <span class="nc">helloWorld</span><span class="p">(</span><span class="n">TestItem</span><span class="p">):</span>
 
-    def __init__(self, controller, chan, shared_state):
-        super().__init__(controller, chan, shared_state)
-        self.logger = logging.getLogger(&quot;SC.{}.{}&quot;.format(__name__, self.chan))
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">controller</span><span class="p">,</span> <span class="n">chan</span><span class="p">,</span> <span class="n">shared_state</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">controller</span><span class="p">,</span> <span class="n">chan</span><span class="p">,</span> <span class="n">shared_state</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;SC.</span><span class="si">{}</span><span class="s2">.</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">chan</span><span class="p">))</span>
 
-    def sayHello(self):
-        ctx = self.item_start()  # always first line of test
-        self.log_bullet(&quot;Hello World!&quot;)
-        self.item_end() # always last line of test
+    <span class="k">def</span> <span class="nf">sayHello</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;Hello World!&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span> <span class="c1"># always last line of test</span>
 </pre></div>
 </div>
 <p>And, a minimalist script file that uses this program code, could look like this,</p>
@@ -75,7 +75,7 @@ class helloWorld(TestItem):
     <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="s2">&quot;FACTORY1&quot;</span>
   <span class="p">},</span>
   <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="s2">&quot;drivers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;public.prism.drivers.fake.fake&quot;</span><span class="p">]</span>
+    <span class="s2">&quot;drivers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;public.prism.drivers.fake.hwdrv_fake&quot;</span><span class="p">]</span>
   <span class="p">},</span>
   <span class="s2">&quot;tests&quot;</span><span class="p">:</span> <span class="p">[</span>
     <span class="p">{</span>
@@ -111,25 +111,25 @@ database searches and filtering on.  See TBD-Planning</p></li>
 </ul>
 <section id="program-class-structure">
 <h2>Program Class Structure<a class="headerlink" href="#program-class-structure" title="Link to this heading">¶</a></h2>
-<p>Lets take a more detailed look at the program structrure,</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>! /usr/bin/env python
-# -*- coding: utf-8 -*-
+<p>Lets take a more detailed look at the program structure,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#! /usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
 
-import logging
-from core.test_item import TestItem
-from public.prism.api import ResultAPI
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">core.test_item</span> <span class="kn">import</span> <span class="n">TestItem</span>
+<span class="kn">from</span> <span class="nn">public.prism.api</span> <span class="kn">import</span> <span class="n">ResultAPI</span>
 
-# file name and class name must match
-class helloWorld(TestItem):
+<span class="c1"># file name and class name must match</span>
+<span class="k">class</span> <span class="nc">helloWorld</span><span class="p">(</span><span class="n">TestItem</span><span class="p">):</span>
 
-    def __init__(self, controller, chan, shared_state):
-        super().__init__(controller, chan, shared_state)
-        self.logger = logging.getLogger(&quot;SC.{}.{}&quot;.format(__name__, self.chan))
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">controller</span><span class="p">,</span> <span class="n">chan</span><span class="p">,</span> <span class="n">shared_state</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">controller</span><span class="p">,</span> <span class="n">chan</span><span class="p">,</span> <span class="n">shared_state</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;SC.</span><span class="si">{}</span><span class="s2">.</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">chan</span><span class="p">))</span>
 
-    def sayHello(self):
-        context = self.item_start()  # always first line of test
-        self.log_bullet(&quot;Hello World!&quot;)
-        self.item_end() # always last line of test
+    <span class="k">def</span> <span class="nf">sayHello</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;Hello World!&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span> <span class="c1"># always last line of test</span>
 </pre></div>
 </div>
 <section id="methods">
@@ -153,7 +153,7 @@ code in the <code class="docutils literal notranslate"><span class="pre">__init_
 <li><p>Methods that you add that are called by the script, will NOT have any additional arguments, only <code class="docutils literal notranslate"><span class="pre">self</span></code></p></li>
 <li><p>The first line of every method is</p></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -169,7 +169,7 @@ code in the <code class="docutils literal notranslate"><span class="pre">__init_
 <section id="context">
 <h3>context<a class="headerlink" href="#context" title="Link to this heading">¶</a></h3>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">context</span></code> is your programmatic view of the script, and retrieving it is the first line of every method</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ctx</span></code> (context) is your programmatic view of the script, and retrieving it is the first line of every method</p></li>
 <li><p>consider a little more complicated script,</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -180,12 +180,12 @@ code in the <code class="docutils literal notranslate"><span class="pre">__init_
     <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="s2">&quot;FACTORY1&quot;</span>
   <span class="p">},</span>
   <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="s2">&quot;drivers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;public.prism.drivers.fake.fake&quot;</span><span class="p">]</span>
+    <span class="s2">&quot;drivers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;public.prism.drivers.fake.hwdrv_fake&quot;</span><span class="p">]</span>
   <span class="p">},</span>
   <span class="s2">&quot;tests&quot;</span><span class="p">:</span> <span class="p">[</span>
     <span class="p">{</span>
-      <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;public.prims.scripts.my_product.helloWorld&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;options&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;fail_fast&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;myVar&quot;</span><span class="p">:</span> <span class="s2">&quot;something&quot;</span> <span class="p">},</span>
+      <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;public.prism.scripts.my_product.helloWorld&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;options&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;fail_fast&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span> <span class="s2">&quot;myVar&quot;</span><span class="p">:</span> <span class="s2">&quot;something&quot;</span> <span class="p">},</span>
       <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;sayHello&quot;</span><span class="p">},</span>
         <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST000_Meas&quot;</span><span class="p">,</span>  <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
@@ -201,7 +201,7 @@ code in the <code class="docutils literal notranslate"><span class="pre">__init_
 <li><p>And lets assume we are in the <code class="docutils literal notranslate"><span class="pre">TST000_Meas</span></code> method, then we can access (print) anything that is relevent,</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">TST000_Meas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-    <span class="n">context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
+    <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="p">)</span>          <span class="c1"># = {&quot;id&quot;: &quot;TST000&quot;, &quot;enable&quot;: True,  &quot;args&quot;: {&quot;min&quot;: 0, &quot;max&quot;: 10}}</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>     <span class="c1"># = {&quot;min&quot;: 0, &quot;max&quot;: 10}</span>
@@ -216,13 +216,13 @@ code in the <code class="docutils literal notranslate"><span class="pre">__init_
 <li><p>in Python, you can do <code class="docutils literal notranslate"><span class="pre">print(dir(ctx))</span></code> to get a list of everything available to you</p></li>
 <li><p>When designing your test script and program structure, consider what user configurable variables you want to be
 defined in the script <code class="docutils literal notranslate"><span class="pre">args</span></code> section and which you want in the program.  Things like min/max limits may change
-overt he product life cycle, and its better to make those things editable by a non-programmer. See TBS-Planning</p></li>
+over the product life cycle, and its better to make those things editable by a non-programmer. See TBS-Planning</p></li>
 </ul>
 </section>
 </section>
 <section id="everything-example">
 <h2>Everything Example<a class="headerlink" href="#everything-example" title="Link to this heading">¶</a></h2>
-<p>Here is a fully documented program example that shows just about every feature of the Lente system.  This
+<p>Here is a fully documented program example that shows just about every feature of the Prism system.  This
 example program is distributed with the system, and may be more up to date than here, so please consult that example.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#! /usr/bin/env python</span>
 <span class="c1"># -*- coding: utf-8 -*-</span>
@@ -285,7 +285,7 @@ example program is distributed with the system, and may be more up to date than 
         <span class="c1">#    - ctx.record.fail_msg(msg)</span>
         <span class="c1">#      - add a fail message to the record</span>
         <span class="c1">#</span>
-        <span class="c1"># self.chan  # this channel (0,1,2,3)</span>
+        <span class="c1"># self.chan  # this channel (0-7)</span>
         <span class="c1">#</span>
         <span class="c1"># self.shared_state  # instance of the shared state across all running test jigs</span>
         <span class="c1">#</span>
@@ -880,7 +880,7 @@ by not sending the result to <code class="docutils literal notranslate"><span cl
 a “binning code” when a failure occurs.</p>
 <p>The “binning mechanism” is provided by the <code class="docutils literal notranslate"><span class="pre">fail</span></code> field for the test item in the script.  There is a list
 of binning failure IDs (<code class="docutils literal notranslate"><span class="pre">fid</span></code>) with a corresponding <code class="docutils literal notranslate"><span class="pre">msg</span></code> for the user in the script.  This is shown in the
-example <code class="docutils literal notranslate"><span class="pre">TST000_Meas</span></code> above.  Repeated here.</p>
+example <code class="docutils literal notranslate"><span class="pre">TST001_Meas</span></code> above.  Repeated here.</p>
 <p>Example Notes:</p>
 <ul class="simple">
 <li><p>Two measurements are taken</p></li>
@@ -893,22 +893,22 @@ This is coded in the constants <code class="docutils literal notranslate"><span 
 <li><p>The <code class="docutils literal notranslate"><span class="pre">fid</span></code> text represents the “binning” code</p></li>
 <li><p>The <code class="docutils literal notranslate"><span class="pre">msg</span></code> is there to provide a hint to the test engineer of where the problem might be</p></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST000_Meas&quot;</span><span class="p">,</span>  <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
-                       <span class="c1"># fail: this is a list of &#39;fid&#39; and &#39;msg&#39; that get displayed and</span>
-                       <span class="c1">#       recorded with the test record.  The python code for this</span>
-                       <span class="c1">#       test item assigns which item in the list best represents</span>
-                       <span class="c1">#       the failure mode.  This information is to assist repair.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST001_Meas&quot;</span><span class="p">,</span>  <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
+                       <span class="o">//</span> <span class="n">fail</span><span class="p">:</span> <span class="n">this</span> <span class="ow">is</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="s1">&#39;fid&#39;</span> <span class="ow">and</span> <span class="s1">&#39;msg&#39;</span> <span class="n">that</span> <span class="n">get</span> <span class="n">displayed</span> <span class="ow">and</span>
+                       <span class="o">//</span>       <span class="n">recorded</span> <span class="k">with</span> <span class="n">the</span> <span class="n">test</span> <span class="n">record</span><span class="o">.</span>  <span class="n">The</span> <span class="n">python</span> <span class="n">code</span> <span class="k">for</span> <span class="n">this</span>
+                       <span class="o">//</span>       <span class="n">test</span> <span class="n">item</span> <span class="n">assigns</span> <span class="n">which</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">the</span> <span class="nb">list</span> <span class="n">best</span> <span class="n">represents</span>
+                       <span class="o">//</span>       <span class="n">the</span> <span class="n">failure</span> <span class="n">mode</span><span class="o">.</span>  <span class="n">This</span> <span class="n">information</span> <span class="ow">is</span> <span class="n">to</span> <span class="n">assist</span> <span class="n">repair</span><span class="o">.</span>
                        <span class="s2">&quot;fail&quot;</span><span class="p">:</span> <span class="p">[</span> <span class="p">{</span><span class="s2">&quot;fid&quot;</span><span class="p">:</span> <span class="s2">&quot;TST000-0&quot;</span><span class="p">,</span> <span class="s2">&quot;msg&quot;</span><span class="p">:</span> <span class="s2">&quot;Component apple R1&quot;</span><span class="p">},</span>
                                  <span class="p">{</span><span class="s2">&quot;fid&quot;</span><span class="p">:</span> <span class="s2">&quot;TST000-1&quot;</span><span class="p">,</span> <span class="s2">&quot;msg&quot;</span><span class="p">:</span> <span class="s2">&quot;Component banana R1&quot;</span><span class="p">}]</span> <span class="p">},</span>
 </pre></div>
 </div>
 <p>Program code,</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">TST000_Meas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">TST001_Meas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Measurement example, with multiple failure messages</span>
 <span class="sd">    - example of taking multiple measurements, and sending as a list of results</span>
 <span class="sd">    - if any test fails, this test item fails</span>
 
-<span class="sd">        {&quot;id&quot;: &quot;TST000_Meas&quot;,    &quot;enable&quot;: true, &quot;args&quot;: {&quot;min&quot;: 0, &quot;max&quot;: 10},</span>
+<span class="sd">        {&quot;id&quot;: &quot;TST001_Meas&quot;,    &quot;enable&quot;: true, &quot;args&quot;: {&quot;min&quot;: 0, &quot;max&quot;: 10},</span>
 <span class="sd">                                 &quot;fail&quot;: [ {&quot;fid&quot;: &quot;TST000-0&quot;, &quot;msg&quot;: &quot;Component apple R1&quot;},</span>
 <span class="sd">                                           {&quot;fid&quot;: &quot;TST000-1&quot;, &quot;msg&quot;: &quot;Component banana R1&quot;}] },</span>
 <span class="sd">    &quot;&quot;&quot;</span>

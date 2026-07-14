@@ -60,7 +60,7 @@ JTAG programmers, etc..</p>
 <p>Prism will load/init each <cite>driver</cite> that is listed.</p>
 <p>The python file specified <em>MUST</em> have a class called <cite>HWDriver</cite>.  See the <cite>fake</cite> example for
 implementation details and documentation.</p>
-<p>By convention, the driver filename has prefix is <cite>hwdrv_&lt;name&gt;.py</cite>.</p>
+<p>By convention, the driver filename has the prefix <cite>hwdrv_&lt;name&gt;.py</cite>.</p>
 <p>The Drivers files are stored by convention in a separate path relative to scripts in order to isolate
 them.  <cite>Drivers</cite> are typically common to test multiple products.</p>
 <section id="discover-channels">
@@ -98,7 +98,7 @@ path can be used to synchronize the two lists.  This is done in the examples pro
 <span class="sd">    1) The hw driver objects are expected to have an &#39;slot&#39; field, the lowest</span>
 <span class="sd">       id is assigned to channel 0, the next highest to channel 1, etc</span>
 
-<span class="sd">    :return: &lt;#&gt;, &lt;driver_type&gt;, &lt;list&gt;</span>
+<span class="sd">    :return: &lt;#&gt;, &lt;driver_type&gt;, &lt;list&gt; (use Zero for a device shared across all channels)</span>
 <span class="sd">        where</span>
 <span class="sd">            #:      &gt;0 number of channels,</span>
 <span class="sd">                    0 does not indicate num channels, like a shared hardware driver</span>
@@ -112,7 +112,7 @@ path can be used to synchronize the two lists.  This is done in the examples pro
 <section id="slot-number">
 <h2>Slot Number<a class="headerlink" href="#slot-number" title="Link to this heading">¶</a></h2>
 <p>When implementing python code to implement tests, there is a <cite>channel (self.chan)</cite> number and a <cite>slot</cite> number.
-The channel is how Prism indexes the running threads, usually from 0 to a max of 3.  The slot number
+The channel is how Prism indexes the running threads, usually from 0 to a max of 7.  The slot number
 is a number used to setup configuration of the physical system.</p>
 </section>
 <section id="visa">

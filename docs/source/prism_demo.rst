@@ -28,7 +28,7 @@ Requirements
   * Google Chrome browser (other browsers are not tested)
   * install Docker CE (https://docs.docker.com/install/linux/docker-ce/ubuntu/)
 
-    * Several instillation methods are described.  The "convenience script" works well.
+    * Several installation methods are described.  The "convenience script" works well.
 
 ::
 

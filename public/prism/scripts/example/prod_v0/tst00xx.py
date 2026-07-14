@@ -60,7 +60,7 @@ class tst00xx(TestItem):
         #    - ctx.record.fail_msg(msg)
         #      - add a fail message to the record
         #
-        # self.chan  # this channel (0,1,2,3)
+        # self.chan  # this channel (0-7)
         #
         # self.shared_state  # instance of the shared state across all running test jigs
         #

@@ -9,7 +9,7 @@ Scripts
   * JSON is used so that non-programmers may be able to read/edit [1]_ the script without requiring a
     programming background.  This is useful in development or emergency situations.
 
-* extend JSON a little bit, by allowing comments, any line begining with `//` is a comment.  This allows
+* extend JSON a little bit, by allowing comments, any line beginning with `//` is a comment.  This allows
   the script to be documented
 
 The ``script`` has the following sections,
@@ -38,7 +38,7 @@ In a production environment, operators are not typically allowed to arbitrarily 
 limits or any other setup.  However, in an engineering lab, or new product ramp environment, having an easy method
 to change some parameters might be useful.  This feature does not have to be used.
 
-Only (logged in) users with a certain role privileges can access `Test Config`, and thus access to GUI controls that
+Only (logged in) users with a certain role privileges can access the `Test Configuration` page, and thus access to GUI controls that
 use the `subs` feature.  Otherwise `subs` are used to create a `Traveller`, which stores the `subs` used.
 
 `subs` are useful for generating :ref:`prism_travellers:Travellers`.
@@ -54,7 +54,8 @@ Here is a full example of what `subs` section could look like (taken from exampl
     //   "type" : "<str|num>",
     //   "widget": "<textinput|select>",
     //   "regex": <"regex">,  // only for widget == textinput,
-    //                           when regex is satisfied widget turns green
+    //                           the field is valid when the regex is satisfied;
+    //                           Start Testing enables once all fields are valid
     //   "choices": [<choice1>, <choice2>, ...],  // only for widget == select
     //   "default": <default>,
     //   "subs": // inner dependant subs
@@ -87,6 +88,7 @@ Here is a full example of what `subs` section could look like (taken from exampl
       "title": "TST000_Meas Enable",
       "type" : "str", "widget": "select", "choices": ["true", "false"]
     }
+  },
 
   // and how it looks in the test item,
   {"id": "TST000_Meas",     "enable": "%%TST000Enable", "args": {"min": "%%TST000Min", "max": "%%TST000Max"}},
@@ -103,7 +105,7 @@ Here is a full example of what `subs` section could look like (taken from exampl
 
 ``title``
 
-* this is the title of the field to be presented to the Operator in the Test Config view
+* this is the title of the field to be presented to the Operator in the Test Configuration page
 * if there is a specific format of the variable expected, that should be indicated in the ``title``
 
 ``type``
@@ -113,7 +115,7 @@ Here is a full example of what `subs` section could look like (taken from exampl
 
 ``widget``
 
-* the type of GUI widget to present to the Operator in the Test Config view
+* the type of GUI widget to present to the Operator in the Test Configuration page
 * `textinput` is a generic text input box, which will be populated by the ``default`` field
 * `select` is a drop down selection menu
 
@@ -142,11 +144,11 @@ This section is a list of fields that correspond to fields that exist in the bac
 used for database searches.
 
 You cannot add or delete fields from this section.  If there are missing fields, an error will occur downstream as the
-result record is check to have these fields.  New fields can be added, but that requires a request to customize
+result record is checked to have these fields.  New fields can be added, but that requires a request to customize
 the backend database.  See TBD.
 
 Note that the example here, two fields are using the `subs` section to get their values from the Operator
-in the Test Config view.
+in the Test Configuration page.
 
 ::
 
@@ -181,7 +183,7 @@ This section sets required variables that Prism uses to drive the test script.
 
   "config": {
     "fail_fast": true,
-    "drivers": ["public.prism.drivers.fake.fake"]
+    "drivers": ["public.prism.drivers.fake.hwdrv_fake"]
   },
 
 
@@ -193,8 +195,8 @@ This section sets required variables that Prism uses to drive the test script.
 * it is recommended ``fail_fast`` be set to `true`.
 
   * Often tests are interdependent, and if one test fails, it often means other tests will fail that depended on
-    that particular function.  What happens then is a cascade of failed tests which my might obscure the root failure.
-  * If tests are mutually exclusive, it may be advantages to set ``fail_fast`` to `false`.
+    that particular function.  What happens then is a cascade of failed tests which might obscure the root failure.
+  * If tests are mutually exclusive, it may be advantageous to set ``fail_fast`` to `false`.
 
 ``drivers``
 
@@ -221,7 +223,7 @@ See ``public/prism/scripts/example/prod_v0/tst00xx.py`` for usage.
 
   "tests": [
     {
-      "module": "public.prism.scripts.prod_v0.tst00xx",
+      "module": "public.prism.scripts.example.prod_v0.tst00xx",
       "options": {
         "fail_fast": false
         // add more key/value as required
@@ -231,8 +233,8 @@ See ``public/prism/scripts/example/prod_v0/tst00xx.py`` for usage.
         {"id": "TST000_Meas",           "enable": true, "args": {"min": 0, "max": "%%TST000Max"},
                                         "fail": [ {"fid": "TST000-0", "msg": "Component apple R1"},
                                                   {"fid": "TST000-1", "msg": "Component banana R1"}] },
-        {"id": "TST001_Skip",           "enable": false },
-        {"id": "TST0xxTRDN",            "enable": true }
+        {"id": "TST002_Skip",           "enable": false },
+        {"id": "TST0xxTEARDOWN",        "enable": true }
       ]
     }
   ]

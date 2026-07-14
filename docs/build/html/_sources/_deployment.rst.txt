@@ -2,7 +2,7 @@ Deployment
 ##########
 
 Prism/Lente allows for various deployment strategies, and some diagrams
-are shown `here <_system.html#_system_arch>`__.
+are shown :ref:`here <system_arch>`.
 
 Lente deployment depends on your dashboarding and Prism station management strategy.
 A Lente station can manage Prism stations directly below it, in the connection

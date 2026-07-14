@@ -71,21 +71,21 @@ PRISM ONLY
 Basic role for operating Prism.
 
 Operator allows the User to scan a traveller and run tests.
-The User **cannot** use `Test Config` menu.
+The User **cannot** use `Test Configuration` page.
 
 ConfigMan
 =========
 
 PRISM ONLY
 
-Allows the User to use the `Test Config` menu, which allows the user to pick which
+Allows the User to use the `Test Configuration` page, which allows the user to pick which
 script to run, and fill in any parameters for the script, and also to be able to create
 a Traveller.
 
 Developer
 =========
 
-Currently this has no purpose.
+Same as Administrator, except without access to the account management pages.
 
 ServerSync
 ==========
