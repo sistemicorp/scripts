@@ -13,7 +13,7 @@ After the User has logged in, they may scan a traveller to configure Prism testi
 use the Test Configuration page to access scripts manually.
 
 
-.. image:: static/Screenshot_main_01.png
+.. image:: static/Screenshot_prism_scan_traveller.png
 
 
 Test Configuration page
@@ -41,11 +41,12 @@ Variables Script
 
 .. image:: static/Screenshot_test_config_02.png
 
-Test View
-*********
+Test Portal
+***********
 
 * The result after 4 channels of the demo script have finished
 * For each channel a log table is shown
+* Historical stats of your testing are shown in the plot on the left
 
 .. image:: static/Screenshot_test_01.png
 

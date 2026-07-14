@@ -13,7 +13,7 @@ After the User has logged in, they may scan a traveller to configure Prism testi
 use the Test Configuration page to access scripts manually.
 
 
-.. image:: static/Screenshot_main_01.png
+.. image:: static/Screenshot_prism_scan_traveller.png
 
 
 Test Configuration page

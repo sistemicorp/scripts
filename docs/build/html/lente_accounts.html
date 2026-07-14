@@ -49,7 +49,7 @@
 <li><p><a class="reference internal" href="#users" id="id1">Users</a></p></li>
 <li><p><a class="reference internal" href="#roles" id="id2">Roles</a></p>
 <ul>
-<li><p><a class="reference internal" href="#enabled" id="id3">Enabled</a></p></li>
+<li><p><a class="reference internal" href="#active" id="id3">Active</a></p></li>
 <li><p><a class="reference internal" href="#admin" id="id4">Admin</a></p></li>
 <li><p><a class="reference internal" href="#account" id="id5">Account</a></p></li>
 <li><p><a class="reference internal" href="#operator" id="id6">Operator</a></p></li>
@@ -63,38 +63,36 @@
 <section id="users">
 <h2><a class="toc-backref" href="#id1" role="doc-backlink">Users</a><a class="headerlink" href="#users" title="Link to this heading">¶</a></h2>
 <p>Users should be added to the system, rather than using the Admin account.</p>
-<p>Users need to have unique username.</p>
+<p>Users need to have a unique username.</p>
 <p>Users are added by another user (Admin) who has Account role privileges.</p>
-<p>A new User account must have the role <cite>Enabled</cite> in order to login.</p>
+<p>A new User account must be set <cite>Active</cite> in order to login.</p>
 </section>
 <section id="roles">
 <h2><a class="toc-backref" href="#id2" role="doc-backlink">Roles</a><a class="headerlink" href="#roles" title="Link to this heading">¶</a></h2>
 <p>The following roles are defined,</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;roles&quot;</span><span class="p">:</span> <span class="p">{</span>
     <span class="c1"># Framework Roles</span>
-    <span class="s2">&quot;ENABLED&quot;</span><span class="p">:</span> <span class="s2">&quot;Enabled&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;ACCOUNT&quot;</span><span class="p">:</span> <span class="s2">&quot;Account&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ACCOUNT&quot;</span><span class="p">:</span> <span class="s2">&quot;Account Admin, Add/Edit Roles &amp; Users&quot;</span><span class="p">,</span>
     <span class="s2">&quot;ADMIN&quot;</span><span class="p">:</span>   <span class="s2">&quot;Administrator&quot;</span><span class="p">,</span>  <span class="c1"># rights to do anything</span>
 
     <span class="c1"># App specific Roles</span>
     <span class="s2">&quot;OPERATOR&quot;</span><span class="p">:</span>   <span class="s2">&quot;Operator&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;CONFIGMAN&quot;</span><span class="p">:</span>  <span class="s2">&quot;Config Management&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CONFIGMAN&quot;</span><span class="p">:</span>  <span class="s2">&quot;Configuration Management&quot;</span><span class="p">,</span>
     <span class="s2">&quot;DEVELOPER&quot;</span><span class="p">:</span>  <span class="s2">&quot;Developer&quot;</span><span class="p">,</span>
     <span class="s2">&quot;SERVERSYNC&quot;</span><span class="p">:</span> <span class="s2">&quot;ServerSync&quot;</span><span class="p">,</span>  <span class="c1"># causes user to be pushed to all stations</span>
 <span class="p">},</span>
 </pre></div>
 </div>
-<section id="enabled">
-<h3><a class="toc-backref" href="#id3" role="doc-backlink">Enabled</a><a class="headerlink" href="#enabled" title="Link to this heading">¶</a></h3>
-<p>Without this role, the User cannot log into the system.  When a User is created,
-this role is NOT set.  After a User is created, you must access the Roles menu
-and add <cite>Enabled</cite> to the User for them to be able to login.</p>
+<section id="active">
+<h3><a class="toc-backref" href="#id3" role="doc-backlink">Active</a><a class="headerlink" href="#active" title="Link to this heading">¶</a></h3>
+<p><cite>Active</cite> is not a Role.  It is a separate setting on the Account Management page.</p>
+<p>Without <cite>Active</cite> set, the User cannot log into the system.</p>
 <p>This allows you to disable a User without deleting their account.</p>
 </section>
 <section id="admin">
 <h3><a class="toc-backref" href="#id4" role="doc-backlink">Admin</a><a class="headerlink" href="#admin" title="Link to this heading">¶</a></h3>
 <p>The Admin(istrator) role has access to all system functions and menus.</p>
-<p>In general its good practice to have two Users with Admin role.</p>
+<p>In general it’s good practice to have two Users with Admin role.</p>
 </section>
 <section id="account">
 <h3><a class="toc-backref" href="#id5" role="doc-backlink">Account</a><a class="headerlink" href="#account" title="Link to this heading">¶</a></h3>
@@ -121,7 +119,7 @@ a Traveller.</p>
 <section id="serversync">
 <h3><a class="toc-backref" href="#id9" role="doc-backlink">ServerSync</a><a class="headerlink" href="#serversync" title="Link to this heading">¶</a></h3>
 <p>A User with this setting means their profile is controlled from Lente.  You
-may edit the user here on Prism, but if Users are sync’d from Lente, your changes
+may edit the user on a Prism station, but if Users are sync’d from Lente, your changes
 will be overridden by the profile on Lente.</p>
 <p>All changes to this User should be made on Lente.</p>
 <p>More on ServerSync TBD (link)</p>
