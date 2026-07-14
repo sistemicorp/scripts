@@ -58,7 +58,7 @@ until the system is operating correctly and only then able encryption and other 
 </nav>
 <section id="settings-json">
 <h2><a class="toc-backref" href="#id1" role="doc-backlink">Settings.json</a><a class="headerlink" href="#settings-json" title="Link to this heading">¶</a></h2>
-<p>Most of the security of the system is set by <a class="reference external" href="_deployment.html#_SettingsFile">settings.json</a>.</p>
+<p>Most of the security of the system is set by <a class="reference internal" href="_deployment.html#deploy-settings-file"><span class="std std-ref">settings.json</span></a>.</p>
 <p><cite>settings.json</cite> file is unique to each Prism/Lente in the deployment.  It is common for
 multiple Prism computers sitting below Lente to have the same <cite>settings.json</cite>, assuming the settings are the same.</p>
 <p><cite>settings.json</cite> is edited/created when Prism/Lente computer is configured.</p>
@@ -68,7 +68,7 @@ sent between Lente/Prism computers.</p>
 </section>
 <section id="manifest-checking">
 <h2><a class="toc-backref" href="#id2" role="doc-backlink">Manifest Checking</a><a class="headerlink" href="#manifest-checking" title="Link to this heading">¶</a></h2>
-<p>Enable Manifest checking in the <a class="reference external" href="_deployment.html#_SettingsFile">settings.json</a>. file.</p>
+<p>Enable Manifest checking in the <a class="reference internal" href="_deployment.html#deploy-settings-file"><span class="std std-ref">settings.json</span></a>. file.</p>
 <p>The Manifest (file) is created by Lente to ensure the integrity of the all the scripts and supporting files.
 The manifest is a list of files and corresponding hashes, which Prism will use to validate there are no
 changes to the files it will use to test.  The Manifest file itself is encrypted and cannot be viewed.</p>
@@ -124,7 +124,7 @@ Often login names and passwords are common to a group of people, or shared among
 <ul class="simple">
 <li><p>Change the default password!</p>
 <ul>
-<li><p>Also remember to use the same password in <a class="reference external" href="_deployment.html#_SettingsFile">settings.json</a>.</p></li>
+<li><p>Also remember to use the same password in <a class="reference internal" href="_deployment.html#deploy-settings-file"><span class="std std-ref">settings.json</span></a>.</p></li>
 </ul>
 </li>
 </ul>
@@ -137,7 +137,7 @@ internal servers.  Therefore we can avoid cost and complexity by using our own g
 These keys will still be using the same TLS protocol over the connection and are therefore just as secure.</p>
 <p>However, since the (Chrome) browser is not able to authenticate the self signed keys/certificate it
 will indicate that the connection is “untrusted” and will prompt the user to validate the connection.</p>
-<p>With HTTPS the connection between Prism/Lente is now encrypted.  <a class="reference external" href="_deployment.html#_SettingsFile">settings.json</a>
+<p>With HTTPS the connection between Prism/Lente is now encrypted.  <a class="reference internal" href="_deployment.html#deploy-settings-file"><span class="std std-ref">settings.json</span></a>
 has <cite>prism_lente_pw</cite> which should also be set to something unique.  This setting needs to be the same
 across all the Prism/Lente computers.</p>
 <p>On deployed Prism/Lente computers the user account is presumed to be secure.  The Ubuntu filesystem should
@@ -167,7 +167,7 @@ drwxr-xr-x 2 root   root    4096 May 29 16:18 traveller/
 </div>
 <ul class="simple">
 <li><p>Generate the cert/key file on each Prism/Lente computer.</p></li>
-<li><p>See the <a class="reference external" href="_deployment.html#_SettingsFile">settings.json</a> to enable HTTPS and set the Prism/Lente password.</p></li>
+<li><p>See the <a class="reference internal" href="_deployment.html#deploy-settings-file"><span class="std std-ref">settings.json</span></a> to enable HTTPS and set the Prism/Lente password.</p></li>
 <li><p>In the browser, connect over HTTPs,</p>
 <ul>
 <li><p>for Prism use <cite>https://127.0.0.1:6590</cite></p></li>

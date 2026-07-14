@@ -101,7 +101,7 @@ class tst01xx(TestItem):
     def TST101_Skip(self):
         """ Example of a test that is skipped
 
-        {"id": "TST001_Skip", "enable": false },
+        {"id": "TST101_Skip", "enable": false },
 
         """
         ctx = self.item_start()   # always first line of test

@@ -13,7 +13,7 @@ until the system is operating correctly and only then able encryption and other 
 Settings.json
 =============
 
-Most of the security of the system is set by `settings.json <_deployment.html#_Settings File>`__.
+Most of the security of the system is set by :ref:`settings.json <deploy-settings-file>`.
 
 `settings.json` file is unique to each Prism/Lente in the deployment.  It is common for
 multiple Prism computers sitting below Lente to have the same `settings.json`, assuming the settings are the same.
@@ -29,7 +29,7 @@ Prism computers should remove the Lente section of the `settings.json` file.
 Manifest Checking
 =================
 
-Enable Manifest checking in the `settings.json <_deployment.html#_Settings File>`__. file.
+Enable Manifest checking in the :ref:`settings.json <deploy-settings-file>`. file.
 
 The Manifest (file) is created by Lente to ensure the integrity of the all the scripts and supporting files.
 The manifest is a list of files and corresponding hashes, which Prism will use to validate there are no
@@ -99,7 +99,7 @@ Postgres DB
 
 * Change the default password!
 
-  * Also remember to use the same password in `settings.json <_deployment.html#_Settings File>`__.
+  * Also remember to use the same password in :ref:`settings.json <deploy-settings-file>`.
 
 
 .. _https:
@@ -116,7 +116,7 @@ These keys will still be using the same TLS protocol over the connection and are
 However, since the (Chrome) browser is not able to authenticate the self signed keys/certificate it
 will indicate that the connection is "untrusted" and will prompt the user to validate the connection.
 
-With HTTPS the connection between Prism/Lente is now encrypted.  `settings.json <_deployment.html#_Settings File>`__
+With HTTPS the connection between Prism/Lente is now encrypted.  :ref:`settings.json <deploy-settings-file>`
 has `prism_lente_pw` which should also be set to something unique.  This setting needs to be the same
 across all the Prism/Lente computers.
 
@@ -151,7 +151,7 @@ organization information, if desired.
 
 
 * Generate the cert/key file on each Prism/Lente computer.
-* See the `settings.json <_deployment.html#_Settings File>`__ to enable HTTPS and set the Prism/Lente password.
+* See the :ref:`settings.json <deploy-settings-file>` to enable HTTPS and set the Prism/Lente password.
 * In the browser, connect over HTTPs,
 
   * for Prism use `https://127.0.0.1:6590`

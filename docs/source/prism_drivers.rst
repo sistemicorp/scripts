@@ -23,7 +23,7 @@ Prism will load/init each `driver` that is listed.
 The python file specified *MUST* have a class called `HWDriver`.  See the `fake` example for
 implementation details and documentation.
 
-By convention, the driver filename has prefix is `hwdrv_<name>.py`.
+By convention, the driver filename has the prefix `hwdrv_<name>.py`.
 
 The Drivers files are stored by convention in a separate path relative to scripts in order to isolate
 them.  `Drivers` are typically common to test multiple products.
@@ -72,7 +72,7 @@ Per the code documentation, `discover_channels` must return a dictionary with pr
         1) The hw driver objects are expected to have an 'slot' field, the lowest
            id is assigned to channel 0, the next highest to channel 1, etc
 
-        :return: <#>, <driver_type>, <list>
+        :return: <#>, <driver_type>, <list> (use Zero for a device shared across all channels)
             where
                 #:      >0 number of channels,
                         0 does not indicate num channels, like a shared hardware driver
@@ -87,7 +87,7 @@ Slot Number
 -----------
 
 When implementing python code to implement tests, there is a `channel (self.chan)` number and a `slot` number.
-The channel is how Prism indexes the running threads, usually from 0 to a max of 3.  The slot number
+The channel is how Prism indexes the running threads, usually from 0 to a max of 7.  The slot number
 is a number used to setup configuration of the physical system.
 
 
