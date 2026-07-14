@@ -58,7 +58,7 @@ Admin
 
 The Admin(istrator) role has access to all system functions and menus.
 
-In general its good practice to have two Users with Admin role.
+In general it's good practice to have two Users with Admin role.
 
 Account
 =======

@@ -41,11 +41,12 @@ Variables Script
 
 .. image:: static/Screenshot_test_config_02.png
 
-Test View
-*********
+Test Portal
+***********
 
 * The result after 4 channels of the demo script have finished
 * For each channel a log table is shown
+* Historical stats of your testing are shown in the plot on the left
 
 .. image:: static/Screenshot_test_01.png
 
