@@ -24,7 +24,7 @@ import os
 import subprocess
 import base64
 import pyudev
-from core.const import PUB
+from core.const import NOTICE_TYPE
 from core.sys_log import pub_notice
 from threading import Lock
 
@@ -58,7 +58,7 @@ class BrotherQL(object):
         except Exception as e:
             self.logger.error("Failed to make path for {}: {}".format(self.WORKING_PATH, e))
             notice = "ERROR path {} failed".format(self.WORKING_PATH)
-            pub_notice(notice, sender="{}._make_dirs".format(__class__.__name__), type=PUB.NOTICES_ERROR)
+            pub_notice(notice, sender="{}._make_dirs".format(__class__.__name__), type=NOTICE_TYPE.ERROR)
 
         self.lock = Lock()
         self.path = path  # this is the linux usb path, /dev/usb/lp0
@@ -393,7 +393,7 @@ class HWDriver(object):
 
         if not drivers:
             self.logger.error("printer not found")
-            pub_notice("HWDriver:{}: Error none found".format(self.SFN), sender="discover_channels", type=PUB.NOTICES_ERROR)
+            pub_notice("HWDriver:{}: Error none found".format(self.SFN), sender="discover_channels", type=NOTICE_TYPE.ERROR)
             return -1, DRIVER_TYPE, []
 
         # do not allow the test script validation step to succeed if can't print a test label
@@ -403,12 +403,12 @@ class HWDriver(object):
                 success = d["hwdrv"].print_ruid_barcode("id{}-{}".format(id, path))
                 if not success:
                     self.logger.error("failed to print")
-                    pub_notice("HWDriver:{}: failed to print".format(self.SFN), sender="discover_channels", type=PUB.NOTICES_ERROR)
+                    pub_notice("HWDriver:{}: failed to print".format(self.SFN), sender="discover_channels", type=NOTICE_TYPE.ERROR)
                     return -1, DRIVER_TYPE, []
 
         pub_notice("HWDriver:{}: found {}".format(self.SFN, id),
                    sender="discover_channels",
-                   type=PUB.NOTICES_NORMAL)
+                   type=NOTICE_TYPE.NORMAL)
 
         # Setting number of channels to zero means this device is shared across all test fixtures
         if scriptArgs and scriptArgs.get('only_one', False):
