@@ -78,6 +78,11 @@
     }
   },
 
+  // automatically sync public (scripts) folder
+  // Lente: will sync all downstream clients
+  // Prism: will sync with upstream Lente
+  "auto_sync_scripts": false,
+
   // ------------------------------------------------------------------
   // Below are only used by Lente and can be removed for Prism stations
 
@@ -90,9 +95,6 @@
 
   // This Lente computer is pyramid root and creates manifest
   "root_authority": true,
-
-  // automatically sync Prism clients scripts
-  "auto_sync_scripts": true,
 
   "postgres": {
     "resultbasekeysv1": {
