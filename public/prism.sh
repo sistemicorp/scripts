@@ -19,6 +19,14 @@ usage () {
   echo ""
   echo "  stop                      Stop Prism"
   echo ""
+  echo "  global flags (start, update, stop):"
+  echo "    --image=, -i   Docker image to use (default sistemicorp/prism, which is :latest)."
+  echo "                   To hold at a version, pass the same tag to every update and start,"
+  echo "                   for example -i sistemicorp/prism:v0.8.37"
+  echo "    -n             Instance number, appended to the container name and hostname,"
+  echo "                   for example -n 2 runs container prism2"
+  echo "    -b             Use the docker bridge network instead of the host network"
+  echo ""
 }
 
 if [[ $1 == "--help" ]] || [[ $1 == "" ]] ; then
@@ -175,7 +183,8 @@ while [ "$#" -gt 0 ]; do
     --restart=*) flag_restart="${1#*=}"; shift 1;;
     --hostname=*) flag_hostname="${1#*=}"; shift 1;;
     --server=*) flag_server_ip="${1#*=}"; shift 1;;
-    --restart|--hostname|--server) echo "$1 requires an argument" >&2; exit 1;;
+    --image=*) flag_image="${1#*=}"; shift 1;;
+    --restart|--hostname|--server|--image) echo "$1 requires an argument" >&2; exit 1;;
 
     -*) echo "unknown option: $1" >&2; exit 1;;
     *) handle_command "$1"; shift 1;;

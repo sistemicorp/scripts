@@ -17,6 +17,15 @@ usage () {
   echo ""
   echo "  stop                      Stop Lente"
   echo ""
+  echo "  global flags (start, update, stop):"
+  echo "    --image=, -i   Docker image to use (default sistemicorp/lente, which is :latest)."
+  echo "                   To hold at a version, pass the same tag to every update and start,"
+  echo "                   for example -i sistemicorp/lente:v0.8.21"
+  echo "    -n             Instance number, appended to the container name and hostname,"
+  echo "                   for example -n 2 runs container lente2"
+  echo "    -b             Use the docker bridge network instead of the host network"
+  echo "    -v             Start Lente with verbose logging (start only)"
+  echo ""
 }
 
 if [[ $1 == "--help" ]] || [[ $1 == "" ]] ; then
@@ -123,7 +132,8 @@ while [ "$#" -gt 0 ]; do
 
 
     --restart=*) flag_restart="${1#*=}"; shift 1;;
-    --restart) echo "$1 requires an argument" >&2; exit 1;;
+    --image=*) flag_image="${1#*=}"; shift 1;;
+    --restart|--image) echo "$1 requires an argument" >&2; exit 1;;
 #    --restart|--pidfile) echo "$1 requires an argument" >&2; exit 1;;  example of adding more
 
     -*) echo "unknown option: $1" >&2; exit 1;;

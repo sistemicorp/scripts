@@ -330,6 +330,25 @@ The helper scripts to start Prism/Lente (see :ref:`Helpers <system-helper-docker
 have a `restart=always` option that should be used.  Once that is done, Prism/Lente will forever
 startup.
 
+By default the helper scripts use the `latest` image from Docker Hub.  To hold a deployment at a
+version, pass the image with its tag using `--image=` (or `-i`), and use the same tag on every
+`update` and `start`.  Leaving it off any of these commands goes back to `latest`::
+
+    ./lente.sh --image=sistemicorp/lente:v0.8.21 update
+    ./lente.sh --image=sistemicorp/lente:v0.8.21 --restart=always start
+
+    ./prism.sh --image=sistemicorp/prism:v0.8.37 update
+    ./prism.sh --image=sistemicorp/prism:v0.8.37 --server=192.168.0.10 --restart=always start
+
+The available tags are listed on Docker Hub.  Both helper scripts also take these flags:
+
+* `-n <number>`, instance number, appended to the container name and hostname, for example
+  `-n 2` runs container `lente2`.  Use the same number for `update` and `stop`.
+* `-b`, use the Docker bridge network instead of the host network.
+* `-v`, Lente only, start Lente with verbose logging.
+
+Run `./lente.sh --help` or `./prism.sh --help` for the full list.
+
 
 .. _health-checks:
 
