@@ -55,6 +55,7 @@
 <li><p><a class="reference internal" href="#configman" id="id6">ConfigMan</a></p></li>
 <li><p><a class="reference internal" href="#developer" id="id7">Developer</a></p></li>
 <li><p><a class="reference internal" href="#serversync" id="id8">ServerSync</a></p></li>
+<li><p><a class="reference internal" href="#dashboard" id="id9">Dashboard</a></p></li>
 </ul>
 </li>
 </ul>
@@ -74,10 +75,11 @@
 <span class="n">CONFIGMAN</span>   <span class="n">Configuration</span> <span class="n">Management</span>
 <span class="n">DEVELOPER</span>   <span class="n">Developer</span>
 <span class="n">SERVERSYNC</span>  <span class="n">ServerSync</span><span class="p">,</span> <span class="n">causes</span> <span class="n">user</span> <span class="n">to</span> <span class="n">be</span> <span class="n">pushed</span> <span class="n">to</span> <span class="nb">all</span> <span class="n">stations</span>
-<span class="n">DASHBOARD</span>   <span class="n">Dashboard</span><span class="p">,</span> <span class="n">read</span><span class="o">-</span><span class="n">only</span> <span class="n">results</span> <span class="n">viewer</span> <span class="p">(</span><span class="n">planned</span><span class="p">)</span>
+<span class="n">DASHBOARD</span>   <span class="n">Dashboard</span><span class="p">,</span> <span class="n">read</span><span class="o">-</span><span class="n">only</span> <span class="n">results</span> <span class="n">viewer</span>
 </pre></div>
 </div>
 <p>The <cite>ACCOUNT</cite> role is shown in Account Management but is not used, accounts are managed by Admin users.</p>
+<p>The menu only lists the pages the User’s roles can open.</p>
 <section id="active">
 <h3><a class="toc-backref" href="#id3" role="doc-backlink">Active</a><a class="headerlink" href="#active" title="Link to this heading">¶</a></h3>
 <p><cite>Active</cite> is not a Role.  It is a separate setting on the Account Management page.</p>
@@ -105,7 +107,8 @@ a Traveller.</p>
 </section>
 <section id="developer">
 <h3><a class="toc-backref" href="#id7" role="doc-backlink">Developer</a><a class="headerlink" href="#developer" title="Link to this heading">¶</a></h3>
-<p>Same as Administrator, except without access to the account management pages.</p>
+<p>Allows the User to create a Traveller and to use the <cite>Shutdown</cite> page.
+The User <strong>cannot</strong> use the <cite>Station Manager</cite> or <cite>Account Management</cite> pages.</p>
 </section>
 <section id="serversync">
 <h3><a class="toc-backref" href="#id8" role="doc-backlink">ServerSync</a><a class="headerlink" href="#serversync" title="Link to this heading">¶</a></h3>
@@ -114,6 +117,18 @@ may edit the user on a Prism station, but if Users are sync’d from Lente, your
 will be overridden by the profile on Lente.</p>
 <p>All changes to this User should be made on Lente.</p>
 <p>More on ServerSync TBD (link)</p>
+</section>
+<section id="dashboard">
+<h3><a class="toc-backref" href="#id9" role="doc-backlink">Dashboard</a><a class="headerlink" href="#dashboard" title="Link to this heading">¶</a></h3>
+<p>LENTE ONLY</p>
+<p>A read-only results viewer, for example a screen on the production floor that shows test
+results as they come in.</p>
+<p>A Dashboard User can open the Home, <cite>Result Search</cite> and <cite>Result Analytics</cite> pages.
+They cannot export CSV files, send logs, or open any other page.</p>
+<p>A Dashboard User is not logged out when idle.
+They still need to log in again when the browser login expires, after one week by default.</p>
+<p>These limits only apply when Dashboard is the User’s only role (<cite>ServerSync</cite> aside).
+If the User also has another role, for example Operator, that role’s rights and idle logout apply.</p>
 </section>
 </section>
 </section>

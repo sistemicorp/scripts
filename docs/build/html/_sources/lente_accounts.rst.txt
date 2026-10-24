@@ -33,10 +33,12 @@ The following roles are defined,
     CONFIGMAN   Configuration Management
     DEVELOPER   Developer
     SERVERSYNC  ServerSync, causes user to be pushed to all stations
-    DASHBOARD   Dashboard, read-only results viewer (planned)
+    DASHBOARD   Dashboard, read-only results viewer
 
 
 The `ACCOUNT` role is shown in Account Management but is not used, accounts are managed by Admin users.
+
+The menu only lists the pages the User's roles can open.
 
 
 Active
@@ -77,7 +79,8 @@ a Traveller.
 Developer
 =========
 
-Same as Administrator, except without access to the account management pages.
+Allows the User to create a Traveller and to use the `Shutdown` page.
+The User **cannot** use the `Station Manager` or `Account Management` pages.
 
 ServerSync
 ==========
@@ -89,4 +92,21 @@ will be overridden by the profile on Lente.
 All changes to this User should be made on Lente.
 
 More on ServerSync TBD (link)
+
+Dashboard
+=========
+
+LENTE ONLY
+
+A read-only results viewer, for example a screen on the production floor that shows test
+results as they come in.
+
+A Dashboard User can open the Home, `Result Search` and `Result Analytics` pages.
+They cannot export CSV files, send logs, or open any other page.
+
+A Dashboard User is not logged out when idle.
+They still need to log in again when the browser login expires, after one week by default.
+
+These limits only apply when Dashboard is the User's only role (`ServerSync` aside).
+If the User also has another role, for example Operator, that role's rights and idle logout apply.
 

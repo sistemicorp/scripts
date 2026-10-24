@@ -38,7 +38,9 @@ screenshots.
   sync are deactivated on the station.
 * Station requests are refused when no station password is configured
 * Vendor programming tools are no longer bundled, see Migration Guide below
-* DASHBOARD role (planned: read-only results viewer)
+* Lente DASHBOARD role, a read-only results viewer that is not logged out when idle,
+  see :doc:`Accounts <lente_accounts>`
+* Lente menus only list the pages the user's roles can open
 
 Bug fixes,
 
