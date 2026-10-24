@@ -22,6 +22,12 @@ Users are added by an Admin user in Account Management.
 
 A User account must be set `Active` in order to login.
 
+Only one User can be logged in to Prism at a time.
+
+Logging out exits the Script Runner.  If channels are still testing, the tests finish first, then
+the Script Runner exits, unless a User logs in before then.  A User logged out for being idle
+leaves the Script Runner loaded.
+
 
 Roles
 *****

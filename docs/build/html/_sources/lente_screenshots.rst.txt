@@ -58,8 +58,8 @@ Prism and Lente Station management console, Admin only.
   * `Sync Users` and `Sync Script` are disabled while a user is logged in to the selected station,
     or while its test runner has a script loaded (`Runner` is `IDLE` or `RUNNING`).  Prism also
     refuses these syncs while a script is loaded, and refuses `Sync Script` while a user is logged in,
-    because installing scripts restarts Prism.  Exit the Script Runner and log out on the station to
-    allow them.
+    because installing scripts restarts Prism.  Log out on the station to allow them, logging out
+    exits the Script Runner.
   * with `"auto_sync_scripts": true` in :ref:`settings.json <deploy-settings-file>`, Lente syncs
     scripts to stations automatically when the scripts version changes, no user is logged in,
     and the station's test runner has no script loaded.  If a user logs in before the sync starts,

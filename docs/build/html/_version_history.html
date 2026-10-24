@@ -88,6 +88,9 @@ was not reset</p></li>
 logged out.  Syncs now wait until the Script Runner is exited.</p></li>
 <li><p>[BUGFIX] Auto script sync could restart a station a user had just logged in to, logging them
 out.  Prism now refuses a script sync while a user is logged in.</p></li>
+<li><p>[BUGFIX] Logging out of Prism left the Script Runner loaded, which blocked syncs.  Logging out
+now exits the Script Runner, once any running tests finish.</p></li>
+<li><p>[BUGFIX] Prism allowed a second user to log in from another browser</p></li>
 </ul>
 <section id="migration-guide">
 <h3>Migration Guide<a class="headerlink" href="#migration-guide" title="Link to this heading">¶</a></h3>

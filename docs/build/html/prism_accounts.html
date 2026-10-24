@@ -66,6 +66,10 @@
 <p>Users are identified by a unique email address.</p>
 <p>Users are added by an Admin user in Account Management.</p>
 <p>A User account must be set <cite>Active</cite> in order to login.</p>
+<p>Only one User can be logged in to Prism at a time.</p>
+<p>Logging out exits the Script Runner.  If channels are still testing, the tests finish first, then
+the Script Runner exits, unless a User logs in before then.  A User logged out for being idle
+leaves the Script Runner loaded.</p>
 </section>
 <section id="roles">
 <h2><a class="toc-backref" href="#id2" role="doc-backlink">Roles</a><a class="headerlink" href="#roles" title="Link to this heading">¶</a></h2>
