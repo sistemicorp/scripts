@@ -138,7 +138,7 @@ To determine what docker images are running,
 
         $ docker ps
         CONTAINER ID   IMAGE               COMMAND                CREATED      STATUS      PORTS                                       NAMES
-        c206788fcc35   sistemicorp/prism   "python ./prism.pyc"   5 days ago   Up 5 days   0.0.0.0:6590->6590/tcp, :::6590->6590/tcp   prism
+        c206788fcc35   sistemicorp/prismng "python ./prism.pyc"   5 days ago   Up 5 days   0.0.0.0:6590->6590/tcp, :::6590->6590/tcp   prism
 
 * Key information
 

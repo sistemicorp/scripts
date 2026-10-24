@@ -91,7 +91,7 @@ your scripts repo, it gets the scripts, drivers and license from its Lente.
   * Get the Prism Docker image (needs internet access, or load the image from a file with
     `docker load`)::
 
-        docker pull sistemicorp/prism
+        docker pull sistemicorp/prismng
 
   * Start Prism.  The script must be run from the `public` folder, because that folder is
     mounted into the Prism container.  The `--server` flag is required, it is the IP address of
@@ -337,8 +337,8 @@ version, pass the image with its tag using `--image=` (or `-i`), and use the sam
     ./lente.sh --image=sistemicorp/lente:v0.8.21 update
     ./lente.sh --image=sistemicorp/lente:v0.8.21 --restart=always start
 
-    ./prism.sh --image=sistemicorp/prism:v0.8.37 update
-    ./prism.sh --image=sistemicorp/prism:v0.8.37 --server=192.168.0.10 --restart=always start
+    ./prism.sh --image=sistemicorp/prismng:<tag> update
+    ./prism.sh --image=sistemicorp/prismng:<tag> --server=192.168.0.10 --restart=always start
 
 The available tags are listed on Docker Hub.  Both helper scripts also take these flags:
 

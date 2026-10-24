@@ -131,7 +131,7 @@ The file must be supplied, Prism does not start without it.</p>
 </li>
 <li><p>Get the Prism Docker image (needs internet access, or load the image from a file with
 <cite>docker load</cite>):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">pull</span> <span class="n">sistemicorp</span><span class="o">/</span><span class="n">prism</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">pull</span> <span class="n">sistemicorp</span><span class="o">/</span><span class="n">prismng</span>
 </pre></div>
 </div>
 </li>
@@ -369,8 +369,8 @@ version, pass the image with its tag using <cite>–image=</cite> (or <cite>-i</
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">lente</span><span class="o">.</span><span class="n">sh</span> <span class="o">--</span><span class="n">image</span><span class="o">=</span><span class="n">sistemicorp</span><span class="o">/</span><span class="n">lente</span><span class="p">:</span><span class="n">v0</span><span class="mf">.8.21</span> <span class="n">update</span>
 <span class="o">./</span><span class="n">lente</span><span class="o">.</span><span class="n">sh</span> <span class="o">--</span><span class="n">image</span><span class="o">=</span><span class="n">sistemicorp</span><span class="o">/</span><span class="n">lente</span><span class="p">:</span><span class="n">v0</span><span class="mf">.8.21</span> <span class="o">--</span><span class="n">restart</span><span class="o">=</span><span class="n">always</span> <span class="n">start</span>
 
-<span class="o">./</span><span class="n">prism</span><span class="o">.</span><span class="n">sh</span> <span class="o">--</span><span class="n">image</span><span class="o">=</span><span class="n">sistemicorp</span><span class="o">/</span><span class="n">prism</span><span class="p">:</span><span class="n">v0</span><span class="mf">.8.37</span> <span class="n">update</span>
-<span class="o">./</span><span class="n">prism</span><span class="o">.</span><span class="n">sh</span> <span class="o">--</span><span class="n">image</span><span class="o">=</span><span class="n">sistemicorp</span><span class="o">/</span><span class="n">prism</span><span class="p">:</span><span class="n">v0</span><span class="mf">.8.37</span> <span class="o">--</span><span class="n">server</span><span class="o">=</span><span class="mf">192.168.0.10</span> <span class="o">--</span><span class="n">restart</span><span class="o">=</span><span class="n">always</span> <span class="n">start</span>
+<span class="o">./</span><span class="n">prism</span><span class="o">.</span><span class="n">sh</span> <span class="o">--</span><span class="n">image</span><span class="o">=</span><span class="n">sistemicorp</span><span class="o">/</span><span class="n">prismng</span><span class="p">:</span><span class="o">&lt;</span><span class="n">tag</span><span class="o">&gt;</span> <span class="n">update</span>
+<span class="o">./</span><span class="n">prism</span><span class="o">.</span><span class="n">sh</span> <span class="o">--</span><span class="n">image</span><span class="o">=</span><span class="n">sistemicorp</span><span class="o">/</span><span class="n">prismng</span><span class="p">:</span><span class="o">&lt;</span><span class="n">tag</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">server</span><span class="o">=</span><span class="mf">192.168.0.10</span> <span class="o">--</span><span class="n">restart</span><span class="o">=</span><span class="n">always</span> <span class="n">start</span>
 </pre></div>
 </div>
 <p>The available tags are listed on Docker Hub.  Both helper scripts also take these flags:</p>

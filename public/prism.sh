@@ -20,9 +20,9 @@ usage () {
   echo "  stop                      Stop Prism"
   echo ""
   echo "  global flags (start, update, stop):"
-  echo "    --image=, -i   Docker image to use (default sistemicorp/prism, which is :latest)."
+  echo "    --image=, -i   Docker image to use (default sistemicorp/prismng, which is :latest)."
   echo "                   To hold at a version, pass the same tag to every update and start,"
-  echo "                   for example -i sistemicorp/prism:v0.8.37"
+  echo "                   for example -i sistemicorp/prismng:<tag>"
   echo "    -n             Instance number, appended to the container name and hostname,"
   echo "                   for example -n 2 runs container prism2"
   echo "    -b             Use the docker bridge network instead of the host network"
@@ -39,7 +39,7 @@ flag_server_ip=not_specified
 flag_hostname=$(hostname)
 flag_restart=no
 flag_instno=""
-flag_image="sistemicorp/prism"
+flag_image="sistemicorp/prismng"
 flag_network="host"
 
 IP4=$(ip route get 1 | sed -n 's/^.*src \([0-9.]*\) .*$/\1/p')

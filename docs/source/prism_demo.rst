@@ -80,7 +80,7 @@ Clone Sistemi Scripts
 
 ::
 
-    docker pull sistemicorp/prism
+    docker pull sistemicorp/prismng
 
 * Run Prism
 
