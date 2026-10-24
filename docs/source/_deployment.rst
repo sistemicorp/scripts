@@ -290,6 +290,14 @@ the file smaller and easier to manage.
 * On Prism, `result_server_url` is always set from the `--server` flag of `prism.sh`
 * `auto_sync_scripts` also applies to Prism stations, keep it in the Prism file.  When it is
   `true` on a Prism, its Lente installs new scripts on it automatically.
+* `send_logs_on_startup` applies to Prism and Lente.  When `true`, the station's log files are sent
+  each time it starts, the same as pressing `Send Logs` in the `Admin` menu.  This is useful for
+  remote diagnostics.
+
+  * The logs are sent as a result record, and are found in Lente `Result Search` under the script
+    name `PRISMSENDLOG_startup` or `LENTESENDLOG_startup` (`..._ui` when sent from `Send Logs`).
+    The station's computer name is in the `location` field.
+  * Log files larger than 1 MB are skipped, and an error notice names each skipped file.
 
 
 Other Settings
