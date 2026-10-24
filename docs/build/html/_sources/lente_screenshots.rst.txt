@@ -60,6 +60,9 @@ Prism and Lente Station management console, Admin only.
     refuses these syncs while a script is loaded, and refuses `Sync Script` while a user is logged in,
     because installing scripts restarts Prism.  Log out on the station to allow them, logging out
     exits the Script Runner.
+  * `Restart` asks for confirmation when a selected station has a user logged in or a script
+    loaded, because restarting aborts any running tests.  Restart stays available to recover a
+    station that is not responding.
   * with `"auto_sync_scripts": true` in :ref:`settings.json <deploy-settings-file>`, Lente syncs
     scripts to stations automatically when the scripts version changes, no user is logged in,
     and the station's test runner has no script loaded.  If a user logs in before the sync starts,
