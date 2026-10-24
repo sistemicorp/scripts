@@ -48,6 +48,8 @@ screenshots.
 * Station Manager actions are sent in the reply to the station's ping, Lente no longer connects to
   stations, so only stations need to reach Lente.  Actions expire after 2 minutes.
   `use_rpc_over_status_updates` is removed from `settings.json`.
+* Test programs can use `self.sleep()` and `self.check_abort()` so an item stops on timeout or abort,
+  see :ref:`Timeouts and Aborts <prism_programs:Timeouts and Aborts>`
 
 Bug fixes,
 
@@ -58,6 +60,8 @@ Bug fixes,
   was not reset
 * [BUGFIX] Lente to upstream Lente result uploads used the wrong password (`lente_lente_pw`)
 * [BUGFIX] Prism and Lente were slow to exit on shutdown
+* [BUGFIX] After a test item timeout, the teardown item's waits and prompts were skipped and it
+  was recorded as an error
 * [BUGFIX] With `use_https`, script sync from Lente failed
 * [BUGFIX] Script and user syncs could interrupt a station's test runner once the operator
   logged out.  Syncs now wait until the Script Runner is exited.

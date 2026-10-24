@@ -178,6 +178,54 @@ context
   over the product life cycle, and its better to make those things editable by a non-programmer. See TBS-Planning
 
 
+Timeouts and Aborts
+-------------------
+
+Every test item is guarded by a timeout (see ``timeout`` in :ref:`prism_scripts:tests`).
+An item can also be aborted, for example when the Operator presses Abort All.
+When either happens, Prism records the result and moves on to the teardown item.
+
+Prism cannot interrupt your Python code.
+A ``time.sleep()``, a long loop or a blocking driver call keeps running until it finishes,
+and the channel waits for it.
+Write your waits and loops so they stop early,
+
+* ``self.sleep(seconds)`` - use instead of ``time.sleep()``.  It returns ``True`` if the full time
+  elapsed, or ``False`` as soon as the item times out or is aborted.
+* ``self.check_abort()`` - call it in loops.  If the item timed out or was aborted, it ends the item
+  right there, and Prism records ``TIMEOUT`` (or an error for an abort).  It raises an exception
+  that ``except Exception`` does not catch, so release held resources with ``with`` or ``try/finally``.
+* ``self.timeout`` - ``True`` once the item has timed out.
+
+For example,
+
+::
+
+    def TST009_LogPctProgress(self):
+        ctx = self.item_start()  # always first line of test
+
+        percent = 0
+        while percent <= 100:
+            self.check_abort()  # ends the item here if it timed out or was aborted
+            self.log_bullet("Completed {:3d}%".format(percent), ovrwrite_last_line=True)
+            self.sleep(0.5)
+            percent += 10
+
+        self.item_end()  # always last line of test
+
+A shared resource lock is released even when the item is stopped,
+
+::
+
+    with self.shared_lock("my_resource"):
+        while hold_time:
+            if not self.sleep(1): break  # item timed out or was aborted
+            hold_time -= 1
+
+The result you pass to ``self.item_end()`` after a timeout is ignored; the item is recorded as ``TIMEOUT``.
+For a long blocking driver call, give the driver its own timeout shorter than the item ``timeout``.
+
+
 Everything Example
 ------------------
 
@@ -363,7 +411,7 @@ Program code,
         """
         ctx = self.item_start()   # always first line of test
 
-        time.sleep(self.DEMO_TIME_DELAY * random.random() * self.DEMO_TIME_RND_ENABLE)
+        self.sleep(self.DEMO_TIME_DELAY * random.random() * self.DEMO_TIME_RND_ENABLE)
 
         FAIL_APPLE   = 0  # indexes into the "fail" list, just for code readability
         FAIL_BANANNA = 1

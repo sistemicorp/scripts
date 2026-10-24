@@ -8,7 +8,6 @@ Martin Guthrie
 import logging
 from core.test_item import TestItem
 from public.prism.api import ResultAPI
-import time
 import random
 import string
 import copy
@@ -66,10 +65,16 @@ class tst00xx(TestItem):
         #
         # self.timeout
         #   - boolean indicating if a timeout has occurred
-        #   - use in while/for loops to check if a timeout has occurred
-        #     - all loops must check self.timeout and exit loop if asserted
         #   - use self.timeout_start() to restart the running timer
         #     - provide optional new value (float seconds)
+        #
+        # self.sleep(seconds)
+        #   - use instead of time.sleep(), ends early if the item times out or is aborted
+        #   - returns True if the full time elapsed, False if the item was stopped
+        #
+        # self.check_abort()
+        #   - call in while/for loops, ends the item if it timed out or was aborted
+        #   - release held resources with `with` or try/finally (see TST006_RsrcLock)
         #
         # self.item_end([result[s]]) # always last line of test
         #  - result is one of ResultAPI.RECORD_* constants
@@ -83,7 +88,8 @@ class tst00xx(TestItem):
         #    - this value can be overridden by adding '"timeout": <value>' to the test item in the script
         #    - if the timeout expires, it is considered a Fail, even if it is
         #      on a user input item.  The test script will fail.
-        #    - when using loops (while/for) for long running tasks, use self.timeout to check
+        #    - Prism cannot interrupt your code; loops (while/for) and waits for long running
+        #      tasks must use self.check_abort() and self.sleep() so the item stops on timeout
         #
         self.hw_fake = None
 
@@ -164,7 +170,7 @@ class tst00xx(TestItem):
         """
         ctx = self.item_start()   # always first line of test
 
-        time.sleep(self.DEMO_TIME_DELAY * random.random() * self.DEMO_TIME_RND_ENABLE)
+        self.sleep(self.DEMO_TIME_DELAY * random.random() * self.DEMO_TIME_RND_ENABLE)
 
         FAIL_APPLE   = 0  # indexes into the "fail" list, just for code readability
         FAIL_BANANNA = 1
@@ -222,7 +228,7 @@ class tst00xx(TestItem):
 
         self.log_bullet("Was I skipped?")
 
-        time.sleep(self.DEMO_TIME_DELAY * random.random() * self.DEMO_TIME_RND_ENABLE)
+        self.sleep(self.DEMO_TIME_DELAY * random.random() * self.DEMO_TIME_RND_ENABLE)
 
         self.item_end()  # always last line of test
 
@@ -263,7 +269,7 @@ class tst00xx(TestItem):
         """
         ctx = self.item_start()   # always first line of test
 
-        time.sleep(self.DEMO_TIME_DELAY * random.random() * self.DEMO_TIME_RND_ENABLE)
+        self.sleep(self.DEMO_TIME_DELAY * random.random() * self.DEMO_TIME_RND_ENABLE)
 
         value = random.randint(0, 100)
         ctx.record.add_key("value", value, slot=0)
@@ -279,7 +285,7 @@ class tst00xx(TestItem):
         """
         ctx = self.item_start()  # always first line of test
 
-        time.sleep(self.DEMO_TIME_DELAY * random.random() * self.DEMO_TIME_RND_ENABLE)
+        self.sleep(self.DEMO_TIME_DELAY * random.random() * self.DEMO_TIME_RND_ENABLE)
 
         keys = ctx.record.get_keys()
         if not keys.get("key0", False):
@@ -303,12 +309,11 @@ class tst00xx(TestItem):
         hold_time = ctx.item.args.get("holdTime", 5)  # a safe way to get parms, a default backup
 
         self.log_bullet("waiting for my_resource...")
-        self.shared_lock("my_resource").acquire()
-        while hold_time:
-            self.log_bullet("my_resource is locked for {} seconds".format(hold_time), ovrwrite_last_line=True)
-            time.sleep(1)
-            hold_time -= 1
-        self.shared_lock("my_resource").release()
+        with self.shared_lock("my_resource"):  # released even if the item is stopped
+            while hold_time:
+                self.log_bullet("my_resource is locked for {} seconds".format(hold_time), ovrwrite_last_line=True)
+                if not self.sleep(1): break  # item timed out or was aborted
+                hold_time -= 1
         self.log_bullet("my_resource is free")
 
         self.item_end()  # always last line of test
@@ -325,7 +330,7 @@ class tst00xx(TestItem):
         """
         ctx = self.item_start()  # always first line of test
 
-        time.sleep(self.DEMO_TIME_DELAY * random.random() * self.DEMO_TIME_RND_ENABLE)
+        self.sleep(self.DEMO_TIME_DELAY * random.random() * self.DEMO_TIME_RND_ENABLE)
 
         drivers = self.shared_get_drivers()
         for driver in drivers:
@@ -372,10 +377,11 @@ class tst00xx(TestItem):
 
         percent = 0
         while percent <= 100:
+            self.check_abort()  # ends the item here if it timed out or was aborted
             bar = "#" * int(40 * percent / 100)
             msg = "Completed {:3d}% {}".format(percent, bar)
             self.log_bullet(msg, ovrwrite_last_line=True)
-            time.sleep(self.DEMO_TIME_DELAY * random.random() * self.DEMO_TIME_RND_ENABLE)
+            self.sleep(self.DEMO_TIME_DELAY * random.random() * self.DEMO_TIME_RND_ENABLE)
             percent += 10
 
         self.item_end()  # always last line of test

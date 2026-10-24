@@ -8,7 +8,6 @@ Martin Guthrie
 import logging
 from core.test_item import TestItem
 from public.prism.api import ResultAPI
-import time
 
 
 from public.prism.drivers.fake.Fake import DRIVER_TYPE
@@ -87,7 +86,7 @@ class tstBLExx(TestItem):
                 found = True
                 break
 
-            time.sleep(1.0)
+            if not self.sleep(1.0): break  # item timed out or was aborted
 
         if not found:
             self.logger.info("BLE device not found")

@@ -6,7 +6,14 @@ Martin Guthrie
 
 """
 import logging
+import threading
 from public.prism.api import ResultAPI
+
+
+class TestItemStopped(BaseException):
+    """Raised by TestItem.check_abort() when the item timed out or was aborted.
+    prism_dev has no item timer or abort, so it is not raised here."""
+
 
 class TestItem(object):
 
@@ -19,6 +26,8 @@ class TestItem(object):
         self.shared_state = shared_state
 
         self._record = None
+        self.timeout = False  # prism_dev has no item timer
+        self.aborted = threading.Event()
         self.logger.info("DONE")
 
     # --------------------------------------------------------------------------
@@ -60,6 +69,17 @@ class TestItem(object):
         return {'success': True, 'textbox': usr_input, 'err': None}
         # a failure looks like this...
         #return {'success': False, 'textbox': None, 'err': "Timeout"}
+
+    def sleep(self, seconds):
+        """Sleep that ends early when the item times out or is aborted.
+        :return: True if the full time elapsed, False if the item was stopped
+        """
+        return not self.aborted.wait(timeout=seconds)
+
+    def check_abort(self):
+        """Raise TestItemStopped if the item timed out or was aborted."""
+        if self.aborted.is_set():
+            raise TestItemStopped()
 
     def add_key(self, key, value, slot=None):
         """ Add keys to the suite test record

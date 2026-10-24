@@ -8,7 +8,6 @@ Martin Guthrie
 import logging
 from core.test_item import TestItem
 from public.prism.api import ResultAPI
-import time
 from random import randint, random
 
 
@@ -31,7 +30,7 @@ class tst01xx(TestItem):
 
         """
         ctx = self.item_start()  # always first line of test
-        time.sleep(self.DEMO_TIME_DELAY * random() * self.DEMO_TIME_RND_ENABLE)
+        self.sleep(self.DEMO_TIME_DELAY * random() * self.DEMO_TIME_RND_ENABLE)
 
         self.item_end() # always last line of test
 
@@ -53,7 +52,7 @@ class tst01xx(TestItem):
         """
         ctx = self.item_start()   # always first line of test
 
-        time.sleep(self.DEMO_TIME_DELAY * random() * self.DEMO_TIME_RND_ENABLE)
+        self.sleep(self.DEMO_TIME_DELAY * random() * self.DEMO_TIME_RND_ENABLE)
 
         # example of taking multiple measurements, and sending as a list of results
         # if any test fails, this test item fails
@@ -109,6 +108,6 @@ class tst01xx(TestItem):
 
         self.log_bullet("Was I skipped?")
 
-        time.sleep(self.DEMO_TIME_DELAY * random() * self.DEMO_TIME_RND_ENABLE)
+        self.sleep(self.DEMO_TIME_DELAY * random() * self.DEMO_TIME_RND_ENABLE)
 
         self.item_end() # always last line of test
