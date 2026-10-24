@@ -85,10 +85,13 @@ state, active users, and last ping</p></li>
 <li><p><cite>Sync Users</cite> sends the users that have the ServerSync role</p></li>
 <li><p><cite>Sync Users</cite> and <cite>Sync Script</cite> are disabled while a user is logged in to the selected station,
 or while its test runner has a script loaded (<cite>Runner</cite> is <cite>IDLE</cite> or <cite>RUNNING</cite>).  Prism also
-refuses these syncs while a script is loaded.  Exit the Script Runner on the station to allow them.</p></li>
+refuses these syncs while a script is loaded, and refuses <cite>Sync Script</cite> while a user is logged in,
+because installing scripts restarts Prism.  Exit the Script Runner and log out on the station to
+allow them.</p></li>
 <li><p>with <cite>“auto_sync_scripts”: true</cite> in <a class="reference internal" href="_deployment.html#deploy-settings-file"><span class="std std-ref">settings.json</span></a>, Lente syncs
 scripts to stations automatically when the scripts version changes, no user is logged in,
-and the station’s test runner has no script loaded</p></li>
+and the station’s test runner has no script loaded.  If a user logs in before the sync starts,
+it waits and runs after they log out.</p></li>
 </ul>
 </li>
 <li><p><cite>git pull</cite> (shown only on the root Lente, <cite>“root_authority”: true</cite>) updates the Lente scripts from

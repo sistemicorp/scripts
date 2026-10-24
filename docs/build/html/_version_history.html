@@ -86,6 +86,8 @@ was not reset</p></li>
 <li><p>[BUGFIX] With <cite>use_https</cite>, script sync from Lente failed</p></li>
 <li><p>[BUGFIX] Script and user syncs could interrupt a station’s test runner once the operator
 logged out.  Syncs now wait until the Script Runner is exited.</p></li>
+<li><p>[BUGFIX] Auto script sync could restart a station a user had just logged in to, logging them
+out.  Prism now refuses a script sync while a user is logged in.</p></li>
 </ul>
 <section id="migration-guide">
 <h3>Migration Guide<a class="headerlink" href="#migration-guide" title="Link to this heading">¶</a></h3>
