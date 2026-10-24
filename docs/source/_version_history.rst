@@ -62,6 +62,9 @@ Bug fixes,
 * [BUGFIX] Logging out of Prism left the Script Runner loaded, which blocked syncs.  Logging out
   now exits the Script Runner, once any running tests finish.
 * [BUGFIX] Prism allowed a second user to log in from another browser
+* [BUGFIX] A Prism browser closed without logging out blocked other browsers from logging in
+  until the idle timeout.  Closing the browser now logs out, and a login can take over the
+  other browser's session.
 * [BUGFIX] Prism, Lente and scripts versions showed the number of the previous commit.
   Prism and Lente logs now include the commit hash.
 

@@ -28,6 +28,12 @@ Logging out exits the Script Runner.  If channels are still testing, the tests f
 the Script Runner exits, unless a User logs in before then.  A User logged out for being idle
 leaves the Script Runner loaded.
 
+Closing the browser (every Prism page) logs the User out a few seconds later.  This aborts any
+running tests and exits the Script Runner.
+
+If a User is logged in from another browser, the login page names them and offers
+`Log them out and continue`.  This also aborts any running tests and exits the Script Runner.
+
 
 Roles
 *****
