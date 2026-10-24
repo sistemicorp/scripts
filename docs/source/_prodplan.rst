@@ -181,7 +181,7 @@ Example script P00100_T0100_SmokeTests.scr,
       "config": {
         "result": "public.prism.result.ResultBaseKeysV1",
         "fail_fast": false,
-        "drivers": ["public.prism.drivers.fake.fake"]
+        "drivers": ["public.prism.drivers.fake.hwdrv_fake"]
       },
       "tests": [
         {

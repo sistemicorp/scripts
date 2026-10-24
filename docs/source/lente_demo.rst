@@ -30,6 +30,8 @@ Requirements
   * install Docker CE (https://docs.docker.com/install/linux/docker-ce/ubuntu/)
 
 
+.. _lente-demo-postgres:
+
 Postgres
 ********
 

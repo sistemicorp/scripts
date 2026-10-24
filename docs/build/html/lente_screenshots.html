@@ -44,35 +44,52 @@
   <section id="screenshots">
 <h1>Screenshots<a class="headerlink" href="#screenshots" title="Link to this heading">¶</a></h1>
 <p>Lente screenshots.</p>
-<section id="dashboard">
-<h2>Dashboard<a class="headerlink" href="#dashboard" title="Link to this heading">¶</a></h2>
-<p>Lente provides two dashboards.  The first shown here shows a historical summary of units tested, pass/fail and yield, over
-the previous week.  The table below shows the currently active test stations, and their status.</p>
-<img alt="_images/Screenshot_lente_dashboard_02.png" src="_images/Screenshot_lente_dashboard_02.png" />
-<p>The second dashboard is for detailed results analysis.  The important thing about this dashboard is that the results shown
-graphically or in the table are filtered by the current state of the “Select/Date” filters across the top of the dashboard.</p>
-<p>The graph is a view of the previous week’s history of Pass/Fail/Yield numbers.</p>
-<p>The right table is each result.  By selecting a result in this table, a new tab is opened with the result details.</p>
-<p>The table on the bottom left counts the various types of Fail tests.</p>
-<img alt="_images/Screenshot_lente_dashboard_01.png" src="_images/Screenshot_lente_dashboard_01.png" />
+<section id="result-analytics">
+<h2>Result Analytics<a class="headerlink" href="#result-analytics" title="Link to this heading">¶</a></h2>
+<p>The Result Analytics dashboard is for detailed results analysis.  Results shown graphically and in
+the table are filtered by the current state of the “Select/Date” filters.</p>
+<p>The dashboard has three views, selected by the tabs across the top,</p>
+<ul class="simple">
+<li><p><cite>Throughput &amp; Yield</cite> - history of Pass/Fail/Yield numbers</p></li>
+<li><p><cite>Failure Pareto</cite> - which tests are failing, ranked by how often</p></li>
+<li><p><cite>Test Runtime</cite> - where the test time is being spent</p></li>
+</ul>
+<p>The <cite>Results Summary</cite> panel on the right totals the Pass/Fail/Yield for the current filter selection.</p>
+<p>The table below the filters is each result.  By selecting a result in this table, a new tab is opened with the
+result details.</p>
+<p>The <cite>Throughput &amp; Yield</cite> tab charts the units tested over time; Pass and Fail as stacked bars against the left
+axis, and Yield as a line against the right axis.  The period selector sets the size of each bar, for
+example <cite>Daily</cite>.  Use this to track production output and yield trend.</p>
+<img alt="_images/Screenshot_lente_throughput.png" src="_images/Screenshot_lente_throughput.png" />
+<p>The <cite>Failure Pareto</cite> tab ranks the failing tests by quantity, and shows each as a percentage of the failed runs
+and of all runs.  Use this to find which tests are costing you the most yield.</p>
+<img alt="_images/Screenshot_lente_pareto.png" src="_images/Screenshot_lente_pareto.png" />
+<p>The <cite>Test Runtime</cite> tab breaks down where the test time is being spent.  Select the <cite>Script</cite> and the <cite>Script Result</cite>
+to report on.  The table gives the average time of each test item and its percentage of the total, and the pie
+chart shows the same proportions.  Use this to find which test items to optimize to reduce cycle time.</p>
+<img alt="_images/Screenshot_lente_runtime.png" src="_images/Screenshot_lente_runtime.png" />
 </section>
-<section id="station-management">
-<h2>Station Management<a class="headerlink" href="#station-management" title="Link to this heading">¶</a></h2>
+<section id="station-manager">
+<h2>Station Manager<a class="headerlink" href="#station-manager" title="Link to this heading">¶</a></h2>
 <p>Prism and Lente Station management console.</p>
 <ul class="simple">
-<li><p>View station stats</p></li>
-<li><p>Take actions (Ping, Sync)</p></li>
+<li><p>View station stats - version, scripts, backups, disk usage, the script running, active users, and last ping</p></li>
+<li><p>Select stations and take actions - <cite>Ping</cite>, <cite>Get Log</cite>, <cite>Restart</cite>, <cite>Sync Users</cite>, <cite>Sync Script</cite></p></li>
+<li><p><cite>Station Logs</cite> below lists station events, filtered by the Type/Computer/Version/Cause and date selections</p></li>
 </ul>
-<img alt="_images/Screenshot_lente_dashboard_03.png" src="_images/Screenshot_lente_dashboard_03.png" />
+<img alt="_images/Screenshot_lente_station_mgr.png" src="_images/Screenshot_lente_station_mgr.png" />
 </section>
 <section id="account-management">
 <h2>Account Management<a class="headerlink" href="#account-management" title="Link to this heading">¶</a></h2>
-<p>User Summary</p>
-<img alt="_images/Screenshot_lente_dashboard_06.png" src="_images/Screenshot_lente_dashboard_06.png" />
-<p>Create Users</p>
-<img alt="_images/Screenshot_lente_dashboard_04.png" src="_images/Screenshot_lente_dashboard_04.png" />
-<p>Edit User Roles</p>
-<img alt="_images/Screenshot_lente_dashboard_05.png" src="_images/Screenshot_lente_dashboard_05.png" />
+<p>A single page manages all of the Account Management features.</p>
+<p>The table at the top summarizes the Users; their email, whether they are Active, their Language, and their Roles.</p>
+<ul class="simple">
+<li><p><cite>New Account</cite> creates a User</p></li>
+<li><p>Selecting a User in the table loads them into the editor below</p></li>
+</ul>
+<p>The editor sets the User’s Language, whether the account is <cite>Active</cite>, and which Roles they hold.  <cite>Set Password</cite>
+sets the User’s password.  <cite>Update</cite> saves the changes, <cite>Reset</cite> discards them, and <cite>Delete</cite> removes the User.</p>
+<img alt="_images/Screenshot_lente_acct_mgt.png" src="_images/Screenshot_lente_acct_mgt.png" />
 </section>
 </section>
 

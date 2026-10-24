@@ -3,7 +3,7 @@ Lente
 
 Lente is a backend server that has two main functions.
 
-* dB (PostGres) interface
+* dB (Postgres) interface
 
   * receives results from connected Prism computers
   * stores test results into the dB

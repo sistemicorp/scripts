@@ -8,7 +8,8 @@
     //   "type" : "<str|num>",
     //   "widget": "<textinput|select>",
     //   "regex": <"regex">,  // only for widget == textinput,
-    //                           when regex is satisfied widget turns green
+    //                           the field is valid when the regex is satisfied;
+    //                           Start Testing enables once all fields are valid
     //   "choices": [<choice1>, <choice2>, ...],  // only for widget == select
     //   "default": <default>,
     //   "subs": // inner dependant subs

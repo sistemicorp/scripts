@@ -7,24 +7,24 @@ Title Page
 .. image:: static/Screenshot_title_01.png
 
 
-Main view
-*********
+Scan Traveller page
+*******************
 After the User has logged in, they may scan a traveller to configure Prism testing, or
-use the Test Configuration button to access scripts manually.
+use the Test Configuration page to access scripts manually.
 
 
-.. image:: static/Screenshot_main_01.png
+.. image:: static/Screenshot_prism_scan_traveller.png
 
 
-Test Config view
-****************
+Test Configuration page
+***********************
 
 Simple (No Variables) Script
 ============================
 
-* A pull down dialog box allows the user to pick which script to run
+* Pull down selections allow the user to pick the script group, and then which script in that group to run
 * The script is shown on the left.  The script cannot be modified with this `Prism` view
-* The script is a JSON format text file, with the exception that lines begining with `#` are comment lines
+* The script is a JSON format text file, with the exception that lines beginning with `//` are comment lines
 * This script example has no user configurable variables
 
 .. image:: static/Screenshot_test_config_01.png
@@ -41,11 +41,12 @@ Variables Script
 
 .. image:: static/Screenshot_test_config_02.png
 
-Test View
-*********
+Test Portal
+***********
 
 * The result after 4 channels of the demo script have finished
 * For each channel a log table is shown
+* Historical stats of your testing are shown in the plot on the left
 
 .. image:: static/Screenshot_test_01.png
 

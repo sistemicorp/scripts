@@ -20,7 +20,7 @@ Users need to have unique username.
 
 Users are added by another user (Admin) who has Account role privileges.
 
-A new User account must have the role `Enabled` in order to login.
+A User account must be set `Active` in order to login.
 
 
 Roles
@@ -32,33 +32,24 @@ The following roles are defined,
 
     "roles": {
         # Framework Roles
-        "ENABLED": "Enabled",
-        "ACCOUNT": "Account",
+        "ACCOUNT": "Account Admin, Add/Edit Roles & Users",
         "ADMIN":   "Administrator",  # rights to do anything
 
         # App specific Roles
         "OPERATOR":   "Operator",
-        "CONFIGMAN":  "Config Management",
+        "CONFIGMAN":  "Configuration Management",
         "DEVELOPER":  "Developer",
         "SERVERSYNC": "ServerSync",  # causes user to be pushed to all stations
     },
 
 
-Enabled
-=======
-
-Without this role, the User cannot log into the system.  When a User is created,
-this role is NOT set.  After a User is created, you must access the Roles menu
-and add `Enabled` to the User for them to be able to login.
-
-This allows you to disable a User without deleting their account.
 
 Admin
 =====
 
 The Admin(istrator) role has access to all system functions and menus.
 
-In general its good practice to have two Users with Admin role.
+In general it's good practice to have two Users with Admin role.
 
 Account
 =======
@@ -73,21 +64,21 @@ Prism ONLY
 Basic role for operating Prism.
 
 Operator allows the User to scan a traveller and run tests.
-The User **cannot** use `Test Config` menu.
+The User **cannot** use `Test Configuration` page.
 
 ConfigMan
 =========
 
 Prism ONLY
 
-Allows the User to use the `Test Config` menu, which allows the user to pick which
+Allows the User to use the `Test Configuration` page, which allows the user to pick which
 script to run, and fill in any parameters for the script, and also to be able to create
 a Traveller.
 
 Developer
 =========
 
-Currently this has no purpose.
+Same as Administrator, except without access to the account management pages.
 
 ServerSync
 ==========

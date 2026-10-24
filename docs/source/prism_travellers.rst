@@ -1,14 +1,14 @@
 Travellers
 ##########
 
-Travellers are 2D bar codes printed on paper than can configure Prism
+Travellers are 2D bar codes printed on paper that can configure Prism
 to run a script with certain substitution parameters.  Travellers are used to simplify
 setting up and operating Prism by any User (operator).
 
 Travellers can only be created by users with the :ref:`prism_accounts:ConfigMan` role.
 
-The image below shows the `Test Config` view, a script has been selected and
-the parameters selected, at this point the `Traveller` button turns Green
+The image below shows the `Test Configuration` page, a script has been selected and
+the parameters selected, at this point the `Create Traveller` button becomes enabled
 indicating it can now be pressed.
 
 .. image:: static/Screenshot_traveller_01.png
@@ -30,7 +30,7 @@ Scanning
 ********
 
 Travellers are scanned by the operator using most any bar code scanner set
-to emulate the keyboard.  After the Operator logs in the Prism waits for a scan,
+to emulate the keyboard.  After the Operator logs in Prism waits for a scan,
 
 .. image:: static/Screenshot_traveller_03.png
 
@@ -38,7 +38,8 @@ Once the image is scanned the system will validate and then move to the Test Por
 where testing can start.
 
 Note that Operator sign in Roles can be changed such that the Operator cannot access the
-Test Configuration or other menu options.
+Test Configuration page, or other restricted pages.  The menu options remain visible to the
+Operator, however the pages themselves enforce the access restrictions.
 
 
 User Content
@@ -65,7 +66,7 @@ For example see `public/prism/scripts/example/prod_v0/prod_0.scr`,
 Auto Load Traveller
 *******************
 
-The `settings.json <_deployment.html#_Settings File>`__ can specify a traveller that is automatically loaded when
+The :ref:`settings.json <deploy-settings-file>` can specify a traveller that is automatically loaded when
 Prism boots up and the indicated user logs in.
 
 ::

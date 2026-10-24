@@ -8,7 +8,7 @@ A very minimalist ("hello world") (helloWorld.py) program file could look like t
 
 ::
 
-    ! /usr/bin/env python
+    #! /usr/bin/env python
     # -*- coding: utf-8 -*-
 
     import logging
@@ -40,7 +40,7 @@ And, a minimalist script file that uses this program code, could look like this,
         "location": "FACTORY1"
       },
       "config": {
-        "drivers": ["public.prism.drivers.fake.fake"]
+        "drivers": ["public.prism.drivers.fake.hwdrv_fake"]
       },
       "tests": [
         {
@@ -72,11 +72,11 @@ Lets make some general comments about the above script/program before diving int
 Program Class Structure
 -----------------------
 
-Lets take a more detailed look at the program structrure,
+Lets take a more detailed look at the program structure,
 
 ::
 
-    ! /usr/bin/env python
+    #! /usr/bin/env python
     # -*- coding: utf-8 -*-
 
     import logging
@@ -91,7 +91,7 @@ Lets take a more detailed look at the program structrure,
             self.logger = logging.getLogger("SC.{}.{}".format(__name__, self.chan))
 
         def sayHello(self):
-            context = self.item_start()  # always first line of test
+            ctx = self.item_start()  # always first line of test
             self.log_bullet("Hello World!")
             self.item_end() # always last line of test
 
@@ -115,7 +115,7 @@ methods
 
 ::
 
-    context = self.item_start()  # always first line of test
+    ctx = self.item_start()  # always first line of test
 
 * The last line of every method is
 
@@ -128,7 +128,7 @@ methods
 context
 ^^^^^^^
 
-* ``context`` is your programmatic view of the script, and retrieving it is the first line of every method
+* ``ctx`` (context) is your programmatic view of the script, and retrieving it is the first line of every method
 * consider a little more complicated script,
 
 ::
@@ -141,12 +141,12 @@ context
         "location": "FACTORY1"
       },
       "config": {
-        "drivers": ["public.prism.drivers.fake.fake"]
+        "drivers": ["public.prism.drivers.fake.hwdrv_fake"]
       },
       "tests": [
         {
-          "module": "public.prims.scripts.my_product.helloWorld",
-          "options": { "fail_fast": False, "myVar": "something" },
+          "module": "public.prism.scripts.my_product.helloWorld",
+          "options": { "fail_fast": false, "myVar": "something" },
           "items": [
             {"id": "sayHello"},
             {"id": "TST000_Meas",  "enable": true, "args": {"min": 0, "max": 10},
@@ -162,7 +162,7 @@ context
 ::
 
     def TST000_Meas(self):
-        context = self.item_start()  # always first line of test
+        ctx = self.item_start()  # always first line of test
 
         print(ctx.item)          # = {"id": "TST000", "enable": True,  "args": {"min": 0, "max": 10}}
         print(ctx.item.args)     # = {"min": 0, "max": 10}
@@ -175,13 +175,13 @@ context
 * in Python, you can do ``print(dir(ctx))`` to get a list of everything available to you
 * When designing your test script and program structure, consider what user configurable variables you want to be
   defined in the script ``args`` section and which you want in the program.  Things like min/max limits may change
-  overt he product life cycle, and its better to make those things editable by a non-programmer. See TBS-Planning
+  over the product life cycle, and its better to make those things editable by a non-programmer. See TBS-Planning
 
 
 Everything Example
 ------------------
 
-Here is a fully documented program example that shows just about every feature of the Lente system.  This
+Here is a fully documented program example that shows just about every feature of the Prism system.  This
 example program is distributed with the system, and may be more up to date than here, so please consult that example.
 
 ::
@@ -247,7 +247,7 @@ example program is distributed with the system, and may be more up to date than 
             #    - ctx.record.fail_msg(msg)
             #      - add a fail message to the record
             #
-            # self.chan  # this channel (0,1,2,3)
+            # self.chan  # this channel (0-7)
             #
             # self.shared_state  # instance of the shared state across all running test jigs
             #
@@ -864,7 +864,7 @@ a "binning code" when a failure occurs.
 
 The "binning mechanism" is provided by the ``fail`` field for the test item in the script.  There is a list
 of binning failure IDs (``fid``) with a corresponding ``msg`` for the user in the script.  This is shown in the
-example ``TST000_Meas`` above.  Repeated here.
+example ``TST001_Meas`` above.  Repeated here.
 
 Example Notes:
 
@@ -880,11 +880,11 @@ Example Notes:
 
 ::
 
-    {"id": "TST000_Meas",  "enable": true, "args": {"min": 0, "max": 10},
-                           # fail: this is a list of 'fid' and 'msg' that get displayed and
-                           #       recorded with the test record.  The python code for this
-                           #       test item assigns which item in the list best represents
-                           #       the failure mode.  This information is to assist repair.
+    {"id": "TST001_Meas",  "enable": true, "args": {"min": 0, "max": 10},
+                           // fail: this is a list of 'fid' and 'msg' that get displayed and
+                           //       recorded with the test record.  The python code for this
+                           //       test item assigns which item in the list best represents
+                           //       the failure mode.  This information is to assist repair.
                            "fail": [ {"fid": "TST000-0", "msg": "Component apple R1"},
                                      {"fid": "TST000-1", "msg": "Component banana R1"}] },
 
@@ -892,12 +892,12 @@ Program code,
 
 ::
 
-    def TST000_Meas(self):
+    def TST001_Meas(self):
         """ Measurement example, with multiple failure messages
         - example of taking multiple measurements, and sending as a list of results
         - if any test fails, this test item fails
 
-            {"id": "TST000_Meas",    "enable": true, "args": {"min": 0, "max": 10},
+            {"id": "TST001_Meas",    "enable": true, "args": {"min": 0, "max": 10},
                                      "fail": [ {"fid": "TST000-0", "msg": "Component apple R1"},
                                                {"fid": "TST000-1", "msg": "Component banana R1"}] },
         """

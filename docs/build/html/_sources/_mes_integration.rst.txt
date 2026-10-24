@@ -1,3 +1,5 @@
+.. _mes-integration:
+
 Manufacturing Execution System (MES) Integration
 ################################################
 

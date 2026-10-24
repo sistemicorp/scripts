@@ -85,7 +85,7 @@ Run these commands to install `scripts`,
     git clone https://github.com/sistemicorp/scripts.git
 
 
-Follow `these <lente_demo.html#Postgres>`__ instructions to start postgres server.
+Follow :ref:`these <lente-demo-postgres>` instructions to start postgres server.
 
 
 Run the Lente start script
