@@ -78,13 +78,17 @@ chart shows the same proportions.  Use this to find which test items to optimize
 <h2>Station Manager<a class="headerlink" href="#station-manager" title="Link to this heading">¶</a></h2>
 <p>Prism and Lente Station management console, Admin only.</p>
 <ul class="simple">
-<li><p>View station stats - version, scripts, backups, disk usage, the script running, active users, and last ping</p></li>
+<li><p>View station stats - version, scripts, backups, disk usage, the script running, the test runner
+state, active users, and last ping</p></li>
 <li><p>Select stations and take actions - <cite>Ping</cite>, <cite>Get Log</cite>, <cite>Restart</cite>, <cite>Sync Users</cite>, <cite>Sync Script</cite></p>
 <ul>
 <li><p><cite>Sync Users</cite> sends the users that have the ServerSync role</p></li>
-<li><p><cite>Sync Users</cite> and <cite>Sync Script</cite> are disabled while a user is logged in to the selected station</p></li>
+<li><p><cite>Sync Users</cite> and <cite>Sync Script</cite> are disabled while a user is logged in to the selected station,
+or while its test runner has a script loaded (<cite>Runner</cite> is <cite>IDLE</cite> or <cite>RUNNING</cite>).  Prism also
+refuses these syncs while a script is loaded.  Exit the Script Runner on the station to allow them.</p></li>
 <li><p>with <cite>“auto_sync_scripts”: true</cite> in <a class="reference internal" href="_deployment.html#deploy-settings-file"><span class="std std-ref">settings.json</span></a>, Lente syncs
-scripts to stations automatically when the scripts version changes, and no user is logged in</p></li>
+scripts to stations automatically when the scripts version changes, no user is logged in,
+and the station’s test runner has no script loaded</p></li>
 </ul>
 </li>
 <li><p><cite>git pull</cite> (shown only on the root Lente, <cite>“root_authority”: true</cite>) updates the Lente scripts from

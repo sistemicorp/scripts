@@ -50,13 +50,17 @@ Station Manager
 
 Prism and Lente Station management console, Admin only.
 
-* View station stats - version, scripts, backups, disk usage, the script running, active users, and last ping
+* View station stats - version, scripts, backups, disk usage, the script running, the test runner
+  state, active users, and last ping
 * Select stations and take actions - `Ping`, `Get Log`, `Restart`, `Sync Users`, `Sync Script`
 
   * `Sync Users` sends the users that have the ServerSync role
-  * `Sync Users` and `Sync Script` are disabled while a user is logged in to the selected station
+  * `Sync Users` and `Sync Script` are disabled while a user is logged in to the selected station,
+    or while its test runner has a script loaded (`Runner` is `IDLE` or `RUNNING`).  Prism also
+    refuses these syncs while a script is loaded.  Exit the Script Runner on the station to allow them.
   * with `"auto_sync_scripts": true` in :ref:`settings.json <deploy-settings-file>`, Lente syncs
-    scripts to stations automatically when the scripts version changes, and no user is logged in
+    scripts to stations automatically when the scripts version changes, no user is logged in,
+    and the station's test runner has no script loaded
 
 * `git pull` (shown only on the root Lente, `"root_authority": true`) updates the Lente scripts from
   GitHub.  It requires `public/git_pull_watcher.sh` to be running on the Lente host, the setup steps are
