@@ -196,7 +196,8 @@ Settings.JSON File
           "results_bkup_encrypted": false,
 
           // Use https secure transport, requires public/cert.pem and public/key.pem files
-          // For Lente & Prism stations, all must be configured the same
+          // For Lente & Prism stations, all must be configured the same,
+          // with the same cert.pem/key.pem on every station
           "use_https": false,
 
           // Prism/Lente internal connection password

@@ -71,6 +71,8 @@ sync are deactivated on the station.</p></li>
 <li><p>Lente DASHBOARD role, a read-only results viewer that is not logged out when idle,
 see <a class="reference internal" href="lente_accounts.html"><span class="doc">Accounts</span></a></p></li>
 <li><p>Lente menus only list the pages the user’s roles can open</p></li>
+<li><p>With <cite>use_https</cite>, stations only connect to a computer with the site’s <cite>cert.pem</cite>,
+see <a class="reference internal" href="_security.html#https"><span class="std std-ref">HTTPS</span></a></p></li>
 </ul>
 <p>Bug fixes,</p>
 <ul class="simple">
@@ -81,6 +83,7 @@ only <cite>SERVERSYNC</cite> users</p></li>
 was not reset</p></li>
 <li><p>[BUGFIX] Lente to upstream Lente result uploads used the wrong password (<cite>lente_lente_pw</cite>)</p></li>
 <li><p>[BUGFIX] Prism and Lente were slow to exit on shutdown</p></li>
+<li><p>[BUGFIX] With <cite>use_https</cite>, script sync from Lente failed</p></li>
 </ul>
 <section id="migration-guide">
 <h3>Migration Guide<a class="headerlink" href="#migration-guide" title="Link to this heading">¶</a></h3>
@@ -99,6 +102,9 @@ in <cite>public/prism/drivers</cite>.  They will be installed on the host comput
 <li><p>With <cite>“demo”: false</cite> the demo <cite>&#64;here.com</cite> users are deactivated at startup, see
 <a class="reference internal" href="lente_demo.html#first-admin"><span class="std std-ref">Demo Users and the First Admin</span></a>.</p></li>
 <li><p>Prism no longer has a self sign up page, accounts are created by an Admin.</p></li>
+<li><p>With <cite>use_https</cite>, every Prism/Lente computer of a site needs the same <cite>public/cert.pem</cite> and
+<cite>public/key.pem</cite>.  An upstream Lente needs a certificate from a public certificate authority.
+See <a class="reference internal" href="_security.html#https"><span class="std std-ref">HTTPS</span></a>.</p></li>
 </ul>
 </section>
 </section>

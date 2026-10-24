@@ -41,6 +41,8 @@ screenshots.
 * Lente DASHBOARD role, a read-only results viewer that is not logged out when idle,
   see :doc:`Accounts <lente_accounts>`
 * Lente menus only list the pages the user's roles can open
+* With `use_https`, stations only connect to a computer with the site's `cert.pem`,
+  see :ref:`HTTPS <https>`
 
 Bug fixes,
 
@@ -51,6 +53,7 @@ Bug fixes,
   was not reset
 * [BUGFIX] Lente to upstream Lente result uploads used the wrong password (`lente_lente_pw`)
 * [BUGFIX] Prism and Lente were slow to exit on shutdown
+* [BUGFIX] With `use_https`, script sync from Lente failed
 
 
 Migration Guide
@@ -70,6 +73,9 @@ Migration Guide
 * With `"demo": false` the demo `@here.com` users are deactivated at startup, see
   :ref:`Demo Users and the First Admin <first-admin>`.
 * Prism no longer has a self sign up page, accounts are created by an Admin.
+* With `use_https`, every Prism/Lente computer of a site needs the same `public/cert.pem` and
+  `public/key.pem`.  An upstream Lente needs a certificate from a public certificate authority.
+  See :ref:`HTTPS <https>`.
 
 
 *********

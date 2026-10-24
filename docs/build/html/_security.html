@@ -160,7 +160,10 @@ internal servers.  Therefore we can avoid cost and complexity by using our own g
 These keys will still be using the same TLS protocol over the connection and are therefore just as secure.</p>
 <p>However, since the (Chrome) browser is not able to authenticate the self signed keys/certificate it
 will indicate that the connection is “untrusted” and will prompt the user to validate the connection.</p>
-<p>With HTTPS the connection between Prism/Lente is now encrypted.  <a class="reference internal" href="_deployment.html#deploy-settings-file"><span class="std std-ref">settings.json</span></a>
+<p>With HTTPS the connection between Prism/Lente is now encrypted.  All the Prism and Lente computers
+of a site use the same certificate, and a station only connects to a computer that presents that
+certificate, so a computer without the site’s <cite>cert.pem</cite>/<cite>key.pem</cite> can’t stand in for Lente or
+a Prism station.  <a class="reference internal" href="_deployment.html#deploy-settings-file"><span class="std std-ref">settings.json</span></a>
 has <cite>prism_lente_pw</cite> which should also be set to something unique.  This setting needs to be the same
 across all the Prism/Lente computers.  If it is not set, Prism/Lente refuse all station requests.</p>
 <p>On deployed Prism/Lente computers the user account is presumed to be secure.  The Ubuntu filesystem should
@@ -189,8 +192,12 @@ drwxr-xr-x 2 root   root    4096 May 29 16:18 traveller/
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>Generate the cert/key file on each Prism/Lente computer.</p></li>
-<li><p>See the <a class="reference internal" href="_deployment.html#deploy-settings-file"><span class="std std-ref">settings.json</span></a> to enable HTTPS and set the Prism/Lente password.</p></li>
+<li><p>Generate the cert/key files once for the site, and copy both to <cite>public/</cite> on every Prism/Lente
+computer, along with <cite>settings.json</cite>.  Keep <cite>key.pem</cite> private, like <cite>site_key</cite>.</p></li>
+<li><p>See the <a class="reference internal" href="_deployment.html#deploy-settings-file"><span class="std std-ref">settings.json</span></a> to enable HTTPS and set the Prism/Lente password.
+With <cite>use_https</cite> on, Prism/Lente do not start if <cite>cert.pem</cite> or <cite>key.pem</cite> is missing.</p></li>
+<li><p>An upstream Lente (<cite>result_server_url</cite>) is not checked against the site certificate.  Over HTTPS
+it needs a certificate signed by a public certificate authority, for example from Let’s Encrypt.</p></li>
 <li><p>In the browser, connect over HTTPs,</p>
 <ul>
 <li><p>for Prism use <cite>https://127.0.0.1:6590</cite></p></li>

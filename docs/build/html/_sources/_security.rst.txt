@@ -143,7 +143,10 @@ These keys will still be using the same TLS protocol over the connection and are
 However, since the (Chrome) browser is not able to authenticate the self signed keys/certificate it
 will indicate that the connection is "untrusted" and will prompt the user to validate the connection.
 
-With HTTPS the connection between Prism/Lente is now encrypted.  :ref:`settings.json <deploy-settings-file>`
+With HTTPS the connection between Prism/Lente is now encrypted.  All the Prism and Lente computers
+of a site use the same certificate, and a station only connects to a computer that presents that
+certificate, so a computer without the site's `cert.pem`/`key.pem` can't stand in for Lente or
+a Prism station.  :ref:`settings.json <deploy-settings-file>`
 has `prism_lente_pw` which should also be set to something unique.  This setting needs to be the same
 across all the Prism/Lente computers.  If it is not set, Prism/Lente refuse all station requests.
 
@@ -177,8 +180,12 @@ organization information, if desired.  Prism/Lente use `public/cert.pem` and `pu
     -rw-rw-r-- 1 martin martin   121 Jun 10 09:06 VERSION
 
 
-* Generate the cert/key file on each Prism/Lente computer.
+* Generate the cert/key files once for the site, and copy both to `public/` on every Prism/Lente
+  computer, along with `settings.json`.  Keep `key.pem` private, like `site_key`.
 * See the :ref:`settings.json <deploy-settings-file>` to enable HTTPS and set the Prism/Lente password.
+  With `use_https` on, Prism/Lente do not start if `cert.pem` or `key.pem` is missing.
+* An upstream Lente (`result_server_url`) is not checked against the site certificate.  Over HTTPS
+  it needs a certificate signed by a public certificate authority, for example from Let's Encrypt.
 * In the browser, connect over HTTPs,
 
   * for Prism use `https://127.0.0.1:6590`
