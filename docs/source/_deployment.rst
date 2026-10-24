@@ -122,6 +122,13 @@ Settings.JSON File
 * `prism_lente_pw` (and `lente_lente_pw` for Lente to Lente) must be set, and must be the same on
   every computer in the deployment.  If they are not set, Prism/Lente refuse all station requests
   (pings, results, script and user syncs).
+* `site_key` must be set, and must be the same on every computer in the deployment.  It encrypts
+  the scripts package, the manifest, travellers and results.  The demo value only works with
+  `"demo": true`.  Generate a key with `python3 -c "import secrets; print(secrets.token_urlsafe(24))"`.
+* To check `site_key`, each Prism/Lente logs a `site_key fingerprint` at startup, which is the same
+  on every computer when the keys match.  The fingerprint does not reveal the key.  The Lente
+  Station Manager `Site Key` column shows `Mismatch` or `Not set` in red, and a station with a
+  different key shows a `site_key does not match Lente` notice.
 
 
 ::
@@ -138,10 +145,14 @@ Settings.JSON File
           //"load_traveller": "public/traveller/traveller_TZ6T.pdf",
           //"load_user": "operator@here.com",
 
-          // Result JSON file encryption
+          // Site key, must be the same on every Prism/Lente in the deployment
+          // - encrypts the scripts package, manifest, travellers and results
+          // - the demo value only works with "demo": true, generate a real one with
+          //   python3 -c "import secrets; print(secrets.token_urlsafe(24))"
+          "site_key": "demo-site-key-change-me",
+
+          // Result JSON file encryption, uses site_key
           // - a valid license file is required to encrypt results
-          // - passwrd must be |<-  16  long  ->|
-          "result_encrypt_pw": "mysecretkey01234",
           "result_encrypt": false,
 
           // By default results that are sent to Lente are backed up

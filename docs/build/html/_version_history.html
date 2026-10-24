@@ -56,6 +56,8 @@ screenshots.</p>
 <li><p>Script sync sends all of <cite>public/prism</cite>, and the station replaces its whole <cite>public/prism</cite>
 folder, so files removed on Lente are also removed on the stations</p></li>
 <li><p>Script sync size limit and exclusions, see <a class="reference internal" href="_security.html#script-sync-exclusions"><span class="std std-ref">Script Sync Exclusions</span></a></p></li>
+<li><p><cite>site_key</cite> in <cite>settings.json</cite> replaces the built-in encryption keys, and the Station Manager
+shows any station whose <cite>site_key</cite> does not match</p></li>
 <li><p>DASHBOARD role (planned: read-only results viewer)</p></li>
 </ul>
 <section id="migration-guide">
@@ -64,6 +66,10 @@ folder, so files removed on Lente are also removed on the stations</p></li>
 <li><p><cite>prism_lente_pw</cite> (and <cite>lente_lente_pw</cite>) must now be set in <cite>settings.json</cite>, otherwise
 all station requests are refused.  See <a class="reference internal" href="_deployment.html#deploy-settings-file"><span class="std std-ref">settings.json</span></a>.</p></li>
 <li><p><cite>manifest_pw</cite> is no longer used and can be removed from <cite>settings.json</cite>.</p></li>
+<li><p><cite>site_key</cite> must be set in <cite>settings.json</cite>, the same on every computer.  It replaces
+<cite>result_encrypt_pw</cite>, which can be removed.  Travellers, manifests and encrypted results made
+by earlier versions can’t be read, so travellers must be recreated.
+See <a class="reference internal" href="_deployment.html#deploy-settings-file"><span class="std std-ref">settings.json</span></a>.</p></li>
 <li><p>Vendor programming tools (Nordic <cite>nrfjprog</cite>, ST <cite>STM32CubeProgrammer</cite>) are no longer included
 in <cite>public/prism/drivers</cite>.  They will be installed on the host computer.</p></li>
 <li><p>With <cite>“demo”: false</cite> the demo <cite>&#64;here.com</cite> users are deactivated at startup, see

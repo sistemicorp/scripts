@@ -33,7 +33,8 @@ Enable Manifest checking in the :ref:`settings.json <deploy-settings-file>`. fil
 
 The Manifest (file) is created by Lente to ensure the integrity of the all the scripts and supporting files.
 The manifest is a list of files and corresponding hashes, which Prism will use to validate there are no
-changes to the files it will use to test.  The Manifest file itself is encrypted and cannot be viewed.
+changes to the files it will use to test.  The Manifest file itself is encrypted with the `site_key`
+and cannot be viewed.
 
 Only the Lente that is marked as `root_authority` in `settings.json` will create the Manifest.  All other
 Lente's will pass along the Manifest.
@@ -113,6 +114,7 @@ The following are further suggestions to improve security,
 
 * encrypt the hard disk by the OS
 * strong admin password
+* set a unique `site_key`, see :ref:`settings.json <deploy-settings-file>`
 * enable result encryption
 * regularly purge the backups from the disk, (or disable backups, not recommended)
 * use Account Roles for users

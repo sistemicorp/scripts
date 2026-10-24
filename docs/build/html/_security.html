@@ -72,7 +72,8 @@ sent between Lente/Prism computers.</p>
 <p>Enable Manifest checking in the <a class="reference internal" href="_deployment.html#deploy-settings-file"><span class="std std-ref">settings.json</span></a>. file.</p>
 <p>The Manifest (file) is created by Lente to ensure the integrity of the all the scripts and supporting files.
 The manifest is a list of files and corresponding hashes, which Prism will use to validate there are no
-changes to the files it will use to test.  The Manifest file itself is encrypted and cannot be viewed.</p>
+changes to the files it will use to test.  The Manifest file itself is encrypted with the <cite>site_key</cite>
+and cannot be viewed.</p>
 <p>Only the Lente that is marked as <cite>root_authority</cite> in <cite>settings.json</cite> will create the Manifest.  All other
 Lente’s will pass along the Manifest.</p>
 <p>If some files need to be excluded from Manifest checking, create <cite>./public/prism/manifest.exclude</cite> and list
@@ -133,6 +134,7 @@ Often login names and passwords are common to a group of people, or shared among
 <ul class="simple">
 <li><p>encrypt the hard disk by the OS</p></li>
 <li><p>strong admin password</p></li>
+<li><p>set a unique <cite>site_key</cite>, see <a class="reference internal" href="_deployment.html#deploy-settings-file"><span class="std std-ref">settings.json</span></a></p></li>
 <li><p>enable result encryption</p></li>
 <li><p>regularly purge the backups from the disk, (or disable backups, not recommended)</p></li>
 <li><p>use Account Roles for users</p></li>

@@ -26,6 +26,8 @@ screenshots.
 * Script sync sends all of `public/prism`, and the station replaces its whole `public/prism`
   folder, so files removed on Lente are also removed on the stations
 * Script sync size limit and exclusions, see :ref:`Script Sync Exclusions <_security:Script Sync Exclusions>`
+* `site_key` in `settings.json` replaces the built-in encryption keys, and the Station Manager
+  shows any station whose `site_key` does not match
 * DASHBOARD role (planned: read-only results viewer)
 
 
@@ -35,6 +37,10 @@ Migration Guide
 * `prism_lente_pw` (and `lente_lente_pw`) must now be set in `settings.json`, otherwise
   all station requests are refused.  See :ref:`settings.json <deploy-settings-file>`.
 * `manifest_pw` is no longer used and can be removed from `settings.json`.
+* `site_key` must be set in `settings.json`, the same on every computer.  It replaces
+  `result_encrypt_pw`, which can be removed.  Travellers, manifests and encrypted results made
+  by earlier versions can't be read, so travellers must be recreated.
+  See :ref:`settings.json <deploy-settings-file>`.
 * Vendor programming tools (Nordic `nrfjprog`, ST `STM32CubeProgrammer`) are no longer included
   in `public/prism/drivers`.  They will be installed on the host computer.
 * With `"demo": false` the demo `@here.com` users are deactivated at startup, see

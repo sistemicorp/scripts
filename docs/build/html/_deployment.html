@@ -167,6 +167,13 @@ real deployment passwords to your repo.</p></li>
 <li><p><cite>prism_lente_pw</cite> (and <cite>lente_lente_pw</cite> for Lente to Lente) must be set, and must be the same on
 every computer in the deployment.  If they are not set, Prism/Lente refuse all station requests
 (pings, results, script and user syncs).</p></li>
+<li><p><cite>site_key</cite> must be set, and must be the same on every computer in the deployment.  It encrypts
+the scripts package, the manifest, travellers and results.  The demo value only works with
+<cite>“demo”: true</cite>.  Generate a key with <cite>python3 -c “import secrets; print(secrets.token_urlsafe(24))”</cite>.</p></li>
+<li><p>To check <cite>site_key</cite>, each Prism/Lente logs a <cite>site_key fingerprint</cite> at startup, which is the same
+on every computer when the keys match.  The fingerprint does not reveal the key.  The Lente
+Station Manager <cite>Site Key</cite> column shows <cite>Mismatch</cite> or <cite>Not set</cite> in red, and a station with a
+different key shows a <cite>site_key does not match Lente</cite> notice.</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>// This file is NOT propagated by Lente to Prism stations.
 // For each Prism/Lente install, this file should be modified as required.
@@ -180,10 +187,14 @@ every computer in the deployment.  If they are not set, Prism/Lente refuse all s
   //"load_traveller": "public/traveller/traveller_TZ6T.pdf",
   //"load_user": "operator@here.com",
 
-  // Result JSON file encryption
+  // Site key, must be the same on every Prism/Lente in the deployment
+  // - encrypts the scripts package, manifest, travellers and results
+  // - the demo value only works with "demo": true, generate a real one with
+  //   python3 -c "import secrets; print(secrets.token_urlsafe(24))"
+  "site_key": "demo-site-key-change-me",
+
+  // Result JSON file encryption, uses site_key
   // - a valid license file is required to encrypt results
-  // - passwrd must be |&lt;-  16  long  -&gt;|
-  "result_encrypt_pw": "mysecretkey01234",
   "result_encrypt": false,
 
   // By default results that are sent to Lente are backed up

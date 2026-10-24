@@ -10,10 +10,14 @@
   //"load_traveller": "public/traveller/traveller_TZ6T.pdf",
   //"load_user": "operator@here.com",
 
-  // Result JSON file encryption
+  // Site key, must be the same on every Prism/Lente in the deployment
+  // - encrypts the scripts package, manifest, travellers and results
+  // - the demo value only works with "demo": true, generate a real one with
+  //   python3 -c "import secrets; print(secrets.token_urlsafe(24))"
+  "site_key": "demo-site-key-change-me",
+
+  // Result JSON file encryption, uses site_key
   // - a valid license file is required to encrypt results
-  // - passwrd must be |<-  16  long  ->|
-  "result_encrypt_pw": "mysecretkey01234",
   "result_encrypt": false,
 
   // By default results that are sent to Lente are backed up
