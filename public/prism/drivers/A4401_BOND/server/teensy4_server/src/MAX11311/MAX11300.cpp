@@ -36,7 +36,7 @@
 //*********************************************************************
 MAX11300::MAX11300()
 {
-    //empty	
+    //empty
 }
 
 
@@ -49,13 +49,13 @@ void MAX11300::begin(uint8_t mosi, uint8_t miso, uint8_t sclk, uint8_t cs, uint8
 	m_sclk = sclk;
 	m_cs = cs;
 	m_cnvt = cnvt;
-	
+
 	pinMode(m_mosi, OUTPUT);
 	pinMode(m_miso, INPUT);
 	pinMode(m_sclk, OUTPUT);
 	pinMode(m_cs, OUTPUT);
 	pinMode(m_cnvt, OUTPUT);
-	
+
 	digitalWrite(m_mosi, LOW);
 	digitalWrite(m_sclk, LOW);
 	digitalWrite(m_cs, HIGH);
@@ -113,11 +113,11 @@ void MAX11300::write_register(MAX11300RegAddress_t reg, uint16_t data)
 	delayMicroseconds(1);
 }
 
-//*********************************************************************    
+//*********************************************************************
 uint16_t MAX11300::read_register(MAX11300RegAddress_t reg)
 {
     uint16_t rtn_val = 0;
-    
+
     digitalWrite(m_cs, LOW);
     delayMicroseconds(1);
     shiftOutMAX(m_mosi, m_sclk, MSBFIRST, MAX11300Addr_SPI_Read(reg));
@@ -180,7 +180,7 @@ void MAX11300::block_write(MAX11300RegAddress_t reg, uint16_t * data, uint8_t nu
     }
 }
 
-//*********************************************************************        
+//*********************************************************************
 void MAX11300::block_read(MAX11300RegAddress_t reg, uint16_t * data, uint8_t num_reg)
 {
     for(uint8_t idx = 0; idx < num_reg; idx++)
@@ -189,13 +189,13 @@ void MAX11300::block_read(MAX11300RegAddress_t reg, uint16_t * data, uint8_t num
     }
 }
 
-//*********************************************************************    
+//*********************************************************************
 MAX11300::CmdResult MAX11300::gpio_write(MAX11300_Ports port, uint8_t state)
 {
     MAX11300::CmdResult result = MAX11300::OpFailure;
     uint16_t temp;
     uint16_t port_mask;
-    
+
     if (port != MAX11300::PIXI_PORT11)
     {
         port_mask = (1 << port);
@@ -225,7 +225,7 @@ MAX11300::CmdResult MAX11300::gpio_write(MAX11300_Ports port, uint8_t state)
         write_register(gpo_data_P11, temp);
     }
 
-    //result = MAX11300::Success;
+    result = MAX11300::Success;
 
     return result;
 }
@@ -234,7 +234,7 @@ MAX11300::CmdResult MAX11300::gpio_write(MAX11300_Ports port, uint8_t state)
 MAX11300::CmdResult MAX11300::gpio_read(MAX11300_Ports port, uint8_t &state)
 {
     MAX11300::CmdResult result = MAX11300::OpFailure;
-    
+
     if(port != MAX11300::PIXI_PORT11)
     {
         state = (read_register(gpo_data_P10P6_P5P0) >> port);
@@ -272,7 +272,7 @@ MAX11300::CmdResult MAX11300::single_ended_adc_read(MAX11300_Ports port, uint16_
 MAX11300::CmdResult MAX11300::single_ended_dac_write(MAX11300_Ports port, uint16_t data)
 {
     MAX11300::CmdResult result = MAX11300::OpFailure;
-    
+
     write_register(_get_dac_data_port(port), data);
     result = MAX11300::Success;
 
