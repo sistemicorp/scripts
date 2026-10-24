@@ -103,28 +103,58 @@ files are still protected.</p></li>
 </section>
 <section id="installing-prism-lente-stations">
 <h2>Installing Prism/Lente Stations<a class="headerlink" href="#installing-prism-lente-stations" title="Link to this heading">¶</a></h2>
-<p>For Prism/Lente stations, follow the Full “Demo” instructions, but note the following
-changes,</p>
-<ul>
+<p>Set up Lente first, then add the Prism stations.  A Prism station does not need a copy of
+your scripts repo, it gets the scripts, drivers and license from its Lente.</p>
+<ul id="deployment-new-prism">
 <li><p>Prism</p>
 <ul>
-<li><p>install “full” per <a class="reference internal" href="prism_demo.html#prism-full-install"><span class="std std-ref">Prism Full Install</span></a></p></li>
-<li><p>git clone your “scripts” repo instead of the demo repo</p></li>
-<li><p>modify <cite>public/settings.json</cite> to suit the deployment</p>
-<ul class="simple">
-<li><p>see <cite>settings.json</cite> details below</p></li>
-</ul>
-</li>
-<li><p>use the Prism helper script <cite>public/prism.sh</cite> to start Prism.  The script must be run from
-the <cite>public</cite> folder, because that folder is mounted into the Prism container.
-The <cite>–server</cite> flag is required, it is the IP address of the Lente this Prism reports to
-(use <cite>none</cite> if there is no Lente).  Use <cite>–restart=always</cite> so Prism starts every time the
-computer is turned on:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">git</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">public</span>
-<span class="o">./</span><span class="n">prism</span><span class="o">.</span><span class="n">sh</span> <span class="o">--</span><span class="n">server</span><span class="o">=</span><span class="mf">192.168.0.10</span> <span class="o">--</span><span class="n">restart</span><span class="o">=</span><span class="n">always</span> <span class="n">start</span>
+<li><p>Install Ubuntu and Docker per <a class="reference internal" href="prism_demo.html#prism-full-install"><span class="std std-ref">Prism Full Install</span></a> (Requirements
+section only).  Git and a clone of the scripts repo are not needed.</p></li>
+<li><p>Make a folder for the Prism files, this becomes Prism’s <cite>public</cite> folder:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="o">~/</span><span class="n">prism</span><span class="o">/</span><span class="n">public</span>
+<span class="n">cd</span> <span class="o">~/</span><span class="n">prism</span><span class="o">/</span><span class="n">public</span>
 </pre></div>
 </div>
 </li>
+<li><p>Get the Prism helper script <cite>prism.sh</cite> from Lente.  This works on networks without internet
+access, replace <cite>192.168.0.10</cite> with the IP address of your Lente:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">O</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="mf">192.168.0.10</span><span class="p">:</span><span class="mi">6595</span><span class="o">/</span><span class="n">prism</span><span class="o">.</span><span class="n">sh</span>
+<span class="n">chmod</span> <span class="o">+</span><span class="n">x</span> <span class="n">prism</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+</li>
+<li><p>Copy in the <cite>settings.json</cite> for this station, see <cite>settings.json</cite> details below.
+The file must be supplied, Prism does not start without it.</p>
+<ul class="simple">
+<li><p><cite>site_key</cite> and <cite>prism_lente_pw</cite> must be the same as on Lente.</p></li>
+</ul>
+</li>
+<li><p>Get the Prism Docker image (needs internet access, or load the image from a file with
+<cite>docker load</cite>):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">pull</span> <span class="n">sistemicorp</span><span class="o">/</span><span class="n">prism</span>
+</pre></div>
+</div>
+</li>
+<li><p>Start Prism.  The script must be run from the <cite>public</cite> folder, because that folder is
+mounted into the Prism container.  The <cite>–server</cite> flag is required, it is the IP address of
+the Lente this Prism reports to.  Use <cite>–restart=always</cite> so Prism starts every time the
+computer is turned on:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">prism</span><span class="o">.</span><span class="n">sh</span> <span class="o">--</span><span class="n">server</span><span class="o">=</span><span class="mf">192.168.0.10</span> <span class="o">--</span><span class="n">restart</span><span class="o">=</span><span class="n">always</span> <span class="n">start</span>
+</pre></div>
+</div>
+</li>
+<li><p>On its first start Prism downloads the scripts package from Lente, installs it into
+<cite>public/prism</cite>, and then starts as usual.  After that Lente keeps the scripts up to date,
+see <cite>auto_sync_scripts</cite> below.</p>
+<ul class="simple">
+<li><p>If the download fails, Prism logs the reason in <cite>public/log/prism.log</cite>, also shown by
+<cite>docker logs prism</cite>, and exits.  Usual causes are Lente not reachable, a <cite>prism_lente_pw</cite>
+that does not match Lente (status code 403), or a <cite>site_key</cite> that does not match Lente
+(decrypt failed).  Fix <cite>settings.json</cite> and start Prism again.</p></li>
+</ul>
+</li>
+<li><p>For a Prism without a Lente, git clone your scripts repo and start Prism from its
+<cite>public</cite> folder with <cite>–server=none</cite>, as in the <a class="reference internal" href="prism_demo.html#prism-full-install"><span class="std std-ref">Prism Full Install</span></a>.</p></li>
 </ul>
 </li>
 <li><p>Lente</p>
@@ -133,6 +163,8 @@ computer is turned on:</p>
 change the git source to be your repo.</p></li>
 <li><p>Use Lente Station management to push your repo to downstream Prism (and/or
 Lente) computers.</p></li>
+<li><p>Lente serves <cite>public/prism.sh</cite> at <cite>http://&lt;lente&gt;:6595/prism.sh</cite>, for setting up new Prism
+stations.</p></li>
 <li><p>use the helper script <cite>public/lente.sh</cite>, run from the <cite>public</cite> folder, with option
 <cite>–restart=always</cite> so that Lente will automatically start on every computer boot up:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">git</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">public</span>
@@ -296,6 +328,8 @@ the file smaller and easier to manage.</p>
 <li><p>see <a class="reference internal" href="_security.html#https"><span class="std std-ref">HTTPS</span></a> for creating necessary files if using HTTPS feature</p></li>
 <li><p><cite>health_checks</cite> is used by Prism only, <cite>results_bkup_encrypted</cite> by Lente only</p></li>
 <li><p>On Prism, <cite>result_server_url</cite> is always set from the <cite>–server</cite> flag of <cite>prism.sh</cite></p></li>
+<li><p><cite>auto_sync_scripts</cite> also applies to Prism stations, keep it in the Prism file.  When it is
+<cite>true</cite> on a Prism, its Lente installs new scripts on it automatically.</p></li>
 </ul>
 <section id="other-settings">
 <h3>Other Settings<a class="headerlink" href="#other-settings" title="Link to this heading">¶</a></h3>

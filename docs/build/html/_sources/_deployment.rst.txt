@@ -63,24 +63,54 @@ Ubuntu File System and Users
 Installing Prism/Lente Stations
 *******************************
 
-For Prism/Lente stations, follow the Full "Demo" instructions, but note the following
-changes,
+Set up Lente first, then add the Prism stations.  A Prism station does not need a copy of
+your scripts repo, it gets the scripts, drivers and license from its Lente.
+
+.. _deployment-new-prism:
 
 * Prism
 
-  * install "full" per :ref:`Prism Full Install <prism-full-install>`
-  * git clone your "scripts" repo instead of the demo repo
-  * modify `public/settings.json` to suit the deployment
+  * Install Ubuntu and Docker per :ref:`Prism Full Install <prism-full-install>` (Requirements
+    section only).  Git and a clone of the scripts repo are not needed.
+  * Make a folder for the Prism files, this becomes Prism's `public` folder::
 
-    * see `settings.json` details below
-  * use the Prism helper script `public/prism.sh` to start Prism.  The script must be run from
-    the `public` folder, because that folder is mounted into the Prism container.
-    The `--server` flag is required, it is the IP address of the Lente this Prism reports to
-    (use `none` if there is no Lente).  Use `--restart=always` so Prism starts every time the
+        mkdir -p ~/prism/public
+        cd ~/prism/public
+
+  * Get the Prism helper script `prism.sh` from Lente.  This works on networks without internet
+    access, replace `192.168.0.10` with the IP address of your Lente::
+
+        curl -O http://192.168.0.10:6595/prism.sh
+        chmod +x prism.sh
+
+  * Copy in the `settings.json` for this station, see `settings.json` details below.
+    The file must be supplied, Prism does not start without it.
+
+    * `site_key` and `prism_lente_pw` must be the same as on Lente.
+
+  * Get the Prism Docker image (needs internet access, or load the image from a file with
+    `docker load`)::
+
+        docker pull sistemicorp/prism
+
+  * Start Prism.  The script must be run from the `public` folder, because that folder is
+    mounted into the Prism container.  The `--server` flag is required, it is the IP address of
+    the Lente this Prism reports to.  Use `--restart=always` so Prism starts every time the
     computer is turned on::
 
-        cd ~/git/scripts/public
         ./prism.sh --server=192.168.0.10 --restart=always start
+
+  * On its first start Prism downloads the scripts package from Lente, installs it into
+    `public/prism`, and then starts as usual.  After that Lente keeps the scripts up to date,
+    see `auto_sync_scripts` below.
+
+    * If the download fails, Prism logs the reason in `public/log/prism.log`, also shown by
+      `docker logs prism`, and exits.  Usual causes are Lente not reachable, a `prism_lente_pw`
+      that does not match Lente (status code 403), or a `site_key` that does not match Lente
+      (decrypt failed).  Fix `settings.json` and start Prism again.
+
+  * For a Prism without a Lente, git clone your scripts repo and start Prism from its
+    `public` folder with `--server=none`, as in the :ref:`Prism Full Install <prism-full-install>`.
 
 * Lente
 
@@ -88,6 +118,8 @@ changes,
     change the git source to be your repo.
   * Use Lente Station management to push your repo to downstream Prism (and/or
     Lente) computers.
+  * Lente serves `public/prism.sh` at `http://<lente>:6595/prism.sh`, for setting up new Prism
+    stations.
   * use the helper script `public/lente.sh`, run from the `public` folder, with option
     `--restart=always` so that Lente will automatically start on every computer boot up::
 
@@ -255,6 +287,8 @@ the file smaller and easier to manage.
 * see :ref:`HTTPS <https>` for creating necessary files if using HTTPS feature
 * `health_checks` is used by Prism only, `results_bkup_encrypted` by Lente only
 * On Prism, `result_server_url` is always set from the `--server` flag of `prism.sh`
+* `auto_sync_scripts` also applies to Prism stations, keep it in the Prism file.  When it is
+  `true` on a Prism, its Lente installs new scripts on it automatically.
 
 
 Other Settings
