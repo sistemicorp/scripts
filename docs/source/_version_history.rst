@@ -41,6 +41,8 @@ Migration Guide
   `result_encrypt_pw`, which can be removed.  Travellers, manifests and encrypted results made
   by earlier versions can't be read, so travellers must be recreated.
   See :ref:`settings.json <deploy-settings-file>`.
+* License files (`public/sistemi.lic`) from earlier versions are no longer accepted.
+  Contact Sistemi for a new license file.
 * Vendor programming tools (Nordic `nrfjprog`, ST `STM32CubeProgrammer`) are no longer included
   in `public/prism/drivers`.  They will be installed on the host computer.
 * With `"demo": false` the demo `@here.com` users are deactivated at startup, see
