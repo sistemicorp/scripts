@@ -31,3 +31,5 @@ public/.ssh/
 public/.git_trigger
 public/.git_pull*
 public/*.pem
+
+public/prism/manifest
