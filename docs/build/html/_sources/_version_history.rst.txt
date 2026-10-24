@@ -43,6 +43,7 @@ screenshots.
 * Lente menus only list the pages the user's roles can open
 * With `use_https`, stations only connect to a computer with the site's `cert.pem`,
   see :ref:`HTTPS <https>`
+* Test Portal channel number buttons start just that channel, while other channels keep testing
 
 Bug fixes,
 
@@ -61,6 +62,8 @@ Bug fixes,
 * [BUGFIX] Logging out of Prism left the Script Runner loaded, which blocked syncs.  Logging out
   now exits the Script Runner, once any running tests finish.
 * [BUGFIX] Prism allowed a second user to log in from another browser
+* [BUGFIX] Prism, Lente and scripts versions showed the number of the previous commit.
+  Prism and Lente logs now include the commit hash.
 
 
 Migration Guide
@@ -69,6 +72,8 @@ Migration Guide
 * `prism_lente_pw` (and `lente_lente_pw`) must now be set in `settings.json`, otherwise
   all station requests are refused.  See :ref:`settings.json <deploy-settings-file>`.
 * `manifest_pw` is no longer used and can be removed from `settings.json`.
+* Copy the updated `hooks/pre-commit` into your scripts repo's `.git/hooks`, see
+  :doc:`Development <_development>`.
 * `site_key` must be set in `settings.json`, the same on every computer.  It replaces
   `result_encrypt_pw`, which can be removed.  Travellers, manifests and encrypted results made
   by earlier versions can't be read, so travellers must be recreated.

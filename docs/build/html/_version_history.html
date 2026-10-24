@@ -73,6 +73,7 @@ see <a class="reference internal" href="lente_accounts.html"><span class="doc">A
 <li><p>Lente menus only list the pages the user’s roles can open</p></li>
 <li><p>With <cite>use_https</cite>, stations only connect to a computer with the site’s <cite>cert.pem</cite>,
 see <a class="reference internal" href="_security.html#https"><span class="std std-ref">HTTPS</span></a></p></li>
+<li><p>Test Portal channel number buttons start just that channel, while other channels keep testing</p></li>
 </ul>
 <p>Bug fixes,</p>
 <ul class="simple">
@@ -91,6 +92,8 @@ out.  Prism now refuses a script sync while a user is logged in.</p></li>
 <li><p>[BUGFIX] Logging out of Prism left the Script Runner loaded, which blocked syncs.  Logging out
 now exits the Script Runner, once any running tests finish.</p></li>
 <li><p>[BUGFIX] Prism allowed a second user to log in from another browser</p></li>
+<li><p>[BUGFIX] Prism, Lente and scripts versions showed the number of the previous commit.
+Prism and Lente logs now include the commit hash.</p></li>
 </ul>
 <section id="migration-guide">
 <h3>Migration Guide<a class="headerlink" href="#migration-guide" title="Link to this heading">¶</a></h3>
@@ -98,6 +101,8 @@ now exits the Script Runner, once any running tests finish.</p></li>
 <li><p><cite>prism_lente_pw</cite> (and <cite>lente_lente_pw</cite>) must now be set in <cite>settings.json</cite>, otherwise
 all station requests are refused.  See <a class="reference internal" href="_deployment.html#deploy-settings-file"><span class="std std-ref">settings.json</span></a>.</p></li>
 <li><p><cite>manifest_pw</cite> is no longer used and can be removed from <cite>settings.json</cite>.</p></li>
+<li><p>Copy the updated <cite>hooks/pre-commit</cite> into your scripts repo’s <cite>.git/hooks</cite>, see
+<a class="reference internal" href="_development.html"><span class="doc">Development</span></a>.</p></li>
 <li><p><cite>site_key</cite> must be set in <cite>settings.json</cite>, the same on every computer.  It replaces
 <cite>result_encrypt_pw</cite>, which can be removed.  Travellers, manifests and encrypted results made
 by earlier versions can’t be read, so travellers must be recreated.

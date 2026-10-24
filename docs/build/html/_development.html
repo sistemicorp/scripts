@@ -127,6 +127,7 @@ needs to be copied to <cite>./.git/hooks</cite> folder of your repository.</p>
 </pre></div>
 </div>
 <p>This githook will update <cite>public/VERSION</cite> file that Prism uses to display the version of the scripts.
+A change to <cite>public/VERSION</cite> is also what makes Lente rebuild the scripts package for stations.
 By using this githook, or some other mechanism, the script version is tracked by Prism.  The version
 number is derived from a tag.</p>
 </section>
@@ -148,7 +149,8 @@ tag on that branch.  The tag <strong>MUST</strong> be of this format,</p>
 <span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="o">--</span><span class="n">tags</span>
 </pre></div>
 </div>
-<p>The version uses the most recent tag (<cite>git describe –tags</cite>).  <cite>scripts</cite> already has tags (for example
+<p>The version uses the most recent tag (<cite>git describe –tags</cite>).  For example, version <cite>0.9.12</cite> is
+the 12th commit after tag <cite>0.9</cite>.  <cite>scripts</cite> already has tags (for example
 <cite>0.8</cite>), you can remove them from your fork,</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">tag</span> <span class="o">--</span><span class="n">delete</span> <span class="mf">0.8</span>
 <span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="o">--</span><span class="n">delete</span> <span class="mf">0.8</span>
