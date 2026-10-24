@@ -23,3 +23,11 @@ public/prism/drivers/A4401_BOND/server/libraries/ArduinoJson/extras/
 public/prism/drivers/A4401_BOND/server/libraries/ArduinoJson/examples/
 
 public/prism/drivers/stlinkv3mods/STM32CubeProgrammer/
+
+# runtime files created by Prism/Lente in public/
+public/.env
+public/sistemi.lic
+public/.ssh/
+public/.git_trigger
+public/.git_pull*
+public/*.pem
