@@ -174,8 +174,8 @@ stations.</p></li>
 </li>
 <li><p>the Postgres container must also be set to restart, see <a class="reference internal" href="lente_demo.html#lente-demo-postgres"><span class="std std-ref">Postgres</span></a>.</p></li>
 <li><p>Optional: to let an admin update the Lente scripts from GitHub with the Station Manager
-<cite>git pull</cite> button, run <cite>public/git_pull_watcher.sh</cite> on the Lente host.
-The setup steps (deploy key, systemd service) are at the top of that script.</p></li>
+<cite>git pull</cite> button, run <cite>public/git_pull_watcher.sh</cite> on the Lente host, see
+<a class="reference internal" href="#lente-git-pull"><span class="std std-ref">Lente Git Pull</span></a>.</p></li>
 </ul>
 </li>
 </ul>
@@ -388,8 +388,61 @@ version, pass the image with its tag using <cite>–image=</cite> (or <cite>-i</
 </ul>
 <p>Run <cite>./lente.sh –help</cite> or <cite>./prism.sh –help</cite> for the full list.</p>
 </section>
+<section id="lente-git-pull">
+<span id="id1"></span><h2>Lente Git Pull<a class="headerlink" href="#lente-git-pull" title="Link to this heading">¶</a></h2>
+<p>The root Lente (<cite>“root_authority”: true</cite>) can update its scripts from GitHub with the <cite>git pull</cite>
+button on the <cite>Station Manager</cite> page.  The button is shown to ADMIN users only.  With
+<cite>auto_sync_scripts</cite> on, Lente then syncs the new scripts to its stations, see
+<a class="reference internal" href="#deploy-settings-file"><span class="std std-ref">settings.json</span></a>.</p>
+<p>Lente runs in a Docker container that has no git access, so the pull is done on the host computer
+by the helper script <cite>public/git_pull_watcher.sh</cite>.  The button creates the file
+<cite>public/.git_trigger</cite>, the watcher sees it and runs <cite>git pull</cite> in your scripts repo.  The
+<cite>public</cite> folder is shared with the container by <cite>lente.sh</cite>, so no extra Docker setup is needed.</p>
+<ul class="simple">
+<li><p>Lente refuses the pull if the watcher is not running, and refuses Sync Script while a pull is
+in progress.</p></li>
+<li><p>The result of each pull is logged in <cite>public/.git_pull.log</cite> on the Lente host.</p></li>
+</ul>
+<p>Setup, done once on the Lente host.  The full steps, with commands and troubleshooting, are in
+the comments at the top of <cite>public/git_pull_watcher.sh</cite>.</p>
+<ul>
+<li><p>The scripts repo remote must use SSH (<cite>git&#64;github.com:OWNER/REPO.git</cite>), check with
+<cite>git remote -v</cite>.</p></li>
+<li><p>Create a dedicated SSH key without a passphrase in <cite>public/.ssh</cite> (<cite>id_ed25519</cite>) and add its
+public key to the GitHub repo as a read-only Deploy key.  <cite>public/.ssh</cite> is in <cite>.gitignore</cite> and
+is not sent to stations.</p></li>
+<li><p>Create <cite>public/.ssh/known_hosts</cite> for github.com, then test a pull with the key, as shown in
+the script comments.</p></li>
+<li><p>Run the watcher as a systemd service so it starts on every boot and restarts if it exits.
+Use the host user that owns the repo:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Unit</span><span class="p">]</span>
+<span class="n">Description</span><span class="o">=</span><span class="n">Lente</span> <span class="n">Git</span> <span class="n">Pull</span> <span class="n">Watcher</span>
+<span class="n">After</span><span class="o">=</span><span class="n">network</span><span class="o">-</span><span class="n">online</span><span class="o">.</span><span class="n">target</span>
+<span class="n">Wants</span><span class="o">=</span><span class="n">network</span><span class="o">-</span><span class="n">online</span><span class="o">.</span><span class="n">target</span>
+
+<span class="p">[</span><span class="n">Service</span><span class="p">]</span>
+<span class="n">Type</span><span class="o">=</span><span class="n">simple</span>
+<span class="n">User</span><span class="o">=</span><span class="n">lente</span>
+<span class="n">WorkingDirectory</span><span class="o">=/</span><span class="n">home</span><span class="o">/</span><span class="n">lente</span><span class="o">/</span><span class="n">git</span><span class="o">/</span><span class="n">scripts</span>
+<span class="n">ExecStart</span><span class="o">=/</span><span class="n">home</span><span class="o">/</span><span class="n">lente</span><span class="o">/</span><span class="n">git</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">public</span><span class="o">/</span><span class="n">git_pull_watcher</span><span class="o">.</span><span class="n">sh</span>
+<span class="n">Restart</span><span class="o">=</span><span class="n">always</span>
+<span class="n">RestartSec</span><span class="o">=</span><span class="mi">5</span>
+
+<span class="p">[</span><span class="n">Install</span><span class="p">]</span>
+<span class="n">WantedBy</span><span class="o">=</span><span class="n">multi</span><span class="o">-</span><span class="n">user</span><span class="o">.</span><span class="n">target</span>
+</pre></div>
+</div>
+<p>Save it as <cite>/etc/systemd/system/lente-git-pull-watcher.service</cite>, then:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">daemon</span><span class="o">-</span><span class="n">reload</span>
+<span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">enable</span> <span class="o">--</span><span class="n">now</span> <span class="n">lente</span><span class="o">-</span><span class="n">git</span><span class="o">-</span><span class="n">pull</span><span class="o">-</span><span class="n">watcher</span><span class="o">.</span><span class="n">service</span>
+</pre></div>
+</div>
+</li>
+<li><p>Test it by pressing <cite>git pull</cite> and checking <cite>public/.git_pull.log</cite>.</p></li>
+</ul>
+</section>
 <section id="health-checks">
-<span id="id1"></span><h2>Health Checks<a class="headerlink" href="#health-checks" title="Link to this heading">¶</a></h2>
+<span id="id2"></span><h2>Health Checks<a class="headerlink" href="#health-checks" title="Link to this heading">¶</a></h2>
 <p>When enabled/specified in <cite>settings.json</cite> (see example above) Prism will perform health checks on
 boot up and when the test configuration changes.  Based on the health check item severity the system will
 indicate the status in the GUI.  When the failure severity is <cite>Critical</cite> Prism will not allow testing
