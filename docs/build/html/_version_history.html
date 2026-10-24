@@ -44,6 +44,33 @@ A Migration Guide section is provided if any changes on the client side are requ
 is mentioned.  Note that not all cited versions are released as Docker images.</p>
 <p>Prism/Lente version should match major/minor version.  For example Prism/Lente version should match <cite>0.8.x</cite>,
 where <cite>x</cite> can/will be different.  Do not use Prism 0.8.x with Lente 0.7.x, or vice versa.</p>
+<section id="ver-0-9-x">
+<h2>Ver 0.9.x<a class="headerlink" href="#ver-0-9-x" title="Link to this heading">¶</a></h2>
+<p>The major change in <cite>0.9</cite> is a new user interface for both Prism and Lente, built on NiceGUI,
+replacing the Flask/Bokeh interface.  See <a class="reference internal" href="prism_screenshots.html"><span class="doc">Prism</span></a> and <a class="reference internal" href="lente_screenshots.html"><span class="doc">Lente</span></a>
+screenshots.</p>
+<ul class="simple">
+<li><p>Lente Results Analytics page, with yield, pareto and test runtime charts</p></li>
+<li><p>Lente Station Manager can automatically sync scripts to stations, <cite>auto_sync_scripts</cite></p></li>
+<li><p>Lente Station Manager <cite>git pull</cite> button, see <cite>public/git_pull_watcher.sh</cite></p></li>
+<li><p>Script sync sends all of <cite>public/prism</cite>, and the station replaces its whole <cite>public/prism</cite>
+folder, so files removed on Lente are also removed on the stations</p></li>
+<li><p>Script sync size limit and exclusions, see <a class="reference internal" href="_security.html#script-sync-exclusions"><span class="std std-ref">Script Sync Exclusions</span></a></p></li>
+<li><p>DASHBOARD role (planned: read-only results viewer)</p></li>
+</ul>
+<section id="migration-guide">
+<h3>Migration Guide<a class="headerlink" href="#migration-guide" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><cite>prism_lente_pw</cite> (and <cite>lente_lente_pw</cite>) must now be set in <cite>settings.json</cite>, otherwise
+all station requests are refused.  See <a class="reference internal" href="_deployment.html#deploy-settings-file"><span class="std std-ref">settings.json</span></a>.</p></li>
+<li><p><cite>manifest_pw</cite> is no longer used and can be removed from <cite>settings.json</cite>.</p></li>
+<li><p>Vendor programming tools (Nordic <cite>nrfjprog</cite>, ST <cite>STM32CubeProgrammer</cite>) are no longer included
+in <cite>public/prism/drivers</cite>.  They will be installed on the host computer.</p></li>
+<li><p>Demo <cite>&#64;here.com</cite> users are not removed when demo is turned off, see
+<a class="reference internal" href="lente_demo.html#first-admin"><span class="std std-ref">Demo Users and the First Admin</span></a>.</p></li>
+</ul>
+</section>
+</section>
 <section id="ver-0-8-x">
 <h2>Ver 0.8.x<a class="headerlink" href="#ver-0-8-x" title="Link to this heading">¶</a></h2>
 <p>This is the first version where this type of information will be tracked.</p>
@@ -62,7 +89,7 @@ otherwise monitor the system.</p>
 <h4>0.8.37<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>[BUGFIX] Fix/improve getting self IP address (implemented in 0.7.52)</p></li>
-<li><p>Support for UPCUA, see <a class="reference internal" href="_mes_integration.html#mes-integration"><span class="std std-ref">OPCUA</span></a></p></li>
+<li><p>Support for OPC UA, see <a class="reference internal" href="_mes_integration.html#mes-integration"><span class="std std-ref">OPCUA</span></a></p></li>
 <li><p>Test portal layout supports up to 8 test channels (jigs per Prism PC) (implemented in 0.7.43)</p></li>
 <li><p>Index page shows time and date (implemented in 0.7.56)</p></li>
 <li><p>Auto config test on startup, see <a class="reference internal" href="_deployment.html#deploy-settings-file"><span class="std std-ref">settings.json</span></a> (implemented in 0.7.64)</p></li>
@@ -78,7 +105,7 @@ otherwise monitor the system.</p>
 <h4>0.8.21<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>[BUGFIX] Fix/improve getting self IP address</p></li>
-<li><p>Support for UPCUA, see <a class="reference internal" href="_mes_integration.html#mes-integration"><span class="std std-ref">OPCUA</span></a></p></li>
+<li><p>Support for OPC UA, see <a class="reference internal" href="_mes_integration.html#mes-integration"><span class="std std-ref">OPCUA</span></a></p></li>
 <li><p>Station Management portal can remotely,</p>
 <ul>
 <li><p>request Prism Log (implemented in 0.7.48)</p></li>
@@ -88,8 +115,8 @@ otherwise monitor the system.</p>
 </ul>
 </section>
 </section>
-<section id="migration-guide">
-<h3>Migration Guide<a class="headerlink" href="#migration-guide" title="Link to this heading">¶</a></h3>
+<section id="id3">
+<h3>Migration Guide<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p>None</p></li>
 </ul>
@@ -99,19 +126,19 @@ otherwise monitor the system.</p>
 <h2>Ver 0.7.x<a class="headerlink" href="#ver-0-7-x" title="Link to this heading">¶</a></h2>
 <p>Prism/Lente version 0.7.x are deprecated and no longer supported.  However the images are still available on Docker Hub
 and can be used via the helper scripts <cite>prism.sh/lente.sh</cite>.</p>
-<section id="id3">
-<h3>Prism<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
 <section id="id4">
-<h4>0.7.40<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h4>
+<h3>Prism<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h3>
+<section id="id5">
+<h4>0.7.40<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>the last build</p></li>
 </ul>
 </section>
 </section>
-<section id="id5">
-<h3>Lente<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h3>
 <section id="id6">
-<h4>0.7.28<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h4>
+<h3>Lente<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h3>
+<section id="id7">
+<h4>0.7.28<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>the last build</p></li>
 </ul>

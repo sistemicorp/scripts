@@ -142,7 +142,7 @@ will indicate that the connection is "untrusted" and will prompt the user to val
 
 With HTTPS the connection between Prism/Lente is now encrypted.  :ref:`settings.json <deploy-settings-file>`
 has `prism_lente_pw` which should also be set to something unique.  This setting needs to be the same
-across all the Prism/Lente computers.
+across all the Prism/Lente computers.  If it is not set, Prism/Lente refuse all station requests.
 
 On deployed Prism/Lente computers the user account is presumed to be secure.  The Ubuntu filesystem should
 be encrypted, and the user account that hosts the files for Prism/Lente should be password protected.  Operator

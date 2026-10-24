@@ -24,7 +24,7 @@
   // If the results were not encrypted by Prism, they won't be ecrypted by Lente
   "results_bkup_encrypted": false,
 
-  // Use https secure transport, requires public/cert/key.pem files
+  // Use https secure transport, requires public/cert.pem and public/key.pem files
   // For Lente & Prism stations, all must be configured the same
   "use_https": false,
 
@@ -35,9 +35,6 @@
   // Validates "public/prism" contents (sent by Lente)
   // create manifest.exclude to list file exclusions
   "manifest_check": false,
-
-  // password for scripts package sent from Lente to Lente/Prism
-  "manifest_pw": "mysecret2",
 
   // network interface to use, used by VPNs
   //"net_iface": "tun0",

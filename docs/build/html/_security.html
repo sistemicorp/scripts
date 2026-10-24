@@ -158,7 +158,7 @@ These keys will still be using the same TLS protocol over the connection and are
 will indicate that the connection is “untrusted” and will prompt the user to validate the connection.</p>
 <p>With HTTPS the connection between Prism/Lente is now encrypted.  <a class="reference internal" href="_deployment.html#deploy-settings-file"><span class="std std-ref">settings.json</span></a>
 has <cite>prism_lente_pw</cite> which should also be set to something unique.  This setting needs to be the same
-across all the Prism/Lente computers.</p>
+across all the Prism/Lente computers.  If it is not set, Prism/Lente refuse all station requests.</p>
 <p>On deployed Prism/Lente computers the user account is presumed to be secure.  The Ubuntu filesystem should
 be encrypted, and the user account that hosts the files for Prism/Lente should be password protected.  Operator
 accounts do not need access to the Prism/Lente files. See <a class="reference external" href="_deployment-ubuntu-filesystem">Ubuntu File System</a></p>

@@ -49,7 +49,7 @@ A Lente station can manage Prism stations directly below it, in the connection
 hierarchy.</p>
 <p>A deployment plan should be discussed with a Sistemi support engineer.</p>
 <section id="system-requirements">
-<span id="deployment-ubuntu-filesystem"></span><span id="index-0"></span><h2>System Requirements<a class="headerlink" href="#system-requirements" title="Link to this heading">¶</a></h2>
+<span id="index-0"></span><h2>System Requirements<a class="headerlink" href="#system-requirements" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Computer Minimum</p>
 <ul>
@@ -68,7 +68,7 @@ hierarchy.</p>
 </ul>
 </section>
 <section id="ubuntu-file-system-and-users">
-<h2>Ubuntu File System and Users<a class="headerlink" href="#ubuntu-file-system-and-users" title="Link to this heading">¶</a></h2>
+<span id="deployment-ubuntu-filesystem"></span><h2>Ubuntu File System and Users<a class="headerlink" href="#ubuntu-file-system-and-users" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Install Ubuntu onto the computers</p></li>
 <li><p>OPTIONAL: enable file system encryption</p>
@@ -105,20 +105,25 @@ files are still protected.</p></li>
 <h2>Installing Prism/Lente Stations<a class="headerlink" href="#installing-prism-lente-stations" title="Link to this heading">¶</a></h2>
 <p>For Prism/Lente stations, follow the Full “Demo” instructions, but note the following
 changes,</p>
-<ul class="simple">
+<ul>
 <li><p>Prism</p>
 <ul>
 <li><p>install “full” per <a class="reference internal" href="prism_demo.html#prism-full-install"><span class="std std-ref">Prism Full Install</span></a></p></li>
 <li><p>git clone your “scripts” repo instead of the demo repo</p></li>
-<li><p>modify <cite>public/settings.json</cite> to suite the deployment</p>
-<ul>
+<li><p>modify <cite>public/settings.json</cite> to suit the deployment</p>
+<ul class="simple">
 <li><p>see <cite>settings.json</cite> details below</p></li>
 </ul>
 </li>
-<li><p>use the Prism helper script at <cite>public/prism.sh</cite> to start Prism,</p>
-<ul>
-<li><p>in order for Prism to run every time the computer is turned on use option <cite>restart=always</cite></p></li>
-</ul>
+<li><p>use the Prism helper script <cite>public/prism.sh</cite> to start Prism.  The script must be run from
+the <cite>public</cite> folder, because that folder is mounted into the Prism container.
+The <cite>–server</cite> flag is required, it is the IP address of the Lente this Prism reports to
+(use <cite>none</cite> if there is no Lente).  Use <cite>–restart=always</cite> so Prism starts every time the
+computer is turned on:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">git</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">public</span>
+<span class="o">./</span><span class="n">prism</span><span class="o">.</span><span class="n">sh</span> <span class="o">--</span><span class="n">server</span><span class="o">=</span><span class="mf">192.168.0.10</span> <span class="o">--</span><span class="n">restart</span><span class="o">=</span><span class="n">always</span> <span class="n">start</span>
+</pre></div>
+</div>
 </li>
 </ul>
 </li>
@@ -128,8 +133,17 @@ changes,</p>
 change the git source to be your repo.</p></li>
 <li><p>Use Lente Station management to push your repo to downstream Prism (and/or
 Lente) computers.</p></li>
-<li><p>use the helper script <cite>public/lente.sh</cite> and option <cite>restart=always</cite> so that
-Lente will automatically start on every computer boot up.</p></li>
+<li><p>use the helper script <cite>public/lente.sh</cite>, run from the <cite>public</cite> folder, with option
+<cite>–restart=always</cite> so that Lente will automatically start on every computer boot up:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">git</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">public</span>
+<span class="o">./</span><span class="n">lente</span><span class="o">.</span><span class="n">sh</span> <span class="o">--</span><span class="n">restart</span><span class="o">=</span><span class="n">always</span> <span class="n">start</span>
+</pre></div>
+</div>
+</li>
+<li><p>the Postgres container must also be set to restart, see <a class="reference internal" href="lente_demo.html#lente-demo-postgres"><span class="std std-ref">Postgres</span></a>.</p></li>
+<li><p>Optional: to let an admin update the Lente scripts from GitHub with the Station Manager
+<cite>git pull</cite> button, run <cite>public/git_pull_watcher.sh</cite> on the Lente host.
+The setup steps (deploy key, systemd service) are at the top of that script.</p></li>
 </ul>
 </li>
 </ul>
@@ -144,11 +158,15 @@ copied from a reference source to reflect this instances configuration.</p></li>
 <li><p>In practice, most Prism computers can use the same file, and therefore the file
 should be stored in a separate place and used as a source when new Prism computers
 are added to the deployment.</p></li>
-<li><p>Remove <cite>settings.json</cite> from the <cite>public</cite> folder of your repo</p></li>
+<li><p>The <cite>settings.json</cite> in your scripts repo should only be an example.  Do not commit the
+real deployment passwords to your repo.</p></li>
 </ul>
 </li>
 <li><p>This file is NOT propagated within the deployment by Lente.</p></li>
 <li><p>This file contains passwords in plain text so it should be handled appropriately.</p></li>
+<li><p><cite>prism_lente_pw</cite> (and <cite>lente_lente_pw</cite> for Lente to Lente) must be set, and must be the same on
+every computer in the deployment.  If they are not set, Prism/Lente refuse all station requests
+(pings, results, script and user syncs).</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>// This file is NOT propagated by Lente to Prism stations.
 // For each Prism/Lente install, this file should be modified as required.
@@ -176,7 +194,7 @@ are added to the deployment.</p></li>
   // If the results were not encrypted by Prism, they won't be ecrypted by Lente
   "results_bkup_encrypted": false,
 
-  // Use https secure transport, requires public/cert/key.pem files
+  // Use https secure transport, requires public/cert.pem and public/key.pem files
   // For Lente &amp; Prism stations, all must be configured the same
   "use_https": false,
 
@@ -188,14 +206,11 @@ are added to the deployment.</p></li>
   // create manifest.exclude to list file exclusions
   "manifest_check": false,
 
-  // password for scripts package sent from Lente to Lente/Prism
-  "manifest_pw": "mysecret2",
-
   // network interface to use, used by VPNs
   //"net_iface": "tun0",
 
   // Send log files on startup for diagnostic purposes
-  "send_logs_on_startup": false,
+  "send_logs_on_startup": true,
 
   // Health checks
   // Levels: Warn, Error, Critical (case insensitive)

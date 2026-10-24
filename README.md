@@ -14,7 +14,7 @@
 # Screenshots
 ![prism_1](docs/source/static/Screenshot_test_01.png)
 
-![prism_2](docs/source/static/Screenshot_lente_dashboard_01.png)
+![prism_2](docs/source/static/Screenshot_lente_throughput.png)
 
 
     

@@ -14,9 +14,9 @@ Users
 
 Users should be added to the system, rather than using the Admin account.
 
-Users need to have a unique username.
+Users are identified by a unique email address.
 
-Users are added by another user (Admin) who has Account role privileges.
+Users are added by an Admin user in Account Management.
 
 A new User account must be set `Active` in order to login.
 
@@ -28,17 +28,15 @@ The following roles are defined,
 
 ::
 
-    "roles": {
-        # Framework Roles
-        "ACCOUNT": "Account Admin, Add/Edit Roles & Users",
-        "ADMIN":   "Administrator",  # rights to do anything
+    ADMIN       Administrator, rights to do anything
+    OPERATOR    Operator
+    CONFIGMAN   Configuration Management
+    DEVELOPER   Developer
+    SERVERSYNC  ServerSync, causes user to be pushed to all stations
+    DASHBOARD   Dashboard, read-only results viewer (planned)
 
-        # App specific Roles
-        "OPERATOR":   "Operator",
-        "CONFIGMAN":  "Configuration Management",
-        "DEVELOPER":  "Developer",
-        "SERVERSYNC": "ServerSync",  # causes user to be pushed to all stations
-    },
+
+The `ACCOUNT` role is shown in Account Management but is not used, accounts are managed by Admin users.
 
 
 Active
@@ -56,11 +54,6 @@ Admin
 The Admin(istrator) role has access to all system functions and menus.
 
 In general it's good practice to have two Users with Admin role.
-
-Account
-=======
-
-This role provides the User with Account functions, create user, edit user, edit roles.
 
 Operator
 ========

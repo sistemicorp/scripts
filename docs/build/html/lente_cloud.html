@@ -77,32 +77,19 @@ approach is to use Postgres as a separate resource from the VM running Lente.</p
 <section id="lente-postgres-on-instance-vm">
 <h3><a class="toc-backref" href="#id2" role="doc-backlink">Lente/Postgres On Instance VM</a><a class="headerlink" href="#lente-postgres-on-instance-vm" title="Link to this heading">¶</a></h3>
 <p>Log into your Google Cloud Account.</p>
-<p>Create an instance VM and use a Ubuntu 18.04 Minimum image.</p>
+<p>Create an instance VM and use a Ubuntu 24.04 Minimum image.</p>
 <p>Traffic to/from the GCP node needs to be allowed by the Firewall,</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">VPC</span> <span class="n">Network</span> <span class="o">-&gt;</span> <span class="n">Firewall</span> <span class="n">Rules</span>
 <span class="n">Name</span>            <span class="n">Type</span>        <span class="n">Targets</span>         <span class="n">Filters</span>                 <span class="n">Protocols</span> <span class="o">/</span> <span class="n">ports</span>           <span class="n">Action</span>      <span class="n">Priority</span>        <span class="n">Network</span>
-<span class="n">lente</span><span class="o">-</span><span class="n">egress</span>    <span class="n">Egress</span>  <span class="n">Apply</span> <span class="n">to</span> <span class="nb">all</span>        <span class="n">IP</span> <span class="n">ranges</span><span class="p">:</span> <span class="mf">0.0.0.0</span><span class="o">/</span><span class="mi">0</span>    <span class="n">tcp</span><span class="p">:</span><span class="mi">6600</span>    <span class="n">udp</span><span class="p">:</span><span class="mi">6600</span>    <span class="n">Allow</span>   <span class="mi">1000</span>        <span class="n">default</span>
-<span class="n">lente</span><span class="o">-</span><span class="n">ingress</span>   <span class="n">Ingress</span> <span class="n">Apply</span> <span class="n">to</span> <span class="nb">all</span>    <span class="n">IP</span> <span class="n">ranges</span><span class="p">:</span> <span class="mf">0.0.0.0</span><span class="o">/</span><span class="mi">0</span>    <span class="n">tcp</span><span class="p">:</span><span class="mi">6600</span>    <span class="n">udp</span><span class="p">:</span><span class="mi">6600</span>    <span class="n">Allow</span>   <span class="mi">1000</span>        <span class="n">default</span>
+<span class="n">lente</span><span class="o">-</span><span class="n">ingress</span>   <span class="n">Ingress</span> <span class="n">Apply</span> <span class="n">to</span> <span class="nb">all</span>    <span class="n">IP</span> <span class="n">ranges</span><span class="p">:</span> <span class="mf">0.0.0.0</span><span class="o">/</span><span class="mi">0</span>    <span class="n">tcp</span><span class="p">:</span><span class="mi">6595</span>    <span class="n">Allow</span>   <span class="mi">1000</span>        <span class="n">default</span>
 </pre></div>
 </div>
 <p><strong>The above Firewall rules allow connection to Lente from any external IP.  You should instead limit access to Lente
 to your domain for extra security.</strong></p>
-<p>Open an SSH to the VM and run these commands, which will install Docker, these are copied from <a class="reference external" href="https://docs.docker.com/install/linux/docker-ce/ubuntu/">https://docs.docker.com/install/linux/docker-ce/ubuntu/</a></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
-<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> \
-    <span class="n">apt</span><span class="o">-</span><span class="n">transport</span><span class="o">-</span><span class="n">https</span> \
-    <span class="n">ca</span><span class="o">-</span><span class="n">certificates</span> \
-    <span class="n">curl</span> \
-    <span class="n">gnupg</span><span class="o">-</span><span class="n">agent</span> \
-    <span class="n">software</span><span class="o">-</span><span class="n">properties</span><span class="o">-</span><span class="n">common</span>
-<span class="n">curl</span> <span class="o">-</span><span class="n">fsSL</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">download</span><span class="o">.</span><span class="n">docker</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">linux</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">/</span><span class="n">gpg</span> <span class="o">|</span> <span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">key</span> <span class="n">add</span> <span class="o">-</span>
-<span class="n">sudo</span> <span class="n">add</span><span class="o">-</span><span class="n">apt</span><span class="o">-</span><span class="n">repository</span> \
-   <span class="s2">"deb [arch=amd64] https://download.docker.com/linux/ubuntu </span><span class="se">\</span>
-<span class="s2">   $(lsb_release -cs) </span><span class="se">\</span>
-<span class="s2">   stable"</span>
-<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
-<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">docker</span><span class="o">-</span><span class="n">ce</span> <span class="n">docker</span><span class="o">-</span><span class="n">ce</span><span class="o">-</span><span class="n">cli</span> <span class="n">containerd</span><span class="o">.</span><span class="n">io</span>
-<span class="n">sudo</span> <span class="n">usermod</span> <span class="o">-</span><span class="n">aG</span> <span class="n">docker</span> <span class="n">your</span><span class="o">-</span><span class="n">user</span> <span class="c1"># and then REBOOT!</span>
+<p>Open an SSH to the VM and install Docker Engine following
+<a class="reference external" href="https://docs.docker.com/engine/install/ubuntu/">https://docs.docker.com/engine/install/ubuntu/</a> (“Install using the apt repository”).
+Then allow your user to run Docker, and reboot,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">usermod</span> <span class="o">-</span><span class="n">aG</span> <span class="n">docker</span> <span class="n">your</span><span class="o">-</span><span class="n">user</span> <span class="c1"># and then REBOOT!</span>
 </pre></div>
 </div>
 <p>After you have rebooted, open a new SSH terminal.

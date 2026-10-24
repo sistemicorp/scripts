@@ -41,7 +41,7 @@ Lente/Postgres On Instance VM
 
 Log into your Google Cloud Account.
 
-Create an instance VM and use a Ubuntu 18.04 Minimum image.
+Create an instance VM and use a Ubuntu 24.04 Minimum image.
 
 Traffic to/from the GCP node needs to be allowed by the Firewall,
 
@@ -49,30 +49,17 @@ Traffic to/from the GCP node needs to be allowed by the Firewall,
 
     VPC Network -> Firewall Rules
     Name            Type	Targets	        Filters	                Protocols / ports	    Action	Priority	Network
-    lente-egress    Egress  Apply to all	IP ranges: 0.0.0.0/0    tcp:6600    udp:6600    Allow   1000        default
-    lente-ingress   Ingress Apply to all    IP ranges: 0.0.0.0/0    tcp:6600    udp:6600    Allow   1000        default
+    lente-ingress   Ingress Apply to all    IP ranges: 0.0.0.0/0    tcp:6595    Allow   1000        default
 
 **The above Firewall rules allow connection to Lente from any external IP.  You should instead limit access to Lente
 to your domain for extra security.**
 
-Open an SSH to the VM and run these commands, which will install Docker, these are copied from https://docs.docker.com/install/linux/docker-ce/ubuntu/
+Open an SSH to the VM and install Docker Engine following
+https://docs.docker.com/engine/install/ubuntu/ ("Install using the apt repository").
+Then allow your user to run Docker, and reboot,
 
 ::
 
-    sudo apt-get update
-    sudo apt-get install \
-        apt-transport-https \
-        ca-certificates \
-        curl \
-        gnupg-agent \
-        software-properties-common
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-    sudo add-apt-repository \
-       "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-       $(lsb_release -cs) \
-       stable"
-    sudo apt-get update
-    sudo apt-get install docker-ce docker-ce-cli containerd.io
     sudo usermod -aG docker your-user # and then REBOOT!
 
 After you have rebooted, open a new SSH terminal.

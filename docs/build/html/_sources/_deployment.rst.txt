@@ -13,8 +13,6 @@ A deployment plan should be discussed with a Sistemi support engineer.
 
 .. index:: Settings
 
-.. _deployment-ubuntu-filesystem:
-
 
 System Requirements
 *******************
@@ -32,6 +30,8 @@ System Requirements
   * Ubuntu 24.04
 
 
+
+.. _deployment-ubuntu-filesystem:
 
 Ubuntu File System and Users
 ****************************
@@ -70,12 +70,17 @@ changes,
 
   * install "full" per :ref:`Prism Full Install <prism-full-install>`
   * git clone your "scripts" repo instead of the demo repo
-  * modify `public/settings.json` to suite the deployment
+  * modify `public/settings.json` to suit the deployment
 
     * see `settings.json` details below
-  * use the Prism helper script at `public/prism.sh` to start Prism,
+  * use the Prism helper script `public/prism.sh` to start Prism.  The script must be run from
+    the `public` folder, because that folder is mounted into the Prism container.
+    The `--server` flag is required, it is the IP address of the Lente this Prism reports to
+    (use `none` if there is no Lente).  Use `--restart=always` so Prism starts every time the
+    computer is turned on::
 
-    * in order for Prism to run every time the computer is turned on use option `restart=always`
+        cd ~/git/scripts/public
+        ./prism.sh --server=192.168.0.10 --restart=always start
 
 * Lente
 
@@ -83,8 +88,16 @@ changes,
     change the git source to be your repo.
   * Use Lente Station management to push your repo to downstream Prism (and/or
     Lente) computers.
-  * use the helper script `public/lente.sh` and option `restart=always` so that
-    Lente will automatically start on every computer boot up.
+  * use the helper script `public/lente.sh`, run from the `public` folder, with option
+    `--restart=always` so that Lente will automatically start on every computer boot up::
+
+        cd ~/git/scripts/public
+        ./lente.sh --restart=always start
+
+  * the Postgres container must also be set to restart, see :ref:`Postgres <lente-demo-postgres>`.
+  * Optional: to let an admin update the Lente scripts from GitHub with the Station Manager
+    `git pull` button, run `public/git_pull_watcher.sh` on the Lente host.
+    The setup steps (deploy key, systemd service) are at the top of that script.
 
 
 .. _deploy-settings-file:
@@ -100,11 +113,15 @@ Settings.JSON File
   * In practice, most Prism computers can use the same file, and therefore the file
     should be stored in a separate place and used as a source when new Prism computers
     are added to the deployment.
-  * Remove `settings.json` from the `public` folder of your repo
+  * The `settings.json` in your scripts repo should only be an example.  Do not commit the
+    real deployment passwords to your repo.
 
 
 * This file is NOT propagated within the deployment by Lente.
 * This file contains passwords in plain text so it should be handled appropriately.
+* `prism_lente_pw` (and `lente_lente_pw` for Lente to Lente) must be set, and must be the same on
+  every computer in the deployment.  If they are not set, Prism/Lente refuse all station requests
+  (pings, results, script and user syncs).
 
 
 ::
@@ -135,7 +152,7 @@ Settings.JSON File
           // If the results were not encrypted by Prism, they won't be ecrypted by Lente
           "results_bkup_encrypted": false,
 
-          // Use https secure transport, requires public/cert/key.pem files
+          // Use https secure transport, requires public/cert.pem and public/key.pem files
           // For Lente & Prism stations, all must be configured the same
           "use_https": false,
 
@@ -147,14 +164,11 @@ Settings.JSON File
           // create manifest.exclude to list file exclusions
           "manifest_check": false,
 
-          // password for scripts package sent from Lente to Lente/Prism
-          "manifest_pw": "mysecret2",
-
           // network interface to use, used by VPNs
           //"net_iface": "tun0",
 
           // Send log files on startup for diagnostic purposes
-          "send_logs_on_startup": false,
+          "send_logs_on_startup": true,
 
           // Health checks
           // Levels: Warn, Error, Critical (case insensitive)
