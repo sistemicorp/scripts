@@ -70,6 +70,10 @@
 <p>Logging out exits the Script Runner.  If channels are still testing, the tests finish first, then
 the Script Runner exits, unless a User logs in before then.  A User logged out for being idle
 leaves the Script Runner loaded.</p>
+<p>Closing the browser (every Prism page) logs the User out a few seconds later.  This aborts any
+running tests and exits the Script Runner.</p>
+<p>If a User is logged in from another browser, the login page names them and offers
+<cite>Log them out and continue</cite>.  This also aborts any running tests and exits the Script Runner.</p>
 </section>
 <section id="roles">
 <h2><a class="toc-backref" href="#id2" role="doc-backlink">Roles</a><a class="headerlink" href="#roles" title="Link to this heading">¶</a></h2>
