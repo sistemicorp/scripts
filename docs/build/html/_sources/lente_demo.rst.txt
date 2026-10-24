@@ -103,7 +103,8 @@ For a real deployment, on Lente and on each Prism,
 
 1. start with `"demo": true` and log in as `admin@here.com`
 2. in Account Management, create your own admin account
-3. log in as your admin, and delete all the `@here.com` accounts
+3. log in as your admin, and delete all the `@here.com` accounts (recommended)
 4. set `"demo": false` and restart
 
-Turning demo off does not remove the `@here.com` accounts, step 3 is required.
+With `"demo": false` any remaining `@here.com` accounts are deactivated at startup, and turning
+demo back on reactivates them.  There is no self sign up, accounts are created by an Admin.

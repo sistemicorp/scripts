@@ -37,8 +37,9 @@ Migration Guide
 * `manifest_pw` is no longer used and can be removed from `settings.json`.
 * Vendor programming tools (Nordic `nrfjprog`, ST `STM32CubeProgrammer`) are no longer included
   in `public/prism/drivers`.  They will be installed on the host computer.
-* Demo `@here.com` users are not removed when demo is turned off, see
+* With `"demo": false` the demo `@here.com` users are deactivated at startup, see
   :ref:`Demo Users and the First Admin <first-admin>`.
+* Prism no longer has a self sign up page, accounts are created by an Admin.
 
 
 *********
