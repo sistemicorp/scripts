@@ -100,8 +100,9 @@ The following are further suggestions to improve security,
 * encrypt the hard disk by the OS
 * strong admin password
 * use Account Roles for users
-* Prism/Lente use ports 6590 & 6595, so other ports can be blocked.  If OPC UA is enabled it uses
-  4840 (Prism) and 4841 (Lente).  Postgres (5432) only needs to be reachable from the Lente computer.
+* Lente accepts connections on port 6595, stations and browsers connect to it.  Lente never connects
+  to a station.  If OPC UA is enabled it uses 4841.  Postgres (5432) only needs to be reachable from
+  the Lente computer.
 
 
 Prism
@@ -119,8 +120,9 @@ The following are further suggestions to improve security,
 * regularly purge the backups from the disk, (or disable backups, not recommended)
 * use Account Roles for users
 * A Ubuntu Operator account could launch Chrome in kiosk mode and launch the Prism URL
-* Prism/Lente use ports 6590 & 6595, so other ports can be blocked.  If OPC UA is enabled it uses
-  4840 (Prism) and 4841 (Lente).
+* Prism only connects out to Lente (port 6595).  Port 6590 is the Prism browser UI, so it only needs
+  to be reachable from where operators use Prism, usually just `localhost`.  If OPC UA is enabled
+  it uses 4840.
 
 
 Postgres DB

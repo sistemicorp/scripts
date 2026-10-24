@@ -45,6 +45,9 @@ screenshots.
   see :ref:`HTTPS <https>`
 * Test Portal channel number buttons start just that channel, while other channels keep testing
 * Station Manager `Restart` asks for confirmation when a selected station is in use
+* Station Manager actions are sent in the reply to the station's ping, Lente no longer connects to
+  stations, so only stations need to reach Lente.  Actions expire after 2 minutes.
+  `use_rpc_over_status_updates` is removed from `settings.json`.
 
 Bug fixes,
 

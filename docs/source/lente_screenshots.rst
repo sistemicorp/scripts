@@ -54,6 +54,10 @@ Prism and Lente Station management console, Admin only.
   state, active users, and last ping
 * Select stations and take actions - `Ping`, `Get Log`, `Restart`, `Sync Users`, `Sync Script`
 
+  * Lente never connects to a station.  An action is sent in the reply to the station's next
+    ping, about every 20 seconds, so stations behind a firewall or NAT can be managed.  The `Cmd`
+    column shows the action as `pending`, then `sent`.  An action not picked up within 2 minutes
+    is dropped and shown as `expired`.
   * `Sync Users` sends the users that have the ServerSync role
   * `Sync Users` and `Sync Script` are disabled while a user is logged in to the selected station,
     or while its test runner has a script loaded (`Runner` is `IDLE` or `RUNNING`).  Prism also
