@@ -44,6 +44,7 @@ screenshots.
 * With `use_https`, stations only connect to a computer with the site's `cert.pem`,
   see :ref:`HTTPS <https>`
 * Test Portal channel number buttons start just that channel, while other channels keep testing
+* Station Manager `Restart` asks for confirmation when a selected station is in use
 
 Bug fixes,
 
