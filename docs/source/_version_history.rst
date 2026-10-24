@@ -28,7 +28,27 @@ screenshots.
 * Script sync size limit and exclusions, see :ref:`Script Sync Exclusions <_security:Script Sync Exclusions>`
 * `site_key` in `settings.json` replaces the built-in encryption keys, and the Station Manager
   shows any station whose `site_key` does not match
+* License files are signed, see Migration Guide below
+* New Prism stations no longer need a `git clone` of the scripts repo.  Lente serves `prism.sh`,
+  and on first start Prism downloads its scripts from Lente.
+  See :doc:`Deployment <_deployment>`.
+* Lente builds the scripts package for stations on demand, when it is missing or older than
+  `public/VERSION`
+* Station Manager user sync matches users by email.  Synced users that are left out of a later
+  sync are deactivated on the station.
+* Station requests are refused when no station password is configured
+* Vendor programming tools are no longer bundled, see Migration Guide below
 * DASHBOARD role (planned: read-only results viewer)
+
+Bug fixes,
+
+* [BUGFIX] Station Manager user sync (`SYNCUSERS`) failed on Prism, and sent every user instead of
+  only `SERVERSYNC` users
+* [BUGFIX] Stations with `auto_sync_scripts` off were treated as on by Lente
+* [BUGFIX] Auto script sync could start more than one sync for a station, and its timer
+  was not reset
+* [BUGFIX] Lente to upstream Lente result uploads used the wrong password (`lente_lente_pw`)
+* [BUGFIX] Prism and Lente were slow to exit on shutdown
 
 
 Migration Guide

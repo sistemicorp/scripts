@@ -5,11 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Version History &#8212; Sistemi Lente/Prism Test System 0.8.0 documentation</title>
+    <title>Version History &#8212; Sistemi Lente/Prism Test System 0.9.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css?v=514cf933" />
     
-    <script src="_static/documentation_options.js?v=486e5634"></script>
+    <script src="_static/documentation_options.js?v=39bb1c6d"></script>
     <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     
@@ -26,7 +26,7 @@
         <li class="right" >
           <a href="_mes_integration.html" title="Manufacturing Execution System (MES) Integration"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.8.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.9.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Version History</a></li> 
       </ul>
     </div>  
@@ -58,7 +58,27 @@ folder, so files removed on Lente are also removed on the stations</p></li>
 <li><p>Script sync size limit and exclusions, see <a class="reference internal" href="_security.html#script-sync-exclusions"><span class="std std-ref">Script Sync Exclusions</span></a></p></li>
 <li><p><cite>site_key</cite> in <cite>settings.json</cite> replaces the built-in encryption keys, and the Station Manager
 shows any station whose <cite>site_key</cite> does not match</p></li>
+<li><p>License files are signed, see Migration Guide below</p></li>
+<li><p>New Prism stations no longer need a <cite>git clone</cite> of the scripts repo.  Lente serves <cite>prism.sh</cite>,
+and on first start Prism downloads its scripts from Lente.
+See <a class="reference internal" href="_deployment.html"><span class="doc">Deployment</span></a>.</p></li>
+<li><p>Lente builds the scripts package for stations on demand, when it is missing or older than
+<cite>public/VERSION</cite></p></li>
+<li><p>Station Manager user sync matches users by email.  Synced users that are left out of a later
+sync are deactivated on the station.</p></li>
+<li><p>Station requests are refused when no station password is configured</p></li>
+<li><p>Vendor programming tools are no longer bundled, see Migration Guide below</p></li>
 <li><p>DASHBOARD role (planned: read-only results viewer)</p></li>
+</ul>
+<p>Bug fixes,</p>
+<ul class="simple">
+<li><p>[BUGFIX] Station Manager user sync (<cite>SYNCUSERS</cite>) failed on Prism, and sent every user instead of
+only <cite>SERVERSYNC</cite> users</p></li>
+<li><p>[BUGFIX] Stations with <cite>auto_sync_scripts</cite> off were treated as on by Lente</p></li>
+<li><p>[BUGFIX] Auto script sync could start more than one sync for a station, and its timer
+was not reset</p></li>
+<li><p>[BUGFIX] Lente to upstream Lente result uploads used the wrong password (<cite>lente_lente_pw</cite>)</p></li>
+<li><p>[BUGFIX] Prism and Lente were slow to exit on shutdown</p></li>
 </ul>
 <section id="migration-guide">
 <h3>Migration Guide<a class="headerlink" href="#migration-guide" title="Link to this heading">¶</a></h3>
@@ -191,7 +211,7 @@ and can be used via the helper scripts <cite>prism.sh/lente.sh</cite>.</p>
         <li class="right" >
           <a href="_mes_integration.html" title="Manufacturing Execution System (MES) Integration"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.8.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.9.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Version History</a></li> 
       </ul>
     </div>
