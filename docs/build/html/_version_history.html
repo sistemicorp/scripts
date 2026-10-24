@@ -80,6 +80,8 @@ stations, so only stations need to reach Lente.  Actions expire after 2 minutes.
 <cite>use_rpc_over_status_updates</cite> is removed from <cite>settings.json</cite>.</p></li>
 <li><p>Test programs can use <cite>self.sleep()</cite> and <cite>self.check_abort()</cite> so an item stops on timeout or abort,
 see <a class="reference internal" href="prism_programs.html#timeouts-and-aborts"><span class="std std-ref">Timeouts and Aborts</span></a></p></li>
+<li><p>A test item still running after its timeout is forced to stop, and Prism shows a notice
+if it does not respond.  Prism no longer hangs on restart or exit while an item is stuck.</p></li>
 </ul>
 <p>Bug fixes,</p>
 <ul class="simple">

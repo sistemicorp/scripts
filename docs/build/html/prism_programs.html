@@ -258,7 +258,11 @@ that <code class="docutils literal notranslate"><span class="pre">except</span> 
         <span class="n">hold_time</span> <span class="o">-=</span> <span class="mi">1</span>
 </pre></div>
 </div>
-<p>The result you pass to <code class="docutils literal notranslate"><span class="pre">self.item_end()</span></code> after a timeout is ignored; the item is recorded as <code class="docutils literal notranslate"><span class="pre">TIMEOUT</span></code>.
+<p>The result you pass to <code class="docutils literal notranslate"><span class="pre">self.item_end()</span></code> after a timeout is ignored; the item is recorded as <code class="docutils literal notranslate"><span class="pre">TIMEOUT</span></code>.</p>
+<p>If an item is still running 5 seconds after its timeout, Prism forces it to stop.
+This breaks a Python loop, but it cannot interrupt a blocked call such as <code class="docutils literal notranslate"><span class="pre">time.sleep()</span></code> or a driver
+waiting on hardware; the item stops when that call returns.
+If the item is still running 5 seconds later, Prism shows a “not responding” notice.
 For a long blocking driver call, give the driver its own timeout shorter than the item <code class="docutils literal notranslate"><span class="pre">timeout</span></code>.</p>
 </section>
 <section id="everything-example">

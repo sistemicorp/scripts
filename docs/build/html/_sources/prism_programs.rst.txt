@@ -223,6 +223,11 @@ A shared resource lock is released even when the item is stopped,
             hold_time -= 1
 
 The result you pass to ``self.item_end()`` after a timeout is ignored; the item is recorded as ``TIMEOUT``.
+
+If an item is still running 5 seconds after its timeout, Prism forces it to stop.
+This breaks a Python loop, but it cannot interrupt a blocked call such as ``time.sleep()`` or a driver
+waiting on hardware; the item stops when that call returns.
+If the item is still running 5 seconds later, Prism shows a "not responding" notice.
 For a long blocking driver call, give the driver its own timeout shorter than the item ``timeout``.
 
 
