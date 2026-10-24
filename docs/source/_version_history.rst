@@ -54,6 +54,8 @@ Bug fixes,
 * [BUGFIX] Lente to upstream Lente result uploads used the wrong password (`lente_lente_pw`)
 * [BUGFIX] Prism and Lente were slow to exit on shutdown
 * [BUGFIX] With `use_https`, script sync from Lente failed
+* [BUGFIX] Script and user syncs could interrupt a station's test runner once the operator
+  logged out.  Syncs now wait until the Script Runner is exited.
 
 
 Migration Guide
