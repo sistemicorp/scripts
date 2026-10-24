@@ -122,8 +122,9 @@ restricted in some way, for example, locked in a secure room.</p>
 <li><p>encrypt the hard disk by the OS</p></li>
 <li><p>strong admin password</p></li>
 <li><p>use Account Roles for users</p></li>
-<li><p>Prism/Lente use ports 6590 &amp; 6595, so other ports can be blocked.  If OPC UA is enabled it uses
-4840 (Prism) and 4841 (Lente).  Postgres (5432) only needs to be reachable from the Lente computer.</p></li>
+<li><p>Lente accepts connections on port 6595, stations and browsers connect to it.  Lente never connects
+to a station.  If OPC UA is enabled it uses 4841.  Postgres (5432) only needs to be reachable from
+the Lente computer.</p></li>
 </ul>
 </section>
 <section id="prism">
@@ -139,8 +140,9 @@ Often login names and passwords are common to a group of people, or shared among
 <li><p>regularly purge the backups from the disk, (or disable backups, not recommended)</p></li>
 <li><p>use Account Roles for users</p></li>
 <li><p>A Ubuntu Operator account could launch Chrome in kiosk mode and launch the Prism URL</p></li>
-<li><p>Prism/Lente use ports 6590 &amp; 6595, so other ports can be blocked.  If OPC UA is enabled it uses
-4840 (Prism) and 4841 (Lente).</p></li>
+<li><p>Prism only connects out to Lente (port 6595).  Port 6590 is the Prism browser UI, so it only needs
+to be reachable from where operators use Prism, usually just <cite>localhost</cite>.  If OPC UA is enabled
+it uses 4840.</p></li>
 </ul>
 </section>
 <section id="postgres-db">

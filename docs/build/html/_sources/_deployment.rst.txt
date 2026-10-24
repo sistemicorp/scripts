@@ -306,10 +306,6 @@ These optional settings are not in the example file, the defaults are shown.
     // hours before a browser login expires and the user must log in again (Prism and Lente)
     "browser_credentials_timeout_h": 168,
 
-    // Lente only: send station commands in the reply to the station ping, instead of
-    // connecting to the station, useful when stations are behind a firewall or NAT
-    "use_rpc_over_status_updates": false,
-
     // Prism only: Test Portal throughput chart, seconds per bar and number of bars
     "result_stats_time_bucket": 600,
     "result_stats_max_buckets": 20

@@ -82,6 +82,10 @@ chart shows the same proportions.  Use this to find which test items to optimize
 state, active users, and last ping</p></li>
 <li><p>Select stations and take actions - <cite>Ping</cite>, <cite>Get Log</cite>, <cite>Restart</cite>, <cite>Sync Users</cite>, <cite>Sync Script</cite></p>
 <ul>
+<li><p>Lente never connects to a station.  An action is sent in the reply to the station’s next
+ping, about every 20 seconds, so stations behind a firewall or NAT can be managed.  The <cite>Cmd</cite>
+column shows the action as <cite>pending</cite>, then <cite>sent</cite>.  An action not picked up within 2 minutes
+is dropped and shown as <cite>expired</cite>.</p></li>
 <li><p><cite>Sync Users</cite> sends the users that have the ServerSync role</p></li>
 <li><p><cite>Sync Users</cite> and <cite>Sync Script</cite> are disabled while a user is logged in to the selected station,
 or while its test runner has a script loaded (<cite>Runner</cite> is <cite>IDLE</cite> or <cite>RUNNING</cite>).  Prism also
