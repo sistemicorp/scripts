@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Deployment &#8212; Sistemi Lente/Prism Test System 0.9.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css?v=514cf933" />
     
     <script src="_static/documentation_options.js?v=39bb1c6d"></script>
@@ -213,79 +213,79 @@ different key shows a <cite>site_key does not match Lente</cite> notice.</p></li
 {
   // turn on demo mode.  Creates test user accounts, ...
   // remove line, or set to false to disable demo mode
-  "demo": true,
+  &quot;demo&quot;: true,
 
   // On startup optionally specify to load a traveller
-  //"load_traveller": "public/traveller/traveller_TZ6T.pdf",
-  //"load_user": "operator@here.com",
+  //&quot;load_traveller&quot;: &quot;public/traveller/traveller_TZ6T.pdf&quot;,
+  //&quot;load_user&quot;: &quot;operator@here.com&quot;,
 
   // Site key, must be the same on every Prism/Lente in the deployment
   // - encrypts the scripts package, manifest, travellers and results
-  // - the demo value only works with "demo": true, generate a real one with
-  //   python3 -c "import secrets; print(secrets.token_urlsafe(24))"
-  "site_key": "demo-site-key-change-me",
+  // - the demo value only works with &quot;demo&quot;: true, generate a real one with
+  //   python3 -c &quot;import secrets; print(secrets.token_urlsafe(24))&quot;
+  &quot;site_key&quot;: &quot;demo-site-key-change-me&quot;,
 
   // Result JSON file encryption, uses site_key
   // - a valid license file is required to encrypt results
-  "result_encrypt": false,
+  &quot;result_encrypt&quot;: false,
 
   // By default results that are sent to Lente are backed up
   // locally, to disable this backup uncomment
-  //"result_bkup_dir": null,
+  //&quot;result_bkup_dir&quot;: null,
 
   // Result JSON files be backed up as encrypted, &lt;true|false&gt;,
-  // If the results were not encrypted by Prism, they won't be ecrypted by Lente
-  "results_bkup_encrypted": false,
+  // If the results were not encrypted by Prism, they won&#39;t be ecrypted by Lente
+  &quot;results_bkup_encrypted&quot;: false,
 
   // Use https secure transport, requires public/cert.pem and public/key.pem files
   // For Lente &amp; Prism stations, all must be configured the same,
   // with the same cert.pem/key.pem on every station
-  "use_https": false,
+  &quot;use_https&quot;: false,
 
   // Prism/Lente internal connection password
-  "prism_lente_pw": "mysecret1",
+  &quot;prism_lente_pw&quot;: &quot;mysecret1&quot;,
 
   // Manifest (enable/disable) checking
-  // Validates "public/prism" contents (sent by Lente)
+  // Validates &quot;public/prism&quot; contents (sent by Lente)
   // create manifest.exclude to list file exclusions
-  "manifest_check": false,
+  &quot;manifest_check&quot;: false,
 
   // network interface to use, used by VPNs
-  //"net_iface": "tun0",
+  //&quot;net_iface&quot;: &quot;tun0&quot;,
 
   // Send log files on startup for diagnostic purposes
-  "send_logs_on_startup": true,
+  &quot;send_logs_on_startup&quot;: true,
 
   // Health checks
   // Levels: Warn, Error, Critical (case insensitive)
-  // "Warn" and "Error" only appear in the notification log
-  // "Critical" additionally prevents new test sessions from starting
+  // &quot;Warn&quot; and &quot;Error&quot; only appear in the notification log
+  // &quot;Critical&quot; additionally prevents new test sessions from starting
   // First rule that matches for each health check is reported
-  "health_checks": {
-    "disk_space": {
-      "enable": true,
-      "rules": [
+  &quot;health_checks&quot;: {
+    &quot;disk_space&quot;: {
+      &quot;enable&quot;: true,
+      &quot;rules&quot;: [
         // free format: &lt;value&gt; [MB|GB|%]
-        {"free": "10%",    "level": "Critical"},
-        {"free": "100 MB", "level": "Error"},
-        {"free": "200 MB", "level": "Warn"}
+        {&quot;free&quot;: &quot;10%&quot;,    &quot;level&quot;: &quot;Critical&quot;},
+        {&quot;free&quot;: &quot;100 MB&quot;, &quot;level&quot;: &quot;Error&quot;},
+        {&quot;free&quot;: &quot;200 MB&quot;, &quot;level&quot;: &quot;Warn&quot;}
       ]
     }
   },
 
   // OPCUA Configuration
-  "opcua_server": {
-    "enable": false,
-    "security_policies":[
-      "NoSecurity",
-      "Basic256Sha256_Sign",
-      "Basic256Sha256_SignAndEncrypt"
+  &quot;opcua_server&quot;: {
+    &quot;enable&quot;: false,
+    &quot;security_policies&quot;:[
+      &quot;NoSecurity&quot;,
+      &quot;Basic256Sha256_Sign&quot;,
+      &quot;Basic256Sha256_SignAndEncrypt&quot;
     ],
-    "certificates": {
-      "enable": false,
-      // "path": "public",
-      // "certificate_file": "cert.pem",
-      // "private_key_file": "key.pem",
+    &quot;certificates&quot;: {
+      &quot;enable&quot;: false,
+      // &quot;path&quot;: &quot;public&quot;,
+      // &quot;certificate_file&quot;: &quot;cert.pem&quot;,
+      // &quot;private_key_file&quot;: &quot;key.pem&quot;,
     }
   },
 
@@ -293,31 +293,31 @@ different key shows a <cite>site_key does not match Lente</cite> notice.</p></li
   // Below are only used by Lente and can be removed for Prism stations
 
   // Lente/Lente internal connection password
-  "lente_lente_pw": "mysecret3",
+  &quot;lente_lente_pw&quot;: &quot;mysecret3&quot;,
 
-  // Enter IP Address:port, example "http://35.123.432.190:6595"
+  // Enter IP Address:port, example &quot;http://35.123.432.190:6595&quot;
   // Use null to disable upstream sending.
-  "result_server_url": null,
+  &quot;result_server_url&quot;: null,
 
   // This Lente computer is pyramid root and creates manifest
-  "root_authority": true,
+  &quot;root_authority&quot;: true,
 
   // automatically sync Prism clients scripts
-  "auto_sync_scripts": true,
+  &quot;auto_sync_scripts&quot;: true,
 
   // maximum size (MB, uncompressed) of the scripts package sent to stations,
   // see public/prism/scripts_zip.exclude to exclude files
-  //"scripts_zip_max_mb": 100,
+  //&quot;scripts_zip_max_mb&quot;: 100,
 
-  "postgres": {
+  &quot;postgres&quot;: {
     // resultbasekeysv1 is the name of the dB and cannot be changed
-    "resultbasekeysv1": {
-      // !! Change "pw" to a real password for a real deployment,
+    &quot;resultbasekeysv1&quot;: {
+      // !! Change &quot;pw&quot; to a real password for a real deployment,
       // !! This user/pw must match your postgres deployment too,
-      "user": "postgres",
-      "pw": "qwerty",
+      &quot;user&quot;: &quot;postgres&quot;,
+      &quot;pw&quot;: &quot;qwerty&quot;,
       // ip address of the postgres database, use `127.0.0.1` if locahost
-      "ip": "127.0.0.1"
+      &quot;ip&quot;: &quot;127.0.0.1&quot;
     }
   }
 }
@@ -337,18 +337,18 @@ the file smaller and easier to manage.</p>
 <p>These optional settings are not in the example file, the defaults are shown.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">seconds</span> <span class="n">without</span> <span class="n">activity</span> <span class="n">before</span> <span class="n">a</span> <span class="n">logged</span> <span class="ow">in</span> <span class="n">user</span> <span class="ow">is</span> <span class="n">no</span> <span class="n">longer</span> <span class="n">reported</span> <span class="k">as</span> <span class="n">active</span><span class="p">,</span>
 <span class="o">//</span> <span class="n">an</span> <span class="n">active</span> <span class="n">user</span> <span class="n">blocks</span> <span class="n">Sync</span> <span class="n">Users</span> <span class="ow">and</span> <span class="n">Sync</span> <span class="n">Script</span> <span class="n">to</span> <span class="n">that</span> <span class="n">station</span> <span class="p">(</span><span class="n">Prism</span> <span class="ow">and</span> <span class="n">Lente</span><span class="p">)</span>
-<span class="s2">"session_inactive_timeout_s"</span><span class="p">:</span> <span class="mi">600</span><span class="p">,</span>
+<span class="s2">&quot;session_inactive_timeout_s&quot;</span><span class="p">:</span> <span class="mi">600</span><span class="p">,</span>
 
 <span class="o">//</span> <span class="n">hours</span> <span class="n">before</span> <span class="n">a</span> <span class="n">browser</span> <span class="n">login</span> <span class="n">expires</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">user</span> <span class="n">must</span> <span class="n">log</span> <span class="ow">in</span> <span class="n">again</span> <span class="p">(</span><span class="n">Prism</span> <span class="ow">and</span> <span class="n">Lente</span><span class="p">)</span>
-<span class="s2">"browser_credentials_timeout_h"</span><span class="p">:</span> <span class="mi">168</span><span class="p">,</span>
+<span class="s2">&quot;browser_credentials_timeout_h&quot;</span><span class="p">:</span> <span class="mi">168</span><span class="p">,</span>
 
 <span class="o">//</span> <span class="n">Lente</span> <span class="n">only</span><span class="p">:</span> <span class="n">send</span> <span class="n">station</span> <span class="n">commands</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">reply</span> <span class="n">to</span> <span class="n">the</span> <span class="n">station</span> <span class="n">ping</span><span class="p">,</span> <span class="n">instead</span> <span class="n">of</span>
 <span class="o">//</span> <span class="n">connecting</span> <span class="n">to</span> <span class="n">the</span> <span class="n">station</span><span class="p">,</span> <span class="n">useful</span> <span class="n">when</span> <span class="n">stations</span> <span class="n">are</span> <span class="n">behind</span> <span class="n">a</span> <span class="n">firewall</span> <span class="ow">or</span> <span class="n">NAT</span>
-<span class="s2">"use_rpc_over_status_updates"</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+<span class="s2">&quot;use_rpc_over_status_updates&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
 
 <span class="o">//</span> <span class="n">Prism</span> <span class="n">only</span><span class="p">:</span> <span class="n">Test</span> <span class="n">Portal</span> <span class="n">throughput</span> <span class="n">chart</span><span class="p">,</span> <span class="n">seconds</span> <span class="n">per</span> <span class="n">bar</span> <span class="ow">and</span> <span class="n">number</span> <span class="n">of</span> <span class="n">bars</span>
-<span class="s2">"result_stats_time_bucket"</span><span class="p">:</span> <span class="mi">600</span><span class="p">,</span>
-<span class="s2">"result_stats_max_buckets"</span><span class="p">:</span> <span class="mi">20</span>
+<span class="s2">&quot;result_stats_time_bucket&quot;</span><span class="p">:</span> <span class="mi">600</span><span class="p">,</span>
+<span class="s2">&quot;result_stats_max_buckets&quot;</span><span class="p">:</span> <span class="mi">20</span>
 </pre></div>
 </div>
 <p>As noted in the comments of the settings file, this file is NOT deployed as part of the
@@ -363,6 +363,24 @@ every time the computer boots up.</p>
 <p>The helper scripts to start Prism/Lente (see <a class="reference internal" href="_system.html#system-helper-docker"><span class="std std-ref">Helpers</span></a>),
 have a <cite>restart=always</cite> option that should be used.  Once that is done, Prism/Lente will forever
 startup.</p>
+<p>By default the helper scripts use the <cite>latest</cite> image from Docker Hub.  To hold a deployment at a
+version, pass the image with its tag using <cite>–image=</cite> (or <cite>-i</cite>), and use the same tag on every
+<cite>update</cite> and <cite>start</cite>.  Leaving it off any of these commands goes back to <cite>latest</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">lente</span><span class="o">.</span><span class="n">sh</span> <span class="o">--</span><span class="n">image</span><span class="o">=</span><span class="n">sistemicorp</span><span class="o">/</span><span class="n">lente</span><span class="p">:</span><span class="n">v0</span><span class="mf">.8.21</span> <span class="n">update</span>
+<span class="o">./</span><span class="n">lente</span><span class="o">.</span><span class="n">sh</span> <span class="o">--</span><span class="n">image</span><span class="o">=</span><span class="n">sistemicorp</span><span class="o">/</span><span class="n">lente</span><span class="p">:</span><span class="n">v0</span><span class="mf">.8.21</span> <span class="o">--</span><span class="n">restart</span><span class="o">=</span><span class="n">always</span> <span class="n">start</span>
+
+<span class="o">./</span><span class="n">prism</span><span class="o">.</span><span class="n">sh</span> <span class="o">--</span><span class="n">image</span><span class="o">=</span><span class="n">sistemicorp</span><span class="o">/</span><span class="n">prism</span><span class="p">:</span><span class="n">v0</span><span class="mf">.8.37</span> <span class="n">update</span>
+<span class="o">./</span><span class="n">prism</span><span class="o">.</span><span class="n">sh</span> <span class="o">--</span><span class="n">image</span><span class="o">=</span><span class="n">sistemicorp</span><span class="o">/</span><span class="n">prism</span><span class="p">:</span><span class="n">v0</span><span class="mf">.8.37</span> <span class="o">--</span><span class="n">server</span><span class="o">=</span><span class="mf">192.168.0.10</span> <span class="o">--</span><span class="n">restart</span><span class="o">=</span><span class="n">always</span> <span class="n">start</span>
+</pre></div>
+</div>
+<p>The available tags are listed on Docker Hub.  Both helper scripts also take these flags:</p>
+<ul class="simple">
+<li><p><cite>-n &lt;number&gt;</cite>, instance number, appended to the container name and hostname, for example
+<cite>-n 2</cite> runs container <cite>lente2</cite>.  Use the same number for <cite>update</cite> and <cite>stop</cite>.</p></li>
+<li><p><cite>-b</cite>, use the Docker bridge network instead of the host network.</p></li>
+<li><p><cite>-v</cite>, Lente only, start Lente with verbose logging.</p></li>
+</ul>
+<p>Run <cite>./lente.sh –help</cite> or <cite>./prism.sh –help</cite> for the full list.</p>
 </section>
 <section id="health-checks">
 <span id="id1"></span><h2>Health Checks<a class="headerlink" href="#health-checks" title="Link to this heading">¶</a></h2>

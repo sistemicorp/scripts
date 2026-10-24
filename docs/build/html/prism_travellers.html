@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Travellers &#8212; Sistemi Lente/Prism Test System 0.9.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css?v=514cf933" />
     
     <script src="_static/documentation_options.js?v=39bb1c6d"></script>
@@ -76,14 +76,14 @@ Operator, however the pages themselves enforce the access restrictions.</p>
 <p>Adding a <cite>traveller</cite> section to the script you may add your own content.
 For example see <cite>public/prism/scripts/example/prod_v0/prod_0.scr</cite>,</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-  <span class="s2">"info"</span><span class="p">:</span> <span class="p">{</span> <span class="o">...</span> <span class="p">},</span>
-  <span class="s2">"config"</span><span class="p">:</span> <span class="p">{</span> <span class="o">...</span> <span class="p">},</span>
-  <span class="s2">"tests"</span><span class="p">:</span> <span class="p">[</span> <span class="o">...</span> <span class="p">],</span>
-  <span class="s2">"traveller"</span><span class="p">:</span> <span class="p">{</span>
+  <span class="s2">&quot;info&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="o">...</span> <span class="p">},</span>
+  <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="o">...</span> <span class="p">},</span>
+  <span class="s2">&quot;tests&quot;</span><span class="p">:</span> <span class="p">[</span> <span class="o">...</span> <span class="p">],</span>
+  <span class="s2">&quot;traveller&quot;</span><span class="p">:</span> <span class="p">{</span>
     <span class="o">//</span> <span class="n">text</span> <span class="n">to</span> <span class="n">appear</span> <span class="ow">in</span> <span class="n">a</span> <span class="n">cell</span> <span class="n">on</span> <span class="n">the</span> <span class="n">Traveller</span> <span class="n">PDF</span>
     <span class="o">//</span> <span class="n">must</span> <span class="n">be</span> <span class="n">one</span> <span class="n">line</span> <span class="p">(</span><span class="n">per</span> <span class="n">cell</span><span class="p">),</span> <span class="n">use</span> \<span class="n">n</span> <span class="k">for</span> <span class="n">newlines</span>
-    <span class="s2">"Instructions"</span><span class="p">:</span> <span class="s2">"1. On Your Mark.</span><span class="se">\n</span><span class="s2">2. Get Set.</span><span class="se">\n</span><span class="s2">3. Go!"</span><span class="p">,</span>
-    <span class="s2">"Inspections"</span><span class="p">:</span> <span class="s2">"QA: ______________          COUNT IN: ___________ PASS: ___________ FAIL: ____________</span><span class="se">\n</span><span class="s2">MFG:____________"</span>
+    <span class="s2">&quot;Instructions&quot;</span><span class="p">:</span> <span class="s2">&quot;1. On Your Mark.</span><span class="se">\n</span><span class="s2">2. Get Set.</span><span class="se">\n</span><span class="s2">3. Go!&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Inspections&quot;</span><span class="p">:</span> <span class="s2">&quot;QA: ______________          COUNT IN: ___________ PASS: ___________ FAIL: ____________</span><span class="se">\n</span><span class="s2">MFG:____________&quot;</span>
   <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -94,8 +94,8 @@ For example see <cite>public/prism/scripts/example/prod_v0/prod_0.scr</cite>,</p
 <p>The <a class="reference internal" href="_deployment.html#deploy-settings-file"><span class="std std-ref">settings.json</span></a> can specify a traveller that is automatically loaded when
 Prism boots up and the indicated user logs in.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">On</span> <span class="n">startup</span> <span class="n">optionally</span> <span class="n">specify</span> <span class="n">to</span> <span class="n">load</span> <span class="n">a</span> <span class="n">traveller</span>
-<span class="o">//</span><span class="s2">"load_traveller"</span><span class="p">:</span> <span class="s2">"public/traveller/traveller_TZ6T.pdf"</span><span class="p">,</span>
-<span class="o">//</span><span class="s2">"load_user"</span><span class="p">:</span> <span class="s2">"operator@here.com"</span><span class="p">,</span>
+<span class="o">//</span><span class="s2">&quot;load_traveller&quot;</span><span class="p">:</span> <span class="s2">&quot;public/traveller/traveller_TZ6T.pdf&quot;</span><span class="p">,</span>
+<span class="o">//</span><span class="s2">&quot;load_user&quot;</span><span class="p">:</span> <span class="s2">&quot;operator@here.com&quot;</span><span class="p">,</span>
 </pre></div>
 </div>
 <p>This feature can be used to create a User account that runs a Traveller.</p>

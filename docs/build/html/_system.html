@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>System &#8212; Sistemi Lente/Prism Test System 0.9.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css?v=514cf933" />
     
     <script src="_static/documentation_options.js?v=39bb1c6d"></script>
@@ -189,7 +189,7 @@ commands that you should know for the purposes of troubleshooting.</p>
 <p>To determine what docker images are running,</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ docker ps
 CONTAINER ID   IMAGE               COMMAND                CREATED      STATUS      PORTS                                       NAMES
-c206788fcc35   sistemicorp/prism   "python ./prism.pyc"   5 days ago   Up 5 days   0.0.0.0:6590-&gt;6590/tcp, :::6590-&gt;6590/tcp   prism
+c206788fcc35   sistemicorp/prism   &quot;python ./prism.pyc&quot;   5 days ago   Up 5 days   0.0.0.0:6590-&gt;6590/tcp, :::6590-&gt;6590/tcp   prism
 </pre></div>
 </div>
 <ul class="simple">
@@ -223,12 +223,12 @@ Usage: prism.sh [flags] &lt;command&gt;
 command:
   start                     Start Prism
 
-    flags, --server=, -s    (REQUIRED) Lente IP address. Use 'none' if no Lente.
+    flags, --server=, -s    (REQUIRED) Lente IP address. Use &#39;none&#39; if no Lente.
            --hostname=, -h  Specify an alternative hostname for this computer (default martin-staric2)
-           --restart=, -r   &lt;always|no&gt; (default no) 'always' will start Lente EVERY time the
+           --restart=, -r   &lt;always|no&gt; (default no) &#39;always&#39; will start Lente EVERY time the
                             computer is booted, which is typically used on a node that
                             is in actual deployment.
-                            To disable restart, use 'docker update --restart=no prism'
+                            To disable restart, use &#39;docker update --restart=no prism&#39;
                             and then reboot the node.
 
   update                    Update the docker image, requires internet connection.
