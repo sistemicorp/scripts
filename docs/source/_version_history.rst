@@ -50,6 +50,8 @@ screenshots.
   `use_rpc_over_status_updates` is removed from `settings.json`.
 * Test programs can use `self.sleep()` and `self.check_abort()` so an item stops on timeout or abort,
   see :ref:`Timeouts and Aborts <prism_programs:Timeouts and Aborts>`
+* A test item still running after its timeout is forced to stop, and Prism shows a notice
+  if it does not respond.  Prism no longer hangs on restart or exit while an item is stuck.
 
 Bug fixes,
 
