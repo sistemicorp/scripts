@@ -56,6 +56,8 @@ Bug fixes,
 * [BUGFIX] With `use_https`, script sync from Lente failed
 * [BUGFIX] Script and user syncs could interrupt a station's test runner once the operator
   logged out.  Syncs now wait until the Script Runner is exited.
+* [BUGFIX] Auto script sync could restart a station a user had just logged in to, logging them
+  out.  Prism now refuses a script sync while a user is logged in.
 
 
 Migration Guide
