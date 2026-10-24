@@ -86,6 +86,7 @@ Depending on your directory structure, this example command may work,
     cp hooks/pre-commit .git/hooks/
 
 This githook will update `public/VERSION` file that Prism uses to display the version of the scripts.
+A change to `public/VERSION` is also what makes Lente rebuild the scripts package for stations.
 By using this githook, or some other mechanism, the script version is tracked by Prism.  The version
 number is derived from a tag.
 
@@ -114,7 +115,8 @@ Example commands to create (and push) a tag,
         git tag 1.0
         git push origin --tags
 
-The version uses the most recent tag (`git describe --tags`).  `scripts` already has tags (for example
+The version uses the most recent tag (`git describe --tags`).  For example, version `0.9.12` is
+the 12th commit after tag `0.9`.  `scripts` already has tags (for example
 `0.8`), you can remove them from your fork,
 
 ::

@@ -1,11 +1,18 @@
 #!/usr/bin/env bash
+#
+# Writes public/VERSION for the commit being made.  Copy this file to ../.git/hooks
+# - needs a tag on your release branch, format 'V.v', e.g. 0.9
+# - git describe runs before the new commit exists, so the count is HEAD's
+#   count + 1, and the new commit's hash can't be known (prev_commit is HEAD)
 set -e
 
-commit=$(git log -1 --pretty="%H%n%ci") # hash \n date
-commit_hash=$(echo "$commit" | head -1)
-commit_date=$(echo "$commit" | head -2 | tail -1) # 2010-12-28 05:16:23 +0300
-commit_version=$(git describe --tags)
-commit_branch=$(git rev-parse --abbrev-ref HEAD)
+VERSION_FILE=public/VERSION
 
-echo -e "prev_commit=$commit_hash\ndate=$commit_date\nbranch=$commit_branch\nversion=$commit_version" > public/VERSION
-git add public/VERSION
+branch=$(git rev-parse --abbrev-ref HEAD)
+tag=$(git describe --tags --abbrev=0)
+count=$(git rev-list --count "$tag"..HEAD)
+prev_commit=$(git rev-parse HEAD)
+date=$(date "+%Y-%m-%d %H:%M:%S %z")
+
+echo -e "prev_commit=$prev_commit\ndate=$date\nbranch=$branch\nversion=$tag-$((count + 1))" > "$VERSION_FILE"
+git add "$VERSION_FILE"

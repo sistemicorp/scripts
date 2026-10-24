@@ -130,7 +130,8 @@ Clone Sistemi Scripts
 
 .. image:: static/Screenshot_prism_demo_4.png
 
-* Press the `START ALL` (1) button to begin the test.
+* Press the `START ALL` (1) button to begin the test.  To test just one channel, press its
+  number at the top left of the channel.
 * Logging from the test will be shown in each channel's log (2).
 * Historical stats of your testing will be shown in the throughput chart (3).
 * **Note:** Example tests have delays in them for demo effect.
