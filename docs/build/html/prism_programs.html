@@ -220,6 +220,47 @@ over the product life cycle, and its better to make those things editable by a n
 </ul>
 </section>
 </section>
+<section id="timeouts-and-aborts">
+<h2>Timeouts and Aborts<a class="headerlink" href="#timeouts-and-aborts" title="Link to this heading">¶</a></h2>
+<p>Every test item is guarded by a timeout (see <code class="docutils literal notranslate"><span class="pre">timeout</span></code> in <a class="reference internal" href="prism_scripts.html#tests"><span class="std std-ref">tests</span></a>).
+An item can also be aborted, for example when the Operator presses Abort All.
+When either happens, Prism records the result and moves on to the teardown item.</p>
+<p>Prism cannot interrupt your Python code.
+A <code class="docutils literal notranslate"><span class="pre">time.sleep()</span></code>, a long loop or a blocking driver call keeps running until it finishes,
+and the channel waits for it.
+Write your waits and loops so they stop early,</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">self.sleep(seconds)</span></code> - use instead of <code class="docutils literal notranslate"><span class="pre">time.sleep()</span></code>.  It returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if the full time
+elapsed, or <code class="docutils literal notranslate"><span class="pre">False</span></code> as soon as the item times out or is aborted.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">self.check_abort()</span></code> - call it in loops.  If the item timed out or was aborted, it ends the item
+right there, and Prism records <code class="docutils literal notranslate"><span class="pre">TIMEOUT</span></code> (or an error for an abort).  It raises an exception
+that <code class="docutils literal notranslate"><span class="pre">except</span> <span class="pre">Exception</span></code> does not catch, so release held resources with <code class="docutils literal notranslate"><span class="pre">with</span></code> or <code class="docutils literal notranslate"><span class="pre">try/finally</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">self.timeout</span></code> - <code class="docutils literal notranslate"><span class="pre">True</span></code> once the item has timed out.</p></li>
+</ul>
+<p>For example,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">TST009_LogPctProgress</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
+
+    <span class="n">percent</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">percent</span> <span class="o">&lt;=</span> <span class="mi">100</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_abort</span><span class="p">()</span>  <span class="c1"># ends the item here if it timed out or was aborted</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;Completed </span><span class="si">{:3d}</span><span class="s2">%&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">percent</span><span class="p">),</span> <span class="n">ovrwrite_last_line</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="n">percent</span> <span class="o">+=</span> <span class="mi">10</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span>  <span class="c1"># always last line of test</span>
+</pre></div>
+</div>
+<p>A shared resource lock is released even when the item is stopped,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_lock</span><span class="p">(</span><span class="s2">&quot;my_resource&quot;</span><span class="p">):</span>
+    <span class="k">while</span> <span class="n">hold_time</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span> <span class="k">break</span>  <span class="c1"># item timed out or was aborted</span>
+        <span class="n">hold_time</span> <span class="o">-=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>The result you pass to <code class="docutils literal notranslate"><span class="pre">self.item_end()</span></code> after a timeout is ignored; the item is recorded as <code class="docutils literal notranslate"><span class="pre">TIMEOUT</span></code>.
+For a long blocking driver call, give the driver its own timeout shorter than the item <code class="docutils literal notranslate"><span class="pre">timeout</span></code>.</p>
+</section>
 <section id="everything-example">
 <h2>Everything Example<a class="headerlink" href="#everything-example" title="Link to this heading">¶</a></h2>
 <p>Here is a fully documented program example that shows just about every feature of the Prism system.
@@ -234,7 +275,6 @@ It is the example distributed with the system, <cite>public/prism/scripts/exampl
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">core.test_item</span> <span class="kn">import</span> <span class="n">TestItem</span>
 <span class="kn">from</span> <span class="nn">public.prism.api</span> <span class="kn">import</span> <span class="n">ResultAPI</span>
-<span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">random</span>
 <span class="kn">import</span> <span class="nn">string</span>
 <span class="kn">import</span> <span class="nn">copy</span>
@@ -292,10 +332,16 @@ It is the example distributed with the system, <cite>public/prism/scripts/exampl
         <span class="c1">#</span>
         <span class="c1"># self.timeout</span>
         <span class="c1">#   - boolean indicating if a timeout has occurred</span>
-        <span class="c1">#   - use in while/for loops to check if a timeout has occurred</span>
-        <span class="c1">#     - all loops must check self.timeout and exit loop if asserted</span>
         <span class="c1">#   - use self.timeout_start() to restart the running timer</span>
         <span class="c1">#     - provide optional new value (float seconds)</span>
+        <span class="c1">#</span>
+        <span class="c1"># self.sleep(seconds)</span>
+        <span class="c1">#   - use instead of time.sleep(), ends early if the item times out or is aborted</span>
+        <span class="c1">#   - returns True if the full time elapsed, False if the item was stopped</span>
+        <span class="c1">#</span>
+        <span class="c1"># self.check_abort()</span>
+        <span class="c1">#   - call in while/for loops, ends the item if it timed out or was aborted</span>
+        <span class="c1">#   - release held resources with `with` or try/finally (see TST006_RsrcLock)</span>
         <span class="c1">#</span>
         <span class="c1"># self.item_end([result[s]]) # always last line of test</span>
         <span class="c1">#  - result is one of ResultAPI.RECORD_* constants</span>
@@ -309,7 +355,8 @@ It is the example distributed with the system, <cite>public/prism/scripts/exampl
         <span class="c1">#    - this value can be overridden by adding &#39;&quot;timeout&quot;: &lt;value&gt;&#39; to the test item in the script</span>
         <span class="c1">#    - if the timeout expires, it is considered a Fail, even if it is</span>
         <span class="c1">#      on a user input item.  The test script will fail.</span>
-        <span class="c1">#    - when using loops (while/for) for long running tasks, use self.timeout to check</span>
+        <span class="c1">#    - Prism cannot interrupt your code; loops (while/for) and waits for long running</span>
+        <span class="c1">#      tasks must use self.check_abort() and self.sleep() so the item stops on timeout</span>
         <span class="c1">#</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hw_fake</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -390,7 +437,7 @@ It is the example distributed with the system, <cite>public/prism/scripts/exampl
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>   <span class="c1"># always first line of test</span>
 
-        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_DELAY</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_RND_ENABLE</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_DELAY</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_RND_ENABLE</span><span class="p">)</span>
 
         <span class="n">FAIL_APPLE</span>   <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># indexes into the &quot;fail&quot; list, just for code readability</span>
         <span class="n">FAIL_BANANNA</span> <span class="o">=</span> <span class="mi">1</span>
@@ -448,7 +495,7 @@ It is the example distributed with the system, <cite>public/prism/scripts/exampl
 
         <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;Was I skipped?&quot;</span><span class="p">)</span>
 
-        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_DELAY</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_RND_ENABLE</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_DELAY</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_RND_ENABLE</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span>  <span class="c1"># always last line of test</span>
 
@@ -489,7 +536,7 @@ It is the example distributed with the system, <cite>public/prism/scripts/exampl
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>   <span class="c1"># always first line of test</span>
 
-        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_DELAY</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_RND_ENABLE</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_DELAY</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_RND_ENABLE</span><span class="p">)</span>
 
         <span class="n">value</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
         <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">add_key</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">slot</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -505,7 +552,7 @@ It is the example distributed with the system, <cite>public/prism/scripts/exampl
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
 
-        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_DELAY</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_RND_ENABLE</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_DELAY</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_RND_ENABLE</span><span class="p">)</span>
 
         <span class="n">keys</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">get_keys</span><span class="p">()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">keys</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;key0&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
@@ -529,12 +576,11 @@ It is the example distributed with the system, <cite>public/prism/scripts/exampl
         <span class="n">hold_time</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;holdTime&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>  <span class="c1"># a safe way to get parms, a default backup</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;waiting for my_resource...&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">shared_lock</span><span class="p">(</span><span class="s2">&quot;my_resource&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
-        <span class="k">while</span> <span class="n">hold_time</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;my_resource is locked for </span><span class="si">{}</span><span class="s2"> seconds&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">hold_time</span><span class="p">),</span> <span class="n">ovrwrite_last_line</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">hold_time</span> <span class="o">-=</span> <span class="mi">1</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">shared_lock</span><span class="p">(</span><span class="s2">&quot;my_resource&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_lock</span><span class="p">(</span><span class="s2">&quot;my_resource&quot;</span><span class="p">):</span>  <span class="c1"># released even if the item is stopped</span>
+            <span class="k">while</span> <span class="n">hold_time</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;my_resource is locked for </span><span class="si">{}</span><span class="s2"> seconds&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">hold_time</span><span class="p">),</span> <span class="n">ovrwrite_last_line</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span> <span class="k">break</span>  <span class="c1"># item timed out or was aborted</span>
+                <span class="n">hold_time</span> <span class="o">-=</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;my_resource is free&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span>  <span class="c1"># always last line of test</span>
@@ -551,7 +597,7 @@ It is the example distributed with the system, <cite>public/prism/scripts/exampl
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
 
-        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_DELAY</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_RND_ENABLE</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_DELAY</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_RND_ENABLE</span><span class="p">)</span>
 
         <span class="n">drivers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_get_drivers</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">driver</span> <span class="ow">in</span> <span class="n">drivers</span><span class="p">:</span>
@@ -598,10 +644,11 @@ It is the example distributed with the system, <cite>public/prism/scripts/exampl
 
         <span class="n">percent</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">while</span> <span class="n">percent</span> <span class="o">&lt;=</span> <span class="mi">100</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_abort</span><span class="p">()</span>  <span class="c1"># ends the item here if it timed out or was aborted</span>
             <span class="n">bar</span> <span class="o">=</span> <span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="mi">40</span> <span class="o">*</span> <span class="n">percent</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Completed </span><span class="si">{:3d}</span><span class="s2">% </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">percent</span><span class="p">,</span> <span class="n">bar</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">ovrwrite_last_line</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_DELAY</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_RND_ENABLE</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_DELAY</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_RND_ENABLE</span><span class="p">)</span>
             <span class="n">percent</span> <span class="o">+=</span> <span class="mi">10</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span>  <span class="c1"># always last line of test</span>
@@ -919,7 +966,7 @@ This is coded in the constants <code class="docutils literal notranslate"><span 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>   <span class="c1"># always first line of test</span>
 
-    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_DELAY</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_RND_ENABLE</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_DELAY</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_RND_ENABLE</span><span class="p">)</span>
 
     <span class="n">FAIL_APPLE</span>   <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># indexes into the &quot;fail&quot; list, just for code readability</span>
     <span class="n">FAIL_BANANNA</span> <span class="o">=</span> <span class="mi">1</span>
