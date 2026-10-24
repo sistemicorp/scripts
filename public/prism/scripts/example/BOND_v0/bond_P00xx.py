@@ -9,7 +9,6 @@ from core.test_item import TestItem
 from public.prism.api import ResultAPI
 import subprocess
 import os
-import time
 import pyudev
 
 from public.prism.drivers.common.list_serial import serial_ports
@@ -178,7 +177,7 @@ class bond_P00xx(TestItem):
         """
         ctx = self.item_start()  # always first line of test
         self.log_bullet(f"{ctx.item.delay}s wait for boot")
-        time.sleep(ctx.item.delay)
+        self.sleep(ctx.item.delay)
         self.log_bullet("done wait")
 
         port_candidates = serial_ports()
@@ -335,7 +334,7 @@ class bond_P00xx(TestItem):
                 break
 
             attempts -= 1
-            time.sleep(0.1)
+            self.sleep(0.1)
 
         if not success:
             self.log_bullet(f"teensy_loader_cli failed")
@@ -399,10 +398,10 @@ class bond_P00xx(TestItem):
         TIME_WAIT_FOR_BOOT_S = 0
         TIME_STEP_S = 4
         while TIME_WAIT_FOR_BOOT_S < ctx.item.delay:
-            time.sleep(TIME_STEP_S)
+            self.sleep(TIME_STEP_S)
             TIME_WAIT_FOR_BOOT_S += TIME_STEP_S
             self.log_bullet(f"{TIME_WAIT_FOR_BOOT_S}s waited")
-            if self.timeout:
+            if self.aborted.is_set():  # timed out or aborted
                 self.shared_lock(DRIVER_TYPE).release()
                 self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
                 return
@@ -629,7 +628,7 @@ class bond_P00xx(TestItem):
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
-        time.sleep(0.01)
+        self.sleep(0.01)
 
         response = self.teensy.vbat_read()
         if not response['success']:
@@ -721,7 +720,7 @@ class bond_P00xx(TestItem):
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
-        time.sleep(0.01)
+        self.sleep(0.01)
 
         response = self.teensy.vdut_read()
         if not response['success']:

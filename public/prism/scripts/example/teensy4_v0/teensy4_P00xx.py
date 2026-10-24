@@ -10,7 +10,6 @@ from core.test_item import TestItem
 from public.prism.api import ResultAPI
 import subprocess
 import os
-import time
 import glob
 import pyudev
 
@@ -164,7 +163,7 @@ class teensy4_P00xx(TestItem):
         """
         ctx = self.item_start()  # always first line of test
         self.log_bullet(f"{ctx.item.delay}s wait for boot")
-        time.sleep(ctx.item.delay)
+        self.sleep(ctx.item.delay)
         self.log_bullet("done wait")
 
         port_candidates = serial_ports()
@@ -324,7 +323,7 @@ class teensy4_P00xx(TestItem):
                 break
 
             attempts -= 1
-            time.sleep(0.1)
+            self.sleep(0.1)
 
         if not success:
             self.log_bullet(f"teensy_loader_cli failed")
@@ -383,7 +382,7 @@ class teensy4_P00xx(TestItem):
 
         # Teensy should be re-enumerating on USB, using a simple delay to let that happen
         self.log_bullet(f"{ctx.item.delay}s wait for boot")
-        time.sleep(ctx.item.delay)
+        self.sleep(ctx.item.delay)
         self.log_bullet("done wait")
 
         port = self._find_matching_ttyACM_from_usb_path(self._teensy_usb_path)
