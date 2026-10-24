@@ -46,6 +46,30 @@ the path names of the files to be excluded, for example,
     # comments are allowed, startswith #
     public/prism/scripts/example/prod_v0/prod_0.scr
 
+Files excluded from the Manifest are still sent to stations.  To keep files out of the scripts
+package entirely, see `Script Sync Exclusions`_.
+
+
+Script Sync Exclusions
+======================
+
+When Lente synchronizes scripts to stations, it packages everything under `./public/prism`.
+Python cache files (`*.pyc`, `__pycache__`) are never included.
+
+To keep other files or folders out of the package, create `./public/prism/scripts_zip.exclude` and
+list glob patterns, relative to `./public/prism`, one per line.  A pattern that names a folder
+excludes everything below it.  Excluded files are also left out of the Manifest.
+
+::
+
+    # comments are allowed, startswith #
+    drivers/stlinkv3mods/STM32CubeProgrammer
+    scripts/*/temp/*
+
+As a safeguard, Lente will not create a package larger than `scripts_zip_max_mb` (default 100 MB,
+uncompressed) set in `settings.json`.  If the limit is exceeded, the sync fails and the Lente log
+names the file that crossed the limit.
+
 
 
 Prism/Lente Files

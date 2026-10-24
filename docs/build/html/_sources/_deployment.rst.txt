@@ -205,6 +205,10 @@ Settings.JSON File
           // automatically sync Prism clients scripts
           "auto_sync_scripts": true,
 
+          // maximum size (MB, uncompressed) of the scripts package sent to stations,
+          // see public/prism/scripts_zip.exclude to exclude files
+          //"scripts_zip_max_mb": 100,
+
           "postgres": {
             // resultbasekeysv1 is the name of the dB and cannot be changed
             "resultbasekeysv1": {

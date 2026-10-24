@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Drivers &#8212; Sistemi Lente/Prism Test System 0.8.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css?v=514cf933" />
     
     <script src="_static/documentation_options.js?v=486e5634"></script>
@@ -47,13 +47,13 @@
 the device under test (DUT).  Examples of test equipment could be power supplies, oscilloscopes,
 JTAG programmers, etc..</p>
 <p><cite>Drivers</cite> required for a particular DUT are listed in the <cite>config</cite> section of scripts.  For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">"config"</span><span class="p">:</span> <span class="p">{</span>
   <span class="o">//</span> <span class="n">fail_fast</span><span class="p">:</span> <span class="k">if</span> <span class="n">true</span> <span class="p">(</span><span class="n">default</span><span class="p">),</span> <span class="n">testing</span> <span class="n">will</span> <span class="n">stop</span> <span class="n">on</span> <span class="n">first</span> <span class="n">failed</span> <span class="n">test</span>
-  <span class="s2">&quot;fail_fast&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+  <span class="s2">"fail_fast"</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
   <span class="o">//</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">driver</span> <span class="n">code</span> <span class="n">to</span> <span class="n">initialize</span> <span class="n">the</span> <span class="n">test</span> <span class="n">environment</span><span class="p">,</span> <span class="n">must</span> <span class="n">be</span> <span class="n">specified</span>
   <span class="o">//</span> <span class="n">Drivers</span> <span class="n">may</span> <span class="ow">or</span> <span class="n">may</span> <span class="ow">not</span> <span class="n">have</span> <span class="n">args</span>
-  <span class="s2">&quot;drivers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;public.prism.drivers.fake.hwdrv_fake&quot;</span><span class="p">,</span>
-              <span class="p">[</span><span class="s2">&quot;public.prism.drivers.fake.hwdrv_fakeArgs&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;k0&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;k1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}]</span> <span class="p">]</span>
+  <span class="s2">"drivers"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"public.prism.drivers.fake.hwdrv_fake"</span><span class="p">,</span>
+              <span class="p">[</span><span class="s2">"public.prism.drivers.fake.hwdrv_fakeArgs"</span><span class="p">,</span> <span class="p">{</span><span class="s2">"k0"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"k1"</span><span class="p">:</span> <span class="mi">1</span><span class="p">}]</span> <span class="p">]</span>
 <span class="p">},</span>
 </pre></div>
 </div>
@@ -75,27 +75,27 @@ of Teensy4s and Seggers must be in the same order.  In this example, both Segger
 connected via USB, and if a prescribed USB (cabling) setup is used (one hub per test jig) then the USB
 path can be used to synchronize the two lists.  This is done in the examples provided.</p>
 <p>Per the code documentation, <cite>discover_channels</cite> must return a dictionary with prescribed keys.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">discover_channels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; determine the number of channels, and popultae hw drivers into shared state</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">discover_channels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">""" determine the number of channels, and popultae hw drivers into shared state</span>
 
-<span class="sd">    [ {&quot;id&quot;: i,                    # ~slot number of the channel (see Note 1)</span>
-<span class="sd">       &quot;version&quot;: &lt;VERSION&gt;,       # version of the driver</span>
-<span class="sd">       &quot;hwdrv&quot;: &lt;object&gt;,          # instance of your hardware driver</span>
+<span class="sd">    [ {"id": i,                    # ~slot number of the channel (see Note 1)</span>
+<span class="sd">       "version": &lt;VERSION&gt;,       # version of the driver</span>
+<span class="sd">       "hwdrv": &lt;object&gt;,          # instance of your hardware driver</span>
 
 <span class="sd">       # optional</span>
-<span class="sd">       &quot;close&quot;: None,              # register a callback on closing the channel, or None</span>
-<span class="sd">       &quot;play&quot;: jig_closed_detect   # function for detecting jig closed</span>
-<span class="sd">       &quot;show_pass_fail&quot;: jig_led   # function for indicating pass/fail (like LED)</span>
-<span class="sd">       &quot;show_msg&quot;: jig_display     # function for indicating test status (like display)</span>
+<span class="sd">       "close": None,              # register a callback on closing the channel, or None</span>
+<span class="sd">       "play": jig_closed_detect   # function for detecting jig closed</span>
+<span class="sd">       "show_pass_fail": jig_led   # function for indicating pass/fail (like LED)</span>
+<span class="sd">       "show_msg": jig_display     # function for indicating test status (like display)</span>
 
 <span class="sd">       # not part of the required block</span>
-<span class="sd">       &quot;unique_id&quot;: &lt;unique_id&gt;,   # unique id of the hardware (for tracking purposes)</span>
+<span class="sd">       "unique_id": &lt;unique_id&gt;,   # unique id of the hardware (for tracking purposes)</span>
 <span class="sd">       ...</span>
 <span class="sd">      }, ...</span>
 <span class="sd">    ]</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">    1) The hw driver objects are expected to have an &#39;slot&#39; field, the lowest</span>
+<span class="sd">    1) The hw driver objects are expected to have an 'slot' field, the lowest</span>
 <span class="sd">       id is assigned to channel 0, the next highest to channel 1, etc</span>
 
 <span class="sd">    :return: &lt;#&gt;, &lt;driver_type&gt;, &lt;list&gt;</span>
@@ -105,7 +105,7 @@ path can be used to synchronize the two lists.  This is done in the examples pro
 <span class="sd">                    &lt;0 error</span>
 <span class="sd">            driver_type: String constant identifying Installed drivers type</span>
 <span class="sd">            list:   List of installed driver dicts</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 </pre></div>
 </div>
 </section>

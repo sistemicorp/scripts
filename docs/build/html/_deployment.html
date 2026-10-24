@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Deployment &#8212; Sistemi Lente/Prism Test System 0.8.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css?v=514cf933" />
     
     <script src="_static/documentation_options.js?v=486e5634"></script>
@@ -156,77 +156,77 @@ are added to the deployment.</p></li>
 {
   // turn on demo mode.  Creates test user accounts, ...
   // remove line, or set to false to disable demo mode
-  &quot;demo&quot;: true,
+  "demo": true,
 
   // On startup optionally specify to load a traveller
-  //&quot;load_traveller&quot;: &quot;public/traveller/traveller_TZ6T.pdf&quot;,
-  //&quot;load_user&quot;: &quot;operator@here.com&quot;,
+  //"load_traveller": "public/traveller/traveller_TZ6T.pdf",
+  //"load_user": "operator@here.com",
 
   // Result JSON file encryption
   // - a valid license file is required to encrypt results
   // - passwrd must be |&lt;-  16  long  -&gt;|
-  &quot;result_encrypt_pw&quot;: &quot;mysecretkey01234&quot;,
-  &quot;result_encrypt&quot;: false,
+  "result_encrypt_pw": "mysecretkey01234",
+  "result_encrypt": false,
 
   // By default results that are sent to Lente are backed up
   // locally, to disable this backup uncomment
-  //&quot;result_bkup_dir&quot;: null,
+  //"result_bkup_dir": null,
 
   // Result JSON files be backed up as encrypted, &lt;true|false&gt;,
-  // If the results were not encrypted by Prism, they won&#39;t be ecrypted by Lente
-  &quot;results_bkup_encrypted&quot;: false,
+  // If the results were not encrypted by Prism, they won't be ecrypted by Lente
+  "results_bkup_encrypted": false,
 
   // Use https secure transport, requires public/cert/key.pem files
   // For Lente &amp; Prism stations, all must be configured the same
-  &quot;use_https&quot;: false,
+  "use_https": false,
 
   // Prism/Lente internal connection password
-  &quot;prism_lente_pw&quot;: &quot;mysecret1&quot;,
+  "prism_lente_pw": "mysecret1",
 
   // Manifest (enable/disable) checking
-  // Validates &quot;public/prism&quot; contents (sent by Lente)
+  // Validates "public/prism" contents (sent by Lente)
   // create manifest.exclude to list file exclusions
-  &quot;manifest_check&quot;: false,
+  "manifest_check": false,
 
   // password for scripts package sent from Lente to Lente/Prism
-  &quot;manifest_pw&quot;: &quot;mysecret2&quot;,
+  "manifest_pw": "mysecret2",
 
   // network interface to use, used by VPNs
-  //&quot;net_iface&quot;: &quot;tun0&quot;,
+  //"net_iface": "tun0",
 
   // Send log files on startup for diagnostic purposes
-  &quot;send_logs_on_startup&quot;: false,
+  "send_logs_on_startup": false,
 
   // Health checks
   // Levels: Warn, Error, Critical (case insensitive)
-  // &quot;Warn&quot; and &quot;Error&quot; only appear in the notification log
-  // &quot;Critical&quot; additionally prevents new test sessions from starting
+  // "Warn" and "Error" only appear in the notification log
+  // "Critical" additionally prevents new test sessions from starting
   // First rule that matches for each health check is reported
-  &quot;health_checks&quot;: {
-    &quot;disk_space&quot;: {
-      &quot;enable&quot;: true,
-      &quot;rules&quot;: [
+  "health_checks": {
+    "disk_space": {
+      "enable": true,
+      "rules": [
         // free format: &lt;value&gt; [MB|GB|%]
-        {&quot;free&quot;: &quot;10%&quot;,    &quot;level&quot;: &quot;Critical&quot;},
-        {&quot;free&quot;: &quot;100 MB&quot;, &quot;level&quot;: &quot;Error&quot;},
-        {&quot;free&quot;: &quot;200 MB&quot;, &quot;level&quot;: &quot;Warn&quot;}
+        {"free": "10%",    "level": "Critical"},
+        {"free": "100 MB", "level": "Error"},
+        {"free": "200 MB", "level": "Warn"}
       ]
     }
   },
 
   // OPCUA Configuration
-  &quot;opcua_server&quot;: {
-    &quot;enable&quot;: false,
-    &quot;security_policies&quot;:[
-      &quot;NoSecurity&quot;,
-      &quot;Basic256Sha256_Sign&quot;,
-      &quot;Basic256Sha256_SignAndEncrypt&quot;
+  "opcua_server": {
+    "enable": false,
+    "security_policies":[
+      "NoSecurity",
+      "Basic256Sha256_Sign",
+      "Basic256Sha256_SignAndEncrypt"
     ],
-    &quot;certificates&quot;: {
-      &quot;enable&quot;: false,
-      // &quot;path&quot;: &quot;public&quot;,
-      // &quot;certificate_file&quot;: &quot;cert.pem&quot;,
-      // &quot;private_key_file&quot;: &quot;key.pem&quot;,
+    "certificates": {
+      "enable": false,
+      // "path": "public",
+      // "certificate_file": "cert.pem",
+      // "private_key_file": "key.pem",
     }
   },
 
@@ -234,27 +234,31 @@ are added to the deployment.</p></li>
   // Below are only used by Lente and can be removed for Prism stations
 
   // Lente/Lente internal connection password
-  &quot;lente_lente_pw&quot;: &quot;mysecret3&quot;,
+  "lente_lente_pw": "mysecret3",
 
-  // Enter IP Address:port, example &quot;http://35.123.432.190:6595&quot;
+  // Enter IP Address:port, example "http://35.123.432.190:6595"
   // Use null to disable upstream sending.
-  &quot;result_server_url&quot;: null,
+  "result_server_url": null,
 
   // This Lente computer is pyramid root and creates manifest
-  &quot;root_authority&quot;: true,
+  "root_authority": true,
 
   // automatically sync Prism clients scripts
-  &quot;auto_sync_scripts&quot;: true,
+  "auto_sync_scripts": true,
 
-  &quot;postgres&quot;: {
+  // maximum size (MB, uncompressed) of the scripts package sent to stations,
+  // see public/prism/scripts_zip.exclude to exclude files
+  //"scripts_zip_max_mb": 100,
+
+  "postgres": {
     // resultbasekeysv1 is the name of the dB and cannot be changed
-    &quot;resultbasekeysv1&quot;: {
-      // !! Change &quot;pw&quot; to a real password for a real deployment,
+    "resultbasekeysv1": {
+      // !! Change "pw" to a real password for a real deployment,
       // !! This user/pw must match your postgres deployment too,
-      &quot;user&quot;: &quot;postgres&quot;,
-      &quot;pw&quot;: &quot;qwerty&quot;,
+      "user": "postgres",
+      "pw": "qwerty",
       // ip address of the postgres database, use `127.0.0.1` if locahost
-      &quot;ip&quot;: &quot;127.0.0.1&quot;
+      "ip": "127.0.0.1"
     }
   }
 }

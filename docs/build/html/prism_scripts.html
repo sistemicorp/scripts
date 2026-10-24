@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Scripts &#8212; Sistemi Lente/Prism Test System 0.8.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css?v=514cf933" />
     
     <script src="_static/documentation_options.js?v=486e5634"></script>
@@ -57,13 +57,13 @@ the script to be documented</p></li>
 </ul>
 <p>The <code class="docutils literal notranslate"><span class="pre">script</span></code> has the following sections,</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-  <span class="s2">&quot;subs&quot;</span><span class="p">:</span> <span class="p">{</span>
+  <span class="s2">"subs"</span><span class="p">:</span> <span class="p">{</span>
   <span class="p">},</span>
-  <span class="s2">&quot;info&quot;</span><span class="p">:</span> <span class="p">{</span>
+  <span class="s2">"info"</span><span class="p">:</span> <span class="p">{</span>
   <span class="p">},</span>
-  <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span>
+  <span class="s2">"config"</span><span class="p">:</span> <span class="p">{</span>
   <span class="p">},</span>
-  <span class="s2">&quot;tests&quot;</span><span class="p">:</span> <span class="p">[</span>
+  <span class="s2">"tests"</span><span class="p">:</span> <span class="p">[</span>
   <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
@@ -79,49 +79,49 @@ to change some parameters might be useful.  This feature does not have to be use
 use the <cite>subs</cite> feature.  Otherwise <cite>subs</cite> are used to create a <cite>Traveller</cite>, which stores the <cite>subs</cite> used.</p>
 <p><cite>subs</cite> are useful for generating <a class="reference internal" href="prism_travellers.html#travellers"><span class="std std-ref">Travellers</span></a>.</p>
 <p>Here is a full example of what <cite>subs</cite> section could look like (taken from example <cite>prod_1.scr</cite>),</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;subs&quot;</span><span class="p">:</span> <span class="p">{</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">"subs"</span><span class="p">:</span> <span class="p">{</span>
   <span class="o">//</span> <span class="n">Each</span> <span class="n">item</span> <span class="n">here</span> <span class="ow">is</span> <span class="n">described</span> <span class="n">by</span><span class="p">,</span>
-  <span class="o">//</span> <span class="s2">&quot;&lt;subs_name&gt;&quot;</span><span class="p">:</span>
-  <span class="o">//</span>   <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;title&gt;&quot;</span><span class="p">,</span>
-  <span class="o">//</span>   <span class="s2">&quot;type&quot;</span> <span class="p">:</span> <span class="s2">&quot;&lt;str|num&gt;&quot;</span><span class="p">,</span>
-  <span class="o">//</span>   <span class="s2">&quot;widget&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;textinput|select&gt;&quot;</span><span class="p">,</span>
-  <span class="o">//</span>   <span class="s2">&quot;regex&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="s2">&quot;regex&quot;</span><span class="o">&gt;</span><span class="p">,</span>  <span class="o">//</span> <span class="n">only</span> <span class="k">for</span> <span class="n">widget</span> <span class="o">==</span> <span class="n">textinput</span><span class="p">,</span>
+  <span class="o">//</span> <span class="s2">"&lt;subs_name&gt;"</span><span class="p">:</span>
+  <span class="o">//</span>   <span class="s2">"title"</span><span class="p">:</span> <span class="s2">"&lt;title&gt;"</span><span class="p">,</span>
+  <span class="o">//</span>   <span class="s2">"type"</span> <span class="p">:</span> <span class="s2">"&lt;str|num&gt;"</span><span class="p">,</span>
+  <span class="o">//</span>   <span class="s2">"widget"</span><span class="p">:</span> <span class="s2">"&lt;textinput|select&gt;"</span><span class="p">,</span>
+  <span class="o">//</span>   <span class="s2">"regex"</span><span class="p">:</span> <span class="o">&lt;</span><span class="s2">"regex"</span><span class="o">&gt;</span><span class="p">,</span>  <span class="o">//</span> <span class="n">only</span> <span class="k">for</span> <span class="n">widget</span> <span class="o">==</span> <span class="n">textinput</span><span class="p">,</span>
   <span class="o">//</span>                           <span class="n">when</span> <span class="n">regex</span> <span class="ow">is</span> <span class="n">satisfied</span> <span class="n">widget</span> <span class="n">turns</span> <span class="n">green</span>
-  <span class="o">//</span>   <span class="s2">&quot;choices&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">choice1</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">choice2</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>  <span class="o">//</span> <span class="n">only</span> <span class="k">for</span> <span class="n">widget</span> <span class="o">==</span> <span class="n">select</span>
-  <span class="o">//</span>   <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">default</span><span class="o">&gt;</span><span class="p">,</span>
-  <span class="o">//</span>   <span class="s2">&quot;subs&quot;</span><span class="p">:</span> <span class="o">//</span> <span class="n">inner</span> <span class="n">dependant</span> <span class="n">subs</span>
-  <span class="o">//</span>           <span class="p">{</span> <span class="o">&lt;</span><span class="n">key1</span><span class="o">&gt;</span> <span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;subs_name1&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="o">&lt;&gt;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;str|num&gt;&quot;</span> <span class="p">},</span> <span class="o">...</span><span class="p">},</span>
-  <span class="o">//</span>             <span class="o">&lt;</span><span class="n">key2</span><span class="o">&gt;</span> <span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;subs_name1&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="o">&lt;&gt;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;str|num&gt;&quot;</span> <span class="p">},</span> <span class="o">...</span><span class="p">}</span>
+  <span class="o">//</span>   <span class="s2">"choices"</span><span class="p">:</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">choice1</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">choice2</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>  <span class="o">//</span> <span class="n">only</span> <span class="k">for</span> <span class="n">widget</span> <span class="o">==</span> <span class="n">select</span>
+  <span class="o">//</span>   <span class="s2">"default"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">default</span><span class="o">&gt;</span><span class="p">,</span>
+  <span class="o">//</span>   <span class="s2">"subs"</span><span class="p">:</span> <span class="o">//</span> <span class="n">inner</span> <span class="n">dependant</span> <span class="n">subs</span>
+  <span class="o">//</span>           <span class="p">{</span> <span class="o">&lt;</span><span class="n">key1</span><span class="o">&gt;</span> <span class="p">:</span> <span class="p">{</span> <span class="s2">"subs_name1"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"val"</span><span class="p">:</span> <span class="o">&lt;&gt;</span><span class="p">,</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"&lt;str|num&gt;"</span> <span class="p">},</span> <span class="o">...</span><span class="p">},</span>
+  <span class="o">//</span>             <span class="o">&lt;</span><span class="n">key2</span><span class="o">&gt;</span> <span class="p">:</span> <span class="p">{</span> <span class="s2">"subs_name1"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"val"</span><span class="p">:</span> <span class="o">&lt;&gt;</span><span class="p">,</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"&lt;str|num&gt;"</span> <span class="p">},</span> <span class="o">...</span><span class="p">}</span>
   <span class="o">//</span>           <span class="p">}</span>
   <span class="o">//</span> <span class="p">}</span>
   <span class="o">//</span>
   <span class="o">//</span> <span class="n">Rules</span><span class="p">:</span>
   <span class="o">//</span> <span class="mf">1.</span> <span class="n">key</span> <span class="n">must</span> <span class="ow">not</span> <span class="n">have</span> <span class="nb">any</span> <span class="n">spaces</span> <span class="ow">or</span> <span class="n">special</span> <span class="n">characters</span>
   <span class="o">//</span>
-  <span class="s2">&quot;Lot&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Lot (format #####)&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;type&quot;</span> <span class="p">:</span> <span class="s2">&quot;str&quot;</span><span class="p">,</span> <span class="s2">&quot;widget&quot;</span><span class="p">:</span> <span class="s2">&quot;textinput&quot;</span><span class="p">,</span> <span class="s2">&quot;regex&quot;</span><span class="p">:</span> <span class="s2">&quot;^</span><span class="se">\\</span><span class="s2">d</span><span class="si">{5}</span><span class="s2">$&quot;</span><span class="p">,</span> <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;95035&quot;</span>
+  <span class="s2">"Lot"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">"title"</span><span class="p">:</span> <span class="s2">"Lot (format #####)"</span><span class="p">,</span>
+    <span class="s2">"type"</span> <span class="p">:</span> <span class="s2">"str"</span><span class="p">,</span> <span class="s2">"widget"</span><span class="p">:</span> <span class="s2">"textinput"</span><span class="p">,</span> <span class="s2">"regex"</span><span class="p">:</span> <span class="s2">"^</span><span class="se">\\</span><span class="s2">d</span><span class="si">{5}</span><span class="s2">$"</span><span class="p">,</span> <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"95035"</span>
   <span class="p">},</span>
-  <span class="s2">&quot;Loc&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Location&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;type&quot;</span> <span class="p">:</span> <span class="s2">&quot;str&quot;</span><span class="p">,</span> <span class="s2">&quot;widget&quot;</span><span class="p">:</span> <span class="s2">&quot;select&quot;</span><span class="p">,</span> <span class="s2">&quot;choices&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;canada/ontario/milton&quot;</span><span class="p">,</span>
-                                                    <span class="s2">&quot;us/newyork/buffalo&quot;</span><span class="p">],</span>
+  <span class="s2">"Loc"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">"title"</span><span class="p">:</span> <span class="s2">"Location"</span><span class="p">,</span>
+    <span class="s2">"type"</span> <span class="p">:</span> <span class="s2">"str"</span><span class="p">,</span> <span class="s2">"widget"</span><span class="p">:</span> <span class="s2">"select"</span><span class="p">,</span> <span class="s2">"choices"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"canada/ontario/milton"</span><span class="p">,</span>
+                                                    <span class="s2">"us/newyork/buffalo"</span><span class="p">],</span>
     <span class="o">//</span> <span class="n">inner</span> <span class="n">dependant</span> <span class="n">substitutions</span> <span class="n">based</span> <span class="n">on</span> <span class="n">user</span> <span class="nb">input</span>
-    <span class="s2">&quot;subs&quot;</span> <span class="p">:</span> <span class="p">{</span><span class="s2">&quot;canada/ontario/milton&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;TST000Min&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;num&quot;</span> <span class="p">}},</span>
-              <span class="s2">&quot;us/newyork/buffalo&quot;</span><span class="p">:</span>    <span class="p">{</span> <span class="s2">&quot;TST000Min&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;num&quot;</span> <span class="p">}}</span>
+    <span class="s2">"subs"</span> <span class="p">:</span> <span class="p">{</span><span class="s2">"canada/ontario/milton"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"TST000Min"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"val"</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"num"</span> <span class="p">}},</span>
+              <span class="s2">"us/newyork/buffalo"</span><span class="p">:</span>    <span class="p">{</span> <span class="s2">"TST000Min"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"val"</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"num"</span> <span class="p">}}</span>
     <span class="p">}</span>
   <span class="p">},</span>
-  <span class="s2">&quot;TST000Max&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;TST000 Max Attenuation (db)&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;type&quot;</span> <span class="p">:</span> <span class="s2">&quot;num&quot;</span><span class="p">,</span> <span class="s2">&quot;widget&quot;</span><span class="p">:</span> <span class="s2">&quot;select&quot;</span><span class="p">,</span> <span class="s2">&quot;choices&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">9.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">11.0</span><span class="p">]</span>
+  <span class="s2">"TST000Max"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">"title"</span><span class="p">:</span> <span class="s2">"TST000 Max Attenuation (db)"</span><span class="p">,</span>
+    <span class="s2">"type"</span> <span class="p">:</span> <span class="s2">"num"</span><span class="p">,</span> <span class="s2">"widget"</span><span class="p">:</span> <span class="s2">"select"</span><span class="p">,</span> <span class="s2">"choices"</span><span class="p">:</span> <span class="p">[</span><span class="mf">9.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">11.0</span><span class="p">]</span>
   <span class="p">},</span>
-  <span class="s2">&quot;TST000Enable&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;TST000_Meas Enable&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;type&quot;</span> <span class="p">:</span> <span class="s2">&quot;str&quot;</span><span class="p">,</span> <span class="s2">&quot;widget&quot;</span><span class="p">:</span> <span class="s2">&quot;select&quot;</span><span class="p">,</span> <span class="s2">&quot;choices&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">]</span>
+  <span class="s2">"TST000Enable"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">"title"</span><span class="p">:</span> <span class="s2">"TST000_Meas Enable"</span><span class="p">,</span>
+    <span class="s2">"type"</span> <span class="p">:</span> <span class="s2">"str"</span><span class="p">,</span> <span class="s2">"widget"</span><span class="p">:</span> <span class="s2">"select"</span><span class="p">,</span> <span class="s2">"choices"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"true"</span><span class="p">,</span> <span class="s2">"false"</span><span class="p">]</span>
   <span class="p">}</span>
 
 <span class="o">//</span> <span class="ow">and</span> <span class="n">how</span> <span class="n">it</span> <span class="n">looks</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">test</span> <span class="n">item</span><span class="p">,</span>
-<span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST000_Meas&quot;</span><span class="p">,</span>     <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%%</span><span class="s2">TST000Enable&quot;</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%%</span><span class="s2">TST000Min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%%</span><span class="s2">TST000Max&quot;</span><span class="p">}},</span>
+<span class="p">{</span><span class="s2">"id"</span><span class="p">:</span> <span class="s2">"TST000_Meas"</span><span class="p">,</span>     <span class="s2">"enable"</span><span class="p">:</span> <span class="s2">"</span><span class="si">%%</span><span class="s2">TST000Enable"</span><span class="p">,</span> <span class="s2">"args"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"min"</span><span class="p">:</span> <span class="s2">"</span><span class="si">%%</span><span class="s2">TST000Min"</span><span class="p">,</span> <span class="s2">"max"</span><span class="p">:</span> <span class="s2">"</span><span class="si">%%</span><span class="s2">TST000Max"</span><span class="p">}},</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">key</span></code></p>
@@ -178,13 +178,13 @@ result record is check to have these fields.  New fields can be added, but that 
 the backend database.  See TBD.</p>
 <p>Note that the example here, two fields are using the <cite>subs</cite> section to get their values from the Operator
 in the Test Config view.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;info&quot;</span><span class="p">:</span> <span class="p">{</span>
-  <span class="s2">&quot;product&quot;</span><span class="p">:</span> <span class="s2">&quot;widget_1&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;bom&quot;</span><span class="p">:</span> <span class="s2">&quot;B00012-001&quot;</span><span class="p">,</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">"info"</span><span class="p">:</span> <span class="p">{</span>
+  <span class="s2">"product"</span><span class="p">:</span> <span class="s2">"widget_1"</span><span class="p">,</span>
+  <span class="s2">"bom"</span><span class="p">:</span> <span class="s2">"B00012-001"</span><span class="p">,</span>
   <span class="o">//</span> <span class="nb">list</span> <span class="n">fields</span> <span class="n">present</span> <span class="n">user</span> <span class="n">choice</span> <span class="ow">or</span> <span class="n">fill</span> <span class="ow">in</span>
-  <span class="s2">&quot;lot&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%%</span><span class="s2">Lot&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%%</span><span class="s2">Loc&quot;</span><span class="p">,</span>
-  <span class="o">//</span> <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="s2">&quot;optional&quot;</span>
+  <span class="s2">"lot"</span><span class="p">:</span> <span class="s2">"</span><span class="si">%%</span><span class="s2">Lot"</span><span class="p">,</span>
+  <span class="s2">"location"</span><span class="p">:</span> <span class="s2">"</span><span class="si">%%</span><span class="s2">Loc"</span><span class="p">,</span>
+  <span class="o">//</span> <span class="s2">"config"</span><span class="p">:</span> <span class="s2">"optional"</span>
 <span class="p">},</span>
 </pre></div>
 </div>
@@ -199,9 +199,9 @@ for specific sets of results.  This is important.</p>
 <section id="config">
 <h2>config<a class="headerlink" href="#config" title="Link to this heading">¶</a></h2>
 <p>This section sets required variables that Prism uses to drive the test script.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span>
-  <span class="s2">&quot;fail_fast&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
-  <span class="s2">&quot;drivers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;public.prism.drivers.fake.fake&quot;</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">"config"</span><span class="p">:</span> <span class="p">{</span>
+  <span class="s2">"fail_fast"</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+  <span class="s2">"drivers"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"public.prism.drivers.fake.fake"</span><span class="p">]</span>
 <span class="p">},</span>
 </pre></div>
 </div>
@@ -237,20 +237,20 @@ for example, in development of code</p></li>
 <p>Consider the following <code class="docutils literal notranslate"><span class="pre">test</span></code> section, which only has ONE test definition in the JSON list.  An example of more than
 one test definition will be shown later.</p>
 <p>See <code class="docutils literal notranslate"><span class="pre">public/prism/scripts/example/prod_v0/tst00xx.py</span></code> for usage.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;tests&quot;</span><span class="p">:</span> <span class="p">[</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">"tests"</span><span class="p">:</span> <span class="p">[</span>
   <span class="p">{</span>
-    <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;public.prism.scripts.prod_v0.tst00xx&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;options&quot;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="s2">&quot;fail_fast&quot;</span><span class="p">:</span> <span class="n">false</span>
+    <span class="s2">"module"</span><span class="p">:</span> <span class="s2">"public.prism.scripts.prod_v0.tst00xx"</span><span class="p">,</span>
+    <span class="s2">"options"</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">"fail_fast"</span><span class="p">:</span> <span class="n">false</span>
       <span class="o">//</span> <span class="n">add</span> <span class="n">more</span> <span class="n">key</span><span class="o">/</span><span class="n">value</span> <span class="k">as</span> <span class="n">required</span>
     <span class="p">},</span>
-    <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">[</span>
-      <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST0xxSETUP&quot;</span><span class="p">,</span>           <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span> <span class="p">},</span>
-      <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST000_Meas&quot;</span><span class="p">,</span>           <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%%</span><span class="s2">TST000Max&quot;</span><span class="p">},</span>
-                                      <span class="s2">&quot;fail&quot;</span><span class="p">:</span> <span class="p">[</span> <span class="p">{</span><span class="s2">&quot;fid&quot;</span><span class="p">:</span> <span class="s2">&quot;TST000-0&quot;</span><span class="p">,</span> <span class="s2">&quot;msg&quot;</span><span class="p">:</span> <span class="s2">&quot;Component apple R1&quot;</span><span class="p">},</span>
-                                                <span class="p">{</span><span class="s2">&quot;fid&quot;</span><span class="p">:</span> <span class="s2">&quot;TST000-1&quot;</span><span class="p">,</span> <span class="s2">&quot;msg&quot;</span><span class="p">:</span> <span class="s2">&quot;Component banana R1&quot;</span><span class="p">}]</span> <span class="p">},</span>
-      <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST001_Skip&quot;</span><span class="p">,</span>           <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">false</span> <span class="p">},</span>
-      <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST0xxTRDN&quot;</span><span class="p">,</span>            <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span> <span class="p">}</span>
+    <span class="s2">"items"</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span><span class="s2">"id"</span><span class="p">:</span> <span class="s2">"TST0xxSETUP"</span><span class="p">,</span>           <span class="s2">"enable"</span><span class="p">:</span> <span class="n">true</span> <span class="p">},</span>
+      <span class="p">{</span><span class="s2">"id"</span><span class="p">:</span> <span class="s2">"TST000_Meas"</span><span class="p">,</span>           <span class="s2">"enable"</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">"args"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"min"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"max"</span><span class="p">:</span> <span class="s2">"</span><span class="si">%%</span><span class="s2">TST000Max"</span><span class="p">},</span>
+                                      <span class="s2">"fail"</span><span class="p">:</span> <span class="p">[</span> <span class="p">{</span><span class="s2">"fid"</span><span class="p">:</span> <span class="s2">"TST000-0"</span><span class="p">,</span> <span class="s2">"msg"</span><span class="p">:</span> <span class="s2">"Component apple R1"</span><span class="p">},</span>
+                                                <span class="p">{</span><span class="s2">"fid"</span><span class="p">:</span> <span class="s2">"TST000-1"</span><span class="p">,</span> <span class="s2">"msg"</span><span class="p">:</span> <span class="s2">"Component banana R1"</span><span class="p">}]</span> <span class="p">},</span>
+      <span class="p">{</span><span class="s2">"id"</span><span class="p">:</span> <span class="s2">"TST001_Skip"</span><span class="p">,</span>           <span class="s2">"enable"</span><span class="p">:</span> <span class="n">false</span> <span class="p">},</span>
+      <span class="p">{</span><span class="s2">"id"</span><span class="p">:</span> <span class="s2">"TST0xxTRDN"</span><span class="p">,</span>            <span class="s2">"enable"</span><span class="p">:</span> <span class="n">true</span> <span class="p">}</span>
     <span class="p">]</span>
   <span class="p">}</span>
 <span class="p">]</span>
