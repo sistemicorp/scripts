@@ -140,6 +140,38 @@ Inner subs allow one User sub to be able to set multiple other subs.  An example
 above.  In the above example, when `Location` is selected by the user, `TST000Min` is assigned a value
 depending on the `Location` selected.
 
+From the example,
+
+::
+
+    "Loc": {
+      "title": "Location",
+      "type" : "str", "widget": "select", "choices": ["canada/ontario/milton",
+                                                      "us/newyork/buffalo"],
+      "subs" : {"canada/ontario/milton": { "TST000Min": { "val": 0.1, "type": "num" }},
+                "us/newyork/buffalo":    { "TST000Min": { "val": 0.2, "type": "num" }}
+      }
+    },
+
+    // used in a test item
+    {"id": "TST000_Meas", "args": {"min": "%%TST000Min", "max": "%%TST000Max"}},
+
+* The keys of the inner ``subs`` (``canada/ontario/milton``, ``us/newyork/buffalo``) are the values
+  the Operator can pick, and must match the ``choices`` exactly.
+* Each value maps to one or more inner subs, given as ``"<key>": {"val": <value>, "type": "<str|num>"}``.
+
+  * ``<key>`` is used in the script as ``"%%<key>"``, the same as any other sub.
+  * ``type`` works as described for ``type`` above; for `num` the quotes around ``"%%<key>"`` are removed.
+
+* Inner subs are not shown on the Test Configuration page; the Operator only picks `Location`.
+  Here, picking ``us/newyork/buffalo`` makes the test item ``"args": {"min": 0.2, ...}``.
+* An inner sub key must not also be a key of the top level ``subs`` section.
+* Every choice should list every inner sub.  If the picked value has no entry, ``"%%TST000Min"`` is
+  left in the script and `Validate` fails with `ERROR: script subs problem`.
+* Only one level is supported, an inner sub cannot have its own ``subs``.
+* A :ref:`prism_travellers:Travellers` stores only the Operator's picks; the inner subs are applied
+  again when the Traveller is scanned.
+
 info
 ----
 

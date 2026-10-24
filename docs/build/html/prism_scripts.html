@@ -173,6 +173,38 @@ the <code class="docutils literal notranslate"><span class="pre">info</span></co
 <p>Inner subs allow one User sub to be able to set multiple other subs.  An example is shown in the <code class="docutils literal notranslate"><span class="pre">subs</span></code> section
 above.  In the above example, when <cite>Location</cite> is selected by the user, <cite>TST000Min</cite> is assigned a value
 depending on the <cite>Location</cite> selected.</p>
+<p>From the example,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;Loc&quot;</span><span class="p">:</span> <span class="p">{</span>
+  <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Location&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;type&quot;</span> <span class="p">:</span> <span class="s2">&quot;str&quot;</span><span class="p">,</span> <span class="s2">&quot;widget&quot;</span><span class="p">:</span> <span class="s2">&quot;select&quot;</span><span class="p">,</span> <span class="s2">&quot;choices&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;canada/ontario/milton&quot;</span><span class="p">,</span>
+                                                  <span class="s2">&quot;us/newyork/buffalo&quot;</span><span class="p">],</span>
+  <span class="s2">&quot;subs&quot;</span> <span class="p">:</span> <span class="p">{</span><span class="s2">&quot;canada/ontario/milton&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;TST000Min&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;num&quot;</span> <span class="p">}},</span>
+            <span class="s2">&quot;us/newyork/buffalo&quot;</span><span class="p">:</span>    <span class="p">{</span> <span class="s2">&quot;TST000Min&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;num&quot;</span> <span class="p">}}</span>
+  <span class="p">}</span>
+<span class="p">},</span>
+
+<span class="o">//</span> <span class="n">used</span> <span class="ow">in</span> <span class="n">a</span> <span class="n">test</span> <span class="n">item</span>
+<span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST000_Meas&quot;</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%%</span><span class="s2">TST000Min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%%</span><span class="s2">TST000Max&quot;</span><span class="p">}},</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>The keys of the inner <code class="docutils literal notranslate"><span class="pre">subs</span></code> (<code class="docutils literal notranslate"><span class="pre">canada/ontario/milton</span></code>, <code class="docutils literal notranslate"><span class="pre">us/newyork/buffalo</span></code>) are the values
+the Operator can pick, and must match the <code class="docutils literal notranslate"><span class="pre">choices</span></code> exactly.</p></li>
+<li><p>Each value maps to one or more inner subs, given as <code class="docutils literal notranslate"><span class="pre">&quot;&lt;key&gt;&quot;:</span> <span class="pre">{&quot;val&quot;:</span> <span class="pre">&lt;value&gt;,</span> <span class="pre">&quot;type&quot;:</span> <span class="pre">&quot;&lt;str|num&gt;&quot;}</span></code>.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;key&gt;</span></code> is used in the script as <code class="docutils literal notranslate"><span class="pre">&quot;%%&lt;key&gt;&quot;</span></code>, the same as any other sub.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> works as described for <code class="docutils literal notranslate"><span class="pre">type</span></code> above; for <cite>num</cite> the quotes around <code class="docutils literal notranslate"><span class="pre">&quot;%%&lt;key&gt;&quot;</span></code> are removed.</p></li>
+</ul>
+</li>
+<li><p>Inner subs are not shown on the Test Configuration page; the Operator only picks <cite>Location</cite>.
+Here, picking <code class="docutils literal notranslate"><span class="pre">us/newyork/buffalo</span></code> makes the test item <code class="docutils literal notranslate"><span class="pre">&quot;args&quot;:</span> <span class="pre">{&quot;min&quot;:</span> <span class="pre">0.2,</span> <span class="pre">...}</span></code>.</p></li>
+<li><p>An inner sub key must not also be a key of the top level <code class="docutils literal notranslate"><span class="pre">subs</span></code> section.</p></li>
+<li><p>Every choice should list every inner sub.  If the picked value has no entry, <code class="docutils literal notranslate"><span class="pre">&quot;%%TST000Min&quot;</span></code> is
+left in the script and <cite>Validate</cite> fails with <cite>ERROR: script subs problem</cite>.</p></li>
+<li><p>Only one level is supported, an inner sub cannot have its own <code class="docutils literal notranslate"><span class="pre">subs</span></code>.</p></li>
+<li><p>A <a class="reference internal" href="prism_travellers.html#travellers"><span class="std std-ref">Travellers</span></a> stores only the Operator’s picks; the inner subs are applied
+again when the Traveller is scanned.</p></li>
+</ul>
 </section>
 <section id="info">
 <h2>info<a class="headerlink" href="#info" title="Link to this heading">¶</a></h2>
