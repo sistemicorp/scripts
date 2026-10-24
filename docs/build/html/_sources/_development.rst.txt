@@ -83,7 +83,7 @@ Depending on your directory structure, this example command may work,
 ::
 
     cd ~/git/scripts
-    cp hooks/* ./git/hooks
+    cp hooks/pre-commit .git/hooks/
 
 This githook will update `public/VERSION` file that Prism uses to display the version of the scripts.
 By using this githook, or some other mechanism, the script version is tracked by Prism.  The version
@@ -114,13 +114,13 @@ Example commands to create (and push) a tag,
         git tag 1.0
         git push origin --tags
 
-**There should only be one tag in effect at a time, and `scripts` has a tag already, remove that tag,**
+The version uses the most recent tag (`git describe --tags`).  `scripts` already has tags (for example
+`0.8`), you can remove them from your fork,
 
 ::
 
-        git checkout master
         git tag --delete 0.8
-        git push origin --tags
+        git push origin --delete 0.8
 
 
 Change README.md
@@ -133,14 +133,17 @@ Installing Python
 =================
 
 Prism uses Python version 3.12 inside its Docker container, and therefore that specific version should
-be used for development.  Research how to install Python on Ubuntu alongside the main global Python.
+be used for development.  Ubuntu 24.04 includes Python 3.12.
 
-Install dependencies from `requirements.txt`
+Install dependencies from `requirements.txt` into a virtual environment,
 
 ::
 
-        sudo apt install python3.12-dev
-        python -m pip install -r requirements.txt
+        sudo apt install python3.12-dev python3.12-venv
+        cd ~/git/scripts
+        python3.12 -m venv .venv
+        source .venv/bin/activate
+        pip install -r requirements.txt
 
 
 Command Line Development

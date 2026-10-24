@@ -84,8 +84,8 @@ An example of an SQL Tool is,
 
 * `dBeaver <https://dbeaver.io/>`_
 
-Note that the Lente Details console page has an SQL window at the bottom which shows the SQL query that
-Lente is using, and may provide a starting point for your own queries.
+Note that the Lente `Result Search` and `Results Analytics` pages have a `Copy SQL Hint` button, which copies
+the SQL query that Lente is using, and may provide a starting point for your own queries.
 
 
 Stats For All Measurements
@@ -174,7 +174,7 @@ called when a new Result record is added to the dB.
             --    public.my_function(NEW);
             -- end if;
 
-            -- to view log, open terminal: $ tail -f /var/log/postgresql/postgresql-14-main.log
+            -- to view log, open terminal: $ docker logs -f lente_postgres
 
             RETURN 0;
         END;
@@ -276,7 +276,7 @@ The `lente_hook()` that calls the above function,
                rv := public.test_example(NEW);
             end if;
 
-            -- to view log, open terminal: $ tail -f /var/log/postgresql/postgresql-14-main.log
+            -- to view log, open terminal: $ docker logs -f lente_postgres
 
             RETURN 0;
         END;

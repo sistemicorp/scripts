@@ -40,10 +40,11 @@ Notes:
 
 * Lente
 
-  * there should only be ONE per LAN
+  * each Prism reports to one Lente, typically one Lente per production line or LAN
   * this computer should have a fixed IP address as every Prism is configured
     to look for Lente
   * Lente can be configured to send its results upstream to another Lente
+    (`result_server_url` and `lente_lente_pw` in :ref:`settings.json <deploy-settings-file>`)
   * Lente can be run in the cloud
 
     * Local Lente can be configured to send their results upstream to a cloud
@@ -109,7 +110,8 @@ What follows is a description of lables A-F...
 
 Notes:
 
-#. The Result JSON is backed up at each level.  These backups can be turned off if desired.
+#. The Result JSON is backed up at each level, in `public/result/.../bkup`.  These backups can be turned
+   off with `"result_bkup_dir": null` in :ref:`settings.json <deploy-settings-file>`.
 #. Any Lente dashboard can be accessed with web browser.  The results that can be seen
    will be that which is local to that Lente.
 
@@ -154,15 +156,15 @@ The scripts can be found here:
 
 ::
 
-    ~/git/scripts/public$ ll
-    total 36
-    drwxr-xr-x  4 martin martin 4096 Jun  7 17:21 ./
-    drwxrwxr-x 10 martin martin 4096 Jun  7 16:13 ../
-    -rwxr-xr-x  1 martin martin 2954 Apr 29 13:11 lente.sh*        <---- Lente helper
-    drwxr-xr-x  5 martin martin 4096 Jun  7 16:09 prism/
-    -rwxr-xr-x  1 martin martin 4409 Apr 29 13:11 prism.sh*        <---- Prism helper
-    -rw-r--r--  1 martin martin 1619 Jun  7 17:21 settings.json
-    -rw-r--r--  1 martin martin  121 Jun  7 16:56 VERSION
+    ~/git/scripts/public
+        git_pull_watcher.sh      <---- optional Lente host helper for the git pull button
+        lente.sh                 <---- Lente helper
+        openssl_req.cnf          <---- HTTPS certificate request template
+        prism/                   <---- drivers and scripts, synced by Lente
+        prism.sh                 <---- Prism helper
+        settings.json            <---- local settings, not synced
+        VERSION                  <---- scripts version
+        log/  result/  traveller/  users.sqlite  .env   <---- created by Prism/Lente when running
 
 
 Each script will display a help if run with no arguments,

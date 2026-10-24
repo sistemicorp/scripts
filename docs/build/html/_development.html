@@ -123,7 +123,7 @@ git<span class="w"> </span>clone<span class="w"> </span>https://github.com/yourn
 needs to be copied to <cite>./.git/hooks</cite> folder of your repository.</p>
 <p>Depending on your directory structure, this example command may work,</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">git</span><span class="o">/</span><span class="n">scripts</span>
-<span class="n">cp</span> <span class="n">hooks</span><span class="o">/*</span> <span class="o">./</span><span class="n">git</span><span class="o">/</span><span class="n">hooks</span>
+<span class="n">cp</span> <span class="n">hooks</span><span class="o">/</span><span class="n">pre</span><span class="o">-</span><span class="n">commit</span> <span class="o">.</span><span class="n">git</span><span class="o">/</span><span class="n">hooks</span><span class="o">/</span>
 </pre></div>
 </div>
 <p>This githook will update <cite>public/VERSION</cite> file that Prism uses to display the version of the scripts.
@@ -148,10 +148,10 @@ tag on that branch.  The tag <strong>MUST</strong> be of this format,</p>
 <span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="o">--</span><span class="n">tags</span>
 </pre></div>
 </div>
-<p><strong>There should only be one tag in effect at a time, and `scripts` has a tag already, remove that tag,</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="n">master</span>
-<span class="n">git</span> <span class="n">tag</span> <span class="o">--</span><span class="n">delete</span> <span class="mf">0.8</span>
-<span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="o">--</span><span class="n">tags</span>
+<p>The version uses the most recent tag (<cite>git describe –tags</cite>).  <cite>scripts</cite> already has tags (for example
+<cite>0.8</cite>), you can remove them from your fork,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">tag</span> <span class="o">--</span><span class="n">delete</span> <span class="mf">0.8</span>
+<span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="o">--</span><span class="n">delete</span> <span class="mf">0.8</span>
 </pre></div>
 </div>
 </section>
@@ -162,10 +162,13 @@ tag on that branch.  The tag <strong>MUST</strong> be of this format,</p>
 <section id="installing-python">
 <h3><a class="toc-backref" href="#id10" role="doc-backlink">Installing Python</a><a class="headerlink" href="#installing-python" title="Link to this heading">¶</a></h3>
 <p>Prism uses Python version 3.12 inside its Docker container, and therefore that specific version should
-be used for development.  Research how to install Python on Ubuntu alongside the main global Python.</p>
-<p>Install dependencies from <cite>requirements.txt</cite></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">python3</span><span class="mf">.12</span><span class="o">-</span><span class="n">dev</span>
-<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">requirements</span><span class="o">.</span><span class="n">txt</span>
+be used for development.  Ubuntu 24.04 includes Python 3.12.</p>
+<p>Install dependencies from <cite>requirements.txt</cite> into a virtual environment,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">python3</span><span class="mf">.12</span><span class="o">-</span><span class="n">dev</span> <span class="n">python3</span><span class="mf">.12</span><span class="o">-</span><span class="n">venv</span>
+<span class="n">cd</span> <span class="o">~/</span><span class="n">git</span><span class="o">/</span><span class="n">scripts</span>
+<span class="n">python3</span><span class="mf">.12</span> <span class="o">-</span><span class="n">m</span> <span class="n">venv</span> <span class="o">.</span><span class="n">venv</span>
+<span class="n">source</span> <span class="o">.</span><span class="n">venv</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">requirements</span><span class="o">.</span><span class="n">txt</span>
 </pre></div>
 </div>
 </section>

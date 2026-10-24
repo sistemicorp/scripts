@@ -53,8 +53,9 @@ package entirely, see `Script Sync Exclusions`_.
 Script Sync Exclusions
 ======================
 
-When Lente synchronizes scripts to stations, it packages everything under `./public/prism`.
-Python cache files (`*.pyc`, `__pycache__`) are never included.
+When Lente synchronizes scripts to stations, it packages everything under `./public/prism`, plus
+`public/VERSION`, `public/prism.sh`, `public/lente.sh` and the license file.  Each station replaces its
+whole `./public/prism` folder with the package.  Python cache files (`*.pyc`, `__pycache__`) are never included.
 
 To keep other files or folders out of the package, create `./public/prism/scripts_zip.exclude` and
 list glob patterns, relative to `./public/prism`, one per line.  A pattern that names a folder
@@ -63,7 +64,7 @@ excludes everything below it.  Excluded files are also left out of the Manifest.
 ::
 
     # comments are allowed, startswith #
-    drivers/stlinkv3mods/STM32CubeProgrammer
+    drivers/my_driver/vendor_tool
     scripts/*/temp/*
 
 As a safeguard, Lente will not create a package larger than `scripts_zip_max_mb` (default 100 MB,
@@ -98,7 +99,8 @@ The following are further suggestions to improve security,
 * encrypt the hard disk by the OS
 * strong admin password
 * use Account Roles for users
-* Prism/Lente use ports 6590 & 6595, so other ports can be blocked
+* Prism/Lente use ports 6590 & 6595, so other ports can be blocked.  If OPC UA is enabled it uses
+  4840 (Prism) and 4841 (Lente).  Postgres (5432) only needs to be reachable from the Lente computer.
 
 
 Prism
@@ -115,7 +117,8 @@ The following are further suggestions to improve security,
 * regularly purge the backups from the disk, (or disable backups, not recommended)
 * use Account Roles for users
 * A Ubuntu Operator account could launch Chrome in kiosk mode and launch the Prism URL
-* Prism/Lente use ports 6590 & 6595, so other ports can be blocked
+* Prism/Lente use ports 6590 & 6595, so other ports can be blocked.  If OPC UA is enabled it uses
+  4840 (Prism) and 4841 (Lente).
 
 
 Postgres DB
@@ -131,9 +134,7 @@ Postgres DB
 HTTPS and SSL Certificates
 ==========================
 
-Please read this article: https://blog.miguelgrinberg.com/post/running-your-flask-application-over-https
-
-The coles notes version is that Prism/Lente are not public domain servers and are considered private
+Prism/Lente are not public domain servers and are considered private
 internal servers.  Therefore we can avoid cost and complexity by using our own generated/signed keys.
 These keys will still be using the same TLS protocol over the connection and are therefore just as secure.
 
@@ -146,16 +147,16 @@ across all the Prism/Lente computers.  If it is not set, Prism/Lente refuse all 
 
 On deployed Prism/Lente computers the user account is presumed to be secure.  The Ubuntu filesystem should
 be encrypted, and the user account that hosts the files for Prism/Lente should be password protected.  Operator
-accounts do not need access to the Prism/Lente files. See `Ubuntu File System <_deployment-ubuntu-filesystem>`__
+accounts do not need access to the Prism/Lente files. See :ref:`Ubuntu File System <deployment-ubuntu-filesystem>`.
 
 The same certificate and key files can be used to secure the OPC-UA server.
 
-To generate the certificate and key, use the following commands.  Update openssl_req.ssl with
-organization information, if desired.
+To generate the certificate and key, use the following commands.  Update `public/openssl_req.cnf` with
+organization information, if desired.  Prism/Lente use `public/cert.pem` and `public/key.pem`.
 
 ::
 
-    ~/git/scripts/public$ openssl req -x509 -newkey rsa:4096 -nodes -out cert.pem -keyout key.pem -days 3650 -config ../openssl_gen.cnf
+    ~/git/scripts/public$ openssl req -x509 -newkey rsa:4096 -nodes -out cert.pem -keyout key.pem -days 3650 -config openssl_req.cnf
 
     ~/git/scripts/public$ ls -al
     total 84

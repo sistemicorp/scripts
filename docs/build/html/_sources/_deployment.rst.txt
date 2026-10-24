@@ -242,6 +242,31 @@ For Prism stations, a number of items can be removed per the comments, which wil
 the file smaller and easier to manage.
 
 * see :ref:`HTTPS <https>` for creating necessary files if using HTTPS feature
+* `health_checks` is used by Prism only, `results_bkup_encrypted` by Lente only
+* On Prism, `result_server_url` is always set from the `--server` flag of `prism.sh`
+
+
+Other Settings
+==============
+
+These optional settings are not in the example file, the defaults are shown.
+
+::
+
+    // seconds without activity before a logged in user is no longer reported as active,
+    // an active user blocks Sync Users and Sync Script to that station (Prism and Lente)
+    "session_inactive_timeout_s": 600,
+
+    // hours before a browser login expires and the user must log in again (Prism and Lente)
+    "browser_credentials_timeout_h": 168,
+
+    // Lente only: send station commands in the reply to the station ping, instead of
+    // connecting to the station, useful when stations are behind a firewall or NAT
+    "use_rpc_over_status_updates": false,
+
+    // Prism only: Test Portal throughput chart, seconds per bar and number of bars
+    "result_stats_time_bucket": 600,
+    "result_stats_max_buckets": 20
 
 
 As noted in the comments of the settings file, this file is NOT deployed as part of the

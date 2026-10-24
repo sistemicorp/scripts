@@ -57,7 +57,9 @@ JTAG programmers, etc..</p>
 <span class="p">},</span>
 </pre></div>
 </div>
-<p>Prism will load/init each <cite>driver</cite> that is listed.</p>
+<p>Prism will load/init each <cite>driver</cite> that is listed, when the script is validated.  A driver listed with
+arguments (a list of the driver path and a dict, like <cite>hwdrv_fakeArgs</cite> above) has the dict passed to
+<cite>discover_channels(args)</cite>.</p>
 <p>The python file specified <em>MUST</em> have a class called <cite>HWDriver</cite>.  See the <cite>fake</cite> example for
 implementation details and documentation.</p>
 <p>By convention, the driver filename has the prefix <cite>hwdrv_&lt;name&gt;.py</cite>.</p>
@@ -67,7 +69,8 @@ them.  <cite>Drivers</cite> are typically common to test multiple products.</p>
 <h2>Discover Channels<a class="headerlink" href="#discover-channels" title="Link to this heading">¶</a></h2>
 <p>The important method of the <cite>HWDriver</cite> class is <cite>discover_channels</cite>.</p>
 <p><cite>discover_channels</cite> method returns a list of dictionaries that represent the connected hardware used in
-the test system.  That list may contain one item that is shared among all the attached test jigs, or it
+the test system.  Every driver that reports a number of channels must report the same number, otherwise
+the script fails validation.  A driver that reports 0 channels is a shared resource for all channels.  That list may contain one item that is shared among all the attached test jigs, or it
 might be one item per test jig.</p>
 <p>If there are multiple hardware items, the list of those items must be in the same order across the
 different hardware types.  For example, if each test jig has a Teensy4 and a Segger programmer, the list
@@ -130,6 +133,29 @@ for more information.</p>
 <p>Error: Found a device whose serial number cannot be read</p>
 <p>This error can happen if your user account doesn’t have correct privileges.</p>
 <p>See: <a class="reference external" href="https://stackoverflow.com/questions/52256123/unable-to-get-full-visa-address-that-includes-the-serial-number">stackoverflow</a></p>
+</div>
+</section>
+<section id="included-drivers">
+<h2>Included Drivers<a class="headerlink" href="#included-drivers" title="Link to this heading">¶</a></h2>
+<p>These drivers are included in <cite>public/prism/drivers</cite>.  Several have a <cite>README.md</cite> with setup details.</p>
+<ul class="simple">
+<li><p><cite>fake</cite> - simulated hardware, used by the example scripts, see <cite>hwdrv_fake.py</cite> for the driver API</p></li>
+<li><p><cite>teensy4</cite> - Teensy 4 based jig controller</p></li>
+<li><p><cite>A4401_BOND</cite> - Sistemi BOND (Bed of Nails Design) tester</p></li>
+<li><p><cite>agilent_dso_usb_1</cite> - Agilent oscilloscope over USB (VISA)</p></li>
+<li><p><cite>brother_ql</cite> - Brother QL label printer</p></li>
+<li><p><cite>ble_listener</cite> - Bluetooth LE listener</p></li>
+<li><p><cite>prism_play</cite> - trigger the Prism <cite>play</cite> (start test) feature from the command line, for CI</p></li>
+<li><p><cite>nrfprog</cite> - Nordic nRF programmer (nrfjprog)</p></li>
+<li><p><cite>stlinkv3mods</cite> - ST-LINK/V3 programmer (STM32CubeProgrammer)</p></li>
+<li><p><cite>segger</cite> - placeholder, not complete</p></li>
+<li><p><cite>common</cite> - shared helpers</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The vendor programming tools used by <cite>nrfprog</cite> (Nordic nrfjprog) and <cite>stlinkv3mods</cite> (ST STM32CubeProgrammer)
+are not included.  They will be installed on the host computer, instructions to follow.
+Until then these two drivers will not find their tools.</p>
 </div>
 </section>
 </section>

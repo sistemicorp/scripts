@@ -46,16 +46,18 @@
 <p>Travellers are 2D bar codes printed on paper that can configure Prism
 to run a script with certain substitution parameters.  Travellers are used to simplify
 setting up and operating Prism by any User (operator).</p>
-<p>Travellers can only be created by users with the <a class="reference internal" href="prism_accounts.html#configman"><span class="std std-ref">ConfigMan</span></a> role.</p>
+<p>Travellers are created on the <cite>Test Configuration</cite> page, which users with the Admin, ConfigMan or
+Developer role can open.</p>
 <p>The image below shows the <cite>Test Configuration</cite> page, a script has been selected and
-the parameters selected, at this point the <cite>Create Traveller</cite> button becomes enabled
-indicating it can now be pressed.</p>
+the parameters selected.  When all the parameters are valid the <cite>Create Traveller</cite> button becomes
+enabled, <cite>Validate</cite> is not required.</p>
 <img alt="_images/Screenshot_traveller_01.png" src="_images/Screenshot_traveller_01.png" />
 <p>Pressing the <cite>Create Traveller</cite> button will create the Traveller and save it as a PDF.</p>
 <img alt="_images/Screenshot_traveller_02.png" src="_images/Screenshot_traveller_02.png" />
 <p>The traveller shows the User that created it, the time and date, and the parameters
 used when it was created.</p>
-<p>This is a PDF document which is saved to the Download folder of your PC.  The intent is the
+<p>This is a PDF document which is saved to the Download folder of your PC, and also on the Prism
+computer in <cite>public/traveller</cite>.  The intent is the
 PDF file is delivered to production as an additional traveller to the product.  When the product
 reaches the Prism test station, the traveller is scanned and testing can begin.</p>
 <section id="scanning">

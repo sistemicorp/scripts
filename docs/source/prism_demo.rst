@@ -19,9 +19,8 @@ Requirements
 
 * Operating System
 
-  * The system was developed and tested on Ubuntu 22.04
-  * All these instructions are for Ubuntu 22.04
-  * The Docker Prism image is based on Ubuntu 22.04
+  * All these instructions are for Ubuntu 24.04
+  * The Docker Prism image is based on Ubuntu 24.04
 
 * Outside Software Requirements
 
@@ -63,15 +62,16 @@ Clone Sistemi Scripts
 
 * The instructions below will create a folder called *git/scripts* which `git` will copy the required files into
 
-* Clone ``scripts`` and install Python requirements,
+* Clone ``scripts``,
 
 ::
 
     mkdir ~/git
     cd ~/git
     git clone https://github.com/sistemicorp/scripts.git
-    cd scripts
-    pip3 install -f requirements.txt
+
+* Python requirements are only needed on the host for script development, see
+  :ref:`_development:Installing Python`.
 
 
 * The **Prism** Docker container must be `pulled` from docker hub
@@ -103,9 +103,11 @@ Clone Sistemi Scripts
 
   * Prism login user/password is admin@here.com/password
   * Other users passwords are `password`
+  * These demo users exist because `"demo": true` is set in `public/settings.json`.  For production
+    see :ref:`Demo Users and the First Admin <first-admin>`.
 
 * Its a good idea to bookmark this URL, and display bookmark bar in the browser.
-* This is the Main page, the starting point to begin testing.
+* After login the `Scan Traveller` page is shown, the starting point to begin testing.
 
   * In real production environment, the operator would scan a traveller to
     configure Prism to test a product.  Since this is a demo, we will select a
@@ -129,8 +131,8 @@ Clone Sistemi Scripts
 .. image:: static/Screenshot_prism_demo_4.png
 
 * Press the `START ALL` (1) button to begin the test.
-* Logging from the test will be shown in the table (2).
-* Historical stats of your testing will be shown in the plot (3).
+* Logging from the test will be shown in each channel's log (2).
+* Historical stats of your testing will be shown in the throughput chart (3).
 * **Note:** Example tests have delays in them for demo effect.
 * `prod_0.scr` test script, demonstrates many features
 

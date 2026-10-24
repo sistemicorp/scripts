@@ -3,6 +3,13 @@ Screenshots
 
 Lente screenshots.
 
+The left menu has `Home`, `Station Manager`, `Result Search`, `Result Analytics`, `Create Traveller`, and under
+`Admin`, `Account Management`, `Shutdown` and `Send Logs`.  Any logged in user can open `Result Search` and
+`Result Analytics`.  `Create Traveller` needs the Admin, ConfigMan or Developer role, the other pages need Admin.
+
+`Result Search` shows the same filters and results table as `Result Analytics`, without the charts.
+Both pages have an `Export CSV` button, and a `Copy SQL Hint` button which copies the SQL query behind the table.
+
 Result Analytics
 ****************
 
@@ -41,10 +48,19 @@ chart shows the same proportions.  Use this to find which test items to optimize
 Station Manager
 ***************
 
-Prism and Lente Station management console.
+Prism and Lente Station management console, Admin only.
 
 * View station stats - version, scripts, backups, disk usage, the script running, active users, and last ping
 * Select stations and take actions - `Ping`, `Get Log`, `Restart`, `Sync Users`, `Sync Script`
+
+  * `Sync Users` sends the users that have the ServerSync role
+  * `Sync Users` and `Sync Script` are disabled while a user is logged in to the selected station
+  * with `"auto_sync_scripts": true` in :ref:`settings.json <deploy-settings-file>`, Lente syncs
+    scripts to stations automatically when the scripts version changes, and no user is logged in
+
+* `git pull` (shown only on the root Lente, `"root_authority": true`) updates the Lente scripts from
+  GitHub.  It requires `public/git_pull_watcher.sh` to be running on the Lente host, the setup steps are
+  at the top of that script.
 * `Station Logs` below lists station events, filtered by the Type/Computer/Version/Cause and date selections
 
 .. image:: static/Screenshot_lente_station_mgr.png

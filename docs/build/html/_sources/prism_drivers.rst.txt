@@ -18,7 +18,9 @@ JTAG programmers, etc..
 
 
 
-Prism will load/init each `driver` that is listed.
+Prism will load/init each `driver` that is listed, when the script is validated.  A driver listed with
+arguments (a list of the driver path and a dict, like `hwdrv_fakeArgs` above) has the dict passed to
+`discover_channels(args)`.
 
 The python file specified *MUST* have a class called `HWDriver`.  See the `fake` example for
 implementation details and documentation.
@@ -35,7 +37,8 @@ Discover Channels
 The important method of the `HWDriver` class is `discover_channels`.
 
 `discover_channels` method returns a list of dictionaries that represent the connected hardware used in
-the test system.  That list may contain one item that is shared among all the attached test jigs, or it
+the test system.  Every driver that reports a number of channels must report the same number, otherwise
+the script fails validation.  A driver that reports 0 channels is a shared resource for all channels.  That list may contain one item that is shared among all the attached test jigs, or it
 might be one item per test jig.
 
 If there are multiple hardware items, the list of those items must be in the same order across the
@@ -112,3 +115,27 @@ An example of VISA driver based hardware is provided in the `agilent_dso_usb_1` 
     This error can happen if your user account doesn't have correct privileges.
 
     See: `stackoverflow <https://stackoverflow.com/questions/52256123/unable-to-get-full-visa-address-that-includes-the-serial-number>`_
+
+
+Included Drivers
+----------------
+
+These drivers are included in `public/prism/drivers`.  Several have a `README.md` with setup details.
+
+* `fake` - simulated hardware, used by the example scripts, see `hwdrv_fake.py` for the driver API
+* `teensy4` - Teensy 4 based jig controller
+* `A4401_BOND` - Sistemi BOND (Bed of Nails Design) tester
+* `agilent_dso_usb_1` - Agilent oscilloscope over USB (VISA)
+* `brother_ql` - Brother QL label printer
+* `ble_listener` - Bluetooth LE listener
+* `prism_play` - trigger the Prism `play` (start test) feature from the command line, for CI
+* `nrfprog` - Nordic nRF programmer (nrfjprog)
+* `stlinkv3mods` - ST-LINK/V3 programmer (STM32CubeProgrammer)
+* `segger` - placeholder, not complete
+* `common` - shared helpers
+
+.. note::
+
+    The vendor programming tools used by `nrfprog` (Nordic nrfjprog) and `stlinkv3mods` (ST STM32CubeProgrammer)
+    are not included.  They will be installed on the host computer, instructions to follow.
+    Until then these two drivers will not find their tools.

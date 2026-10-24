@@ -55,7 +55,8 @@ Here is a full example of what `subs` section could look like (taken from exampl
     //   "widget": "<textinput|select>",
     //   "regex": <"regex">,  // only for widget == textinput,
     //                           the field is valid when the regex is satisfied;
-    //                           Start Testing enables once all fields are valid
+    //                           Validate enables once all fields are valid,
+    //                           Start Testing enables after a successful Validate
     //   "choices": [<choice1>, <choice2>, ...],  // only for widget == select
     //   "default": <default>,
     //   "subs": // inner dependant subs
@@ -124,6 +125,8 @@ Here is a full example of what `subs` section could look like (taken from exampl
 * used only for `textinput` ``widget``
 * used to validate the Operator entered correct information
 * this is optional field
+* when every field is valid the `Validate` button is enabled, and after a successful
+  `Validate` the `Start Testing` button is enabled
 
 ``default``
 
@@ -250,6 +253,9 @@ See ``public/prism/scripts/example/prod_v0/tst00xx.py`` for usage.
 
   * ``fail_fast`` overrides `fail_fast` in the ``config`` section
   * ``enable`` (defaults to `true`) when set to false, disables all tests in ``items``
+  * ``timeout`` seconds allowed for each test item, default 10 seconds
+    (`ResultAPI.TESTITEM_TIMEOUT` in `public/prism/api.py`).  A test item that runs longer
+    is recorded as `TIMEOUT`, which is a fail.
 
 * add fields here as your application requires
 * these ``options`` fields are available programmatically to each test ``items``
@@ -263,6 +269,7 @@ See ``public/prism/scripts/example/prod_v0/tst00xx.py`` for usage.
 
   * ``id`` - A unique identifier of the test, which is also the Python (class) function name in `module`.
   * ``enable`` - `true` or `false`, can be omitted if always enabled
+  * ``timeout`` - seconds allowed for this test item, overrides ``options`` ``timeout``
   * ``args`` - a list of key/value pairs of any name/value required by your application
 
     * in the example shown, ``min`` and ``max`` keys are used and assigned values

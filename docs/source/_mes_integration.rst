@@ -31,20 +31,32 @@ For development and testing a free client is available from Unified Automation:
 
 .. image:: static/Screenshot_mes_integration_uaexpert.png
 
+Endpoint and Address Space
+==========================
+
+- Endpoint: `opc.tcp://<listen_addr>:<port>/<hostname>/prism/server/` (Prism, port 4840) or
+  `opc.tcp://<listen_addr>:<port>/<hostname>/lente/server/` (Lente, port 4841)
+- Namespace URI: `urn:sistemi.ca/prism_lente`
+- The fields below are variables of an object named `prism` or `lente`, of object type `prism_lente`.
+- Values are updated every 10 seconds.
+
 Fields Published
 ================
 
+- auto_sync_scripts: The `auto_sync_scripts` setting
 - cmd: Last command remotely executed
 - computer: Host name of host system
 - disk_usage: Percentage of file storage space consumed on drive where result files are stored
 - ip: IP address of host system
 - num_files: Number of result backup files are stored in result_bkup_dir
 - result_class: Not used
-- script (Prism only): Currently loaded Prism script (if any)
+- script: Currently loaded Prism script (if any), empty on Lente
 - scripts_version: Version of the scripts directory
 - user: Currently logged in user (if any)
 - version: Version of the Prism/Lente base directory
-- clients (Lente only): Listing of downstream Prism/Lente systems and their attributes
+- clients: Listing of downstream Prism/Lente systems and their attributes, empty on Prism
+- upstream_computer: The Lente this computer reports to
+- _timestamp: Time of the last successful ping to the upstream Lente
 
 Methods
 =======
@@ -106,6 +118,7 @@ Location: settings.json under top level
 - fields: List of fields to publish (null: publish all)
 
   - Default: null (publish all)
+  - Every name must be one of the published fields above, an unknown name stops the OPC-UA server from starting
 
 Certificates
 ------------

@@ -66,8 +66,8 @@ The Python Test code class gets a handle to the Hardware Driver(s) that were "di
 The handles are mapped per slot, thus the same code can handle multiple attached test jigs.
 
 Python Test code, via the Hardware Driver's API, set up the stimulus and/or make measurement(s)
-per the test (item) as defined in the Script (above).  For every measurement taken, Prism
-will create a Test Record.
+per the test (item) as defined in the Script (above).  Prism creates one Test Record for each
+DUT (channel) run, and every measurement taken is stored in that record, under its test item.
 
 The measurement will typically determine if the Test will Pass or Fail.
 

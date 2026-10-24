@@ -9,7 +9,8 @@
     //   "widget": "<textinput|select>",
     //   "regex": <"regex">,  // only for widget == textinput,
     //                           the field is valid when the regex is satisfied;
-    //                           Start Testing enables once all fields are valid
+    //                           Validate enables once all fields are valid,
+    //                           Start Testing enables after a successful Validate
     //   "choices": [<choice1>, <choice2>, ...],  // only for widget == select
     //   "default": <default>,
     //   "subs": // inner dependant subs

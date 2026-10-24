@@ -17,7 +17,11 @@ The above diagram presents a flow for developing and deploying scripts.
 
 Git is used as a repository for development and releases.
 
-Lente script sync is used to deploy scripts to Prism stations.
+Lente script sync is used to deploy scripts to Prism stations.  Each station receives a copy of the
+Lente `public/prism` folder (drivers and scripts), see :ref:`_security:Script Sync Exclusions`.
+Lente can sync stations automatically when the scripts version changes (`auto_sync_scripts` in
+:ref:`settings.json <deploy-settings-file>`), and the root Lente can `git pull` new scripts from the
+Station Manager page.
 
 Stages
 ******
@@ -179,7 +183,6 @@ Example script P00100_T0100_SmokeTests.scr,
         "location": "FACTORY1"
       },
       "config": {
-        "result": "public.prism.result.ResultBaseKeysV1",
         "fail_fast": false,
         "drivers": ["public.prism.drivers.fake.hwdrv_fake"]
       },
@@ -212,7 +215,7 @@ Example program F00100_ResetSTM32F479,
 
 ::
 
-    ! /usr/bin/env python
+    #! /usr/bin/env python
     # -*- coding: utf-8 -*-
 
     import logging
@@ -246,7 +249,7 @@ Example program P00100_T0100_SmokeTests,
 
 ::
 
-    ! /usr/bin/env python
+    #! /usr/bin/env python
     # -*- coding: utf-8 -*-
 
     import logging

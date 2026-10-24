@@ -87,7 +87,8 @@ use the <cite>subs</cite> feature.  Otherwise <cite>subs</cite> are used to crea
   <span class="o">//</span>   <span class="s2">"widget"</span><span class="p">:</span> <span class="s2">"&lt;textinput|select&gt;"</span><span class="p">,</span>
   <span class="o">//</span>   <span class="s2">"regex"</span><span class="p">:</span> <span class="o">&lt;</span><span class="s2">"regex"</span><span class="o">&gt;</span><span class="p">,</span>  <span class="o">//</span> <span class="n">only</span> <span class="k">for</span> <span class="n">widget</span> <span class="o">==</span> <span class="n">textinput</span><span class="p">,</span>
   <span class="o">//</span>                           <span class="n">the</span> <span class="n">field</span> <span class="ow">is</span> <span class="n">valid</span> <span class="n">when</span> <span class="n">the</span> <span class="n">regex</span> <span class="ow">is</span> <span class="n">satisfied</span><span class="p">;</span>
-  <span class="o">//</span>                           <span class="n">Start</span> <span class="n">Testing</span> <span class="n">enables</span> <span class="n">once</span> <span class="nb">all</span> <span class="n">fields</span> <span class="n">are</span> <span class="n">valid</span>
+  <span class="o">//</span>                           <span class="n">Validate</span> <span class="n">enables</span> <span class="n">once</span> <span class="nb">all</span> <span class="n">fields</span> <span class="n">are</span> <span class="n">valid</span><span class="p">,</span>
+  <span class="o">//</span>                           <span class="n">Start</span> <span class="n">Testing</span> <span class="n">enables</span> <span class="n">after</span> <span class="n">a</span> <span class="n">successful</span> <span class="n">Validate</span>
   <span class="o">//</span>   <span class="s2">"choices"</span><span class="p">:</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">choice1</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">choice2</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>  <span class="o">//</span> <span class="n">only</span> <span class="k">for</span> <span class="n">widget</span> <span class="o">==</span> <span class="n">select</span>
   <span class="o">//</span>   <span class="s2">"default"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">default</span><span class="o">&gt;</span><span class="p">,</span>
   <span class="o">//</span>   <span class="s2">"subs"</span><span class="p">:</span> <span class="o">//</span> <span class="n">inner</span> <span class="n">dependant</span> <span class="n">subs</span>
@@ -158,6 +159,8 @@ the <code class="docutils literal notranslate"><span class="pre">info</span></co
 <li><p>used only for <cite>textinput</cite> <code class="docutils literal notranslate"><span class="pre">widget</span></code></p></li>
 <li><p>used to validate the Operator entered correct information</p></li>
 <li><p>this is optional field</p></li>
+<li><p>when every field is valid the <cite>Validate</cite> button is enabled, and after a successful
+<cite>Validate</cite> the <cite>Start Testing</cite> button is enabled</p></li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">default</span></code></p>
 <ul class="simple">
@@ -269,6 +272,9 @@ one test definition will be shown later.</p>
 <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">fail_fast</span></code> overrides <cite>fail_fast</cite> in the <code class="docutils literal notranslate"><span class="pre">config</span></code> section</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">enable</span></code> (defaults to <cite>true</cite>) when set to false, disables all tests in <code class="docutils literal notranslate"><span class="pre">items</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">timeout</span></code> seconds allowed for each test item, default 10 seconds
+(<cite>ResultAPI.TESTITEM_TIMEOUT</cite> in <cite>public/prism/api.py</cite>).  A test item that runs longer
+is recorded as <cite>TIMEOUT</cite>, which is a fail.</p></li>
 </ul>
 </li>
 <li><p>add fields here as your application requires</p></li>
@@ -285,6 +291,7 @@ one test definition will be shown later.</p>
 <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> - A unique identifier of the test, which is also the Python (class) function name in <cite>module</cite>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">enable</span></code> - <cite>true</cite> or <cite>false</cite>, can be omitted if always enabled</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">timeout</span></code> - seconds allowed for this test item, overrides <code class="docutils literal notranslate"><span class="pre">options</span></code> <code class="docutils literal notranslate"><span class="pre">timeout</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">args</span></code> - a list of key/value pairs of any name/value required by your application</p>
 <ul>
 <li><p>in the example shown, <code class="docutils literal notranslate"><span class="pre">min</span></code> and <code class="docutils literal notranslate"><span class="pre">max</span></code> keys are used and assigned values</p></li>

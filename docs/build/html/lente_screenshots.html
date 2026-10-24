@@ -44,6 +44,11 @@
   <section id="screenshots">
 <h1>Screenshots<a class="headerlink" href="#screenshots" title="Link to this heading">¶</a></h1>
 <p>Lente screenshots.</p>
+<p>The left menu has <cite>Home</cite>, <cite>Station Manager</cite>, <cite>Result Search</cite>, <cite>Result Analytics</cite>, <cite>Create Traveller</cite>, and under
+<cite>Admin</cite>, <cite>Account Management</cite>, <cite>Shutdown</cite> and <cite>Send Logs</cite>.  Any logged in user can open <cite>Result Search</cite> and
+<cite>Result Analytics</cite>.  <cite>Create Traveller</cite> needs the Admin, ConfigMan or Developer role, the other pages need Admin.</p>
+<p><cite>Result Search</cite> shows the same filters and results table as <cite>Result Analytics</cite>, without the charts.
+Both pages have an <cite>Export CSV</cite> button, and a <cite>Copy SQL Hint</cite> button which copies the SQL query behind the table.</p>
 <section id="result-analytics">
 <h2>Result Analytics<a class="headerlink" href="#result-analytics" title="Link to this heading">¶</a></h2>
 <p>The Result Analytics dashboard is for detailed results analysis.  Results shown graphically and in
@@ -71,10 +76,20 @@ chart shows the same proportions.  Use this to find which test items to optimize
 </section>
 <section id="station-manager">
 <h2>Station Manager<a class="headerlink" href="#station-manager" title="Link to this heading">¶</a></h2>
-<p>Prism and Lente Station management console.</p>
+<p>Prism and Lente Station management console, Admin only.</p>
 <ul class="simple">
 <li><p>View station stats - version, scripts, backups, disk usage, the script running, active users, and last ping</p></li>
-<li><p>Select stations and take actions - <cite>Ping</cite>, <cite>Get Log</cite>, <cite>Restart</cite>, <cite>Sync Users</cite>, <cite>Sync Script</cite></p></li>
+<li><p>Select stations and take actions - <cite>Ping</cite>, <cite>Get Log</cite>, <cite>Restart</cite>, <cite>Sync Users</cite>, <cite>Sync Script</cite></p>
+<ul>
+<li><p><cite>Sync Users</cite> sends the users that have the ServerSync role</p></li>
+<li><p><cite>Sync Users</cite> and <cite>Sync Script</cite> are disabled while a user is logged in to the selected station</p></li>
+<li><p>with <cite>“auto_sync_scripts”: true</cite> in <a class="reference internal" href="_deployment.html#deploy-settings-file"><span class="std std-ref">settings.json</span></a>, Lente syncs
+scripts to stations automatically when the scripts version changes, and no user is logged in</p></li>
+</ul>
+</li>
+<li><p><cite>git pull</cite> (shown only on the root Lente, <cite>“root_authority”: true</cite>) updates the Lente scripts from
+GitHub.  It requires <cite>public/git_pull_watcher.sh</cite> to be running on the Lente host, the setup steps are
+at the top of that script.</p></li>
 <li><p><cite>Station Logs</cite> below lists station events, filtered by the Type/Computer/Version/Cause and date selections</p></li>
 </ul>
 <img alt="_images/Screenshot_lente_station_mgr.png" src="_images/Screenshot_lente_station_mgr.png" />

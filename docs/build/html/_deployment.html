@@ -283,10 +283,32 @@ every computer in the deployment.  If they are not set, Prism/Lente refuse all s
 the file smaller and easier to manage.</p>
 <ul class="simple">
 <li><p>see <a class="reference internal" href="_security.html#https"><span class="std std-ref">HTTPS</span></a> for creating necessary files if using HTTPS feature</p></li>
+<li><p><cite>health_checks</cite> is used by Prism only, <cite>results_bkup_encrypted</cite> by Lente only</p></li>
+<li><p>On Prism, <cite>result_server_url</cite> is always set from the <cite>–server</cite> flag of <cite>prism.sh</cite></p></li>
 </ul>
+<section id="other-settings">
+<h3>Other Settings<a class="headerlink" href="#other-settings" title="Link to this heading">¶</a></h3>
+<p>These optional settings are not in the example file, the defaults are shown.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">seconds</span> <span class="n">without</span> <span class="n">activity</span> <span class="n">before</span> <span class="n">a</span> <span class="n">logged</span> <span class="ow">in</span> <span class="n">user</span> <span class="ow">is</span> <span class="n">no</span> <span class="n">longer</span> <span class="n">reported</span> <span class="k">as</span> <span class="n">active</span><span class="p">,</span>
+<span class="o">//</span> <span class="n">an</span> <span class="n">active</span> <span class="n">user</span> <span class="n">blocks</span> <span class="n">Sync</span> <span class="n">Users</span> <span class="ow">and</span> <span class="n">Sync</span> <span class="n">Script</span> <span class="n">to</span> <span class="n">that</span> <span class="n">station</span> <span class="p">(</span><span class="n">Prism</span> <span class="ow">and</span> <span class="n">Lente</span><span class="p">)</span>
+<span class="s2">"session_inactive_timeout_s"</span><span class="p">:</span> <span class="mi">600</span><span class="p">,</span>
+
+<span class="o">//</span> <span class="n">hours</span> <span class="n">before</span> <span class="n">a</span> <span class="n">browser</span> <span class="n">login</span> <span class="n">expires</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">user</span> <span class="n">must</span> <span class="n">log</span> <span class="ow">in</span> <span class="n">again</span> <span class="p">(</span><span class="n">Prism</span> <span class="ow">and</span> <span class="n">Lente</span><span class="p">)</span>
+<span class="s2">"browser_credentials_timeout_h"</span><span class="p">:</span> <span class="mi">168</span><span class="p">,</span>
+
+<span class="o">//</span> <span class="n">Lente</span> <span class="n">only</span><span class="p">:</span> <span class="n">send</span> <span class="n">station</span> <span class="n">commands</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">reply</span> <span class="n">to</span> <span class="n">the</span> <span class="n">station</span> <span class="n">ping</span><span class="p">,</span> <span class="n">instead</span> <span class="n">of</span>
+<span class="o">//</span> <span class="n">connecting</span> <span class="n">to</span> <span class="n">the</span> <span class="n">station</span><span class="p">,</span> <span class="n">useful</span> <span class="n">when</span> <span class="n">stations</span> <span class="n">are</span> <span class="n">behind</span> <span class="n">a</span> <span class="n">firewall</span> <span class="ow">or</span> <span class="n">NAT</span>
+<span class="s2">"use_rpc_over_status_updates"</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+
+<span class="o">//</span> <span class="n">Prism</span> <span class="n">only</span><span class="p">:</span> <span class="n">Test</span> <span class="n">Portal</span> <span class="n">throughput</span> <span class="n">chart</span><span class="p">,</span> <span class="n">seconds</span> <span class="n">per</span> <span class="n">bar</span> <span class="ow">and</span> <span class="n">number</span> <span class="n">of</span> <span class="n">bars</span>
+<span class="s2">"result_stats_time_bucket"</span><span class="p">:</span> <span class="mi">600</span><span class="p">,</span>
+<span class="s2">"result_stats_max_buckets"</span><span class="p">:</span> <span class="mi">20</span>
+</pre></div>
+</div>
 <p>As noted in the comments of the settings file, this file is NOT deployed as part of the
 scripts synchronization that Lente does through station management.  The settings file is
 to be configured for each computer (Lente or Prism) in the deployment.</p>
+</section>
 </section>
 <section id="prism-lente-docker-images">
 <h2>Prism/Lente Docker Images<a class="headerlink" href="#prism-lente-docker-images" title="Link to this heading">¶</a></h2>

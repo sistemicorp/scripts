@@ -68,7 +68,11 @@ would be configured.</p>
 <img alt="_images/Screenshot_prodplan_02.png" src="_images/Screenshot_prodplan_02.png" />
 <p>The above diagram presents a flow for developing and deploying scripts.</p>
 <p>Git is used as a repository for development and releases.</p>
-<p>Lente script sync is used to deploy scripts to Prism stations.</p>
+<p>Lente script sync is used to deploy scripts to Prism stations.  Each station receives a copy of the
+Lente <cite>public/prism</cite> folder (drivers and scripts), see <a class="reference internal" href="_security.html#script-sync-exclusions"><span class="std std-ref">Script Sync Exclusions</span></a>.
+Lente can sync stations automatically when the scripts version changes (<cite>auto_sync_scripts</cite> in
+<a class="reference internal" href="_deployment.html#deploy-settings-file"><span class="std std-ref">settings.json</span></a>), and the root Lente can <cite>git pull</cite> new scripts from the
+Station Manager page.</p>
 </section>
 <section id="stages">
 <h2><a class="toc-backref" href="#id2" role="doc-backlink">Stages</a><a class="headerlink" href="#stages" title="Link to this heading">¶</a></h2>
@@ -230,7 +234,6 @@ or actual BOM numbers, etc.</p></li>
     <span class="s2">"location"</span><span class="p">:</span> <span class="s2">"FACTORY1"</span>
   <span class="p">},</span>
   <span class="s2">"config"</span><span class="p">:</span> <span class="p">{</span>
-    <span class="s2">"result"</span><span class="p">:</span> <span class="s2">"public.prism.result.ResultBaseKeysV1"</span><span class="p">,</span>
     <span class="s2">"fail_fast"</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
     <span class="s2">"drivers"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"public.prism.drivers.fake.hwdrv_fake"</span><span class="p">]</span>
   <span class="p">},</span>
@@ -261,65 +264,65 @@ or actual BOM numbers, etc.</p></li>
 </pre></div>
 </div>
 <p>Example program F00100_ResetSTM32F479,</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>! /usr/bin/env python
-# -*- coding: utf-8 -*-
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#! /usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
 
-import logging
-from core.test_item import TestItem
-from public.prism.api import ResultAPI
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">core.test_item</span><span class="w"> </span><span class="kn">import</span> <span class="n">TestItem</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">public.prism.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResultAPI</span>
 
-# file name and class name must match
-class F00100_ResetSTM32F479(TestItem):
+<span class="c1"># file name and class name must match</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">F00100_ResetSTM32F479</span><span class="p">(</span><span class="n">TestItem</span><span class="p">):</span>
 
-    def __init__(self, controller, chan, shared_state):
-        super().__init__(controller, chan, shared_state)
-        self.logger = logging.getLogger("SC.{}.{}".format(__name__, self.chan))
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">controller</span><span class="p">,</span> <span class="n">chan</span><span class="p">,</span> <span class="n">shared_state</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">controller</span><span class="p">,</span> <span class="n">chan</span><span class="p">,</span> <span class="n">shared_state</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">"SC.</span><span class="si">{}</span><span class="s2">.</span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">chan</span><span class="p">))</span>
 
-    def TST0100_setBOOT0(self):
-        context = self.item_start()  # always first line of test
-        ...
-        self.item_end() # always last line of test
+    <span class="k">def</span><span class="w"> </span><span class="nf">TST0100_setBOOT0</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
+        <span class="o">...</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span> <span class="c1"># always last line of test</span>
 
-    def TST0200_powerVDD(self):
-        context = self.item_start()  # always first line of test
-        ...
-        self.item_end() # always last line of test
+    <span class="k">def</span><span class="w"> </span><span class="nf">TST0200_powerVDD</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
+        <span class="o">...</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span> <span class="c1"># always last line of test</span>
 
-    def TST0300_delayMS(self):
-        context = self.item_start()  # always first line of test
-        ...
-        self.item_end() # always last line of test
+    <span class="k">def</span><span class="w"> </span><span class="nf">TST0300_delayMS</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
+        <span class="o">...</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span> <span class="c1"># always last line of test</span>
 </pre></div>
 </div>
 <p>Example program P00100_T0100_SmokeTests,</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>! /usr/bin/env python
-# -*- coding: utf-8 -*-
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#! /usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
 
-import logging
-from core.test_item import TestItem
-from public.prism.api import ResultAPI
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">core.test_item</span><span class="w"> </span><span class="kn">import</span> <span class="n">TestItem</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">public.prism.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResultAPI</span>
 
-# file name and class name must match
-class P00100_T0100_SmokeTests(TestItem):
+<span class="c1"># file name and class name must match</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">P00100_T0100_SmokeTests</span><span class="p">(</span><span class="n">TestItem</span><span class="p">):</span>
 
-    def __init__(self, controller, chan, shared_state):
-        super().__init__(controller, chan, shared_state)
-        self.logger = logging.getLogger("SC.{}.{}".format(__name__, self.chan))
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">controller</span><span class="p">,</span> <span class="n">chan</span><span class="p">,</span> <span class="n">shared_state</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">controller</span><span class="p">,</span> <span class="n">chan</span><span class="p">,</span> <span class="n">shared_state</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">"SC.</span><span class="si">{}</span><span class="s2">.</span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">chan</span><span class="p">))</span>
 
-    def TST0100_powerUP(self):
-        context = self.item_start()  # always first line of test
-        ...
-        self.item_end() # always last line of test
+    <span class="k">def</span><span class="w"> </span><span class="nf">TST0100_powerUP</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
+        <span class="o">...</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span> <span class="c1"># always last line of test</span>
 
-    def TST0200_measVDD(self):
-        context = self.item_start()  # always first line of test
-        ...
-        self.item_end() # always last line of test
+    <span class="k">def</span><span class="w"> </span><span class="nf">TST0200_measVDD</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
+        <span class="o">...</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span> <span class="c1"># always last line of test</span>
 
-    def TST0300_measVCC(self):
-        context = self.item_start()  # always first line of test
-        ...
-        self.item_end() # always last line of test
+    <span class="k">def</span><span class="w"> </span><span class="nf">TST0300_measVCC</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
+        <span class="o">...</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span> <span class="c1"># always last line of test</span>
 </pre></div>
 </div>
 </section>

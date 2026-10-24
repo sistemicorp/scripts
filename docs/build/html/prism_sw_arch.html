@@ -92,8 +92,8 @@ method will have access to the arguments from the Script (if any).</p>
 <p>The Python Test code class gets a handle to the Hardware Driver(s) that were “discovered”.
 The handles are mapped per slot, thus the same code can handle multiple attached test jigs.</p>
 <p>Python Test code, via the Hardware Driver’s API, set up the stimulus and/or make measurement(s)
-per the test (item) as defined in the Script (above).  For every measurement taken, Prism
-will create a Test Record.</p>
+per the test (item) as defined in the Script (above).  Prism creates one Test Record for each
+DUT (channel) run, and every measurement taken is stored in that record, under its test item.</p>
 <p>The measurement will typically determine if the Test will Pass or Fail.</p>
 </section>
 <section id="jig-rpc-server">
