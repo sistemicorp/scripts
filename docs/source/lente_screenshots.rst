@@ -73,8 +73,8 @@ Prism and Lente Station management console, Admin only.
     it waits and runs after they log out.
 
 * `git pull` (shown only on the root Lente, `"root_authority": true`) updates the Lente scripts from
-  GitHub.  It requires `public/git_pull_watcher.sh` to be running on the Lente host, the setup steps are
-  at the top of that script.
+  GitHub.  It requires `public/git_pull_watcher.sh` to be running on the Lente host, see
+  :ref:`Lente Git Pull <lente-git-pull>`.
 * `Station Logs` below lists station events, filtered by the Type/Computer/Version/Cause and date selections
 
 .. image:: static/Screenshot_lente_station_mgr.png

@@ -128,8 +128,8 @@ your scripts repo, it gets the scripts, drivers and license from its Lente.
 
   * the Postgres container must also be set to restart, see :ref:`Postgres <lente-demo-postgres>`.
   * Optional: to let an admin update the Lente scripts from GitHub with the Station Manager
-    `git pull` button, run `public/git_pull_watcher.sh` on the Lente host.
-    The setup steps (deploy key, systemd service) are at the top of that script.
+    `git pull` button, run `public/git_pull_watcher.sh` on the Lente host, see
+    :ref:`Lente Git Pull <lente-git-pull>`.
 
 
 .. _deploy-settings-file:
@@ -352,6 +352,62 @@ The available tags are listed on Docker Hub.  Both helper scripts also take thes
 * `-v`, Lente only, start Lente with verbose logging.
 
 Run `./lente.sh --help` or `./prism.sh --help` for the full list.
+
+
+.. _lente-git-pull:
+
+Lente Git Pull
+**************
+
+The root Lente (`"root_authority": true`) can update its scripts from GitHub with the `git pull`
+button on the `Station Manager` page.  The button is shown to ADMIN users only.  With
+`auto_sync_scripts` on, Lente then syncs the new scripts to its stations, see
+:ref:`settings.json <deploy-settings-file>`.
+
+Lente runs in a Docker container that has no git access, so the pull is done on the host computer
+by the helper script `public/git_pull_watcher.sh`.  The button creates the file
+`public/.git_trigger`, the watcher sees it and runs `git pull` in your scripts repo.  The
+`public` folder is shared with the container by `lente.sh`, so no extra Docker setup is needed.
+
+* Lente refuses the pull if the watcher is not running, and refuses Sync Script while a pull is
+  in progress.
+* The result of each pull is logged in `public/.git_pull.log` on the Lente host.
+
+Setup, done once on the Lente host.  The full steps, with commands and troubleshooting, are in
+the comments at the top of `public/git_pull_watcher.sh`.
+
+* The scripts repo remote must use SSH (`git@github.com:OWNER/REPO.git`), check with
+  `git remote -v`.
+* Create a dedicated SSH key without a passphrase in `public/.ssh` (`id_ed25519`) and add its
+  public key to the GitHub repo as a read-only Deploy key.  `public/.ssh` is in `.gitignore` and
+  is not sent to stations.
+* Create `public/.ssh/known_hosts` for github.com, then test a pull with the key, as shown in
+  the script comments.
+* Run the watcher as a systemd service so it starts on every boot and restarts if it exits.
+  Use the host user that owns the repo::
+
+    [Unit]
+    Description=Lente Git Pull Watcher
+    After=network-online.target
+    Wants=network-online.target
+
+    [Service]
+    Type=simple
+    User=lente
+    WorkingDirectory=/home/lente/git/scripts
+    ExecStart=/home/lente/git/scripts/public/git_pull_watcher.sh
+    Restart=always
+    RestartSec=5
+
+    [Install]
+    WantedBy=multi-user.target
+
+  Save it as `/etc/systemd/system/lente-git-pull-watcher.service`, then::
+
+    sudo systemctl daemon-reload
+    sudo systemctl enable --now lente-git-pull-watcher.service
+
+* Test it by pressing `git pull` and checking `public/.git_pull.log`.
 
 
 .. _health-checks:
