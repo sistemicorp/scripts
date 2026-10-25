@@ -154,8 +154,15 @@ for more information.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The vendor programming tools used by <cite>nrfprog</cite> (Nordic nrfjprog) and <cite>stlinkv3mods</cite> (ST STM32CubeProgrammer)
-are not included.  They will be installed on the host computer, instructions to follow.
-Until then these two drivers will not find their tools.</p>
+are not included in the scripts.  Each Prism station installs them under <cite>~/scripts/public/tools/</cite>.
+This folder is ignored by git, is not synced from Lente, and Prism sees it through its
+existing <cite>public</cite> mount.  Each driver’s <cite>README.md</cite> has the install steps, and the driver
+checks its tool runs when Prism loads a script.</p>
+<ul class="simple">
+<li><p><cite>stlinkv3mods</cite> - see <cite>public/prism/drivers/stlinkv3mods/README.md</cite></p></li>
+<li><p><cite>nrfprog</cite> - instructions to follow, until then this driver will not find its tool</p></li>
+</ul>
+<p>Segger J-Link is installed in the Prism Docker image (<cite>/opt/SEGGER/JLink</cite>) and needs no host install.</p>
 </div>
 </section>
 </section>
