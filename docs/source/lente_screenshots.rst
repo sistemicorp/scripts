@@ -86,6 +86,14 @@ Prism and Lente Station management console, Admin only.
 * `git pull` (shown only on the root Lente, `"root_authority": true`) updates the Lente scripts from
   GitHub.  It requires `public/git_pull_watcher.sh` to be running on the Lente host, see
   :ref:`Lente Git Pull <lente-git-pull>`.
+* `Offline Stations` lists every station that has pinged this Lente but is not pinging now, with its
+  last version, IP and when it was last seen.  Stations from downstream Lentes are included.
+  The list is kept in `public/stations.sqlite`, so it survives a Lente restart.  A station moves
+  back to the live list when it pings again.
+
+  * `Remove` and `Remove All` permanently delete offline stations from the list, for stations
+    that are no longer in service.  A removed station that pings again is added back.
+
 * `Station Logs` below lists station events, filtered by the Type/Computer/Version/Cause and date selections
 
 .. image:: static/Screenshot_lente_station_mgr.png

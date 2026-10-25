@@ -11,6 +11,7 @@ public/traveller/
 .env
 
 public/users.sqlite
+public/stations.sqlite
 
 create_manifest.py
 
