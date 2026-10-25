@@ -155,15 +155,16 @@ class SharedState(object):
 
     def get_drivers(self, channel, type=None):
         """  Gets all the drivers for channel
-        :param channel: set to channel # to get drivers for that channel, set to None to
-                       get drivers that are shared across all channels
+        :param channel: set to channel # to get drivers for that channel, and the drivers
+                       shared across all channels, set to None to get only the shared drivers
         :param type: type of driver, None for any type
         :return: list of drivers
         """
         drivers = []
         with self.lock:
             for driver in self._shared["drivers"]:
-                if driver["channel"] == channel and type in [None, driver["type"]]:
+                if driver["channel"] not in [channel, None]: continue
+                if type in [None, driver["type"]]:
                     drivers.append(driver)
 
         return drivers

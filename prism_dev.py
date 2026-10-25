@@ -415,10 +415,8 @@ def main():
     con = ChanCon(0, script, shared_state, args["script"])
     result_file = con.run()
 
-    # close any drivers
-    drivers = shared_state.get_drivers(0)
-    drivers.extend(shared_state.get_drivers(None))
-    for d in drivers:
+    # close any drivers, channel 0 includes the shared drivers
+    for d in shared_state.get_drivers(0):
         if d['obj'].get("close", False):
             d["obj"]["close"]()
 
