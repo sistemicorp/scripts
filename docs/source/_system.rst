@@ -98,6 +98,10 @@ What follows is a description of lables A-F...
 * Derr
 
   * If there was a processing error, the result JSON is stored in `quarantine` folder.
+    The reason is written next to it in a file with the same name and a `.reason.txt`
+    extension, for example `result_<ruid>.reason.txt`.  The result JSON is not changed.
+  * If the database is not available, the result JSON stays in `stage` and is processed
+    when the database is back.
 * E
 
   * result JSON is stored in `bkup` folder if it was processed without error.
