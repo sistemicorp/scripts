@@ -31,6 +31,10 @@ should probably be a key so that you can find the test record for a product seri
 Typically these `key#` fields are not known until the test is run and retrieves the information.
 For example, a key might be a microcontroller UID (MAC address) which is read at test time.
 
+Save the unit's serial number (or other unique id) in `key0`, with `add_key("sn", value, slot=0)`.
+The Lente Throughput & Yield chart uses the `product` and `key0` to count each unit once,
+see :doc:`Lente screenshots <lente_screenshots>`.
+
 test_item
 =========
 For each test `record` there will multiple `test_items` as directed by the script.

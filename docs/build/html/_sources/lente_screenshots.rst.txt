@@ -46,6 +46,17 @@ Select `Lot` in the period selector to get one bar per lot instead, ordered by t
 tested.  Results without a lot are grouped as `(none)`.  Use the date and `Lot` filters to limit which lots
 are shown.
 
+The count selector sets what is counted.  `All results` counts every test result, so a unit tested twice
+counts twice.  The unique choices count each unit once, where a unit is the `product` and `key0`, for example
+a serial number.  Results without a `key0` each count as one.
+
+* `Unique units, last result` - each unit's latest result, the final yield.  A unit that failed, was
+  repaired and passed counts as one pass.
+* `Unique units, first result` - each unit's first result, the first pass yield.
+
+A unit is counted in the period or lot of the result chosen for it.  To use the unique counts, scripts
+must save the unit's serial number in `key0`, see :ref:`_database:record`.
+
 .. image:: static/Screenshot_lente_throughput.png
 
 The `Failure Pareto` tab ranks the failing tests by quantity, and shows each as a percentage of the failed runs

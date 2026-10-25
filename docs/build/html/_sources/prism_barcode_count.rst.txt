@@ -30,6 +30,10 @@ from the barcode, so a different barcode format only needs a new regex,
 
 A scan that does not match the format is recorded as a FAIL.
 
+Scanning the same barcode twice makes two results.  To count each item once, select
+`Unique units, last result` in the Lente Throughput & Yield chart, which counts each `product` and
+`key0` once, see :doc:`Lente screenshots <lente_screenshots>`.
+
 Make a sheet of barcodes to print with,
 
 ::

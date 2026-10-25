@@ -76,6 +76,16 @@ example <cite>Daily</cite>.  Use this to track production output and yield trend
 <p>Select <cite>Lot</cite> in the period selector to get one bar per lot instead, ordered by the date each lot was first
 tested.  Results without a lot are grouped as <cite>(none)</cite>.  Use the date and <cite>Lot</cite> filters to limit which lots
 are shown.</p>
+<p>The count selector sets what is counted.  <cite>All results</cite> counts every test result, so a unit tested twice
+counts twice.  The unique choices count each unit once, where a unit is the <cite>product</cite> and <cite>key0</cite>, for example
+a serial number.  Results without a <cite>key0</cite> each count as one.</p>
+<ul class="simple">
+<li><p><cite>Unique units, last result</cite> - each unit’s latest result, the final yield.  A unit that failed, was
+repaired and passed counts as one pass.</p></li>
+<li><p><cite>Unique units, first result</cite> - each unit’s first result, the first pass yield.</p></li>
+</ul>
+<p>A unit is counted in the period or lot of the result chosen for it.  To use the unique counts, scripts
+must save the unit’s serial number in <cite>key0</cite>, see <a class="reference internal" href="_database.html#record"><span class="std std-ref">record</span></a>.</p>
 <img alt="_images/Screenshot_lente_throughput.png" src="_images/Screenshot_lente_throughput.png" />
 <p>The <cite>Failure Pareto</cite> tab ranks the failing tests by quantity, and shows each as a percentage of the failed runs
 and of all runs.  Use this to find which tests are costing you the most yield.</p>

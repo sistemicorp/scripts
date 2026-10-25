@@ -66,6 +66,9 @@ from the barcode, so a different barcode format only needs a new regex,</p>
 <li><p>the whole barcode is saved as the measurement <cite>TST000_Scan.barcode</cite></p></li>
 </ul>
 <p>A scan that does not match the format is recorded as a FAIL.</p>
+<p>Scanning the same barcode twice makes two results.  To count each item once, select
+<cite>Unique units, last result</cite> in the Lente Throughput &amp; Yield chart, which counts each <cite>product</cite> and
+<cite>key0</cite> once, see <a class="reference internal" href="lente_screenshots.html"><span class="doc">Lente screenshots</span></a>.</p>
 <p>Make a sheet of barcodes to print with,</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">example</span><span class="o">/</span><span class="n">barcode_count_v0</span>
 <span class="n">python</span> <span class="n">make_barcodes</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">product</span> <span class="n">P001</span> <span class="o">--</span><span class="n">start</span> <span class="mi">123</span> <span class="o">--</span><span class="n">count</span> <span class="mi">24</span>

@@ -85,6 +85,9 @@ as high level identifiers for making SQL queries.  For example, a product serial
 should probably be a key so that you can find the test record for a product serial number.
 Typically these <cite>key#</cite> fields are not known until the test is run and retrieves the information.
 For example, a key might be a microcontroller UID (MAC address) which is read at test time.</p>
+<p>Save the unit’s serial number (or other unique id) in <cite>key0</cite>, with <cite>add_key(“sn”, value, slot=0)</cite>.
+The Lente Throughput &amp; Yield chart uses the <cite>product</cite> and <cite>key0</cite> to count each unit once,
+see <a class="reference internal" href="lente_screenshots.html"><span class="doc">Lente screenshots</span></a>.</p>
 </section>
 <section id="test-item">
 <h3><a class="toc-backref" href="#id3" role="doc-backlink">test_item</a><a class="headerlink" href="#test-item" title="Link to this heading">¶</a></h3>
