@@ -231,6 +231,26 @@ If the item is still running 5 seconds later, Prism shows a "not responding" not
 For a long blocking driver call, give the driver its own timeout shorter than the item ``timeout``.
 
 
+Errors in a Test Item
+---------------------
+
+Prism records a test item as ``INTERNAL_ERROR``, a fail, and moves on to the teardown item when,
+
+* the item raises an exception that it does not catch
+* the item returns without calling ``self.item_start()``
+* the result passed to ``self.item_end()`` is not one of the ``ResultAPI.RECORD_RESULT_*`` constants,
+  or a list of them
+* ``self.item_end(_next="<id>")`` names an item that does not come later in the script
+
+The error is shown in the channel log and stored in the result ``errors`` list.
+
+An item that calls ``self.item_start()`` and returns without ``self.item_end()`` is recorded as
+``TIMEOUT`` when its timeout expires.
+
+The ``ResultAPI.BLOB_*`` dicts are templates.  Copy one with ``copy.deepcopy()`` before filling it in,
+as the example does; changing the template itself changes it for every later test and channel.
+
+
 Everything Example
 ------------------
 

@@ -133,8 +133,11 @@ class tst00xx(TestItem):
         # play sound based on whether passing or failing
         # NOTE: playing these sounds could have also been placed
         #       in the driver that implements player show_pass_fail()
+        # hw_fake is None if TST0xxSETUP did not get that far
         meta_result = ctx.record.record_meta_get_result()
-        if meta_result == ResultAPI.RECORD_RESULT_PASS:
+        if self.hw_fake is None:
+            self.log_bullet("no fake hardware to play a sound")
+        elif meta_result == ResultAPI.RECORD_RESULT_PASS:
             self.hw_fake.play_sound("pass")
         else:
             self.hw_fake.play_sound("fail")
@@ -370,7 +373,7 @@ class tst00xx(TestItem):
     def TST009_LogPctProgress(self):
         """ Demo a log bullet with increasing percent
 
-        {"id": "TST008_TextInput",      "enable": true, "timeout": 10 },
+        {"id": "TST009_LogPctProgress", "enable": true, "timeout": 15 },
 
         """
         ctx = self.item_start()  # always first line of test
@@ -394,7 +397,8 @@ class tst00xx(TestItem):
         """
         ctx = self.item_start()   # always first line of test
 
-        myBlob = ResultAPI.BLOB_UNKNOWN
+        # always copy a BLOB_* template, never change ResultAPI's own dict
+        myBlob = copy.deepcopy(ResultAPI.BLOB_UNKNOWN)
         # key 'data' is automatically created, or you may add your own keys
         myBlob["data"] = ''.join(random.choice(string.ascii_lowercase) for x in range(1000))
         #myBlob["my_other_key"] = json.dumps(dict(k1="data1", k2=1.23))
@@ -417,34 +421,35 @@ class tst00xx(TestItem):
         ctx = self.item_start()   # always first line of test
         from numpy import sin, arange
 
-        myPlotFigure = ResultAPI.BLOB_BOKEH_FIGURE
+        # always copy a BLOB_* template, never change ResultAPI's own dict
+        myPlotFigure = copy.deepcopy(ResultAPI.BLOB_BOKEH_FIGURE)
         myPlotFigure["title"] = "Voltage vs Current"
         myPlotFigure["x_axis_label"] = "Current"
         myPlotFigure["y_axis_label"] = "Voltage"
 
-        myPlotBlob = ResultAPI.BLOB_PLOTXY
+        myPlotBlob = copy.deepcopy(ResultAPI.BLOB_PLOTXY)
         myPlotBlob["BLOB_BOKEH_FIGURE"] = myPlotFigure
 
         # this is the waveform, could come from a scope, artificially generated example
-        myPlot = ResultAPI.BLOB_PLOTXY_PLOT
+        myPlot = copy.deepcopy(ResultAPI.BLOB_PLOTXY_PLOT)
         myPlot["legend"] = "sin wave"
         myPlot["x"] = arange(0, 3.2, 0.05).tolist()  # hundreds of data points...
         myPlot["y"] = sin(myPlot["x"]).tolist()
-        myPlotBlob["plots"].append(copy.deepcopy(myPlot))
+        myPlotBlob["plots"].append(myPlot)
 
         # upper template
-        myPlot = ResultAPI.BLOB_PLOTXY_PLOT
+        myPlot = copy.deepcopy(ResultAPI.BLOB_PLOTXY_PLOT)
         myPlot["legend"] = "upper"
         myPlot["x"] = [0.0, 1.0, 2.2, 3.2]
         myPlot["y"] = [0.1, 1.1, 1.1, 0.1]
-        myPlotBlob["plots"].append(copy.deepcopy(myPlot))
+        myPlotBlob["plots"].append(myPlot)
 
         # lower template
-        myPlot = ResultAPI.BLOB_PLOTXY_PLOT
+        myPlot = copy.deepcopy(ResultAPI.BLOB_PLOTXY_PLOT)
         myPlot["legend"] = "lower"
         myPlot["x"] = [0.1, 1.3, 1.8, 3.0]
         myPlot["y"] = [0.0, 0.9, 0.9, 0.0]
-        myPlotBlob["plots"].append(copy.deepcopy(myPlot))
+        myPlotBlob["plots"].append(myPlot)
 
         # save the blob of data
         success, msg = ctx.record.blob("sin", myPlotBlob)
