@@ -5,37 +5,39 @@ Sistemi Corporation, copyright, all rights reserved, 2023
 Martin Guthrie
 
 """
-import time
 import asyncio
 import datetime
-from threading import Timer, Lock
-from bleak import BleakScanner, BleakError
+from threading import Thread, Event, Lock
+from bleak import BleakScanner
 from bleak.backends.device import BLEDevice
 from bleak.backends.scanner import AdvertisementData
 
 try:
     # run locally
     from stublogger import StubLogger
-except:
+except ImportError:
     # run from prism
     from public.prism.drivers.common.stublogger import StubLogger
 
 
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 DRIVER_TYPE = "BLE_LISTENER"
 
 
 class BLEListener(object):
     """ Prism HW Driver for BLE Listener
-    - monitor BLE, gather/store beacon values
-    - this example stores BLE UUIDS data in a dict with the key being
-      the UID.  rssi and time of first detection is recorded as well
-    - When a UID has been around for EXPIRE_UID_TIME_SECONDS it will be removed
+    - monitor BLE, gather/store advertisement values
+    - this example stores BLE service UUIDS data in a dict with the key being
+      the UUID.  The latest rssi, tx power and advertisement are stored, with
+      the time of first and last detection
+    - When a UUID has not been seen for EXPIRE_UID_TIME_SECONDS it will be removed
 
     """
 
     EXPIRE_UID_TIME_SECONDS = 60 * 5
     SCAN_SLEEP_TIME_S = 0.5
+    START_TIMEOUT_S = 10.0
+    STOP_TIMEOUT_S = 5.0
 
     def __init__(self,
                  scan_delay_s=SCAN_SLEEP_TIME_S,
@@ -44,34 +46,51 @@ class BLEListener(object):
         if loggerIn: self.logger = loggerIn
         else: self.logger = StubLogger()
 
-        self._uniqie_id = 0
+        self._unique_id = 0
         self._id = 0
         self._running = False
-        self._expire_time = expire_time_s
+        self._expire_time = datetime.timedelta(seconds=expire_time_s)
         self._scan_delay_s = scan_delay_s
-        self._scanner = BleakScanner(detection_callback=self._device_found)
+        self._thread = None
+        self._started = Event()
         self._uids = {}
         self._lock = Lock()
-        self._last_prune = datetime.datetime.now()
 
     async def scanner(self):
         """ Scan for devices.
+        - signals self._started once the first scan started, or failed
+        - any exception stops the scanner, self._running is False on exit
         """
         self.logger.info(f"Starting scanner with {self._scan_delay_s} seconds")
         try:
+            # created here so the scanner belongs to this event loop
+            scanner = BleakScanner(detection_callback=self._device_found)
             while self._running:
-                await self._scanner.start()
-                await asyncio.sleep(self.SCAN_SLEEP_TIME_S)
-                await self._scanner.stop()
+                await scanner.start()
+                self._started.set()
+                try:
+                    await asyncio.sleep(self._scan_delay_s)
+                finally:
+                    await scanner.stop()
 
-        except BleakError as e:
-            self.logger.error(e)
+        except Exception as e:
+            # BleakError when the adapter is missing or off, OSError when D-Bus is unreachable
+            self.logger.error(f"{DRIVER_TYPE}: {type(e).__name__}: {e}")
+
+        finally:
             self._running = False
+            self._started.set()
 
         self.logger.info(f"{DRIVER_TYPE} closed")
 
+    def _prune(self):
+        """ Remove UUIDs not seen within the expire time, caller holds self._lock
+        """
+        past = datetime.datetime.now() - self._expire_time
+        self._uids = {k: v for k, v in self._uids.items() if v["timestamp"] > past}
+
     def _device_found(self, device: BLEDevice, advertisement_data: AdvertisementData):
-        """ Decode iBeacon.
+        """ Store advertisement by service UUID.
         """
         self.logger.debug(f"manu  : {advertisement_data.manufacturer_data}")
         self.logger.debug(f" data : {advertisement_data.service_data}")
@@ -79,27 +98,25 @@ class BLEListener(object):
 
         if not advertisement_data.service_uuids: return
 
+        now = datetime.datetime.now()
         with self._lock:
-            uid = advertisement_data.service_uuids[0]
-            if uid not in self._uids:
-                self.logger.info(f"uuid: {uid}")
+            for uid in advertisement_data.service_uuids:
+                uid = uid.lower()
+                first_seen = now
+                if uid in self._uids:
+                    first_seen = self._uids[uid]["first_seen"]
+                else:
+                    self.logger.info(f"uuid: {uid}")
+
                 self._uids[uid] = {"rssi": advertisement_data.rssi,
                                    "tx": advertisement_data.tx_power,
                                    "ad": advertisement_data,  # store everything, dups rssi and tx
-                                   "timestamp": datetime.datetime.now(),
-                                   "_remove": False,
+                                   "first_seen": first_seen,
+                                   "timestamp": now,  # last seen
                                    }
 
-            # prune any old entries
-            past = datetime.datetime.now() - datetime.timedelta(seconds=self._expire_time)
-            if past > self._last_prune:
-                self._uids = {k: v for k, v in self._uids.items() if v["timestamp"] > past}
-                self._last_prune = datetime.datetime.now()
-
-            # prune any devices that have been flagged for removal
-            self._uids = {k: v for k, v in self._uids.items() if not v["_remove"]}
-
-            self.logger.info(f"{len(self._uids)} items")
+            self._prune()
+            self.logger.debug(f"{len(self._uids)} items")
 
     def version(self):
         """ Version of this driver.  Typically, this would be coming
@@ -116,7 +133,7 @@ class BLEListener(object):
 
         :return: string
         """
-        return "{:04}".format(self._uniqie_id)
+        return "{:04}".format(self._unique_id)
 
     def id(self):
         """ The id is related to the channel/slot number which is related
@@ -128,30 +145,61 @@ class BLEListener(object):
         return self._id
 
     def close(self):
-        """ Always called at the end of a test sequence by Prism
-        - perform any reset, or closing of the hardware if the testing is done, or ended
-        - note the result state (Pass|Fail) of the DUT is not known and should not be assumed,
-          meaning that this hardware may be in an unknown state.  This close() function
-          allows you to get back to a known state, if required.
+        """ Called by Prism when the script is unloaded
+        - stops the scanner, waits for the scanner thread to exit
 
         :return: None
         """
         self.logger.info("closing...")
         self._running = False
+        self._join()
+
+    def _join(self):
+        if self._thread is None: return
+        self._thread.join(self._scan_delay_s + self.STOP_TIMEOUT_S)
+        if self._thread.is_alive():
+            self.logger.error("scanner thread did not exit")
+            return
+        self._thread = None
 
     def is_running(self):
         return self._running
 
-    def _timer_start_scan(self):
+    def _thread_scan(self):
         self.logger.info("starting BLE scanner")
         asyncio.run(self.scanner())
         self.logger.info("async completed")
 
-    def start_scanner(self):
-        # called by hardware driver init
-        if self._running: return
+    def start_scanner(self, timeout_s=START_TIMEOUT_S):
+        """ Start the scanner thread, and wait for the first scan to start
+        - called by hardware driver init
+
+        :param timeout_s: time to wait for the scan to start
+        :return: True if scanning, False if BLE is not available
+        """
+        if self._running: return True
+        self._join()  # a previous scanner may still be stopping
+
         self._running = True
-        Timer(0.1, self._timer_start_scan).start()
+        self._started.clear()
+        self._thread = Thread(target=self._thread_scan, name=DRIVER_TYPE, daemon=True)
+        self._thread.start()
+
+        if not self._started.wait(timeout_s):
+            self.logger.error(f"scanner did not start within {timeout_s} seconds")
+            self._running = False
+            return False
+
+        return self._running
+
+    def uids(self):
+        """ UUIDs currently seen, for debugging
+
+        :return: list of UUID strings
+        """
+        with self._lock:
+            self._prune()
+            return list(self._uids.keys())
 
     def is_uid_present(self, uid: str, remove: bool=True):
         """ Determine if BLE Advertisement was received
@@ -159,6 +207,8 @@ class BLEListener(object):
         - this function likely needs to be polled until your
           DUT UID is scanned
         - use a suitable timeout for when DUT ad is not received
+        - remove=True removes the UID, so the next DUT (with the same UID)
+          must be scanned again
 
         Expected usage,
             polling, found = 5, False
@@ -181,19 +231,23 @@ class BLEListener(object):
 
 
         :param uid: <str>
-        :return: True, <dict> if no error
+        :param remove: <bool>
+        :return: True, <dict> if no error, <dict> is None if UID not present
                  False, None if error
         """
         if not self._running:
             self.logger.error("not running")
             return False, None
 
+        uid = uid.lower()
         with self._lock:
-            if uid in self._uids:
-                self._uids[uid]["_remove"] = remove  # mark for deletion
-                return True, self._uids[uid]
+            self._prune()
+            if remove:
+                return True, self._uids.pop(uid, None)
 
-        return True, None
+            ad = self._uids.get(uid, None)
+            if ad is None: return True, None
+            return True, dict(ad)
 
     # ---------------------------------------------------------------------------------------------
     # Prism Player functions

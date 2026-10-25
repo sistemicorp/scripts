@@ -127,7 +127,9 @@ These drivers are included in `public/prism/drivers`.  Several have a `README.md
 * `A4401_BOND` - Sistemi BOND (Bed of Nails Design) tester
 * `agilent_dso_usb_1` - Agilent oscilloscope over USB (VISA)
 * `brother_ql` - Brother QL label printer
-* `ble_listener` - Bluetooth LE listener
+* `ble_listener` - Bluetooth LE listener, uses the host BlueZ through the D-Bus mount in `prism.sh`.
+  Loading a script fails if the Bluetooth adapter is off or missing.  Test the host with
+  `python3 blelistener_cli.py scan -t 30` from the driver folder
 * `prism_play` - trigger the Prism `play` (start test) feature from the command line, for CI
 * `nrfprog` - Nordic nRF programmer (nrfjprog)
 * `stlinkv3mods` - ST-LINK/V3 programmer (STM32CubeProgrammer)

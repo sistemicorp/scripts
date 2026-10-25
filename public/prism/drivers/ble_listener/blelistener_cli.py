@@ -4,7 +4,7 @@
 Sistemi Corporation, copyright, all rights reserved, 2023
 Martin Guthrie
 
-This CLI provides a linux CLI interface to Fake.
+This CLI provides a linux CLI interface to BLEListener.
 Use this CLI to test your hardware driver.
 
 Example:  (note the starting folder)
@@ -26,7 +26,9 @@ import logging
 import argparse
 from BLEListener import BLEListener
 
-# global Fake object
+LOG_FORMAT = '%(filename)20s %(levelname)6s %(lineno)4s %(message)s'
+
+# global BLEListener object
 ble_listener = None
 
 
@@ -34,6 +36,7 @@ def parse_args():
     epilog = """
     Usage examples:
        python3 blelistener_cli.py version
+       python3 blelistener_cli.py scan -t 30
 
     Getting Help for a command:
     $ python3 blelistener_cli.py version --help
@@ -43,16 +46,18 @@ def parse_args():
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
                                      epilog=epilog)
 
-    parser.add_argument("-v", '--verbose', dest='verbose', default=0, action='count', help='Increase verbosity')
+    parser.add_argument("-v", '--verbose', dest='verbose', default=0, action='count',
+                        help='Increase verbosity')
 
-    subp = parser.add_subparsers(dest="_cmd", help='commands')
+    subp = parser.add_subparsers(dest="_cmd", required=True, help='commands')
 
     uid_parser = subp.add_parser('uid')
 
     version_parser = subp.add_parser('version')
 
     scan_parser = subp.add_parser('scan')
-    scan_parser.add_argument("-t", '--time', dest='time', default=10.0, action='store', help='Time to scan in seconds')
+    scan_parser.add_argument("-t", '--time', dest='time', default=10.0, type=float, action='store',
+                             help='Time to scan in seconds')
 
     args = parser.parse_args()
     return args
@@ -74,11 +79,16 @@ def version(args):
 
 def scan(args):
     logging.info(f"Scanning for {args.time} seconds...")
-    ble_listener.start_scanner()
-    time.sleep(float(args.time))
+    if not ble_listener.start_scanner():
+        logging.error("scanner failed to start")
+        return False
+
+    time.sleep(args.time)
     logging.info("Ending scanning...")
-    ble_listener.close()
-    return True
+    running = ble_listener.is_running()  # False if the scanner failed while scanning
+    for uid in ble_listener.uids():
+        logging.info(f"found: {uid}")
+    return running
 
 
 if __name__ == '__main__':
@@ -86,9 +96,9 @@ if __name__ == '__main__':
     exit_code = 0
 
     if args.verbose == 0:
-        logging.basicConfig(level=logging.INFO, format='%(filename)20s %(levelname)6s %(lineno)4s %(message)s')
+        logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
     else:
-        logging.basicConfig(level=logging.DEBUG, format='%(filename)20s %(levelname)6s %(lineno)4s %(message)s')
+        logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
 
     ble_listener = BLEListener(loggerIn=logging)
 

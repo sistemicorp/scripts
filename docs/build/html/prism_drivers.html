@@ -144,7 +144,9 @@ for more information.</p>
 <li><p><cite>A4401_BOND</cite> - Sistemi BOND (Bed of Nails Design) tester</p></li>
 <li><p><cite>agilent_dso_usb_1</cite> - Agilent oscilloscope over USB (VISA)</p></li>
 <li><p><cite>brother_ql</cite> - Brother QL label printer</p></li>
-<li><p><cite>ble_listener</cite> - Bluetooth LE listener</p></li>
+<li><p><cite>ble_listener</cite> - Bluetooth LE listener, uses the host BlueZ through the D-Bus mount in <cite>prism.sh</cite>.
+Loading a script fails if the Bluetooth adapter is off or missing.  Test the host with
+<cite>python3 blelistener_cli.py scan -t 30</cite> from the driver folder</p></li>
 <li><p><cite>prism_play</cite> - trigger the Prism <cite>play</cite> (start test) feature from the command line, for CI</p></li>
 <li><p><cite>nrfprog</cite> - Nordic nRF programmer (nrfjprog)</p></li>
 <li><p><cite>stlinkv3mods</cite> - ST-LINK/V3 programmer (STM32CubeProgrammer)</p></li>

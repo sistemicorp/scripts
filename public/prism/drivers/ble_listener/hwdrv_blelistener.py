@@ -7,10 +7,11 @@ Martin Guthrie
 """
 import os
 import logging
+from core.const import NOTICE_TYPE
 from core.sys_log import pub_notice
 
 # import your hardware driver class, and details
-from public.prism.drivers.ble_listener.BLEListener import BLEListener, VERSION, DRIVER_TYPE
+from public.prism.drivers.ble_listener.BLEListener import BLEListener, DRIVER_TYPE
 
 
 class HWDriver(object):
@@ -28,7 +29,7 @@ class HWDriver(object):
 
     drivers is a list, so multiple HWDriver can be installed.
 
-    This is a fake HW driver to simulate and show what a HWDriver is required to do.
+    Installs the BLE Listener, a shared resource across all channels.
     """
     SFN = os.path.basename(__file__)  # for logging path
 
@@ -69,6 +70,7 @@ class HWDriver(object):
                 list:   List of installed driver dicts
         """
         drivers = []
+        sender = "{}.{}".format(self.SFN, __class__.__name__)  # for debug purposes
 
         # ------------------------------------------------------------------
         # Your specific driver discovery code goes here
@@ -76,11 +78,15 @@ class HWDriver(object):
 
         # There is only ONE BLE Listener
         _driver = BLEListener(loggerIn=self.logger)
-        _driver.start_scanner()
+        if not _driver.start_scanner():
+            msg = "BLE scanner failed to start, check the adapter is on and D-Bus is mounted"
+            self.logger.error(msg)
+            pub_notice("HWDriver:{}: {}".format(self.SFN, msg), sender=sender,
+                       type=NOTICE_TYPE.ERROR)
+            return -1, DRIVER_TYPE, []
 
         # create the dict with keys expected by Prism
         _d = {'id': _driver.id(),
-              "version": VERSION,
               "hwdrv": _driver,
               "unique_id": _driver.unique_id(),
               "version": _driver.version(),
@@ -94,8 +100,7 @@ class HWDriver(object):
         # -------------------------------------------------------------------
 
         drivers.append(_d)
-        pub_notice("HWDriver:{}: Found channel {}".format(self.SFN, 0),
-                   sender="{}.{}".format(self.SFN, __class__.__name__))
+        pub_notice("HWDriver:{}: Found channel {}".format(self.SFN, 0), sender=sender)
 
         self._num_chan = len(drivers)
         self.logger.info("{} channels found".format(self._num_chan))
