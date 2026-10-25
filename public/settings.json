@@ -50,7 +50,8 @@
   // Health checks
   // Levels: Warn, Error, Critical (case insensitive)
   // "Warn" and "Error" only appear in the notification log
-  // "Critical" additionally prevents new test sessions from starting
+  // "Critical" additionally prevents new test sessions from starting on Prism,
+  // and Lente refuses result uploads
   // First rule that matches for each health check is reported
   "health_checks": {
     "disk_space": {
