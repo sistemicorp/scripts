@@ -38,3 +38,5 @@ public/prism/manifest
 
 # vendor datasheets, reference only, not redistributed
 public/prism/drivers/A4401_BOND/MAX11311-*.pdf
+
+.venv/

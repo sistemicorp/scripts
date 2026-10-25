@@ -32,3 +32,4 @@ EMAIL: info@sistemi.ca for more information.
    _deployment
    _mes_integration
    _version_history
+   _assistant
