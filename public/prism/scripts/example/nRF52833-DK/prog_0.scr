@@ -1,7 +1,10 @@
 // Example for nRF52833-DK
 {
   "info": {
-    "product": "nrf52833_1"
+    "product": "nrf52833_1",
+    "bom": "",
+    "lot": "",
+    "location": ""
   },
   "config": {
     "fail_fast": true,

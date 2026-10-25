@@ -6,7 +6,6 @@ Martin Guthrie
 
 """
 import logging
-import time
 from core.test_item import TestItem
 from public.prism.api import ResultAPI
 
@@ -96,7 +95,7 @@ class pydso(TestItem):
 
         self.log_bullet("Switched to channel {}".format(chan))
         self.log_bullet(_bullet)
-        time.sleep(0.1) # give it some time to sit here, else its too fast
+        self.sleep(0.1)  # give it some time to sit here, else its too fast
         self.shared_lock(self.DSO).release()
         self.item_end()  # always last line of test
 
@@ -116,14 +115,14 @@ class pydso(TestItem):
         if self.dso_ch != 1:  # after reset, chan 1 is already on
             self.dso.write(':CHANnel1:DISPlay OFF')  # turn off channel 1
             self.dso.write(':CHANnel{}:DISPlay ON'.format(self.dso_ch))  # turn off channel 1
-        time.sleep(0.5) # give it some time to sit here, else its too fast
+        self.sleep(0.5)  # give it some time to sit here, else its too fast
 
         if chan50Ohm:
             self.dso.write(':CHANnel{}:IMPedance FIFTy'.format(self.dso_ch))
 
         self.logger.info("autoscale")
         self.dso.write(':AUT CHAN{}'.format(self.dso_ch))
-        time.sleep(1.0) # give it some time to sit here, else its too fast
+        self.sleep(1.0)  # give it some time to sit here, else its too fast
 
         vpp = self.dso.query(':MEASure:VPP? CHANnel{}'.format(self.dso_ch))
         value = float(vpp)

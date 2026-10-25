@@ -14,6 +14,7 @@ import time
 
 from public.prism.api import ResultAPI
 from public.prism.ResultBaseKeysV1 import ResultBaseKeysV1
+from public.prism.script_lint import lint_script, errors, LEVEL_ERROR
 from core.shared_state import SharedState
 from prism_result_scan import scan_result_file
 
@@ -90,6 +91,14 @@ class attrdict(dict):
         elif isinstance(o, tuple):
             o = tuple(attrdict.__convert(v) for v in o)
         return o
+
+
+def item_enabled(item):
+    """enable may be a bool, or "true"/"false" from a str sub"""
+    enable = item.get("enable", True)
+    if isinstance(enable, str):
+        return enable.lower() == "true"
+    return bool(enable)
 
 
 class ChanCon(object):
@@ -222,7 +231,7 @@ class ChanCon(object):
 
             for item in test["items"]:
                 self.logger.info("ITEM: {}".format(item))
-                if item.get("enable", True):
+                if item_enabled(item):
                     self._item = item
                     if not getattr(test_klass, item["id"], False):
                         msg = "method {} is not in module {}".format(item["id"], test_klass)
@@ -239,7 +248,7 @@ class ChanCon(object):
             if item != test["items"][-1]:
                 item = test["items"][-1]
                 self.logger.info("ITEM: {}".format(item))
-                if item.get("enable", True):
+                if item_enabled(item):
                     self._item = item
                     if not getattr(test_klass, item["id"], False):
                         msg = "method {} is not in module {}".format(item["id"], test_klass)
@@ -323,6 +332,7 @@ def parse_args():
 Usage examples:
     python prism_dev.py --script ./public/prism/scripts/example/prod_v0/prod_0.scr 
     python prism_dev.py --script ./public/prism/scripts/example/pybrd_v0/pybrd_0.scr 
+    python prism_dev.py --lint --script ./public/prism/scripts/example/prod_v0/prod_1.scr
 
 Sistemi Corporation, copyright, all rights reserved, 2019-2025
     """
@@ -336,6 +346,11 @@ Sistemi Corporation, copyright, all rights reserved, 2019-2025
                         required=True,
                         help="Path to script file to run")
 
+    parser.add_argument("--lint",
+                        dest="lint",
+                        action="store_true",
+                        help="Only lint the script and its test code, exit 1 on errors")
+
     parser.add_argument("--result-scan",
                         dest="result_scan",
                         action="store_true",
@@ -346,49 +361,27 @@ Sistemi Corporation, copyright, all rights reserved, 2019-2025
     return args_dict
 
 
+def lint(script, subs_applied):
+    """Log the lint findings.
+    :return: True if there are no errors
+    """
+    findings = lint_script(script, subs_applied=subs_applied)
+    for f in findings:
+        logger.log(logging.ERROR if f.level == LEVEL_ERROR else logging.WARNING, f)
+    num_errors = len(errors(findings))
+    logger.info("Script lint: {} errors, {} warnings".format(
+        num_errors, len(findings) - num_errors))
+    return num_errors == 0
+
+
 def script_validated(script):
-    if not script.get("info", False):
-        logger.error("Script is missing 'info' section")
-        return False
-
-    INFO_PRODUCT_LEN = 32
-    INFO_BOM_LEN = 32
-    INFO_LOT_LEN = 16
-    INFO_LOCATION_LEN = 128
-    INFO_CONFIG_LEN = 16
-
-    info = script["info"]
-    items = [("product", INFO_PRODUCT_LEN),
-             ("bom", INFO_BOM_LEN),
-             ("lot", INFO_LOT_LEN),
-             ("location", INFO_LOCATION_LEN)]
-    for i in items:
-        if not info.get(i[0], False):
-            logger.error(f"Script 'info' section missing {i[0]}")
-            return False
-        if len(info[i[0]]) > i[1]:
-            logger.error(f"Script 'info' section {i[0]} exceeds max length {i[1]}")
-            return False
-
-    if info.get("config", False):
-        if len(info["config"]) > INFO_CONFIG_LEN:
-            logger.error(f"Script 'info' section config exceeds max length {INFO_CONFIG_LEN}")
-            return False
-
-    if not script.get("config", False):
-        logger.error("Script is missing 'config' section")
-        return False
-
-    if not script["config"].get("drivers", False):
-        logger.error("Script is missing 'config.drivers' section")
-        return False
-
     if script.get("subs", False):
         logger.error("'subs' are not supported in console development")
         logger.error("Use prism_subs.py to process script substitutions.")
         return False
 
-    # TODO: add more stuff, check imports....
+    if not lint(script, subs_applied=True):
+        return False
 
     logger.info("Script passed validation tests")
     return True
@@ -408,6 +401,9 @@ def main():
     if not success:
         logger.error(script)
         return 1
+
+    if args["lint"]:
+        return 0 if lint(script, subs_applied=False) else 1
 
     # validate script
     if not script_validated(script):

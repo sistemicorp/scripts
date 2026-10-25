@@ -12,7 +12,10 @@
 // !! CAN ONLY RUN THIS ONCE IN PRISM !!
 {
   "info": {
-    "product": "teensy4_1"
+    "product": "teensy4_1",
+    "bom": "",
+    "lot": "",
+    "location": ""
   },
   "config": {
     "fail_fast": true,

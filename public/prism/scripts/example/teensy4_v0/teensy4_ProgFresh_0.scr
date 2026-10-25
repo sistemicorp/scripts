@@ -9,7 +9,10 @@
 //    martin@martin-virtual-machine:~/git/scripts/public/prism/scripts/example/teensy4_v0$ ../../../drivers/teensy4/server/teensy_loader_cli --mcu=TEENSY41 -w -v assets/teensy4_server.ino.hex
 {
   "info": {
-    "product": "teensy4_1"
+    "product": "teensy4_1",
+    "bom": "",
+    "lot": "",
+    "location": ""
   },
   "config": {
     "fail_fast": true,
