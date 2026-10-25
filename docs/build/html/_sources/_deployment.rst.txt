@@ -373,7 +373,11 @@ by the helper script `public/git_pull_watcher.sh`.  The button creates the file
 
 * Lente refuses the pull if the watcher is not running, and refuses Sync Script while a pull is
   in progress.
-* The result of each pull is logged in `public/.git_pull.log` on the Lente host.
+* While a pull is in progress, a spinner and `git pull in progress...` are shown next to the
+  button.  When the pull is done, a notice shows the result, for example `Already up to date.`,
+  the files changed, or the git error.  The last result and its time stay next to the button.
+* If the watcher gives no result within 5 minutes, a notice asks you to check the log.  The full
+  git output of each pull is in `public/.git_pull.log` on the Lente host.
 
 Setup, done once on the Lente host.  The full steps, with commands and troubleshooting, are in
 the comments at the top of `public/git_pull_watcher.sh`.
