@@ -247,6 +247,9 @@ The error is shown in the channel log and stored in the result ``errors`` list.
 An item that calls ``self.item_start()`` and returns without ``self.item_end()`` is recorded as
 ``TIMEOUT`` when its timeout expires.
 
+The script linter finds most of these mistakes before the script runs, see
+:ref:`_development:Script Lint`.
+
 The ``ResultAPI.BLOB_*`` dicts are templates.  Copy one with ``copy.deepcopy()`` before filling it in,
 as the example does; changing the template itself changes it for every later test and channel.
 

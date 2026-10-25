@@ -278,6 +278,8 @@ or a list of them</p></li>
 <p>The error is shown in the channel log and stored in the result <code class="docutils literal notranslate"><span class="pre">errors</span></code> list.</p>
 <p>An item that calls <code class="docutils literal notranslate"><span class="pre">self.item_start()</span></code> and returns without <code class="docutils literal notranslate"><span class="pre">self.item_end()</span></code> is recorded as
 <code class="docutils literal notranslate"><span class="pre">TIMEOUT</span></code> when its timeout expires.</p>
+<p>The script linter finds most of these mistakes before the script runs, see
+<a class="reference internal" href="_development.html#script-lint"><span class="std std-ref">Script Lint</span></a>.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">ResultAPI.BLOB_*</span></code> dicts are templates.  Copy one with <code class="docutils literal notranslate"><span class="pre">copy.deepcopy()</span></code> before filling it in,
 as the example does; changing the template itself changes it for every later test and channel.</p>
 </section>
