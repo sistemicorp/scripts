@@ -1,0 +1,43 @@
+// Example: Count barcoded items with a USB barcode scanner (keyboard mode)
+//          Barcode string looks like: P###-S#####, P### product, ##### serial number
+//          The regex groups "product" and "sn" pick the fields from the barcode,
+//          info:product is filled in from the barcode, dB key0 is the serial number
+//          The script restarts after each scan, if no scan within the item timeout,
+//          the item records TIMEOUT and the restarts stop, press channel Start to resume.
+//          Make barcodes with make_barcodes.py, see sample barcodes_P001.pdf
+{
+  "subs": {
+    "Lot": {
+      "title": "Lot (format YYYYMMDD-##)",
+      "type" : "str", "widget": "textinput",
+      "regex": "^20\\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\\d|3[01])-\\d{2}$",
+      "default": "20261025-01"
+    },
+    "Loc": {
+      "title": "Location",
+      "type" : "str", "widget": "select", "choices": ["canada/ontario/milton",
+                                                      "us/newyork/buffalo"]
+    }
+  },
+  "info": {
+    "product": "N/A",
+    "bom": "N/A",
+    "lot": "%%Lot",
+    "location": "%%Loc"
+  },
+  "config": {
+    "fail_fast": true,
+    "drivers": ["public.prism.drivers.scanners.hwdrv_scanners"]
+  },
+  "tests": [
+    {
+      "module": "public.prism.scripts.example.barcode_count_v0.tst00xx",
+      "options": { "fail_fast": false },
+      "items": [
+        {"id": "TST000_Scan",           "enable": true, "timeout": 300,
+                                        "args": {"regex": "^(?P<product>P\\d{3})-S(?P<sn>\\d{5})$"} },
+        {"id": "TST0xxTEARDOWN",        "enable": true }
+      ]
+    }
+  ]
+}

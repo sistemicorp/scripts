@@ -30,3 +30,8 @@
 
 ## nRF52833-DK
 * Example how to discover and program NRF.
+
+## barcode_count_v0
+* Count items with a USB barcode scanner, each scan of P###-S##### is one result
+* Uses the scanners HWDRV, which finds the scanner and restarts the script after each scan
+* Make QR code sheets with `make_barcodes.py`, see sample `barcodes_P001.pdf`

@@ -186,12 +186,10 @@ Notes about the command line development environment,
 
 * Results are NOT sent to the Lente Server, however a local Result file with the results
   will be created for inspection purposes.
-* script substitutions are not supported, leaving two options for developers,
-
-  * rename script `subs` section to something else and populate the subs manually, save this
-    script to a new name while developing.  Revert after everything is working.
-  * use helper script `prism_subs.py`, which will perform the substitutions.  This helper needs
-    to be modified per script it is used on.
+* script substitutions are filled in without asking, each sub uses its `default`, or else its first
+  `choices` entry, or else a placeholder (`prismdev`, or `0` for a `num` sub).  The values used
+  are logged.  To try other values, change the defaults while developing, or use the helper
+  script `prism_subs.py`, which needs to be modified per script it is used on.
 
 * the script is linted before it runs, see :ref:`_development:Script Lint`
 

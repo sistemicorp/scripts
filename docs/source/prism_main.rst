@@ -24,3 +24,4 @@ What is Prism?
    prism_drivers
    prism_accounts
    prism_travellers
+   prism_barcode_count

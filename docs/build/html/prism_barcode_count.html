@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Barcode Count Example &#8212; Sistemi Lente/Prism Test System 0.9.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=514cf933" />
+    
+    <script src="_static/documentation_options.js?v=39bb1c6d"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Lente" href="lente_main.html" />
+    <link rel="prev" title="Travellers" href="prism_travellers.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="lente_main.html" title="Lente"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="prism_travellers.html" title="Travellers"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.9.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="prism_main.html" accesskey="U">Prism</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Barcode Count Example</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="barcode-count-example">
+<h1>Barcode Count Example<a class="headerlink" href="#barcode-count-example" title="Link to this heading">¶</a></h1>
+<p>This example counts items with a USB barcode scanner.  Each item carries a 2D barcode, and every
+scan becomes one test result, so Lente counts the items, by product and lot.</p>
+<p>The example is in <cite>public/prism/scripts/example/barcode_count_v0</cite>,</p>
+<ul class="simple">
+<li><p><cite>count_0.scr</cite> - the script</p></li>
+<li><p><cite>tst00xx.py</cite> - the test program</p></li>
+<li><p><cite>make_barcodes.py</cite> - makes a PDF sheet of QR codes to print</p></li>
+<li><p><cite>barcodes_P001.pdf</cite> - a sample sheet</p></li>
+</ul>
+<p>The driver is <cite>public/prism/drivers/scanners</cite>.</p>
+<section id="barcode-format">
+<h2>Barcode Format<a class="headerlink" href="#barcode-format" title="Link to this heading">¶</a></h2>
+<p>The barcode holds <cite>P###-S#####</cite>, where <cite>P###</cite> is the product model number and <cite>#####</cite> is the
+product serial number, for example <cite>P001-S00123</cite>.</p>
+<p>The test checks each scan against the regex in the script, <cite>TST000_Scan</cite> <cite>args</cite> <cite>regex</cite>,
+<cite>^(?P&lt;product&gt;Pd{3})-S(?P&lt;sn&gt;d{5})$</cite>.  The regex groups <cite>product</cite> and <cite>sn</cite> pick the fields
+from the barcode, so a different barcode format only needs a new regex,</p>
+<ul class="simple">
+<li><p><cite>product</cite> is saved as the result <cite>info</cite> <cite>product</cite>, <cite>P001</cite></p></li>
+<li><p><cite>sn</cite> is saved as <cite>key0</cite>, <cite>sn:00123</cite></p></li>
+<li><p>the whole barcode is saved as the measurement <cite>TST000_Scan.barcode</cite></p></li>
+</ul>
+<p>A scan that does not match the format is recorded as a FAIL.</p>
+<p>Make a sheet of barcodes to print with,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">example</span><span class="o">/</span><span class="n">barcode_count_v0</span>
+<span class="n">python</span> <span class="n">make_barcodes</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">product</span> <span class="n">P001</span> <span class="o">--</span><span class="n">start</span> <span class="mi">123</span> <span class="o">--</span><span class="n">count</span> <span class="mi">24</span>
+</pre></div>
+</div>
+<p>This writes <cite>barcodes_P001.pdf</cite>, 12 codes per Letter page.</p>
+</section>
+<section id="lot">
+<h2>Lot<a class="headerlink" href="#lot" title="Link to this heading">¶</a></h2>
+<p>The <cite>Lot</cite> is entered when the script is loaded, in the format <cite>YYYYMMDD-##</cite>, a date and a two
+digit number, for example <cite>20261025-01</cite> for the first lot of the day.  It is saved as the result
+<cite>info</cite> <cite>lot</cite>, and Lente can show yield and counts by lot.</p>
+</section>
+<section id="scanner">
+<h2>Scanner<a class="headerlink" href="#scanner" title="Link to this heading">¶</a></h2>
+<p>The scanner must be in USB keyboard mode (HID), the usual factory setting.  The scanner “types” the
+barcode followed by Enter, into the Prism text box.</p>
+<ul class="simple">
+<li><p>The Prism Test Portal page must have the keyboard focus when scanning</p></li>
+<li><p>The driver finds the scanner by its USB manufacturer, see <cite>SCANNER_MANUFACTURERS</cite> in
+<cite>hwdrv_scanners.py</cite>.  Datalogic is supported, add your scanner’s manufacturer as required.
+<cite>python public/prism/drivers/scanners/hwdrv_scanners.py</cite> lists the scanners found.</p></li>
+<li><p>If no scanner is found, the script does not load</p></li>
+<li><p>A scanner in keyboard mode cannot be told apart from another scanner, or from the keyboard, so
+there is only one channel, even with more scanners attached.</p></li>
+</ul>
+</section>
+<section id="running">
+<h2>Running<a class="headerlink" href="#running" title="Link to this heading">¶</a></h2>
+<p>After the script is loaded and started, the operator just keeps scanning.  The scanner driver
+restarts the script after each scan, there is no button to press.</p>
+<p>The scan item has a 5 minute timeout (<cite>“timeout”: 300</cite> in the script).  If nothing is scanned in
+that time, the item is recorded as <cite>TIMEOUT</cite> and the script stops restarting, so an idle station
+sends one <cite>TIMEOUT</cite> result, not one every 5 minutes.  To resume, press the channel number (Start)
+button on the Test Portal, and the next good scan turns the automatic restarts back on.</p>
+<p>Change the <cite>timeout</cite> to suit, see <a class="reference internal" href="prism_programs.html#timeouts-and-aborts"><span class="std std-ref">Timeouts and Aborts</span></a>.</p>
+</section>
+<section id="command-line-testing">
+<h2>Command Line Testing<a class="headerlink" href="#command-line-testing" title="Link to this heading">¶</a></h2>
+<p>The script runs with <cite>prism_dev.py</cite> (see <a class="reference internal" href="_development.html"><span class="doc">Development</span></a>), the barcode is scanned
+into the terminal prompt,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">prism_dev</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">script</span> <span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">example</span><span class="o">/</span><span class="n">barcode_count_v0</span><span class="o">/</span><span class="n">count_0</span><span class="o">.</span><span class="n">scr</span>
+</pre></div>
+</div>
+<p><cite>prism_dev.py</cite> runs the script once, and the result file is written to the current folder.</p>
+</section>
+<section id="script">
+<h2>Script<a class="headerlink" href="#script" title="Link to this heading">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Example</span><span class="p">:</span> <span class="n">Count</span> <span class="n">barcoded</span> <span class="n">items</span> <span class="k">with</span> <span class="n">a</span> <span class="n">USB</span> <span class="n">barcode</span> <span class="n">scanner</span> <span class="p">(</span><span class="n">keyboard</span> <span class="n">mode</span><span class="p">)</span>
+<span class="o">//</span>          <span class="n">Barcode</span> <span class="n">string</span> <span class="n">looks</span> <span class="n">like</span><span class="p">:</span> <span class="n">P</span><span class="c1">###-S#####, P### product, ##### serial number</span>
+<span class="o">//</span>          <span class="n">The</span> <span class="n">regex</span> <span class="n">groups</span> <span class="s2">&quot;product&quot;</span> <span class="ow">and</span> <span class="s2">&quot;sn&quot;</span> <span class="n">pick</span> <span class="n">the</span> <span class="n">fields</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">barcode</span><span class="p">,</span>
+<span class="o">//</span>          <span class="n">info</span><span class="p">:</span><span class="n">product</span> <span class="ow">is</span> <span class="n">filled</span> <span class="ow">in</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">barcode</span><span class="p">,</span> <span class="n">dB</span> <span class="n">key0</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">serial</span> <span class="n">number</span>
+<span class="o">//</span>          <span class="n">The</span> <span class="n">script</span> <span class="n">restarts</span> <span class="n">after</span> <span class="n">each</span> <span class="n">scan</span><span class="p">,</span> <span class="k">if</span> <span class="n">no</span> <span class="n">scan</span> <span class="n">within</span> <span class="n">the</span> <span class="n">item</span> <span class="n">timeout</span><span class="p">,</span>
+<span class="o">//</span>          <span class="n">the</span> <span class="n">item</span> <span class="n">records</span> <span class="n">TIMEOUT</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">restarts</span> <span class="n">stop</span><span class="p">,</span> <span class="n">press</span> <span class="n">channel</span> <span class="n">Start</span> <span class="n">to</span> <span class="n">resume</span><span class="o">.</span>
+<span class="o">//</span>          <span class="n">Make</span> <span class="n">barcodes</span> <span class="k">with</span> <span class="n">make_barcodes</span><span class="o">.</span><span class="n">py</span><span class="p">,</span> <span class="n">see</span> <span class="n">sample</span> <span class="n">barcodes_P001</span><span class="o">.</span><span class="n">pdf</span>
+<span class="p">{</span>
+  <span class="s2">&quot;subs&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;Lot&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Lot (format YYYYMMDD-##)&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span> <span class="p">:</span> <span class="s2">&quot;str&quot;</span><span class="p">,</span> <span class="s2">&quot;widget&quot;</span><span class="p">:</span> <span class="s2">&quot;textinput&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;regex&quot;</span><span class="p">:</span> <span class="s2">&quot;^20</span><span class="se">\\</span><span class="s2">d</span><span class="si">{2}</span><span class="s2">(0[1-9]|1[0-2])(0[1-9]|[12]</span><span class="se">\\</span><span class="s2">d|3[01])-</span><span class="se">\\</span><span class="s2">d</span><span class="si">{2}</span><span class="s2">$&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;20261025-01&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;Loc&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Location&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span> <span class="p">:</span> <span class="s2">&quot;str&quot;</span><span class="p">,</span> <span class="s2">&quot;widget&quot;</span><span class="p">:</span> <span class="s2">&quot;select&quot;</span><span class="p">,</span> <span class="s2">&quot;choices&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;canada/ontario/milton&quot;</span><span class="p">,</span>
+                                                      <span class="s2">&quot;us/newyork/buffalo&quot;</span><span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;info&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;product&quot;</span><span class="p">:</span> <span class="s2">&quot;N/A&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;bom&quot;</span><span class="p">:</span> <span class="s2">&quot;N/A&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;lot&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%%</span><span class="s2">Lot&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%%</span><span class="s2">Loc&quot;</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;fail_fast&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s2">&quot;drivers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;public.prism.drivers.scanners.hwdrv_scanners&quot;</span><span class="p">]</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;tests&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;public.prism.scripts.example.barcode_count_v0.tst00xx&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;options&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;fail_fast&quot;</span><span class="p">:</span> <span class="n">false</span> <span class="p">},</span>
+      <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST000_Scan&quot;</span><span class="p">,</span>           <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">300</span><span class="p">,</span>
+                                        <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;regex&quot;</span><span class="p">:</span> <span class="s2">&quot;^(?P&lt;product&gt;P</span><span class="se">\\</span><span class="s2">d</span><span class="si">{3}</span><span class="s2">)-S(?P&lt;sn&gt;</span><span class="se">\\</span><span class="s2">d</span><span class="si">{5}</span><span class="s2">)$&quot;</span><span class="p">}</span> <span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST0xxTEARDOWN&quot;</span><span class="p">,</span>        <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span> <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="program">
+<h2>Program<a class="headerlink" href="#program" title="Link to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#! /usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Sistemi Corporation, copyright, all rights reserved, 2026</span>
+<span class="sd">Martin Guthrie</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">core.test_item</span> <span class="kn">import</span> <span class="n">TestItem</span>
+<span class="kn">from</span> <span class="nn">public.prism.api</span> <span class="kn">import</span> <span class="n">ResultAPI</span>
+
+<span class="kn">from</span> <span class="nn">public.prism.drivers.scanners.Scanners</span> <span class="kn">import</span> <span class="n">DRIVER_TYPE</span> <span class="k">as</span> <span class="n">DRIVER_TYPE_SCANNER</span>
+
+
+<span class="c1"># file and class name must match</span>
+<span class="k">class</span> <span class="nc">tst00xx</span><span class="p">(</span><span class="n">TestItem</span><span class="p">):</span>
+
+    <span class="c1"># The item timeout ends the textbox wait, so this only has to be longer than any item timeout</span>
+    <span class="n">TEXTBOX_TIMEOUT_SEC</span> <span class="o">=</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">controller</span><span class="p">,</span> <span class="n">chan</span><span class="p">,</span> <span class="n">shared_state</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">controller</span><span class="p">,</span> <span class="n">chan</span><span class="p">,</span> <span class="n">shared_state</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;tst00xx.</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chan</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_scanner</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; The scanner driver for this channel, or None &quot;&quot;&quot;</span>
+        <span class="n">drivers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_state</span><span class="o">.</span><span class="n">get_drivers</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chan</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">DRIVER_TYPE_SCANNER</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">drivers</span><span class="p">:</span> <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">drivers</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;obj&quot;</span><span class="p">][</span><span class="s2">&quot;hwdrv&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">TST0xxTEARDOWN</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;  Always called at the end of testing</span>
+<span class="sd">        - process any cleanup, closing, etc</span>
+
+<span class="sd">            {&quot;id&quot;: &quot;TST0xxTEARDOWN&quot;,        &quot;enable&quot;: true },</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span>  <span class="c1"># always last line of test</span>
+
+    <span class="k">def</span> <span class="nf">TST000_Scan</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Scan barcode</span>
+<span class="sd">        - args.regex is the barcode format, P###-S#####, its groups &quot;product&quot; and &quot;sn&quot;</span>
+<span class="sd">          pick the fields, product goes to info product, sn is the serial number key</span>
+<span class="sd">        - if nothing is scanned before the item timeout, Prism records TIMEOUT,</span>
+<span class="sd">          and the scanner stops restarting the script, until the next good scan</span>
+
+<span class="sd">        {&quot;id&quot;: &quot;TST000_Scan&quot;, &quot;enable&quot;: true, &quot;timeout&quot;: 300,</span>
+<span class="sd">                              &quot;args&quot;: {&quot;regex&quot;: &quot;^(?P&lt;product&gt;P\\d{3})-S(?P&lt;sn&gt;\\d{5})$&quot;} },</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>   <span class="c1"># always first line of test</span>
+        <span class="n">scanner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scanner</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;Scan barcode&quot;</span><span class="p">)</span>
+        <span class="n">user_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_textbox</span><span class="p">(</span><span class="s2">&quot;Scan:&quot;</span><span class="p">,</span> <span class="s2">&quot;barcode&quot;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">TEXTBOX_TIMEOUT_SEC</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">user_text</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]:</span>
+            <span class="c1"># timed out or aborted, stop restarting the script, Prism records the TIMEOUT</span>
+            <span class="k">if</span> <span class="n">scanner</span><span class="p">:</span> <span class="n">scanner</span><span class="o">.</span><span class="n">stop_player</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;No scan: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">user_text</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;err&quot;</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;Press channel Start to resume&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_FAIL</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">barcode</span> <span class="o">=</span> <span class="n">user_text</span><span class="p">[</span><span class="s2">&quot;textbox&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">regex</span><span class="p">,</span> <span class="n">barcode</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_result</span><span class="p">,</span> <span class="n">_bullet</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span><span class="s2">&quot;barcode&quot;</span><span class="p">,</span> <span class="n">barcode</span><span class="p">,</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_STRING</span><span class="p">,</span>
+                                                         <span class="n">force_fail</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;Bad format: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">barcode</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">_result</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">record_info_set</span><span class="p">({</span><span class="s2">&quot;product&quot;</span><span class="p">:</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;product&quot;</span><span class="p">)})</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">add_key</span><span class="p">(</span><span class="s2">&quot;sn&quot;</span><span class="p">,</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;sn&quot;</span><span class="p">),</span> <span class="n">slot</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Note: ResultAPI.UNIT_STRING is used to format the measurement correctly in JSON</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">_result</span><span class="p">,</span> <span class="n">_bullet</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span><span class="s2">&quot;barcode&quot;</span><span class="p">,</span> <span class="n">barcode</span><span class="p">,</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_STRING</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="n">_bullet</span><span class="p">)</span>
+
+        <span class="c1"># a good scan (re)starts the automatic restarts, after a timeout and channel Start</span>
+        <span class="k">if</span> <span class="n">scanner</span><span class="p">:</span> <span class="n">scanner</span><span class="o">.</span><span class="n">start_player</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">_result</span><span class="p">)</span>  <span class="c1"># always last line of test</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="prism_travellers.html"
+                          title="previous chapter">Travellers</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="lente_main.html"
+                          title="next chapter">Lente</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="lente_main.html" title="Lente"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="prism_travellers.html" title="Travellers"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.9.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="prism_main.html" >Prism</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Barcode Count Example</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2019-2025, Sistemi Corp, info@sistemi.ca.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

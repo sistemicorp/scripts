@@ -218,14 +218,10 @@ Sistemi Corporation, copyright, all rights reserved, 2019-2025
 </li>
 <li><p>Results are NOT sent to the Lente Server, however a local Result file with the results
 will be created for inspection purposes.</p></li>
-<li><p>script substitutions are not supported, leaving two options for developers,</p>
-<ul>
-<li><p>rename script <cite>subs</cite> section to something else and populate the subs manually, save this
-script to a new name while developing.  Revert after everything is working.</p></li>
-<li><p>use helper script <cite>prism_subs.py</cite>, which will perform the substitutions.  This helper needs
-to be modified per script it is used on.</p></li>
-</ul>
-</li>
+<li><p>script substitutions are filled in without asking, each sub uses its <cite>default</cite>, or else its first
+<cite>choices</cite> entry, or else a placeholder (<cite>prismdev</cite>, or <cite>0</cite> for a <cite>num</cite> sub).  The values used
+are logged.  To try other values, change the defaults while developing, or use the helper
+script <cite>prism_subs.py</cite>, which needs to be modified per script it is used on.</p></li>
 <li><p>the script is linted before it runs, see <a class="reference internal" href="#script-lint"><span class="std std-ref">Script Lint</span></a></p></li>
 </ul>
 <p>After your script is running in the command line mode, you can try it in the Prism GUI.</p>

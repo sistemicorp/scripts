@@ -57,6 +57,8 @@ screenshots.
   see :ref:`Timeouts and Aborts <prism_programs:Timeouts and Aborts>`
 * A test item still running after its timeout is forced to stop, and Prism shows a notice
   if it does not respond.  Prism no longer hangs on restart or exit while an item is stuck.
+* Barcode scanner counting example, see :doc:`Barcode Count Example <prism_barcode_count>`
+* `prism_dev.py` runs scripts with `subs`, using each sub's default or first choice
 
 Bug fixes,
 

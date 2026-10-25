@@ -10,6 +10,7 @@ import sys
 import argparse
 import jstyleson
 import importlib
+import json
 import time
 
 from public.prism.api import ResultAPI
@@ -17,6 +18,7 @@ from public.prism.ResultBaseKeysV1 import ResultBaseKeysV1
 from public.prism.script_lint import lint_script, errors, LEVEL_ERROR
 from core.shared_state import SharedState
 from prism_result_scan import scan_result_file
+from prism_subs import find_sub_items_replace
 
 import logging
 import logging.handlers as handlers
@@ -374,12 +376,33 @@ def lint(script, subs_applied):
     return num_errors == 0
 
 
-def script_validated(script):
-    if script.get("subs", False):
-        logger.error("'subs' are not supported in console development")
-        logger.error("Use prism_subs.py to process script substitutions.")
-        return False
+# value for a sub with no default or choices
+SUB_PLACEHOLDER_STR = "prismdev"
+SUB_PLACEHOLDER_NUM = 0
 
+
+def apply_sub_defaults(script):
+    """ Fill each script sub with its default, its first choice, or a placeholder
+    - in the Prism GUI the operator enters the subs, here nobody is asked
+    :return: script without subs, or None on error
+    """
+    replacements = []
+    for name, sub in script.get("subs", {}).items():
+        if "default" in sub: value = sub["default"]
+        elif sub.get("choices"): value = sub["choices"][0]
+        elif sub.get("type") == "num": value = SUB_PLACEHOLDER_NUM
+        else: value = SUB_PLACEHOLDER_STR
+        logger.info("sub {} = {}".format(name, value))
+        replacements.append({name: str(value)})
+
+    script_text = find_sub_items_replace(json.dumps(script), replacements)
+    if script_text is None: return None
+    script = jstyleson.loads(script_text)
+    script.pop("subs", None)
+    return script
+
+
+def script_validated(script):
     if not lint(script, subs_applied=True):
         return False
 
@@ -404,6 +427,12 @@ def main():
 
     if args["lint"]:
         return 0 if lint(script, subs_applied=False) else 1
+
+    if script.get("subs", False):
+        script = apply_sub_defaults(script)
+        if script is None:
+            logger.error("Script subs failed")
+            return 1
 
     # validate script
     if not script_validated(script):
