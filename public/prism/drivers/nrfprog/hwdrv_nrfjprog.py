@@ -8,9 +8,10 @@ Martin guthrie
 import os
 import logging
 import pyudev
+from core.const import NOTICE_TYPE
 from core.sys_log import pub_notice
 
-from public.prism.drivers.nrfprog.NRFProg import NRFProg, DRIVER_TYPE
+from public.prism.drivers.nrfprog.NRFProg import NRFProg, DRIVER_TYPE, cli_version
 
 # Information:
 # USB Property Keys:
@@ -75,6 +76,14 @@ class HWDriver(object):
                 list:   List of installed driver dicts
         """
         sender = "{}.{}".format(self.SFN, __class__.__name__)  # for debug purposes
+
+        # nRF Command Line Tools are installed per station, check nrfjprog is there and runs
+        success, version = cli_version()
+        if not success:
+            self.logger.error(version)
+            pub_notice("HWDriver:{}: {}".format(self.SFN, version), sender=sender, type=NOTICE_TYPE.ERROR)
+            return -1, DRIVER_TYPE, []
+        self.logger.info(version)
 
         found_serial_nums = []
         context = pyudev.Context()

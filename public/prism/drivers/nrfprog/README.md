@@ -1,102 +1,78 @@
-NRF prog Install 
-================
+# Nordic nRF Programmer (nrfjprog)
 
-Versions for these instructions:
+## Related links
 
-    nrfjprog version: 10.18.1 external
-    JLinkARM.dll version: 7.82f
+https://www.nordicsemi.com/Products/Development-tools/nRF-Command-Line-Tools/Download
 
-
-1) Download tools
-
-https://www.nordicsemi.com/Products/Development-tools/nrf-command-line-tools/download
-
-Open the `deb` file with "software installer" (not archive manager) and install.
-
-NRF tools should get installed here,
-
-    $ ll /opt/nrf-command-line-tools/bin
-    total 16132
-    drwxr-xr-x 2 root root     4096 Dec 12 13:57 ./
-    drwxr-xr-x 7 root root     4096 Dec 12 13:57 ../
-    -rwxr-xr-x 1 root root 10238112 Oct 13 10:12 jlinkarm_nrf_worker_linux*
-    -rwxr-xr-x 1 root root  2105336 Oct 13 10:12 mergehex*
-    -rwxr-xr-x 1 root root  4164848 Oct 13 10:12 nrfjprog*
-
-Get familiar with the CLI: 
-
-    $ nrfjprog
-    
-    Usage: 
-    -------------------------------------------------------------------------------
-     -q  --quiet                 Reduces the stdout info. Must be combined with
-                                 another command.
-     -h  --help                  Displays this help.
-     -v  --version               Displays the nrfjprog and dll versions.
-    ... 
+Nordic has archived the nRF Command Line Tools (replaced by nRF Util), the
+last release is 10.24.2.  It is still available for download.
 
 
+## Installing nRF Command Line Tools
 
-There also seems to be a Python wrapper:
-https://www.nordicsemi.com/Products/Development-tools/nRF-Pynrfjprog/Download?lang=en#infotabs
-(though would have to be supported in prism (a08) image, so don't use this until its supported)
+This driver runs `nrfjprog` from the nRF Command Line Tools.  The tools are
+installed on each Prism station, they are not part of the scripts that Lente
+syncs to the station.
 
-2) In order for Prism to run this tool, it needs to be in scripts. 
- 
-Copy the NRF binaries to this folder
+The driver expects the tool at,
 
+    ~/scripts/public/tools/nrf-command-line-tools/bin/nrfjprog
 
-    cp /opt/nrf-command-line-tools/lib/* .
-    cp /opt/nrf-command-line-tools/bin/* .
-    cp /opt/nrf-command-line-tools/share/config.toml .
+`public/tools/` is ignored by git and is not touched by a Lente script sync.
+Prism sees it as `/app/public/tools/` through its existing `public` mount.
 
+`nrfjprog` also needs the Segger J-Link library.  This is already installed
+in the Prism Docker image (`/opt/SEGGER/JLink`), so only the Nordic tools are
+installed here.  The image uses J-Link V8.72: with J-Link V9.x, nrfjprog
+10.24.2 prints `JLinkARM.dll reported error -256` on every call and takes
+about 7 s longer to connect to the probe.
 
-The directory should look like this when done,
+* Download the Linux x86 64 `tar.gz` (not the `deb`) of version 10.24.2,
+  `nrf-command-line-tools-10.24.2_linux-amd64.tar.gz`.
+  By installing you accept the Nordic licence agreement.
+* As the station user (not root), unpack only the `nrf-command-line-tools`
+  folder.  The J-Link package in the tar is not needed.
 
-    ~/git/scripts/public/prism/drivers/nrfprog$ ll
-    total 87540
-    drwxrwxr-x  3 martin martin     4096 Dec 12 15:41 ./
-    drwxr-xr-x 10 martin martin     4096 Dec 12 13:54 ../
-    -rw-r--r--  1 martin martin     5855 Dec 12 14:14 config.toml
-    -rw-rw-r--  1 martin martin     4681 Dec 12 15:39 hwdrv_nrfprog.py
-    -rwxr-xr-x  1 martin martin 10238112 Dec 12 14:11 jlinkarm_nrf_worker_linux*
-    -rw-r--r--  1 martin martin  2821064 Dec 12 14:16 libhighlevelnrfjprog.so
-    -rw-r--r--  1 martin martin 10511144 Dec 12 14:16 libjlinkarm_nrf51_nrfjprogdll.so
-    -rw-r--r--  1 martin martin 10511144 Dec 12 14:16 libjlinkarm_nrf52_nrfjprogdll.so
-    -rw-r--r--  1 martin martin 10511144 Dec 12 14:16 libjlinkarm_nrf53_nrfjprogdll.so
-    -rw-r--r--  1 martin martin 10511144 Dec 12 14:16 libjlinkarm_nrf91_nrfjprogdll.so
-    -rw-r--r--  1 martin martin 11176792 Dec 12 14:16 libjlinkarm_unknown_nrfjprogdll.so
-    -rw-r--r--  1 martin martin  8149520 Dec 12 14:16 libnrfdfu.so
-    -rw-r--r--  1 martin martin 10981656 Dec 12 14:16 libnrfjprogdll.so
-    -rwxr-xr-x  1 martin martin  4164848 Dec 12 14:11 nrfjprog*
-    -rw-rw-r--  1 martin martin     2460 Dec 12 15:39 NRFProg.py
-    drwxrwxr-x  2 martin martin     4096 Dec 12 14:29 __pycache__/
-    -rw-rw-r--  1 martin martin     2003 Dec 12 14:24 README.md
-    -rw-rw-r--  1 martin martin      460 Dec  9 10:30 stublogger.py
+      mkdir -p ~/scripts/public/tools
+      tar xzf ~/Downloads/nrf-command-line-tools-10.24.2_linux-amd64.tar.gz \
+          -C ~/scripts/public/tools ./nrf-command-line-tools
 
+* Check the tool runs inside Prism (it will not run on the host unless J-Link
+  is installed there too),
 
+      docker exec prism /app/public/tools/nrf-command-line-tools/bin/nrfjprog --version
 
-3) Confirm tool is working, have JLINK connected and try,
+  which should show,
 
+      nrfjprog version: 10.24.2 external
+      JLinkARM.dll version: 8.72
 
-    $ ./nrfjprog --ids --expand
-    ---------- Emulators ----------
-    serial number:      821009733
-    connection type:    USB
-    -------------------------------
-    serial number:      821009774
-    connection type:    USB
-    -------------------------------
+When Prism loads a script that uses this driver, `discover_channels()` runs
+`nrfjprog --version`.  If the tool is missing or cannot load the J-Link
+library, the driver logs an error and shows a Prism notice that points to
+this README.
+
+To uninstall, delete `~/scripts/public/tools/nrf-command-line-tools`.
 
 
-4) Confirm `hwdrv_nrfprog.py` can find the Seggers.  
-   Run `hwdrv_nrfprog.py` from within PyCharm, and remember to set the
-   working directory to `~/git/scripts`
+## Debugging
 
+With a J-Link connected, list the probes from inside Prism,
 
-    INFO:hwdrv_nrfprog.py:Start
-    INFO:hwdrv_nrfprog.py:[{'id': 'SEGGER_J-Link_000821009733', 'usb_path': '/devices/pci0000:00/0000:00:08.1/0000:03:00.3/usb1/1-2/1-2.1/1-2.1.4/1-2.1.4.2', 'version': '0.0.1', 'serial': '000821009733'}, {'id': 'SEGGER_J-Link_000821009774', 'usb_path': '/devices/pci0000:00/0000:00:08.1/0000:03:00.3/usb1/1-2/1-2.2/1-2.2.4/1-2.2.4.2', 'version': '0.0.1', 'serial': '000821009774'}]
-    INFO:sys_log:HWDriver:hwdrv_nrfprog.py: Found 2!
-    INFO:hwdrv_nrfprog.py:Done: 2 channels
+    $ docker exec prism /app/public/tools/nrf-command-line-tools/bin/nrfjprog --ids
+    821009733
+    821009774
+
+To confirm `hwdrv_nrfjprog.py` can find the Seggers, run it with the working
+directory set to `~/git/scripts` (in PyCharm, or from the command line).
+This needs J-Link installed on the host.
+
+    INFO:hwdrv_nrfjprog.py:Start
+    INFO:hwdrv_nrfjprog.py:nrfjprog 10.24.2, JLinkARM 8.72
+    INFO:hwdrv_nrfjprog.py:[{'id': 0, ..., 'unique_id': '821009733', 'usb_path': '/devices/pci0000:00/0000:00:08.1/0000:03:00.3/usb1/1-2/1-2.1/1-2.1.4/1-2.1.4.2', 'version': '0.0.1'}, {'id': 1, ..., 'unique_id': '821009774', ...}]
+    INFO:sys_log:HWDriver:hwdrv_nrfjprog.py: Found 2!
+    INFO:hwdrv_nrfjprog.py:Done: 2 channels
     INFO:root:Number channels: 2
 
+The CLI help (`nrfjprog --help`) lists all commands, for example `--program`,
+`--recover`, `--sectorerase`, `--verify`, `--reset`.

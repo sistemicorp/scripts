@@ -5,6 +5,7 @@ Sistemi Corporation, copyright, all rights reserved, 2022
 Martin Guthrie
 
 """
+import re
 import logging
 import threading
 import subprocess
@@ -18,6 +19,36 @@ except:
 
 
 DRIVER_TYPE = "NRFJPROG"
+
+# nRF Command Line Tools are installed per station, see README.md
+NRFJPROG_PATH = './public/tools/nrf-command-line-tools/bin/nrfjprog'
+
+
+def cli_version():
+    """ check nrfjprog is installed and can load the J-Link library
+
+    :return: <True/False>, <version string or error message>
+    """
+    try:
+        result = subprocess.run([NRFJPROG_PATH, "--version"], capture_output=True,
+                                text=True, check=False, timeout=30)
+    except FileNotFoundError:
+        return False, f"{NRFJPROG_PATH} not found, install nRF Command Line Tools, see drivers/nrfprog/README.md"
+    except Exception as e:
+        return False, f"{NRFJPROG_PATH} failed: {e}"
+
+    if result.returncode != 0:
+        # nrfjprog explains the failure in its first "ERROR:" line
+        lines = (result.stdout + result.stderr).splitlines()
+        errors = [l for l in lines if l.startswith("ERROR:")] or lines[-1:]
+        return False, f"{NRFJPROG_PATH} rc {result.returncode}: {' '.join(errors[:1])}"
+
+    nrfjprog = re.search(r"nrfjprog version: (\S+)", result.stdout)
+    jlink = re.search(r"JLinkARM.dll version: (\S+)", result.stdout)
+    if not nrfjprog or not jlink:
+        return False, f"{NRFJPROG_PATH} version not found in output"
+
+    return True, f"nrfjprog {nrfjprog.group(1)}, JLinkARM {jlink.group(1)}"
 
 
 class NRFProg:
@@ -73,7 +104,7 @@ class NRFProg:
 
         :return:
         """
-        cmd = ['./public/prism/drivers/nrfprog/nrfjprog']
+        cmd = [NRFJPROG_PATH]
 
         cmd.append("--snr")
         cmd.append(self.serial_num)
@@ -97,7 +128,7 @@ class NRFProg:
         :param reset:
         :return: subprocess.run object
         """
-        cmd = ['./public/prism/drivers/nrfprog/nrfjprog']
+        cmd = [NRFJPROG_PATH]
 
         cmd.append("--snr")
         cmd.append(self.serial_num)

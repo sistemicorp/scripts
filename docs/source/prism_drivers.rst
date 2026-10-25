@@ -143,6 +143,6 @@ These drivers are included in `public/prism/drivers`.  Several have a `README.md
     checks its tool runs when Prism loads a script.
 
     * `stlinkv3mods` - see `public/prism/drivers/stlinkv3mods/README.md`
-    * `nrfprog` - instructions to follow, until then this driver will not find its tool
+    * `nrfprog` - see `public/prism/drivers/nrfprog/README.md`
 
     Segger J-Link is installed in the Prism Docker image (`/opt/SEGGER/JLink`) and needs no host install.
