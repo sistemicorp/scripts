@@ -112,6 +112,15 @@ it waits and runs after they log out.</p></li>
 <li><p><cite>git pull</cite> (shown only on the root Lente, <cite>“root_authority”: true</cite>) updates the Lente scripts from
 GitHub.  It requires <cite>public/git_pull_watcher.sh</cite> to be running on the Lente host, see
 <a class="reference internal" href="_deployment.html#lente-git-pull"><span class="std std-ref">Lente Git Pull</span></a>.</p></li>
+<li><p><cite>Offline Stations</cite> lists every station that has pinged this Lente but is not pinging now, with its
+last version, IP and when it was last seen.  Stations from downstream Lentes are included.
+The list is kept in <cite>public/stations.sqlite</cite>, so it survives a Lente restart.  A station moves
+back to the live list when it pings again.</p>
+<ul>
+<li><p><cite>Remove</cite> and <cite>Remove All</cite> permanently delete offline stations from the list, for stations
+that are no longer in service.  A removed station that pings again is added back.</p></li>
+</ul>
+</li>
 <li><p><cite>Station Logs</cite> below lists station events, filtered by the Type/Computer/Version/Cause and date selections</p></li>
 </ul>
 <img alt="_images/Screenshot_lente_station_mgr.png" src="_images/Screenshot_lente_station_mgr.png" />
