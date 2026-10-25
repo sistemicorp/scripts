@@ -79,7 +79,42 @@ Things to read before starting:
    - In the Library Manager put ArduinoJson (ver 7.4.2) in the search bar. Install the library.
    - In the Library Manager put INA226_WE (ver 1.3.0) in the search bar. Install the library.
 
-4) Open teensy4_server.ino with the Arduino IDE.  This is where you will find `setup()` and `loop()`.
+4) Open teensy4_server.ino with the Arduino IDE.  This is where you will find `setup()`, `loop()` and
+   the RPC table.
+
+   Code organization: `teensy4_server.ino` is kept small, every module is a `.h`/`.cpp` pair.
+   The header lists the module's internal API (for other modules) and its RPC API.
+
+       teensy4_server.ino   setup(), loop() and the RPC table
+       version.h            firmware version, must match the Python driver
+       bond_pins.h          Teensy pin assignments
+       bond_board.*         shared on-board I2C devices (INA226s, TMP1075, CYPD3176)
+       bond_teensy.*        Teensy functions: ids, status, GPIO, ADC, supply rail BIST
+       bond_max_iox.*       MAX11311 IO expander: LEDs, self test, VBAT enables
+       bond_max_hdr.*       MAX11311 on DUT headers 1-4
+       bond_vdut.*          VDUT supply (TPS55289)
+       battemu.*            battery emulator (VBAT)
+       bond_selftest.*      reset (DUT safe state) and the power up self test
+       rpc_helpers.*        RPC response document helpers
+       src/                 device libraries (MAX11311, OLED, TMP1075, CYPD3176)
+
+   Rules,
+   - An RPC function never calls another RPC function, there is one response document.
+     Call the module's internal function instead, see `rpc_helpers.h`.
+   - The display is written from `loop()`, so RPCs don't wait on it. Errors during `setup()`
+     stay on the display for 2s so they can be read.
+   - Bump `version.h` on every change, the Python driver refuses a different version.
+
+   Command line build (no IDE), uses the arduino-cli bundled with the IDE and the IDE's libraries,
+
+       ~/git/scripts/public/prism/drivers/A4401_BOND/server/teensy4_server$ \
+         /opt/arduino-ide_2.3.6_Linux_64bit/resources/app/lib/backend/resources/arduino-cli compile \
+           --config-file ~/.arduinoIDE/arduino-cli.yaml -b teensy:avr:teensy41 --output-dir /tmp/bond_build .
+       ~/git/scripts/public/prism/drivers/A4401_BOND/server$ ./teensy_loader_cli --mcu=TEENSY41 -w -v -s /tmp/bond_build/teensy4_server.ino.hex
+
+   The first `teensy_loader_cli` run often reports "error writing to Teensy", the Teensy is then
+   in the bootloader, run it again without `-s`. BOND takes ~25s to boot (battery emulator
+   calibration and self test).
 
 5) Generating a Hex file from Arduino
     - In Arduino IDE, File->Preferences, turn on Show Verbose Output During: Compilation

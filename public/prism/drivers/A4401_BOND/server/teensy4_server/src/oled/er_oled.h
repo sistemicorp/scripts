@@ -12,7 +12,8 @@ EastRising Technology Co.,LTD
 #define OLED_HEIGHT 64
 #define PAGES OLED_HEIGHT/8
 
-#define OLED_RST  8 
+// No reset pin, the BOND I2C module (ER-OLEDM013-1W-I2C) has no reset line to Teensy.
+// Teensy pin 8 is the MAX11311 ADC_CNVRT signal.
 //I2C
 #define IIC_CMD        0X00
 #define IIC_RAM        0X40
@@ -22,6 +23,7 @@ EastRising Technology Co.,LTD
 
 void er_oled_begin();
 void er_oled_display(uint8_t* buffer);
+void er_oled_display_pages(uint8_t* buffer, uint8_t page_mask);
 void er_oled_clear(uint8_t* buffer);
 void er_oled_pixel(int x,int y,char color, uint8_t* buffer);
 void er_oled_bitmap(uint8_t x,uint8_t y,const uint8_t *pBmp, uint8_t chWidth, uint8_t chHeight, uint8_t* buffer);

@@ -1,13 +1,14 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2021-2025
+Sistemi Corporation, copyright, all rights reserved, 2021-2026
 Owen Li, Martin Guthrie
 
 """
 import os
 import logging
 import pyudev
+from core.const import NOTICE_TYPE
 from core.sys_log import pub_notice
 
 from public.prism.drivers.A4401_BOND.A4401_BOND import A4401_BOND, DRIVER_TYPE
@@ -23,7 +24,8 @@ class HWDriver(object):
 
       "config": {
         # drivers: list of code to initialize the test environment, must be specified
-        "drivers": ["public.prism.drivers.teensy4.hwdrv_teensy4"]
+        "drivers": [["public.prism.drivers.A4401_BOND.hwdrv_A4401_BOND",
+                     "<path to pogo_hdr_definition._json>"]]
       },
 
     """
@@ -74,76 +76,54 @@ class HWDriver(object):
         # Iterate through all available tty devices
         for device in context.list_devices(subsystem='tty'):
             # We are only interested in ttyACM devices
-            if 'ttyACM' in device.device_node:
-                # Walk up the device tree to find the parent USB device.
-                # The 'usb_device' is the main device, and 'usb' is the subsystem.
-                usb_device = device.find_parent('usb', 'usb_device')
-                if usb_device:
-                    manufacturer = usb_device.attributes.get('manufacturer')
-                    # Check if the manufacturer is "Teensyduino"
-                    if manufacturer and manufacturer.decode('utf-8') == 'Teensyduino':
-                        # If it is, we've found our device. Return its node.
-                        self.logger.info(f"device node: {device.device_node}")
-                        port = device.device_node
-                        port_candidates.append(port)
+            if not device.device_node or 'ttyACM' not in device.device_node:
+                continue
+            # Walk up the device tree to find the parent USB device.
+            usb_device = device.find_parent('usb', 'usb_device')
+            if usb_device is None:
+                continue
+            manufacturer = usb_device.attributes.get('manufacturer')
+            if manufacturer and manufacturer.decode('utf-8') == 'Teensyduino':
+                self.logger.info(f"device node: {device.device_node}")
+                # the USB path sets the slot order
+                port_candidates.append((device.device_node, device.device_path))
 
         self.logger.info("Serial Ports to look for Teensy {}".format(port_candidates))
-        for port in port_candidates:
-            if "ttyACM" not in port:  # this does not work on Windows as only see "COM#"
-                self.logger.info("skipping port {}...".format(port))
-                continue
-
-            _teensy = {"port": port}
-            self.logger.info(f"Trying teensy at {port}, using header pinn defintion {scriptArgs}")
-
-            #https: // stackoverflow.com / questions / 21050671 / how - to - check - if -device - is -connected - pyserial / 49450813
-            # test if this COM port is really a Teensy
-            # create an instance of Teensy()
-            _teensy['hwdrv'] = A4401_BOND(port,
-                                          loggerIn=logging.getLogger("teensy.try"),
-                                          header_def_filename=scriptArgs)
-            success = _teensy['hwdrv'].init()
-            if not success:
+        for port, usb_path in port_candidates:
+            self.logger.info(f"Trying teensy at {port}, using header pin definition {scriptArgs}")
+            hwdrv = A4401_BOND(port,
+                               loggerIn=logging.getLogger("teensy.try"),
+                               header_def_filename=scriptArgs)
+            if not hwdrv.init():
                 self.logger.error("failed on {}...".format(port))
+                hwdrv.close()
                 continue
 
-            # yes, its a Teensy, add it to the list...
-            answer = _teensy['hwdrv'].slot()
-            _teensy['id'] = answer['result']['id']
-            success = answer['success']
-            if not success:
-                self.logger.error("failed on {}...".format('slot'))
-                continue
-
-            answer = _teensy['hwdrv'].unique_id()
-            _teensy['unique_id'] = answer['result']['unique_id']
-            success = answer['success']
-            if not success:
+            answer = hwdrv.unique_id()
+            if not answer['success']:
                 self.logger.error("failed on {}...".format('unique_id'))
+                hwdrv.close()
                 continue
 
-            _teensy['close'] = _teensy['hwdrv'].close
-
-            # NOTE: !! If not using jig_closed_detect this should be NONE !!
-            _teensy['play'] = _teensy['hwdrv'].jig_closed_detect
-
-            _teensy['show_pass_fail'] = _teensy['hwdrv'].show_pass_fail
-            _teensy['jig_reset'] = _teensy['hwdrv'].jig_reset
-
-            # add USB port location
-            for device in context.list_devices(subsystem='tty'):
-                _node = str(device.device_node)
-                if port in _node:
-                    _teensy['usb_path'] = device.device_path
-                    break
-
-            if not _teensy.get('usb_path', False):
-                _teensy['usb_path'] = None
+            _teensy = {"port": port,
+                       "version": self.VERSION,
+                       "hwdrv": hwdrv,
+                       "unique_id": answer['result']['unique_id'],
+                       "usb_path": usb_path,
+                       "close": hwdrv.close,
+                       # NOTE: !! If not using jig_closed_detect this should be NONE !!
+                       "play": hwdrv.jig_closed_detect,
+                       "show_pass_fail": hwdrv.show_pass_fail,
+                       "jig_reset": hwdrv.jig_reset}
 
             self.logger.info(_teensy)
             self.teensys.append(_teensy)
 
         self._num_chan = len(self.teensys)
+        if self._num_chan == 0:
+            pub_notice("HWDriver:{}: no BOND found".format(self.SFN), sender=sender,
+                       type=NOTICE_TYPE.ERROR)
+            return -1, DRIVER_TYPE, []
 
         # sort based on USB path, slot 0, 1, 2, etc
         self.teensys = sorted(self.teensys, key=lambda d: d['usb_path'])

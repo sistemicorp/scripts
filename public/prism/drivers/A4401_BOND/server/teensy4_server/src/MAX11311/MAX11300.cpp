@@ -192,61 +192,49 @@ void MAX11300::block_read(MAX11300RegAddress_t reg, uint16_t * data, uint8_t num
 //*********************************************************************    
 MAX11300::CmdResult MAX11300::gpio_write(MAX11300_Ports port, uint8_t state)
 {
-    MAX11300::CmdResult result = MAX11300::OpFailure;
     uint16_t temp;
     uint16_t port_mask;
-    
+    MAX11300RegAddress_t reg;
+
     if (port != MAX11300::PIXI_PORT11)
     {
         port_mask = (1 << port);
-        temp = read_register(gpo_data_P10P6_P5P0);
-        if(state & 0x01)
-        {
-            temp |= port_mask;
-        }
-        else
-        {
-            temp &= ~port_mask;
-        }
-        write_register(gpo_data_P10P6_P5P0, temp);
+        reg = gpo_data_P10P6_P5P0;
     }
     else
     {
         port_mask = 0x1;
-        temp = read_register(gpo_data_P11);
-        if(state & 0x01)
-        {
-            temp |= port_mask;
-        }
-        else
-        {
-            temp &= ~port_mask;
-        }
-        write_register(gpo_data_P11, temp);
+        reg = gpo_data_P11;
     }
 
-    //result = MAX11300::Success;
-
-    return result;
-}
-
-//*********************************************************************
-MAX11300::CmdResult MAX11300::gpio_read(MAX11300_Ports port, uint8_t &state)
-{
-    MAX11300::CmdResult result = MAX11300::OpFailure;
-    
-    if(port != MAX11300::PIXI_PORT11)
+    temp = read_register(reg);
+    if (state & 0x01)
     {
-        state = (read_register(gpo_data_P10P6_P5P0) >> port);
+        temp |= port_mask;
     }
     else
     {
-        state = (read_register(gpo_data_P11) >> (port - MAX11300::PIXI_PORT11));
+        temp &= ~port_mask;
+    }
+    write_register(reg, temp);
+
+    return MAX11300::Success;
+}
+
+//*********************************************************************
+// Sistemi: read the GPI data registers (was GPO data), and return only the port's bit
+MAX11300::CmdResult MAX11300::gpio_read(MAX11300_Ports port, uint8_t &state)
+{
+    if (port != MAX11300::PIXI_PORT11)
+    {
+        state = (read_register(gpi_data_P10P6_P5P0) >> port) & 0x01;
+    }
+    else
+    {
+        state = read_register(gpi_data_P11) & 0x01;
     }
 
-    result = MAX11300::Success;
-
-    return result;
+    return MAX11300::Success;
 }
 
 //*********************************************************************

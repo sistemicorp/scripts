@@ -1,24 +1,32 @@
 // BOND Header Configuration for MAX11311 pins
-// Refer to BOND Schematic for all header pin functions.
+// Refer to BOND Schematic (a4402-SCH_05) for all header pin functions.
 // Some Header pins have fixed function and should not be changed.
 // Other pins are general purpose and can be configured as ADC, DAC, GPO, or GPI
 // This file allows pins to be configured for DUT connected thru Pogo board.
 // Modified JSON-like file, lines starting with '//' are stripped
 // Comment lines start with '//', comments must be on their own line
+// This configuration file is EXAMPLE ONLY and doesn't map to any Pogo board or product.
+//
+// HDR Pin : {"mode": <mode>, "port": <MAX11311 port>}
+//   mode = "ADC", "DAC", "GPO", "GPI", null
+//   a pin wired to two ports lists both, {"mode": "ADC,GPO", "port": "6,9"}
+//   ports 0-10, each port once per header
+// The driver always configures (do not list them),
+//   - port 11 of every header, ADC, the 2.5V reference for self test
+//   - HDR3 port 9, GPO, the VBUS relay for the External USB-C, see vbus_en()
+// gpo_mv: GPO logic-high voltage for all GPOs on this header, 0-10000 mV
+// gpi_mv: GPI threshold voltage for all GPIs on this header, 0-2500 mV
 {
-  // HDR #1
+  // HDR #1 (J5)
   "1": {
-     // HDR Pin // : { "mode": <>, "port": <> }
      // Not configurable pins - DO NOT CHANGE
      // GNDs
      "11": {"mode": null, "port": null},
      "12": {"mode": null, "port": null},
      "17": {"mode": null, "port": null},
      "18": {"mode": null, "port": null},
-     // VBUS
+     // VDUT
      "19": {"mode": null, "port": null},
-     // N/C
-     "15": {"mode": null, "port": null},
      // VBAT
      "20": {"mode": null, "port": null},
 
@@ -28,9 +36,9 @@
      // UART RX TX
      "5": {"mode": null, "port": null},
      "7": {"mode": null, "port": null},
-     // LDO Output
-     "1": {"mode": "DAC,GPO", "port": "10,1"},
-     // Open Drain FETs
+     // LDO Output, GPO enables the LDO, set the voltage with bond_ldo_set()
+     "1": {"mode": "GPO",     "port": "1"},
+     // Open Drain FETs (Q2B, Q2A)
      "2": {"mode": "GPO",     "port": "7"},
      "4": {"mode": "GPO",     "port": "8"},
      // LDO Output Feedback
@@ -38,32 +46,29 @@
 
      // -------------------------------------------
      // User configurable, change mode as required
-     // mode = "ADC", "DAC", "GPO", "GPI", null
-     "6":  {"mode": null,     "port": "9"},
+     "6":  {"mode": null,    "port": "9"},
+     // port 5 thru R40 (0R), R45 pull down DNP
      "8":  {"mode": null,    "port": "5"},
      "10": {"mode": null,    "port": "4"},
      "13": {"mode": null,    "port": "0"},
      "14": {"mode": null,    "port": "3"},
+     "15": {"mode": null,    "port": "10"},
      "16": {"mode": null,    "port": "2"},
 
-     // TODO: GPO output voltage, for all GPOs
-     // TODO: GPI threshold voltage, for all GPIs
      "gpo_mv": 3300,
      "gpi_mv": 1000
      // -------------------------------------------
    },
 
-  // HDR #2
+  // HDR #2 (J9)
   "2": {
-     // HDR Pin // : { "mode": <>, "port": <> }
      // Not configurable pins - DO NOT CHANGE
-     "1": {"mode": null, "port": null},
      // GNDs
      "11": {"mode": null, "port": null},
      "12": {"mode": null, "port": null},
      "17": {"mode": null, "port": null},
      "18": {"mode": null, "port": null},
-     // VBUS
+     // VDUT
      "19": {"mode": null, "port": null},
      // VBAT
      "20": {"mode": null, "port": null},
@@ -71,57 +76,59 @@
      "7": {"mode": null, "port": null},
 
      // Special functions - DO NOT CHANGE
-     // I2C SDA SCL
+     // I2C level shifter (U18) VCC, SDA, SCL
+     // the level shifter OE is MAX port 10 (not on the header)
+     "1": {"mode": null, "port": null},
      "3": {"mode": null, "port": null},
      "5": {"mode": null, "port": null},
 
      // -------------------------------------------
      // User configurable, change mode as required
-     // mode = "ADC", "DAC", "GPO", "GPI", null
+     // ports 8 and 7 thru R95 and R93 (0R)
      "2":  {"mode": null,    "port": "8"},
      "4":  {"mode": null,    "port": "7"},
      "6":  {"mode": null,    "port": "9"},
      "8":  {"mode": null,    "port": "5"},
      "9":  {"mode": null,    "port": "6"},
      "10": {"mode": null,    "port": "4"},
+     // also Teensy GPIO thru R92 (0R)
      "13": {"mode": null,    "port": "0"},
      "14": {"mode": null,    "port": "3"},
      "15": {"mode": null,    "port": "1"},
      "16": {"mode": null,    "port": "2"},
 
-     // TODO: GPO output voltage, for all GPOs
-     // TODO: GPI threshold voltage, for all GPIs
      "gpo_mv": 3300,
      "gpi_mv": 1000
      // -------------------------------------------
   },
 
-  // HDR #3
+  // HDR #3 (J11)
   "3": {
-     // HDR Pin // : { "mode": <>, "port": <> }
      // Not configurable pins - DO NOT CHANGE
      // GNDs
-     "11": {"mode": null, "port": null},
-     "12": {"mode": null, "port": null},
      "17": {"mode": null, "port": null},
      "18": {"mode": null, "port": null},
-     // VBUS
-     "16": {"mode": "GPO", "port": "9"},
+     // VBUS supply (the External USB-C VBUS relay is MAX port 9, see vbus_en())
+     "16": {"mode": null, "port": null},
 
      // Special functions - DO NOT CHANGE
-     // JTAG VCC, SDIO CLK RESET
+     // JTAG VCC, SDIO, CLK, RESET
      "1": {"mode": null, "port": null},
      "3": {"mode": null, "port": null},
      "5": {"mode": null, "port": null},
      "7": {"mode": null, "port": null},
+     // External USB-C CC1, CC2
+     "11": {"mode": null, "port": null},
+     "12": {"mode": null, "port": null},
      // USB D+/-
      "19": {"mode": null, "port": null},
      "20": {"mode": null, "port": null},
 
      // -------------------------------------------
      // User configurable, change mode as required
-     // mode = "ADC", "DAC", "GPO", "GPI", null
+     // port 8 thru R110 (0R), also to J10 RF connector
      "2":  {"mode": null,    "port": "8"},
+     // port 7 thru R108 (0R)
      "4":  {"mode": null,    "port": "7"},
      "6":  {"mode": null,    "port": "1"},
      "8":  {"mode": null,    "port": "2"},
@@ -131,50 +138,47 @@
      "14": {"mode": null,    "port": "4"},
      "15": {"mode": null,    "port": "5"},
 
-     // TODO: GPO output voltage, for all GPOs
-     // TODO: GPI threshold voltage, for all GPIs
      "gpo_mv": 3300,
      "gpi_mv": 1000
      // -------------------------------------------
   },
 
-  // HDR #4
+  // HDR #4 (J16)
   "4": {
-     // HDR Pin // : { "mode": <>, "port": <> }
      // Not configurable pins - DO NOT CHANGE
      // GNDs
      "11": {"mode": null, "port": null},
      "12": {"mode": null, "port": null},
      "17": {"mode": null, "port": null},
      "18": {"mode": null, "port": null},
-     // Expansion Header
+     // Mezzanine pass thru, J14 2,4,6,8
      "1":  {"mode": null, "port": null},
-     "2":  {"mode": null, "port": null},
      "3":  {"mode": null, "port": null},
-     "4":  {"mode": null, "port": null},
      "5":  {"mode": null, "port": null},
-     "6":  {"mode": null, "port": null},
      "7":  {"mode": null, "port": null},
+     // Mezzanine pass thru, J15 1,3,5,7,9,13
+     "2":  {"mode": null, "port": null},
+     "4":  {"mode": null, "port": null},
+     "6":  {"mode": null, "port": null},
      "8":  {"mode": null, "port": null},
      "10": {"mode": null, "port": null},
      "20": {"mode": null, "port": null},
-     // BNC
+     // K3 RF connector
      "19": {"mode": null, "port": null},
+     // MAX ports 4, 5, 7, 8 go to the mezzanine J15 only, not this header
 
      // -------------------------------------------
      // User configurable, change mode as required
-     // mode = "ADC", "DAC", "GPO", "GPI", null
      "9":  {"mode": null,    "port": "6"},
      "13": {"mode": null,    "port": "0"},
      "14": {"mode": null,    "port": "3"},
      "15": {"mode": null,    "port": "1"},
      "16": {"mode": null,    "port": "2"},
 
-     // TODO: GPO output voltage, for all GPOs
-     // TODO: GPI threshold voltage, for all GPIs
      "gpo_mv": 3300,
      "gpi_mv": 1000
      // -------------------------------------------
   },
-  "calibrate_battery_emulator": true
+  // BOND calibrates the battery emulator at power up, true repeats it on every init (slower)
+  "calibrate_battery_emulator": false
 }

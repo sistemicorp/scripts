@@ -7,10 +7,11 @@ EastRising Technology Co.,LTD
 #include "er_oled.h"
 #include "Arduino.h"
 
+#define OLED_I2C_ADDR       0x3c
+
 void I2C_Write_Byte(uint8_t value, uint8_t Cmd)
 {
-  uint8_t Addr = 0x3c;
-  Wire.beginTransmission(Addr);
+  Wire.beginTransmission(OLED_I2C_ADDR);
   Wire.write(Cmd);
   Wire.write(value);
   Wire.endTransmission();
@@ -18,13 +19,6 @@ void I2C_Write_Byte(uint8_t value, uint8_t Cmd)
 
 void er_oled_begin()
 {
-    pinMode(OLED_RST, OUTPUT);
-    digitalWrite(OLED_RST, HIGH);
-    delay(10);
-    digitalWrite(OLED_RST, LOW);
-    delay(10);
-    digitalWrite(OLED_RST, HIGH);
-
     command(0xAE);//--turn off oled panel
     command(0x02);//---set low column address
     command(0x10);//---set high column address
@@ -178,13 +172,27 @@ void er_oled_bitmap(uint8_t x,uint8_t y,const uint8_t *pBmp, uint8_t chWidth, ui
 }
 
 void er_oled_display(uint8_t* pBuf)
-{    uint8_t page,i;   
-    for (page = 0; page < PAGES; page++) {         
-        command(0xB0 + page);/* set page address */     
-        command(0x02);   /* set low column address */      
-        command(0x10);  /* set high column address */           
-        for(i = 0; i< OLED_WIDTH; i++ ) {
-          data(pBuf[i+page*OLED_WIDTH]);// write data one
-        }        
+{
+    er_oled_display_pages(pBuf, 0xFF);
+}
+
+#define OLED_BURST_BYTES    32   // data bytes per I2C transaction, Wire buffer is larger
+
+/* write the pages set in page_mask, each page is one I2C burst per OLED_BURST_BYTES,
+ * instead of one I2C transaction per byte
+ */
+void er_oled_display_pages(uint8_t* pBuf, uint8_t page_mask)
+{
+    for (uint8_t page = 0; page < PAGES; page++) {
+        if (!(page_mask & (1 << page))) continue;
+        command(0xB0 + page);  /* set page address */
+        command(0x02);         /* set low column address */
+        command(0x10);         /* set high column address */
+        for (uint8_t i = 0; i < OLED_WIDTH; i += OLED_BURST_BYTES) {
+            Wire.beginTransmission(OLED_I2C_ADDR);
+            Wire.write(IIC_RAM);
+            Wire.write(&pBuf[i + page * OLED_WIDTH], OLED_BURST_BYTES);
+            Wire.endTransmission();
+        }
     }
 }

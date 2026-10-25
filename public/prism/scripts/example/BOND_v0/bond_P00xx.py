@@ -336,9 +336,11 @@ class bond_P00xx(TestItem):
             attempts -= 1
             self.sleep(0.1)
 
+        # other channels may use the Teensy CLI loader now
+        self.shared_lock(DRIVER_TYPE).release()
+
         if not success:
             self.log_bullet(f"teensy_loader_cli failed")
-            self.shared_lock(DRIVER_TYPE).release()
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
@@ -402,7 +404,6 @@ class bond_P00xx(TestItem):
             TIME_WAIT_FOR_BOOT_S += TIME_STEP_S
             self.log_bullet(f"{TIME_WAIT_FOR_BOOT_S}s waited")
             if self.aborted.is_set():  # timed out or aborted
-                self.shared_lock(DRIVER_TYPE).release()
                 self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
                 return
 
@@ -411,7 +412,6 @@ class bond_P00xx(TestItem):
         port = self._find_matching_ttyACM_from_usb_path(self._teensy_usb_path)
         if port is None:
             self.log_bullet(f"Failed find port")
-            self.shared_lock(DRIVER_TYPE).release()
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
@@ -422,13 +422,11 @@ class bond_P00xx(TestItem):
         success = self.teensy.init()
         if not success:
             self.log_bullet(f"Failed init")
-            self.logger.error("failed on {}...".format(self._teensy_port))
-            self.shared_lock(DRIVER_TYPE).release()
+            self.logger.error("failed on {}...".format(port))
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
         self.log_bullet(f"Found teensy")
-        self.shared_lock(DRIVER_TYPE).release()
 
         result = self.teensy.unique_id()
         success = result['success']

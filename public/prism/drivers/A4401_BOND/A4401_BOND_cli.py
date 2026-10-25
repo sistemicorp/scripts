@@ -12,6 +12,7 @@ Example:  (note the starting folder)
 
 
 """
+import os
 import logging
 import argparse
 import time
@@ -50,6 +51,10 @@ def parse_args():
 
     parser.add_argument("-p", '--port', dest='port', default=None, type=str, required=True,
                         action='store', help='Active serial port')
+
+    parser.add_argument("-n", '--no-init', dest='_skip_init', action='store_true', default=False,
+                        help='Do not send the header definition to BOND (presumed previously '
+                             'initialized), the file is still read for pin lookups')
 
     parser.add_argument("-v", '--verbose', dest='verbose', default=0, action='count', help='Increase verbosity')
 
@@ -105,7 +110,7 @@ def parse_args():
                            dest="_name",
                            action='store',
                            type=str,
-                           help='name (V6V, V5V, V3V3A, V3V3D)',
+                           help='name (V6V, V5V, V3V3A, V3V3D, V2V5NEG)',
                            default=None, required=True)
 
     vbat_read = subp.add_parser('vbat_read')
@@ -114,7 +119,7 @@ def parse_args():
                            dest="_mv",
                            action='store',
                            type=int,
-                           help='voltage, 500-5000 mV',
+                           help='voltage, 1500-5000 mV, 50 mV steps',
                            required=True,
                            default=500)
 
@@ -161,12 +166,31 @@ def parse_args():
                            default=False)
 
     vdut_en = subp.add_parser('vdut_en',
-                                  description="Enable/Disable VBUS")
+                                  description="Enable/Disable VDUT SMPS (TPS55289)")
     vdut_en.add_argument('--enable',
                            dest="_enable",
                            action='store_true',
-                           help='Assert VBUS_EN',
+                           help='Assert VDUTSMPS_EN',
                            default=False)
+
+    vdut_con = subp.add_parser('vdut_con',
+                               description="Connect/Disconnect VDUT to the DUT")
+    vdut_con.add_argument('--enable',
+                          dest="_enable",
+                          action='store_true',
+                          help='Assert VDUT_EN',
+                          default=False)
+
+    subp.add_parser('vdut_get_fault', description="Get VDUT TPS55289 faults")
+    subp.add_parser('vdut_reset', description="Reset VDUT TPS55289")
+
+    vbus_en = subp.add_parser('vbus_en',
+                              description="Enable/Disable VBUS, External USB-C (HDR3 port 9)")
+    vbus_en.add_argument('--enable',
+                         dest="_enable",
+                         action='store_true',
+                         help='Assert VBUS',
+                         default=False)
 
     iox_vbat_en = subp.add_parser('iox_vbat_en',
                                   description="Enable/Disable VBAT")
@@ -242,6 +266,29 @@ def parse_args():
                            help='DAC output voltage 0-10000 mV',
                            required=True,
                            default=2500)
+
+    bond_max_hdr_gpo = subp.add_parser('bond_max_hdr_gpo',
+                                       description="Write Header Pin GPO state")
+    bond_max_hdr_gpo.add_argument('--header', dest="_hdr", action='store', type=int,
+                                  help='header, 1-4', required=True)
+    bond_max_hdr_gpo.add_argument('--pin', dest="_pin", action='store', type=int,
+                                  help='pin, 1-20, but not all pins have function', required=True)
+    bond_max_hdr_gpo.add_argument('--enable', dest="_enable", action='store_true',
+                                  help='GPO high', default=False)
+
+    bond_max_hdr_gpi = subp.add_parser('bond_max_hdr_gpi',
+                                       description="Read Header Pin GPI state")
+    bond_max_hdr_gpi.add_argument('--header', dest="_hdr", action='store', type=int,
+                                  help='header, 1-4', required=True)
+    bond_max_hdr_gpi.add_argument('--pin', dest="_pin", action='store', type=int,
+                                  help='pin, 1-20, but not all pins have function', required=True)
+
+    bond_ldo_set = subp.add_parser('bond_ldo_set', description="Set Header 1 LDO voltage")
+    bond_ldo_set.add_argument('--mv', dest="_mv", action='store', type=int,
+                              help='LDO voltage, 600-3900 mV', required=True)
+
+    subp.add_parser('bond_batt_emu_cal', description="Recalibrate the battery emulator")
+    subp.add_parser('list', description="List the BOND RPC methods")
 
     debug_batt_emu = subp.add_parser('debug_batt_emu',
                                      description="BOND debug battery emulator")
@@ -360,7 +407,7 @@ def iox_led_yellow(args):
 
 
 def iox_led_red(args):
-    logging.info("iox_led_yellow: {}".format(args))
+    logging.info("iox_led_red: {}".format(args))
 
     response = teensy.iox_led_red(args._enable)
     logging.info("{}".format(response))
@@ -471,6 +518,78 @@ def temperature(args):
     return response["success"]
 
 
+def vdut_con(args):
+    logging.info("vdut_con: {}".format(args))
+
+    response = teensy.vdut_con(args._enable)
+    logging.info("{}".format(response))
+    return response["success"]
+
+
+def vdut_get_fault(args):
+    logging.info("vdut_get_fault: {}".format(args))
+
+    response = teensy.vdut_get_fault()
+    logging.info("{}".format(response))
+    return response["success"]
+
+
+def vdut_reset(args):
+    logging.info("vdut_reset: {}".format(args))
+
+    response = teensy.vdut_reset()
+    logging.info("{}".format(response))
+    return response["success"]
+
+
+def vbus_en(args):
+    logging.info("vbus_en: {}".format(args))
+
+    response = teensy.vbus_en(args._enable)
+    logging.info("{}".format(response))
+    return response["success"]
+
+
+def bond_max_hdr_gpo(args):
+    logging.info("bond_max_hdr_gpo: {}".format(args))
+
+    response = teensy.bond_max_hdr_gpo(args._hdr, args._pin, args._enable)
+    logging.info("{}".format(response))
+    return response["success"]
+
+
+def bond_max_hdr_gpi(args):
+    logging.info("bond_max_hdr_gpi: {}".format(args))
+
+    response = teensy.bond_max_hdr_gpi(args._hdr, args._pin)
+    logging.info("{}".format(response))
+    return response["success"]
+
+
+def bond_ldo_set(args):
+    logging.info("bond_ldo_set: {}".format(args))
+
+    response = teensy.bond_ldo_set(args._mv)
+    logging.info("{}".format(response))
+    return response["success"]
+
+
+def bond_batt_emu_cal(args):
+    logging.info("bond_batt_emu_cal: {}".format(args))
+
+    response = teensy.bond_batt_emu_cal()
+    logging.info("{}".format(response))
+    return response["success"]
+
+
+def list_methods(args):
+    logging.info("list: {}".format(args))
+
+    for m in teensy.list():
+        logging.info(m)
+    return True
+
+
 def sequence(args):
     logging.info("sequence: {}".format(args))
 
@@ -507,90 +626,54 @@ if __name__ == '__main__':
     else:
         logging.basicConfig(level=logging.DEBUG, format='%(filename)20s %(levelname)6s %(lineno)4s %(message)s')
 
-    teensy = A4401_BOND(args.port, loggerIn=logging, header_def_filename="pogo_hdr_definition._json")
+    header_def = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pogo_hdr_definition._json")
+    teensy = A4401_BOND(args.port, loggerIn=logging, header_def_filename=header_def)
 
-    success = teensy.init()
+    success = teensy.init(configure_headers=not args._skip_init)
     if not success:
         logging.error("Failed to create teensy instance")
+        teensy.close()
         exit(1)
 
-    if args._cmd == 'led':
-        success = led(args)
-
-    elif args._cmd == 'uid':
-        success = uid(args)
-
-    elif args._cmd == 'version':
-        success = version(args)
-
-    elif args._cmd == 'write_gpio':
-        success = write_gpio(args)
-
-    elif args._cmd == 'read_gpio':
-        success = read_gpio(args)
-
-    elif args._cmd == 'read_adc':
-        success = read_adc(args)
-
-    elif args._cmd == 'bist_voltage':
-        success = bist_voltage(args)
-
-    elif args._cmd == 'vbat_read':
-        success = vbat_read(args)
-
-    elif args._cmd == 'vdut_read':
-        success = vdut_read(args)
-
-    elif args._cmd == 'iox_led_green':
-        success = iox_led_green(args)
-
-    elif args._cmd == 'iox_led_yellow':
-        success = iox_led_yellow(args)
-
-    elif args._cmd == 'iox_led_red':
-        success = iox_led_red(args)
-
-    elif args._cmd == 'iox_led_blue':
-        success = iox_led_blue(args)
-
-    elif args._cmd == 'vdut_en':
-        success = vdut_en(args)
-
-    elif args._cmd == 'iox_vbat_en':
-        success = iox_vbat_en(args)
-
-    elif args._cmd == 'iox_vbat_con':
-        success = iox_vbat_con(args)
-
-    elif args._cmd == 'iox_selftest':
-        success = iox_selftest(args)
-
-    elif args._cmd == 'bond_max_hdr_adc_cal':
-        success = bond_max_hdr_adc_cal(args)
-
-    elif args._cmd == 'bond_max_hdr_adc':
-        success = bond_max_hdr_adc(args)
-
-    elif args._cmd == 'bond_max_hdr_dac':
-        success = bond_max_hdr_dac(args)
-
-    elif args._cmd == 'vbat_set':
-        success = vbat_set(args)
-
-    elif args._cmd == 'vdut_set':
-        success = vdut_set(args)
-
-    elif args._cmd == 'debug_batt_emu':
-        success = debug_batt_emu(args)
-
-    elif args._cmd == 'status':
-        success = status(args)
-
-    elif args._cmd == 'sequence':
-        success = sequence(args)
-
-    elif args._cmd == 'temperature':
-        success = temperature(args)
+    commands = {
+        'led': led,
+        'uid': uid,
+        'version': version,
+        'write_gpio': write_gpio,
+        'read_gpio': read_gpio,
+        'read_adc': read_adc,
+        'bist_voltage': bist_voltage,
+        'vbat_read': vbat_read,
+        'vbat_set': vbat_set,
+        'vdut_read': vdut_read,
+        'vdut_set': vdut_set,
+        'vdut_en': vdut_en,
+        'vdut_con': vdut_con,
+        'vdut_get_fault': vdut_get_fault,
+        'vdut_reset': vdut_reset,
+        'vbus_en': vbus_en,
+        'iox_led_green': iox_led_green,
+        'iox_led_yellow': iox_led_yellow,
+        'iox_led_red': iox_led_red,
+        'iox_led_blue': iox_led_blue,
+        'iox_vbat_en': iox_vbat_en,
+        'iox_vbat_con': iox_vbat_con,
+        'iox_selftest': iox_selftest,
+        'bond_max_hdr_adc_cal': bond_max_hdr_adc_cal,
+        'bond_max_hdr_adc': bond_max_hdr_adc,
+        'bond_max_hdr_dac': bond_max_hdr_dac,
+        'bond_max_hdr_gpo': bond_max_hdr_gpo,
+        'bond_max_hdr_gpi': bond_max_hdr_gpi,
+        'bond_ldo_set': bond_ldo_set,
+        'bond_batt_emu_cal': bond_batt_emu_cal,
+        'debug_batt_emu': debug_batt_emu,
+        'status': status,
+        'sequence': sequence,
+        'temperature': temperature,
+        'list': list_methods,
+    }
+    if args._cmd in commands:
+        success = commands[args._cmd](args)
 
     if success:
         logging.info("Success")
@@ -600,3 +683,4 @@ if __name__ == '__main__':
         exit_code = 1
 
     teensy.close()
+    exit(exit_code)

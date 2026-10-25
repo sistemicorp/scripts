@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2023-2025
+Sistemi Corporation, copyright, all rights reserved, 2023-2026
 Owen Li, Martin Guthrie
 
 """
@@ -17,7 +17,7 @@ from serial import SerialException
 try:
     # run locally
     from stublogger import StubLogger
-except:
+except ImportError:
     # run from prism
     from public.prism.drivers.common.stublogger import StubLogger
 
@@ -26,23 +26,29 @@ DRIVER_TYPE_PROG = "A4401_BOND_PROG"
 
 
 class A4401_BOND:
-    """ teensy4 SimpleRPC based driver
+    """ BOND (a4401) Teensy 4.1 simpleRPC based driver
 
     Adding new RPC calls...
 
-    1) Write server code by adding a function in teensy4_server.ino (Look at existing functions as example)
-    2) Export the function by adding a name and description in the loop() (Look at existing exports as example)
-    3) Write function in Teensy4 Class (this one) to call your simpleRPC function (Look at existing
-       functions as example).  Note the code is organized so that "on-board" Teensy functions are in one
-       section, and off module functions are in another.
-    4) Test your new API with the Teensy4_cli.py script.
-    5) Write function in teensy400xx.py to call your Teensy4 Class function (Look at existing functions as example)
-    6) Add your function call to the test script!
+    1) Write the RPC function in the matching server/teensy4_server module (*.cpp), and
+       declare it in the module header. See rpc_helpers.h for the shape of an RPC function.
+    2) Export the function by adding a name and description to interface() in loop(),
+       teensy4_server.ino.
+    3) Write a method in this class that calls it with self._call().
+    4) Add the command to A4401_BOND_cli.py and test it there.
+    5) Call it from your test script, see scripts/example/BOND_v0/bond_P00xx.py
 
     version.h:
     ----------
     There is a version for teensy4_server.ino and for the python code. The version number must be
     the same for testing to run.
+
+    Header definition file:
+    -----------------------
+    A JSON-like file (// comments allowed) maps each DUT header pin to a MAX11311 port and mode,
+    see pogo_hdr_definition._json. A pin may have several modes on different ports, for example
+    {"mode": "ADC,GPO", "port": "6,9"}. The header APIs take a header and pin, and look up the
+    port for the requested mode.
 
     """
     GPIO_MODE_INPUT = "INPUT"
@@ -50,12 +56,38 @@ class A4401_BOND:
     GPIO_MODE_INPUT_PULLUP = "INPUT_PULLUP"
     GPIO_MODE_LIST = [GPIO_MODE_INPUT, GPIO_MODE_OUTPUT, GPIO_MODE_INPUT_PULLUP]
 
-    JIG_CLOSE_GPIO = 6  # BUTTON1 GPIO number for Jig Closed detect, set to None if not using (Active-Low)
+    JIG_CLOSE_GPIO = 6  # BUTTON1 GPIO number for Jig Closed detect, set to None if not using
+    JIG_CLOSED_STATE = 1  # BUTTON1 reads 1 when the jig is closed
 
     GPIO_NUMBER_MIN = 0
     GPIO_NUMBER_MAX = 41
 
     BIST_VOLTAGES = ["V6V", "V5V", "V3V3A", "V3V3D", "V2V5NEG"]
+
+    HDR_NUMBERS = [1, 2, 3, 4]
+    HDR_PORT_MIN = 0
+    HDR_PORT_MAX = 10  # port 11 is reserved for the self test reference
+    HDR_PORT_CAL = 11
+    HDR_VBUS = 3
+    HDR_VBUS_PORT = 9
+    # ports the driver always configures, they are not in the header definition file
+    # - port 11 of every header reads the 2.5V reference for self test
+    # - HDR3 port 9 drives the VBUS relay for the External USB-C, see vbus_en()
+    HDR_FIXED_PORTS = {1: {"ADC": [HDR_PORT_CAL]},
+                       2: {"ADC": [HDR_PORT_CAL]},
+                       3: {"ADC": [HDR_PORT_CAL], "GPO": [HDR_VBUS_PORT]},
+                       4: {"ADC": [HDR_PORT_CAL]}}
+    HDR_MODES = ["ADC", "DAC", "GPO", "GPI"]
+    HDR_MODES_NONE = [None, "null", "None", "none"]
+    HDR_DAC_MV_MAX = 10000
+    HDR_GPI_MV_MAX = 2500
+
+    LDO_MV_MIN = 600
+    LDO_MV_MAX = 3900
+
+    VBAT_MV_MIN = 1500
+    VBAT_MV_MAX = 5000
+    VBAT_MV_STEP = 50
 
     # For Teensy FW version checking the SAME (c code) header file that created the Teensy4
     # firmware is used to check if that firmware is now running (deployed) on Teensy4.
@@ -75,7 +107,8 @@ class A4401_BOND:
         self.port = port
         self.rpc = None
         self.a44BOND_max_config = None
-        self._is_battemu_calibrated = False  # calibrate only if used
+        self._hdr_pins = {}  # {hdr: {pin: {mode: port}}}, from the header definition file
+        self._jig_closed_last = None
 
         self.my_version = self._get_version()
         self.logger.info(f"version {self.my_version}")
@@ -83,10 +116,13 @@ class A4401_BOND:
     def set_port(self, port):
         self.port = port
 
-    def init(self, skip_max11311=False):
+    def init(self, skip_max11311=False, configure_headers=True):
         """ Init Teensy SimpleRPC connection
 
-        :param skip_max11311: True/False, skips MAX11311 setup.  Allow access other functions
+        :param skip_max11311: True/False, skips the header definition file entirely.
+                              Allows access to other functions (used after FW update)
+        :param configure_headers: False reads and checks the header definition file, but does
+                              not send it to BOND, BOND keeps its previous configuration
         :return: <True/False> whether Teensy SimpleRPC connection was created
         """
         self.logger.info(f"installing BOND on port {self.port} using {self._header_def_filename}")
@@ -110,7 +146,7 @@ class A4401_BOND:
         if self.my_version != version_response["result"]["version"]:
             self.logger.error("version does not match, "
                               f"Python: {self.my_version} "
-                              f"Arduino: {version_response["result"]["version"]}")
+                              f"Arduino: {version_response['result']['version']}")
             return False
 
         status_response = self.status()
@@ -121,44 +157,27 @@ class A4401_BOND:
             self.logger.error(f'setup_fail_code {status_response["result"]["setup_fail_code"]}')
             return False
 
-        # check if jig close has valid GPIOs
-        self._jig_close_check()
+        if not self._jig_close_check():
+            return False
 
         if not skip_max11311:
-            if not os.path.exists(self._header_def_filename):
-                self.logger.error(f"Header pin definition filename {self._header_def_filename} "
-                                  "does not exist")
+            if not self._load_config(self._header_def_filename):
                 return False
 
-            # init MAX11311 pins per the JSON defintion
-            # also calibrates the battery emulator if needed
-            success = self._init_maxs(self._header_def_filename)
-            if not success:
+            if configure_headers and not self._init_maxs():
                 self.logger.error("Failed to init MAX11311 pins")
-                return False
-
-            status_response = self.iox_vbat_con(False)
-            if not status_response["success"]:
-                self.logger.error(f"iox_vbat_con {status_response}")
-                return False
-
-            status_response = self.iox_selftest(False)
-            if not status_response["success"]:
-                self.logger.error(f"iox_vbat_con {status_response}")
                 return False
 
         # check bist voltages
         for _v in self.BIST_VOLTAGES:
             status_response = self.bist_voltage(_v)
             if not status_response["success"]:
-                self.logger.error(f"bist_voltage {_v} {success}")
+                self.logger.error(f"bist_voltage {_v} {status_response}")
                 return False
 
             if not status_response["result"]["pass"]:
                 self.logger.error(f"bist_voltage {_v} {status_response}")
                 return False
-
-            self.logger.info(f"bist_voltage {_v} {status_response}")
 
         status_response = self.reset()
         if not status_response["success"]:
@@ -178,7 +197,10 @@ class A4401_BOND:
             return True
 
         self.logger.info(f"closing {self.port}")
-        self.rpc.close()
+        try:
+            self.rpc.close()
+        except (SerialException, OSError) as e:
+            self.logger.error(e)
         self.rpc = None
         return True
 
@@ -188,98 +210,151 @@ class A4401_BOND:
     # - function names should all begin with "_"
     # - functions are all private to this class
 
-    def _init_maxs(self, header_def_filename):
-        # read the json-like header definition file
+    def _call(self, method, *args, squelch=False):
+        """ Call an RPC method on BOND
+
+        :param method: RPC method name
+        :param args: RPC arguments
+        :param squelch: True does not log the call or a successful answer
+        :return: {'success': <True/False>, 'method': <method>, 'result': {...}}
+        """
+        with self._lock:
+            if not squelch:
+                self.logger.info(f"{method} {args}" if args else method)
+
+            if self.rpc is None:
+                return self._error(method, "not connected")
+
+            try:
+                answer = self.rpc.call_method(method, *args)
+
+            except (SerialException, OSError, ValueError, TypeError) as e:
+                self.logger.error(f"{method}: {e}")
+                return self._error(method, str(e))
+
+            return self._rpc_validate(answer, squelch)
+
+    def _error(self, method, error):
+        return {'success': False, 'method': method, 'result': {'error': error}}
+
+    def _load_config(self, header_def_filename):
+        """ Read and check the json-like header definition file
+
+        Sets self.a44BOND_max_config and self._hdr_pins
+        :return: True/False
+        """
         self.logger.info(f"Attempting to read MAX11311 config from {header_def_filename}...")
+        if not os.path.exists(header_def_filename):
+            self.logger.error(f"Header pin definition filename {header_def_filename} "
+                              "does not exist")
+            return False
+
         try:
             with open(header_def_filename) as f:
-                json_data = f.read()
-
-            self.a44BOND_max_config = jstyleson.loads(json_data)  # OK
+                config = jstyleson.loads(f.read())
 
         except Exception as e:
             self.logger.error(e)
             self.logger.error(traceback.format_exc())
             return False
 
-        self.logger.info(self.a44BOND_max_config)
-        for k, v in self.a44BOND_max_config.items():
+        hdr_pins = {}
+        for k, v in config.items():
             if not k.isdigit():
                 continue
 
-            ports_dac = []
-            ports_adc = [11]  # all headers use MAX port11 for self test
-            ports_gpo = []
-            ports_gpi = []
-            pins_configured = []
-            for pin, config in v.items():
+            hdr = int(k)
+            if hdr not in self.HDR_NUMBERS:
+                self.logger.error(f"HDR {k}, invalid header number")
+                return False
+
+            for key, limit in [("gpo_mv", self.HDR_DAC_MV_MAX), ("gpi_mv", self.HDR_GPI_MV_MAX)]:
+                if not isinstance(v.get(key), int) or not (0 <= v[key] <= limit):
+                    self.logger.error(f"HDR {k}, {key} must be an int 0 to {limit}")
+                    return False
+
+            pins = {}
+            ports_used = {}
+            for pin, pin_config in v.items():
                 # some items in the JSON are not pins, skip them
                 if not pin.isdigit():
                     continue
 
-                if pin in pins_configured:
-                    self.logger.error(f"HDR {k}, DUPLICATE pin {pin}, config {config}")
-                    return False
-                pins_configured.append(pin)
-
-                self.logger.info(f"HDR {k}, pin {pin}, config {config}")
-
-                if config["mode"] is None: continue
-
-                modes = [m for m in config["mode"].split(",")]
-                ports = [int(p) for p in config["port"].split(",")]
-                if len(ports) != len(modes):
-                    self.logger.error(f"modes and ports must be equal lengths")
+                pins[int(pin)] = {}
+                mode, port = pin_config.get("mode"), pin_config.get("port")
+                if mode in self.HDR_MODES_NONE:
                     continue
+
+                modes = [m.strip() for m in str(mode).split(",")]
+                try:
+                    ports = [int(p) for p in str(port).split(",")]
+                except ValueError:
+                    self.logger.error(f"HDR {k}, pin {pin}, invalid port {port}")
+                    return False
+
+                if len(ports) != len(modes):
+                    self.logger.error(f"HDR {k}, pin {pin}, modes and ports must be equal lengths")
+                    return False
+
                 for m, p in zip(modes, ports):
-                    if "DAC" == m:
-                        ports_dac.append(p)
+                    if m not in self.HDR_MODES:
+                        self.logger.error(f"HDR {k}, pin {pin}, invalid mode {m}")
+                        return False
+                    if not (self.HDR_PORT_MIN <= p <= self.HDR_PORT_MAX):
+                        self.logger.error(f"HDR {k}, pin {pin}, port {p} not "
+                                          f"{self.HDR_PORT_MIN}-{self.HDR_PORT_MAX}")
+                        return False
+                    if p in sum(self.HDR_FIXED_PORTS[hdr].values(), []):
+                        self.logger.error(f"HDR {k}, pin {pin}, port {p} is reserved for BOND")
+                        return False
+                    if p in ports_used:
+                        self.logger.error(f"HDR {k}, pin {pin}, port {p} already used by "
+                                          f"pin {ports_used[p]}")
+                        return False
+                    if m in pins[int(pin)]:
+                        self.logger.error(f"HDR {k}, pin {pin}, mode {m} used twice")
+                        return False
+                    ports_used[p] = pin
+                    pins[int(pin)][m] = p
 
-                    elif "ADC" == m:
-                        ports_adc.append(p)
+            hdr_pins[hdr] = pins
 
-                    elif "GPO" == m:
-                        ports_gpo.append(p)
+        self.a44BOND_max_config = config
+        self._hdr_pins = hdr_pins
+        return True
 
-                    elif "GPI" == m:
-                        ports_gpi.append(p)
+    def _init_maxs(self):
+        """ Send the header definition to BOND, and optionally recalibrate the battery emulator
 
-                    elif m in [None, "null", "None", "none"]:
-                        pass
+        :return: True/False
+        """
+        for hdr, pins in self._hdr_pins.items():
+            ports = {m: list(self.HDR_FIXED_PORTS[hdr].get(m, [])) for m in self.HDR_MODES}
+            for pin, modes in pins.items():
+                for m, p in modes.items():
+                    ports[m].append(p)
+            for m in ports:
+                ports[m].sort()
+            self.logger.info(f"HDR {hdr} ports {ports}")
 
-                    else:
-                        self.logger.error(f"invalid mode {m}")
-
-            ports_dac.sort()
-            ports_adc.sort()
-            ports_gpo.sort()
-            ports_gpi.sort()
-            self.logger.info(f"ports_dac {ports_dac}")
-            self.logger.info(f"ports_adc {ports_adc}")
-            self.logger.info(f"ports_gpo {ports_gpo}")
-            self.logger.info(f"ports_gpi {ports_gpi}")
-            answer = self.rpc.call_method('bond_max_hdr_init',
-                                          k,  # header MAX11311 number, 1-4
-                                          ports_adc, len(ports_adc),
-                                          ports_dac, len(ports_dac),
-                                          ports_gpo, len(ports_gpo),
-                                          ports_gpi, len(ports_gpi),
-                                          v["gpo_mv"], v["gpi_mv"])
-            answer = self._rpc_validate(answer)
+            config = self.a44BOND_max_config[str(hdr)]
+            answer = self._call('bond_max_hdr_init', hdr,
+                                ports["ADC"], len(ports["ADC"]),
+                                ports["DAC"], len(ports["DAC"]),
+                                ports["GPO"], len(ports["GPO"]),
+                                ports["GPI"], len(ports["GPI"]),
+                                config["gpo_mv"], config["gpi_mv"])
             if not answer['success']:
                 self.logger.error(f"failed to init: {answer}")
                 return False
 
-        if "calibrate_battery_emulator" in self.a44BOND_max_config and self.a44BOND_max_config[
-            'calibrate_battery_emulator']:
+        # BOND calibrates the battery emulator at power up, this repeats it
+        if self.a44BOND_max_config.get('calibrate_battery_emulator', False):
             self.logger.info("Calibrating Battery Emulator...")
-            answer = self.rpc.call_method('bond_batt_emu_cal')
-            answer = self._rpc_validate(answer)
+            answer = self._call('bond_batt_emu_cal')
             if not answer['success']:
                 self.logger.error(f"bond_batt_emu_cal failed: {answer}")
                 return False
-
-            self._is_battemu_calibrated = True
             self.logger.info("Calibrating Battery Emulator completed")
 
         return True
@@ -315,12 +390,16 @@ class A4401_BOND:
         if self.JIG_CLOSE_GPIO is None:
             self.logger.info("Jig Closed Detector not defined (None)")
             return True
-        elif self.GPIO_NUMBER_MIN < self.JIG_CLOSE_GPIO > self.GPIO_NUMBER_MAX:
-            self.logger.error("Invalid GPIO")
+
+        if not (self.GPIO_NUMBER_MIN <= self.JIG_CLOSE_GPIO <= self.GPIO_NUMBER_MAX):
+            self.logger.error(f"Invalid Jig Closed GPIO {self.JIG_CLOSE_GPIO}")
             return False
-        else:
-            self.rpc.call_method('init_gpio', self.JIG_CLOSE_GPIO, self.GPIO_MODE_INPUT_PULLUP.encode())
-            return True
+
+        answer = self.init_gpio(self.JIG_CLOSE_GPIO, self.GPIO_MODE_INPUT_PULLUP)
+        if not answer['success']:
+            self.logger.error(f"Jig Closed GPIO init failed {answer}")
+            return False
+        return True
 
     def _rpc_validate(self, answer, squelch=False):
         try:
@@ -334,9 +413,39 @@ class A4401_BOND:
         except Exception as e:
             self.logger.error(answer)
             self.logger.error(e)
-            answer = {"success": False}
+            answer = {"success": False, "result": {"error": f"invalid response: {e}"}}
 
         return answer
+
+    def _bond_check_hdr_pin(self, method, hdr, pin, mode):
+        """ Find the MAX11311 port for a header pin in a mode
+
+        :return: <port>, None | None, <error response>
+        """
+        if self.a44BOND_max_config is None:
+            self.logger.error("Attempt to use MAX11311 before configured")
+            return None, self._error(method, "MAX11311 not configured")
+
+        try:
+            hdr, pin = int(hdr), int(pin)
+        except (TypeError, ValueError):
+            return None, self._error(method, f'Invalid parameter hdr {hdr} pin {pin}')
+
+        if hdr not in self._hdr_pins:
+            self.logger.error(f'Invalid parameter hdr {hdr}')
+            return None, self._error(method, f'Invalid parameter hdr {hdr}')
+
+        if pin not in self._hdr_pins[hdr]:
+            self.logger.error(f'Invalid parameter pin {pin}')
+            return None, self._error(method, f'Invalid parameter pin {pin}')
+
+        modes = self._hdr_pins[hdr][pin]
+        if mode not in modes:
+            err = f'Invalid mode hdr {hdr} pin {pin} mode {mode} not in {list(modes)}'
+            self.logger.error(err)
+            return None, self._error(method, err)
+
+        return modes[mode], None
 
     # Helper Functions
     # ----------------------------------------------------------------------------------------------
@@ -351,58 +460,39 @@ class A4401_BOND:
         """ list
         :return: list of Teensy methods
         """
-        return list(self.rpc.methods)
+        return list(self.rpc.device['methods'])
 
     def unique_id(self):
         """ unique id
-        :return: success = True/False, method: unique_id, unique_id = MAC Address
+        :return: {'success': True, 'method': 'unique_id', 'result': {'unique_id': <MAC>}}
         """
-        with self._lock:
-            self.logger.info(f"unique_id")
-            answer = self.rpc.call_method('unique_id')
-            return self._rpc_validate(answer)
+        return self._call('unique_id')
 
     def slot(self):
-        """ slot
-        :return: success = True/False, method: slot, id = id
+        """ slot (deprecated, slots are ordered by USB path)
+        :return: {'success': True, 'method': 'slot', 'result': {'id': <int>}}
         """
-        # TODO: implement arduino side
-        with self._lock:
-            self.logger.info(f"slot")
-            answer = self.rpc.call_method('slot')
-            return self._rpc_validate(answer)
-
-    # def channel(self):
-    #     c = {'method': 'slot', 'args': {}}
-    #     # FIXME: put SimpleRPC call here, and return the result JSON
-    #     return {"success": False, "result": {}}
+        return self._call('slot')
 
     def version(self):
         """ Version
-        :return: {'success': True, 'method': 'version', 'result': {'version': '0.1.0'}}
+        :return: {'success': True, 'method': 'version', 'result': {'version': '0.2.0'}}
         """
-        with self._lock:
-            self.logger.info(f"version")
-            answer = self.rpc.call_method('version')
-            return self._rpc_validate(answer)
+        return self._call('version')
 
     def status(self):
         """ Status
-        :return: success = True/False, method = version,
+        :return: {'success': True, 'method': 'status',
+                  'result': {'setup_fail_code': 0, 'stack_kb': <>, 'heap_kb': <>, 'psram_kb': <>}}
         """
-        with self._lock:
-            self.logger.info(f"status")
-            answer = self.rpc.call_method('status')
-            return self._rpc_validate(answer)
+        return self._call('status')
 
     def reset(self):
-        """ reset
-        :return: success = True/False, method = reset
+        """ reset BOND to the DUT safe state (not a Teensy reset)
+        - VDUT and VBAT disconnected, self test off, header DACs 0V, header GPOs idle
+        :return: {'success': True, 'method': 'reset', 'result': {}}
         """
-        with self._lock:
-            self.logger.info(f"reset")
-            answer = self.rpc.call_method('reset')
-            return self._rpc_validate(answer)
+        return self._call('reset')
 
     def reboot_to_bootloader(self):
         """ reboot
@@ -410,7 +500,7 @@ class A4401_BOND:
         """
         try:
             with self._lock:
-                self.logger.info(f"reboot_to_bootloader")
+                self.logger.info("reboot_to_bootloader")
                 self.rpc.call_method('reboot_to_bootloader')
                 # reboot will not return, expect SerialException exception, fake the return success
 
@@ -419,31 +509,16 @@ class A4401_BOND:
 
         except Exception as e:
             self.logger.error(e)
-            return json.loads("""{"success": false}""")  # json false is lower case
+            return {"success": False, "method": "reboot_to_bootloader", "result": {}}
 
-        return json.loads("""{"success": true}""")  # json true is lower case
+        return {"success": True, "method": "reboot_to_bootloader", "result": {}}
 
     def led(self, set):
-        """ LED on/off
+        """ Teensy module LED on/off
         :param set: True/False
-        :return: success = True/False, method = set_led, result = state = ON/OFF
+        :return: {'success': True, 'method': 'set_led', 'result': {'state': 'on'|'off'}}
         """
-        with self._lock:
-            self.logger.info(f"set_led {set}")
-            answer = self.rpc.call_method('set_led', set)
-            return self._rpc_validate(answer)
-
-    # def led_toggle(self, led, on_ms=500, off_ms=500, once=False):
-    #     """ toggle and LED ON and then OFF
-    #     - this is a blocking command
-    #
-    #     :param led: # of LED, see self.LED_*
-    #     :param on_ms: # of milliseconds to turn on LED
-    #     :return:
-    #     """
-    #     c = {'method': 'led_toggle', 'args': {'led': led, 'on_ms': on_ms, 'off_ms': off_ms, 'once': once}}
-    #     # FIXME: put SimpleRPC call here, and return the result JSON
-    #     return {"success": False, "result": {}}
+        return self._call('set_led', set)
 
     def read_adc(self, pin_number, sample_num=1, sample_rate_ms=1):
         """ Read an ADC pin
@@ -451,327 +526,274 @@ class A4401_BOND:
         - result is raw ADC value, client needs to scale to VREF (3.3V)
 
         :param pin_number: (0 - 41)
-        :param sample_num: Number of samples to average over
+        :param sample_num: Number of samples to average over, 1-1000
         :param sample_rate_ms: Millisecond delay between samples
-        :return: success = True/False, method = read_adc, result = reading = *
+        :return: {'success': True, 'method': 'read_adc', 'result': {'reading': <int>}}
         """
-        with self._lock:
-            self.logger.info(f"read_adc {pin_number} {sample_num} {sample_rate_ms}")
-            answer = self.rpc.call_method('read_adc', pin_number, sample_num, sample_rate_ms)
-            return self._rpc_validate(answer)
+        return self._call('read_adc', pin_number, sample_num, sample_rate_ms)
 
     def init_gpio(self, pin_number, mode):
         """ Init GPIO
         :param pin_number: (0 - 41)
-        :param mode: Teensy4.MODE_*
-        :return: success = True/False, method = init_gpio, result = init = Set pin (pin_number) to (mode)
+        :param mode: A4401_BOND.GPIO_MODE_*
+        :return: {'success': True, 'method': 'init_gpio', 'result': {'mode': <mode>}}
         """
         if mode not in self.GPIO_MODE_LIST:
             err = "Invalid mode {} not in {}".format(mode, self.GPIO_MODE_LIST)
             self.logger.error(err)
-            return {'success': False, 'value': {'err': err}}
+            return self._error('init_gpio', err)
 
-        mode_b = mode.encode()
-        with self._lock:
-            self.logger.info(f"init_gpio {pin_number} {mode_b}")
-            answer = self.rpc.call_method('init_gpio', pin_number, mode_b)
-            return self._rpc_validate(answer)
+        return self._call('init_gpio', pin_number, mode.encode())
 
     def read_gpio(self, pin_number):
         """ Get GPIO
         :param pin_number: (0 - 41)
-        :return: success = True/False, method = read_gpio, result = state = 1/0
+        :return: {'success': True, 'method': 'read_gpio', 'result': {'state': 1|0}}
         """
-        with self._lock:
-            if pin_number == self.JIG_CLOSE_GPIO:  # squelch jig closed polling
-                squelch = True
-            else:
-                self.logger.info(f"read_gpio {pin_number}")
-                squelch = False
-
-            answer = self.rpc.call_method('read_gpio', pin_number)
-            return self._rpc_validate(answer, squelch)
+        squelch = pin_number == self.JIG_CLOSE_GPIO  # squelch jig closed polling
+        return self._call('read_gpio', pin_number, squelch=squelch)
 
     def write_gpio(self, pin_number, state: bool):
         """ Set GPIO
         :param pin_number: (0 - 41)
-        :param state: 1/0
-        :return: success = True/False, method = write_gpio, result = state = 1/0
+        :param state: True/False
+        :return: {'success': True, 'method': 'write_gpio', 'result': {'state': True|False}}
         """
-        with self._lock:
-            self.logger.info(f"write_gpio {pin_number} {state}")
-            answer = self.rpc.call_method('write_gpio', pin_number, state)
-            return self._rpc_validate(answer)
+        return self._call('write_gpio', pin_number, state)
 
     def bist_voltage(self, name):
         """ Read BIST voltage
 
-        :param name: one of V6V, V5V, V3V3A, V3V3D, V2V5NEG (checked by teensy server side)
-        :return: {'success': True, 'method': 'bist_voltage', 'result': {'name': 'V5V', 'mv': 0}}
+        :param name: one of BIST_VOLTAGES (checked by teensy server side)
+        :return: {'success': True, 'method': 'bist_voltage',
+                  'result': {'name': 'V5V', 'mv': 5008, 'tol_mv': 200, 'pass': True}}
         """
-        with self._lock:
-            self.logger.info(f"bist_voltage {name}")
-            answer = self.rpc.call_method('bist_voltage', name.encode())
-            return self._rpc_validate(answer)
-
-    def vdut_read(self):
-        """ Read INA220 for VDUT
-
-        :return: {'success': True, 'method': 'vbus_read', 'result': {'v': 0, 'ima': 0.050000001}}
-        """
-        with self._lock:
-            self.logger.info(f"vdut_read")
-            answer = self.rpc.call_method('vbus_read')
-            return self._rpc_validate(answer)
+        return self._call('bist_voltage', name.encode())
 
     def temperature(self):
         """ Read TMP1075
 
         :return: {'success': True, 'method': 'temperature', 'result': {'temp_degC': 30.3125}}
         """
-        with self._lock:
-            self.logger.info(f"temperature")
-            answer = self.rpc.call_method('temperature')
-            return self._rpc_validate(answer)
+        return self._call('temperature')
+
+    def vdut_read(self):
+        """ Read INA226 for VDUT
+
+        :return: {'success': True, 'method': 'vdut_read', 'result': {'v': 3.0, 'ima': 0.05}}
+        """
+        return self._call('vdut_read')
 
     def vdut_set(self, mv: int):
-        """ Set VDUT Voltage in mV
-        - BOND has a 10ms internal settling time
+        """ Set VDUT Voltage in mV, 1000-9000
+        - BOND has a 10ms internal settling time, and checks the measured voltage
 
-        :return: {'success': True, 'method': 'vdut_set', 'result': {'v': 0, 'ima': 0.050000001}}
+        :return: {'success': True, 'method': 'vdut_set',
+                  'result': {'mv': 3000, 'measured_mv': 3001}}
         """
-        with self._lock:
-            self.logger.info(f"vdut_set")
-            answer = self.rpc.call_method('vdut_set', mv)
-            return self._rpc_validate(answer)
+        return self._call('vdut_set', mv)
+
+    def vdut_get_fault(self):
+        """ VDUT TPS55289 faults
+
+        :return: {'success': True, 'method': 'vdut_get_fault',
+                  'result': {'short_protection': False, 'over_current_protection': False,
+                             'over_voltage_protection': False, 'mode': 'buck'}}
+        """
+        return self._call('vdut_get_fault')
+
+    def vdut_reset(self):
+        """ VDUT TPS55289 reset and re-init
+        - the VDUT voltage must be set again after this
+
+        :return: {'success': True, 'method': 'vdut_reset', 'result': {}}
+        """
+        return self._call('vdut_reset')
 
     def vbat_read(self):
-        """ Read INA220 for VBAT
+        """ Read INA226 for VBAT
 
-        :return: {'success': True, 'method': 'vbat_read', 'result': {'v': 3.99875, 'ima': 20.50781}}
+        :return: {'success': True, 'method': 'vbat_read',
+                  'result': {'v': 3.99875, 'ima': 20.50781}}
         """
-        with self._lock:
-            self.logger.info(f"vbat_read")
-            answer = self.rpc.call_method('vbat_read')
-            return self._rpc_validate(answer)
+        return self._call('vbat_read')
 
     def vbat_set(self, mv: int):
-        """ Set VBAT (Battery emulator)
-        - BOND has a 50ms internal settling time
+        """ Set VBAT (Battery emulator), 1500-5000 mV in 50 mV steps
+        - BOND has a 50ms internal settling time, and checks the measured voltage
 
         :return: {'success': True, 'method': 'vbat_set',
-                  'result': {'mV': <int>, 'measured_mv': <int> }
+                  'result': {'mv': <int>, 'measured_mv': <int>}}
         """
-        with self._lock:
-            self.logger.info(f"vbat_set {mv}")
-            answer = self.rpc.call_method('vbat_set', mv)
-            return self._rpc_validate(answer)
+        return self._call('vbat_set', mv)
 
     def vdut_en(self, state: bool):
         """ VDUT SMPS Enable/Disable
 
         :return: {'success': True, 'method': 'vdut_en',
-                  'result': {'assert': False, 'level': False}
+                  'result': {'assert': False, 'level': False}}
         """
-        with self._lock:
-            self.logger.info(f"vdut_en {state}")
-            answer = self.rpc.call_method('vdut_en', state)
-            return self._rpc_validate(answer)
+        return self._call('vdut_en', state)
 
     def vdut_con(self, state: bool):
         """ VDUT SMPS Connect to DUT
         - there is no delay on BOND for voltages to settle
 
         :return: {'success': True, 'method': 'vdut_con',
-                  'result': {'assert': False, 'level': False}
+                  'result': {'assert': False, 'level': False}}
         """
-        with self._lock:
-            self.logger.info(f"vdut_con {state}")
-            answer = self.rpc.call_method('vdut_con', state)
-            return self._rpc_validate(answer)
+        return self._call('vdut_con', state)
 
     def vbus_en(self, state: bool):
-        """ VBUS passthru Enable/Disable on header 3
+        """ VBUS on the External USB-C connector, relay driven by header 3 port 9
 
-        :return: {'success': True, 'method': 'vdut_en',
-                  'result': {'assert': False, 'level': False}
+        :return: {'success': True, 'method': 'vbus_en', 'result': {'assert': True, 'level': False}}
         """
-        with self._lock:
-            self.logger.info(f"vbus_en {state}")
-            answer = self.rpc.call_method('vbus_en', state)
-            return self._rpc_validate(answer)
+        return self._call('vbus_en', state)
+
+    def bond_ldo_set(self, mv: int):
+        """ Header 1 LDO output voltage (header 1 pin 1), 600-3900 mV
+        - set by the IOX LDO_ADJ DAC, the LDO is enabled by the header 1 pin 1 GPO,
+          see bond_max_hdr_gpo(1, 1, True)
+        - header 1 pin 9 is the LDO output feedback, read it with bond_max_hdr_adc(1, 9)
+
+        :return: {'success': True, 'method': 'bond_ldo_set',
+                  'result': {'mv': <int>, 'dac_raw': <int>}}
+        """
+        if not (self.LDO_MV_MIN <= mv <= self.LDO_MV_MAX):
+            return self._error('bond_ldo_set', f'Invalid parameter mv {mv}')
+        return self._call('bond_ldo_set', mv)
 
     def iox_led_green(self, state: bool):
-        """ MAX11311 IOX
+        """ MAX11311 IOX, green LED (PASS)
 
         :return: {'success': True, 'method': 'iox_led_green',
-                  'result': {'assert': False, 'level': False}
+                  'result': {'assert': False, 'level': False}}
         """
-        with self._lock:
-            self.logger.info(f"iox_led_green {state}")
-            answer = self.rpc.call_method('iox_led_green', state)
-            return self._rpc_validate(answer)
+        return self._call('iox_led_green', state)
 
     def iox_led_yellow(self, state: bool):
-        """ MAX11311 IOX
+        """ MAX11311 IOX, yellow LED
 
         :return: {'success': True, 'method': 'iox_led_yellow',
-                  'result': {'assert': False, 'level': False}
+                  'result': {'assert': False, 'level': False}}
         """
-        with self._lock:
-            self.logger.info(f"iox_led_yellow {state}")
-            answer = self.rpc.call_method('iox_led_yellow', state)
-            return self._rpc_validate(answer)
+        return self._call('iox_led_yellow', state)
 
     def iox_led_red(self, state: bool):
-        """ MAX11311 IOX
+        """ MAX11311 IOX, red LED (FAIL)
 
         :return: {'success': True, 'method': 'iox_led_red',
-                  'result': {'assert': False, 'level': False}
+                  'result': {'assert': False, 'level': False}}
         """
-        with self._lock:
-            self.logger.info(f"iox_led_red {state}")
-            answer = self.rpc.call_method('iox_led_red', state)
-            return self._rpc_validate(answer)
+        return self._call('iox_led_red', state)
 
     def iox_led_blue(self, state: bool):
-        """ MAX11311 IOX
+        """ MAX11311 IOX, blue LED
 
         :return: {'success': True, 'method': 'iox_led_blue',
-                  'result': {'assert': False, 'level': False}
+                  'result': {'assert': False, 'level': False}}
         """
-        with self._lock:
-            self.logger.info(f"iox_led_blue {state}")
-            answer = self.rpc.call_method('iox_led_blue', state)
-            return self._rpc_validate(answer)
+        return self._call('iox_led_blue', state)
 
     def iox_selftest(self, state: bool):
-        """ MAX11311 IOX
+        """ MAX11311 IOX, connect the self test load
 
-        :return: {'success': True, 'method': 'iox_vbus_en',
-                  'result': {'assert': False, 'level': False}
+        :return: {'success': True, 'method': 'iox_selftest',
+                  'result': {'assert': False, 'level': False}}
         """
-        with self._lock:
-            self.logger.info(f"iox_selftest {state}")
-            answer = self.rpc.call_method('iox_selftest', state)
-            return self._rpc_validate(answer)
+        return self._call('iox_selftest', state)
 
     def iox_vbat_en(self, state: bool):
-        """ Enable VBAT
+        """ Enable VBAT (battery emulator)
 
         :return: {'success': True, 'method': 'iox_vbat_en',
-                  'result': {'assert': False, 'level': False}
+                  'result': {'assert': False, 'level': False}}
         """
-        if not self._is_battemu_calibrated:
-            self.logger.error("attempt to use Battery Emulator that is not calibrated")
-            return {'success': False, 'method': 'iox_vbat_en', 'result': {'error': "not calibrated"}}
-
-        with self._lock:
-            self.logger.info(f"iox_vbat_en {state}")
-            answer = self.rpc.call_method('iox_vbat_en', state)
-            return self._rpc_validate(answer)
+        return self._call('iox_vbat_en', state)
 
     def iox_vbat_con(self, state: bool):
         """ Connect VBAT to DUT
         - there is no delay on BOND for voltages to settle
 
         :return: {'success': True, 'method': 'iox_vbat_con',
-                  'result': {'assert': False, 'level': False}
+                  'result': {'assert': False, 'level': False}}
         """
-        if not self._is_battemu_calibrated:
-            self.logger.error("attempt to use Battery Emulator that is not calibrated")
-            return {'success': False, 'method': 'iox_vbat_en', 'result': {'error': "not calibrated"}}
+        return self._call('iox_vbat_con', state)
 
-        with self._lock:
-            self.logger.info(f"iox_vbat_con {state}")
-            answer = self.rpc.call_method('iox_vbat_con', state)
-            return self._rpc_validate(answer)
+    def bond_batt_emu_cal(self):
+        """ Recalibrate the battery emulator (BOND calibrates it at power up)
+
+        :return: {'success': True, 'method': 'bond_batt_emu_cal', 'result': {}}
+        """
+        return self._call('bond_batt_emu_cal')
 
     def bond_max_hdr_adc_cal(self, hdr: int):
         """ MAX11311 Header <1-4> read ADC CAL (port 11) voltage
         - expected result is always 2500 +/- error
 
-        :return: {'success': True, 'method': 'bond_max_hdr_adc_cal',
-                  'result': {'mV': <int> }
+        :return: {'success': True, 'method': 'bond_max_hdr_adc_cal', 'result': {'mV': <int>}}
         """
-        with self._lock:
-            self.logger.info(f"bond_max_hdr_adc_cal {hdr}")
-            answer = self.rpc.call_method('bond_max_hdr_adc_cal', hdr)
-            return self._rpc_validate(answer)
-
-    def _bond_check_hdr_pin(self, _hdr, _pin, mode):
-        if self.a44BOND_max_config is None:
-            self.logger.error(f"Attempt to use MAX11311 before configured")
-            return False, None, {'success': False, 'method': 'bond_max_hdr_adc/dac',
-                                 'result': {'error': f'MAX11311 not configured'}}
-
-        hdr, pin = str(_hdr), str(_pin)
-        if hdr not in self.a44BOND_max_config:
-            self.logger.error(f'Invalid parameter hdr {hdr}')
-            return False, None, {'success': False, 'method': 'bond_max_hdr_adc',
-                                 'result': {'error': f'Invalid parameter hdr {hdr}'}}
-        if pin not in self.a44BOND_max_config[hdr]:
-            self.logger.error(f'Invalid parameter pin {pin}')
-            return False, None, {'success': False, 'method': 'bond_max_hdr_adc',
-                                 'result': {'error': f'Invalid parameter pin {pin}'}}
-
-        config = self.a44BOND_max_config[hdr][pin]
-        if config['mode'] != mode:
-            self.logger.error(f'Invalid mode hdr {hdr} pin {pin} mode {config["mode"]}')
-            return False, None, {'success': False, 'method': 'bond_max_hdr_adc',
-                                 'result': {'error': f'Invalid mode hdr {hdr} pin {pin} mode {config["mode"]}'}}
-
-        port = config["port"]
-        return True, port, None
+        return self._call('bond_max_hdr_adc_cal', hdr)
 
     def bond_max_hdr_adc(self, hdr: int, pin: int):
-        """ MAX11311 Header <1-4> read ADC Port <0-10> voltage
+        """ MAX11311 Header <1-4> pin read ADC voltage, 0-10000 mV
         - get port from pin, and also check mode
 
-        :return: {'success': True, 'method': 'bond_max_hdr_adc',
-                  'result': {'mV': <int> }
+        :return: {'success': True, 'method': 'bond_max_hdr_adc', 'result': {'mV': <int>}}
         """
-        success, port, error = self._bond_check_hdr_pin(hdr, pin, "ADC")
-        if not success:
+        port, error = self._bond_check_hdr_pin('bond_max_hdr_adc', hdr, pin, "ADC")
+        if error:
             return error
-
-        with self._lock:
-            self.logger.info(f"bond_max_hdr_adc {hdr} {port}")
-            answer = self.rpc.call_method('bond_max_hdr_adc', hdr, port)
-            return self._rpc_validate(answer)
+        return self._call('bond_max_hdr_adc', hdr, port)
 
     def bond_max_hdr_dac(self, hdr: int, pin: int, mv: int):
-        """ MAX11311 Header <1-4> write DAC Port <0-10> voltage <mv>
+        """ MAX11311 Header <1-4> pin write DAC voltage <mv>, 0-10000 mV
         - get port from pin, and also check mode
-        - dac raw is mv / 2.5
+        - dac raw is mv * 4096 / 10000, max 4095
 
         :return: {'success': True, 'method': 'bond_max_hdr_dac',
-                  'result': {'mV': <int>, 'dac_raw': <int> }
+                  'result': {'mV': <int>, 'dac_raw': <int>}}
         """
-        success, port, error = self._bond_check_hdr_pin(hdr, pin, "DAC")
-        if not success:
+        port, error = self._bond_check_hdr_pin('bond_max_hdr_dac', hdr, pin, "DAC")
+        if error:
             return error
 
-        if not (0 <= mv <= 10000):
-            return {'success': False, 'method': 'bond_max_hdr_dac',
-                    'result': {'error': f'Invalid parameter mv {mv}'}}
+        if not (0 <= mv <= self.HDR_DAC_MV_MAX):
+            return self._error('bond_max_hdr_dac', f'Invalid parameter mv {mv}')
 
-        with self._lock:
-            self.logger.info(f"bond_max_hdr_dac {hdr} {port} {mv}")
-            answer = self.rpc.call_method('bond_max_hdr_dac', hdr, port, mv)
-            return self._rpc_validate(answer)
+        return self._call('bond_max_hdr_dac', hdr, port, mv)
+
+    def bond_max_hdr_gpo(self, hdr: int, pin: int, state: bool):
+        """ MAX11311 Header <1-4> pin write GPO state
+        - logic high level is the header "gpo_mv"
+
+        :return: {'success': True, 'method': 'bond_max_hdr_gpo', 'result': {'state': True|False}}
+        """
+        port, error = self._bond_check_hdr_pin('bond_max_hdr_gpo', hdr, pin, "GPO")
+        if error:
+            return error
+        return self._call('bond_max_hdr_gpo', hdr, port, state)
+
+    def bond_max_hdr_gpi(self, hdr: int, pin: int):
+        """ MAX11311 Header <1-4> pin read GPI state
+        - threshold is the header "gpi_mv"
+
+        :return: {'success': True, 'method': 'bond_max_hdr_gpi', 'result': {'state': 1|0}}
+        """
+        port, error = self._bond_check_hdr_pin('bond_max_hdr_gpi', hdr, pin, "GPI")
+        if error:
+            return error
+        return self._call('bond_max_hdr_gpi', hdr, port)
 
     # DEBUG APIs
 
     def bond_debug_batt_emu(self):
-        """ DEBUG: Battery emulator
+        """ DEBUG: Battery emulator LUT, first 10 entries
         :return: {'success': True, 'method': 'debug_batt_emu',
-                  'result': {'mV': <int> }
+                  'result': {'vbat': [<mV>, ...], 'dac': [<int>, ...]}}
         """
-        with self._lock:
-            self.logger.info(f"debug_batt_emu")
-            answer = self.rpc.call_method('debug_batt_emu')
-            return self._rpc_validate(answer)
+        return self._call('debug_batt_emu')
 
     #
     # API (wrapper functions)
@@ -782,18 +804,18 @@ class A4401_BOND:
 
     def jig_closed_detect(self):
         """ Read Jig Closed feature on Teensy
-        This is used by Prism Player logic, and can only return True|False
+        This is used by Prism Player logic
         True - Jig Closed (testing will start)
         False - Jig Open
         None - Not implemented, or error
 
         # NOTE: !! if not using jig_closed_detect the play function should be None
-        #          See hwdrv_teensy4.py:discover_channels():line 108
+        #          See hwdrv_A4401_BOND.py:discover_channels()
 
         return: <True|False|None>
         """
         if self.JIG_CLOSE_GPIO is None:
-            self.logger.error("Jig Closed JIG_CLOSE_GPIO Detector not defined (None), returning None")
+            self.logger.error("Jig Closed JIG_CLOSE_GPIO not defined (None), returning None")
             # if not using jig_closed_detect feature see note above
             return None
 
@@ -805,16 +827,13 @@ class A4401_BOND:
         if not answer['success']:
             self.logger.error("Failed to detect Jig Close GPIO")
             return None
-        # self.logger.info(answer)
 
-        # Example uses an Active LOW for indicating jig is closed
-        if answer['result']['state'] == 1:
-            self.logger.info("Jig close detected")
-        else:
-            # squelched log line to avoid flooding log
-            self.logger.debug("Jig close NOT detected")
+        closed = answer['result']['state'] == self.JIG_CLOSED_STATE
+        if closed != self._jig_closed_last:  # log changes only, this is polled
+            self.logger.info(f"Jig closed: {closed}")
+            self._jig_closed_last = closed
 
-        return answer['result']['state']
+        return closed
 
     def show_pass_fail(self, p=False, f=False, o=False):
         """ Set pass/fail indicator
@@ -837,19 +856,10 @@ class A4401_BOND:
         - use this callback to set the hardware to a known good reset state
         - should also be called on hardware discovery
 
-        :return:
+        :return: reset() response
         """
-        with self._lock:
-            self.logger.info(f"reset")
-            answer = self.rpc.call_method('reset')
-            self._rpc_validate(answer)
+        return self.reset()
 
     #
     # Prism Player functions
     # ---------------------------------------------------------------------------------------------
-    # ---------------------------------------------------------------------------------------------
-    # Teensy OFF-Module Functions
-    #
-    # - APIs to features that are off the Teensy module
-    # - for example, I2C component APIs, etc
-    #
