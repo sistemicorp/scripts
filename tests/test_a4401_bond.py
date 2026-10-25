@@ -348,6 +348,16 @@ def test_hwdrv_discovers_and_orders_by_usb_path(fake_udev):
     assert drivers[0]["unique_id"] == "uid-/dev/ttyACM1"
 
 
+def test_hwdrv_skips_non_teensy_ports(fake_udev):
+    """[Unhappy] a non-Teensy port hangs the simpleRPC handshake, it must not be opened"""
+    stlink = FakeUdevDevice("/dev/ttyACM0", "/usb3/3-2.3")
+    stlink.find_parent = lambda *a: types.SimpleNamespace(
+        attributes={"manufacturer": b"STMicroelectronics"})
+    fake_udev.append(stlink)
+    num, _, _ = hwdrv_module.HWDriver().discover_channels("hdr._json")
+    assert num == -1 and FakeHwdrvBond.closed == []
+
+
 def test_hwdrv_init_failure_closes_port(fake_udev):
     """[Unhappy] a failed init left the serial port open, and none found returned 0"""
     fake_udev.append(FakeUdevDevice("/dev/ttyACM9", "/usb3/3-2.9"))

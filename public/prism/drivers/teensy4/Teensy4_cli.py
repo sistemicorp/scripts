@@ -197,25 +197,19 @@ if __name__ == '__main__':
     success = teensy.init()
     if not success:
         logging.error("Failed to create teensy instance")
+        teensy.close()
         exit(1)
 
-    if args._cmd == 'led':
-        success = led(args)
-
-    elif args._cmd == 'uid':
-        success = uid(args)
-
-    elif args._cmd == 'version':
-        success = version(args)
-
-    elif args._cmd == 'write_gpio':
-        success = write_gpio(args)
-
-    elif args._cmd == 'read_gpio':
-        success = read_gpio(args)
-
-    elif args._cmd == 'read_adc':
-        success = read_adc(args)
+    commands = {
+        'led': led,
+        'uid': uid,
+        'version': version,
+        'write_gpio': write_gpio,
+        'read_gpio': read_gpio,
+        'read_adc': read_adc,
+    }
+    if args._cmd in commands:
+        success = commands[args._cmd](args)
 
     if success:
         logging.info("Success")
@@ -225,3 +219,4 @@ if __name__ == '__main__':
         exit_code = 1
 
     teensy.close()
+    exit(exit_code)

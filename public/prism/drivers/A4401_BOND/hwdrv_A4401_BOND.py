@@ -14,6 +14,30 @@ from core.sys_log import pub_notice
 from public.prism.drivers.A4401_BOND.A4401_BOND import A4401_BOND, DRIVER_TYPE
 
 
+TEENSY_MANUFACTURER = "Teensyduino"
+
+
+def teensy_ports():
+    """ Teensy serial ports
+    - only ttyACM devices whose USB manufacturer is Teensyduino, other serial devices
+      (STLINK, J-Link, ...) must never be opened, the simpleRPC handshake waits forever
+      for an answer from a device that is not running a simpleRPC server
+
+    :return: [(<device node>, <USB device path>), ...], the USB path sets the slot order
+    """
+    ports = []
+    for device in pyudev.Context().list_devices(subsystem='tty'):
+        if not device.device_node or 'ttyACM' not in device.device_node:
+            continue
+        usb_device = device.find_parent('usb', 'usb_device')
+        if usb_device is None:
+            continue
+        manufacturer = usb_device.attributes.get('manufacturer')
+        if manufacturer and manufacturer.decode('utf-8') == TEENSY_MANUFACTURER:
+            ports.append((device.device_node, device.device_path))
+    return ports
+
+
 class HWDriver(object):
     """
     HWDriver is a class that installs a HW driver into the shared state.
@@ -71,23 +95,7 @@ class HWDriver(object):
         """
         sender = "{}.{}".format(self.SFN, __class__.__name__)  # for debug purposes
 
-        port_candidates = []
-        context = pyudev.Context()
-        # Iterate through all available tty devices
-        for device in context.list_devices(subsystem='tty'):
-            # We are only interested in ttyACM devices
-            if not device.device_node or 'ttyACM' not in device.device_node:
-                continue
-            # Walk up the device tree to find the parent USB device.
-            usb_device = device.find_parent('usb', 'usb_device')
-            if usb_device is None:
-                continue
-            manufacturer = usb_device.attributes.get('manufacturer')
-            if manufacturer and manufacturer.decode('utf-8') == 'Teensyduino':
-                self.logger.info(f"device node: {device.device_node}")
-                # the USB path sets the slot order
-                port_candidates.append((device.device_node, device.device_path))
-
+        port_candidates = teensy_ports()
         self.logger.info("Serial Ports to look for Teensy {}".format(port_candidates))
         for port, usb_path in port_candidates:
             self.logger.info(f"Trying teensy at {port}, using header pin definition {scriptArgs}")

@@ -1,26 +1,23 @@
 Instructions for uploading server file to Teensy.
 
-1) Install Arduino IDE (https://www.arduino.cc/en/software).
+Tested versions (2026-10-25), use these unless you are updating and re-testing,
 
-   !! Use version 1.8.19 !!
+    Arduino IDE 2.3.6 (zip, see the BOND server README for the install steps)
+    Teensy core (teensy:avr) 1.62.0
+    simpleRPC 3.2.0
+    ArduinoJson 7.4.3
 
-   Do not use the AppImage version, use the Linux Zip file.
-   
-   Note there is a Getting Started page to show you how to install the tar file: https://docs.arduino.cc/software/ide-v1/tutorials/Linux
+1) Install the Arduino IDE and the Teensy add in.
 
-   When you run the Teensy installer, you have to point it at the Arduino installation that 
-   you just installed, which will be at the location that you just executed from.
-
-   Download and install the Linux UDEV rules: https://www.pjrc.com/teensy/00-teensy.rules
-
-   Download the Teensy add in for Arduino from here: https://www.pjrc.com/teensy/td_download.html
-     
+   - Arduino IDE: https://www.arduino.cc/en/software
+   - Teensy add in: https://www.pjrc.com/teensy/td_download.html
+   - Linux UDEV rules (also in this folder): https://www.pjrc.com/teensy/00-teensy.rules
 
    The teensy CLI loader is used by Prism scripts to load teensy, and that binary
    is stored in `scripts` repo. libusb-dev is required to use it.
 
         sudo apt-get install libusb-dev
-   
+
    Optional CLI loader source and information:
       https://www.pjrc.com/teensy/loader_cli.html
       https://github.com/PaulStoffregen/teensy_loader_cli
@@ -28,40 +25,30 @@ Instructions for uploading server file to Teensy.
 2) Start the Arduino IDE
    - Select the board, Tools->Board->TeensyArduino->Teensy41
 
-3) Set the Prism Sketch folder
-   - File->Preferences->Sketchbook Location
-   - Set the path appropriately, for example,
-     /home/martin/git/scripts/public/prism/drivers/teensy4/server
+3) Install the libraries with the Library Manager (Sketch->Include Library->Manage Libraries),
+   simpleRPC and ArduinoJson, at the versions above. The libraries are not stored in this repo.
 
-4) Open teensy4_server.ino with the Arduino IDE.
+4) Open teensy4_server/teensy4_server.ino with the Arduino IDE.
+   - `version.h` (next to the sketch) holds the firmware version, the Python driver reads the
+     same file and refuses a Teensy running a different version. Bump it on every change.
 
-5) Go to the top ribbon menu and select 'Sketch'.
+5) Build and program,
+   - In the IDE, Verify (check mark) then Upload, or
+   - from the command line, using the arduino-cli bundled with the IDE,
 
-6) In the drop down menu select 'Include Library' then 'Manage Libraries' to open the Library Manager.
+         ~/git/scripts/public/prism/drivers/teensy4/server/teensy4_server$ \
+           /opt/arduino-ide_2.3.6_Linux_64bit/resources/app/lib/backend/resources/arduino-cli compile \
+             --config-file ~/.arduinoIDE/arduino-cli.yaml -b teensy:avr:teensy41 --output-dir /tmp/t4_build .
 
-7) In the Library Manager put simpleRPC in the search bar. Install the library.
+   - Copy the hex to the script assets, for Prism to program Teensys,
 
-8) In the Library Manager put ArduinoJson in the search bar. Install the library.
+         cp /tmp/t4_build/teensy4_server.ino.hex ~/git/scripts/public/prism/scripts/example/teensy4_v0/assets/
 
-9) Copy the version.h file in this directory.
+6) Plug your Teensy into your computer.
 
-10) Go to 'C:\YourPC\Documents\Arduino\libraries' or where your Arduino Libraries are installed.
+7) Go to Arduino IDE and upload the sketch onto the Teensy.
 
-11) Create a folder named 'version' and paste the version.h file into the folder.
-
-12) Generating a Hex file from Arduino
-    - In Arduino IDE, File->Preferences, turn on Show Verbose Output During: Compilation
-    - Compile the sketch by pressing the Arduino IDE Verify (check mark) icon
-    - Note the panel output for the location of the compiled files,
-
-
-    /home/martin/Downloads/arduino-1.8.19-linux64/arduino-1.8.19/hardware/teensy/../tools/teensy_size /tmp/arduino_build_864038/teensy4_server.ino.elf
-
-13) Plug your Teensy into your computer.
-
-14) Go to Arduino IDE and upload the sketch onto the Teensy.
-
-15) Program Teensy with command line tool,
+8) Program Teensy with command line tool,
 
 
     martin@martin-staric2:~/git/scripts/public/prism/drivers/teensy4/server$ ./teensy_loader_cli --mcu=TEENSY41 -w -v ../../../../prism/scripts/example/teensy4_v0/assets/teensy4_server.ino.hex 
@@ -73,7 +60,7 @@ Instructions for uploading server file to Teensy.
 
 
 
-16) Showing Teensy devices with lsusb,
+9) Showing Teensy devices with lsusb,
 
 
     martin@martin-virtual-machine:~/git/scripts/public/prism/drivers/teensy4/server$ lsusb
@@ -92,7 +79,7 @@ After programming, the teensy will show up as a serial, like so,
 
 
 
-17) Teensy RPC Development
+10) Teensy RPC Development
 
     - Prism calls Teensy's RPC server from Python, and there is a way to test that API from Python using 
       a command line (CLI) interface.
@@ -124,7 +111,7 @@ After programming, the teensy will show up as a serial, like so,
               Teensy4.py   INFO  105 closing
 
 
-18) Your own Teensy Development
+11) Your own Teensy Development
 
    - the code here (~/public/prism/drivers/teensy4) is a starting point (template) for creating
      your own Teensy4 code.

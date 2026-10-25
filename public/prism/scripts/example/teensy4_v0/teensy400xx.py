@@ -95,17 +95,17 @@ class teensy400xx(TestItem):
     def T020_init_gpio(self):
         """ In this test a GPIO is initialized
 
-        {"id": "T020_init_gpio",            "enable": true, "pin_number": 5, "mode": "OUTPUT"},
+        {"id": "T020_init_gpio",            "enable": true, "pin_number": 5, "mode": "GPIO_MODE_OUTPUT"},
 
         where,
          pin_number: <0-41>
-         mode: <INPUT-INPUT_PULLUP-OUTPUT>
+         mode: <GPIO_MODE_INPUT|GPIO_MODE_INPUT_PULLUP|GPIO_MODE_OUTPUT>
         """
         ctx = self.item_start() #always first line of test
 
         pin_number = ctx.item.get("pin_number", None)
 
-        if pin_number < 0 or pin_number>41 or pin_number is None:
+        if pin_number is None or pin_number < 0 or pin_number > 41:
             self.logger.error(pin_number)
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
             return
@@ -147,7 +147,7 @@ class teensy400xx(TestItem):
 
         pin_number = ctx.item.get("pin_number", None)
 
-        if pin_number < 0 or pin_number > 41 or pin_number is None:
+        if pin_number is None or pin_number < 0 or pin_number > 41:
             self.logger.error(pin_number)
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
             return
@@ -182,7 +182,7 @@ class teensy400xx(TestItem):
 
         pin_number = ctx.item.get("pin_number", None)
 
-        if pin_number < 0 or pin_number > 41 or pin_number is None:
+        if pin_number is None or pin_number < 0 or pin_number > 41:
             self.logger.error(pin_number)
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
             return
@@ -225,7 +225,7 @@ class teensy400xx(TestItem):
 
         pin_number = ctx.item.get("pin_number", None)
 
-        if pin_number < 0 or pin_number > 41 or pin_number is None:
+        if pin_number is None or pin_number < 0 or pin_number > 41:
             self.logger.error(pin_number)
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
             return

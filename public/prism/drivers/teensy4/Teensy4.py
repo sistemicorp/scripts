@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2021-2023
+Sistemi Corporation, copyright, all rights reserved, 2021-2026
 Owen Li, Martin Guthrie
 
 """
@@ -15,7 +15,7 @@ from serial import SerialException
 try:
     # run locally
     from stublogger import StubLogger
-except:
+except ImportError:
     # run from prism
     from public.prism.drivers.common.stublogger import StubLogger
 
@@ -28,13 +28,14 @@ class Teensy4:
 
     Adding new RPC calls...
 
-    1) Write server code by adding a function in teensy4_server.ino (Look at existing functions as example)
-    2) Export the function by adding a name and description in the loop() (Look at existing exports as example)
-    3) Write function in Teensy4 Class (this one) to call your simpleRPC function (Look at existing
-       functions as example).  Note the code is organized so that "on-board" Teensy functions are in one
-       section, and off module functions are in another.
+    1) Write server code by adding a function in teensy4_server.ino (Look at existing functions
+       as example)
+    2) Export the function by adding a name and description in the loop() (Look at existing
+       exports as example)
+    3) Write a method in this class that calls it with self._call().
     4) Test your new API with the Teensy4_cli.py script.
-    5) Write function in teensy400xx.py to call your Teensy4 Class function (Look at existing functions as example)
+    5) Write function in teensy400xx.py to call your Teensy4 Class function (Look at existing
+       functions as example)
     6) Add your function call to the test script!
 
     version.h:
@@ -48,12 +49,13 @@ class Teensy4:
     GPIO_MODE_INPUT_PULLUP = "INPUT_PULLUP"
     GPIO_MODE_LIST = [GPIO_MODE_INPUT, GPIO_MODE_OUTPUT, GPIO_MODE_INPUT_PULLUP]
 
-    JIG_CLOSE_GPIO = None  # GPIO number for Jig Closed detect, set to None if not using (Active-Low)
+    JIG_CLOSE_GPIO = None  # GPIO number for Jig Closed detect, set to None if not using
+    JIG_CLOSED_STATE = 0  # GPIO state when the jig is closed (Active-Low, with INPUT_PULLUP)
 
     GPIO_NUMBER_MIN = 0
     GPIO_NUMBER_MAX = 41
 
-    # LED test indicators GPIO numbers and whether they are active_high. Set GPIO to None if not using
+    # LED test indicators GPIO numbers and whether they are active_high, GPIO None is not used
     TEST_INDICATORS = {
         "pass": {'gpio': 20, 'active_high': True},
         "fail": {'gpio': 21, 'active_high': True},
@@ -63,17 +65,18 @@ class Teensy4:
     # For Teensy FW version checking the SAME (c code) header file that created the Teensy4
     # firmware is used to check if that firmware is now running (deployed) on Teensy4.
     # if that FW is not running, there is probably a problem!  See method init().
-    _version_file = os.path.join(os.path.dirname(__file__), "server/libraries/version/version.h")
+    _version_file = os.path.join(os.path.dirname(__file__), "server/teensy4_server/version.h")
 
     def __init__(self, port, loggerIn=None):
-        self.lock = threading.Lock()
-
-        if loggerIn: self.logger = loggerIn
-        else: self.logger = StubLogger()
+        if loggerIn:
+            self.logger = loggerIn
+        else:
+            self.logger = StubLogger()
 
         self._lock = threading.Lock()
         self.port = port
         self.rpc = None
+        self._jig_closed_last = None
 
         self.my_version = self._get_version()
         self.logger.info(f"version {self.my_version}")
@@ -101,14 +104,15 @@ class Teensy4:
             return False
 
         if self.my_version != version_response["result"]["version"]:
-            self.logger.error("version does not match, Python: {} Arduino: {}".format(self.my_version, version_response["result"]["version"]))
+            self.logger.error("version does not match, Python: {} Arduino: {}".format(
+                self.my_version, version_response["result"]["version"]))
             return False
 
-        # check if test indicator has valid GPIOs
-        self._test_indicator_check()
+        if not self._test_indicator_check():
+            return False
 
-        # check if jig close has valid GPIOs
-        self._jig_close_check()
+        if not self._jig_close_check():
+            return False
 
         # finally, all is well
         self.logger.info("Installed Teensy on port {}".format(self.port))
@@ -116,14 +120,17 @@ class Teensy4:
 
     def close(self):
         """  Close connection
-          
+
         :return:
         """
         if self.rpc is None:
             return True
 
         self.logger.info(f"closing {self.port}")
-        self.rpc.close()
+        try:
+            self.rpc.close()
+        except (SerialException, OSError) as e:
+            self.logger.error(e)
         self.rpc = None
         return True
 
@@ -132,6 +139,33 @@ class Teensy4:
     #
     # - function names should all begin with "_"
     # - functions are all private to this class
+
+    def _call(self, method, *args, squelch=False):
+        """ Call an RPC method on the Teensy
+
+        :param method: RPC method name
+        :param args: RPC arguments
+        :param squelch: True does not log the call or a successful answer
+        :return: {'success': <True/False>, 'method': <method>, 'result': {...}}
+        """
+        with self._lock:
+            if not squelch:
+                self.logger.info(f"{method} {args}" if args else method)
+
+            if self.rpc is None:
+                return self._error(method, "not connected")
+
+            try:
+                answer = self.rpc.call_method(method, *args)
+
+            except (SerialException, OSError, ValueError, TypeError) as e:
+                self.logger.error(f"{method}: {e}")
+                return self._error(method, str(e))
+
+            return self._rpc_validate(answer, squelch)
+
+    def _error(self, method, error):
+        return {'success': False, 'method': method, 'result': {'error': error}}
 
     def _get_version(self):
         """ Get Version from version.h
@@ -160,28 +194,42 @@ class Teensy4:
 
         return m[0]
 
+    def _gpio_valid(self, pin_number):
+        return isinstance(pin_number, int) and \
+            self.GPIO_NUMBER_MIN <= pin_number <= self.GPIO_NUMBER_MAX
+
     def _test_indicator_check(self):
-        for k in self.TEST_INDICATORS.keys():
-            pin_number = self.TEST_INDICATORS[k]['gpio']
-            if pin_number < 0 or pin_number > 41:
+        """ Init the test indicator GPIOs as outputs, a GPIO of None is not used
+        :return: True/False
+        """
+        for k, indicator in self.TEST_INDICATORS.items():
+            pin_number = indicator['gpio']
+            if pin_number is None:
+                self.logger.info(f"Test Indicator {k} not defined (None)")
+                continue
+            if not self._gpio_valid(pin_number):
                 self.logger.error("{} has Invalid GPIO {}".format(k, pin_number))
                 return False
-            if pin_number is None:
-                self.logger.error("Test Indicator not defined (None)")
+            answer = self.init_gpio(pin_number, self.GPIO_MODE_OUTPUT)
+            if not answer['success']:
+                self.logger.error(f"Test Indicator {k} GPIO init failed {answer}")
                 return False
-            self.rpc.call_method('init_gpio', pin_number, self.GPIO_MODE_OUTPUT.encode())
         return True
 
     def _jig_close_check(self):
         if self.JIG_CLOSE_GPIO is None:
             self.logger.info("Jig Closed Detector not defined (None)")
             return True
-        elif self.GPIO_NUMBER_MIN < self.JIG_CLOSE_GPIO > self.GPIO_NUMBER_MAX:
-            self.logger.error("Invalid GPIO")
+
+        if not self._gpio_valid(self.JIG_CLOSE_GPIO):
+            self.logger.error(f"Invalid Jig Closed GPIO {self.JIG_CLOSE_GPIO}")
             return False
-        else:
-            self.rpc.call_method('init_gpio', self.JIG_CLOSE_GPIO, self.GPIO_MODE_INPUT_PULLUP.encode())
-            return True
+
+        answer = self.init_gpio(self.JIG_CLOSE_GPIO, self.GPIO_MODE_INPUT_PULLUP)
+        if not answer['success']:
+            self.logger.error(f"Jig Closed GPIO init failed {answer}")
+            return False
+        return True
 
     def _rpc_validate(self, answer, squelch=False):
         try:
@@ -195,7 +243,7 @@ class Teensy4:
         except Exception as e:
             self.logger.error(answer)
             self.logger.error(e)
-            answer = {"success": False}
+            answer = {"success": False, "result": {"error": f"invalid response: {e}"}}
 
         return answer
 
@@ -212,49 +260,31 @@ class Teensy4:
         """ list
         :return: list of Teensy methods
         """
-        return list(self.rpc.methods)
+        return list(self.rpc.device['methods'])
 
     def unique_id(self):
         """ unique id
-        :return: success = True/False, method: unique_id, unique_id = MAC Address
+        :return: {'success': True, 'method': 'unique_id', 'result': {'unique_id': <MAC>}}
         """
-        with self._lock:
-            self.logger.info(f"unique_id")
-            answer = self.rpc.call_method('unique_id')
-            return self._rpc_validate(answer)
+        return self._call('unique_id')
 
     def slot(self):
-        """ slot
-        :return: success = True/False, method: slot, id = id
+        """ slot (deprecated, slots are ordered by USB path)
+        :return: {'success': True, 'method': 'slot', 'result': {'id': <int>}}
         """
-        # TODO: implement arduino side
-        with self._lock:
-            self.logger.info(f"slot")
-            answer = self.rpc.call_method('slot')
-            return self._rpc_validate(answer)
-
-    # def channel(self):
-    #     c = {'method': 'slot', 'args': {}}
-    #     # FIXME: put SimpleRPC call here, and return the result JSON
-    #     return {"success": False, "result": {}}
+        return self._call('slot')
 
     def version(self):
         """ Version
-        :return: success = True/False, method = version, version = version#
+        :return: {'success': True, 'method': 'version', 'result': {'version': <version>}}
         """
-        with self._lock:
-            self.logger.info(f"version")
-            answer = self.rpc.call_method('version')
-            return self._rpc_validate(answer)
+        return self._call('version')
 
     def reset(self):
-        """ reset
-        :return: success = True/False, method = reset
+        """ reset (not a Teensy reset)
+        :return: {'success': True, 'method': 'reset', 'result': {}}
         """
-        with self._lock:
-            self.logger.info(f"reset")
-            answer = self.rpc.call_method('reset')
-            return self._rpc_validate(answer)
+        return self._call('reset')
 
     def reboot_to_bootloader(self):
         """ reboot
@@ -262,7 +292,7 @@ class Teensy4:
         """
         try:
             with self._lock:
-                self.logger.info(f"reboot_to_bootloader")
+                self.logger.info("reboot_to_bootloader")
                 self.rpc.call_method('reboot_to_bootloader')
                 # reboot will not return, expect SerialException exception, fake the return success
 
@@ -271,31 +301,16 @@ class Teensy4:
 
         except Exception as e:
             self.logger.error(e)
-            return json.loads("""{"success": false}""")  # json false is lower case
+            return {"success": False, "method": "reboot_to_bootloader", "result": {}}
 
-        return json.loads("""{"success": true}""")  # json true is lower case
+        return {"success": True, "method": "reboot_to_bootloader", "result": {}}
 
     def led(self, set):
         """ LED on/off
         :param set: True/False
-        :return: success = True/False, method = set_led, result = state = ON/OFF
+        :return: {'success': True, 'method': 'set_led', 'result': {'state': 'on'|'off'}}
         """
-        with self._lock:
-            self.logger.info(f"set_led {set}")
-            answer = self.rpc.call_method('set_led', set)
-            return self._rpc_validate(answer)
-
-    # def led_toggle(self, led, on_ms=500, off_ms=500, once=False):
-    #     """ toggle and LED ON and then OFF
-    #     - this is a blocking command
-    #
-    #     :param led: # of LED, see self.LED_*
-    #     :param on_ms: # of milliseconds to turn on LED
-    #     :return:
-    #     """
-    #     c = {'method': 'led_toggle', 'args': {'led': led, 'on_ms': on_ms, 'off_ms': off_ms, 'once': once}}
-    #     # FIXME: put SimpleRPC call here, and return the result JSON
-    #     return {"success": False, "result": {}}
+        return self._call('set_led', set)
 
     def read_adc(self, pin_number, sample_num=1, sample_rate_ms=1):
         """ Read an ADC pin
@@ -303,52 +318,40 @@ class Teensy4:
         - result is raw ADC value, client needs to scale to VREF (3.3V)
 
         :param pin_number: (0 - 41)
-        :param sample_num: Number of samples to average over
+        :param sample_num: Number of samples to average over, 1-1000
         :param sample_rate_ms: Millisecond delay between samples
-        :return: success = True/False, method = read_adc, result = reading = *
+        :return: {'success': True, 'method': 'read_adc', 'result': {'reading': <int>}}
         """
-        with self._lock:
-            self.logger.info(f"read_adc {pin_number} {sample_num} {sample_rate_ms}")
-            answer = self.rpc.call_method('read_adc', pin_number, sample_num, sample_rate_ms)
-            return self._rpc_validate(answer)
+        return self._call('read_adc', pin_number, sample_num, sample_rate_ms)
 
     def init_gpio(self, pin_number, mode):
         """ Init GPIO
         :param pin_number: (0 - 41)
-        :param mode: Teensy4.MODE_*
-        :return: success = True/False, method = init_gpio, result = init = Set pin (pin_number) to (mode)
+        :param mode: Teensy4.GPIO_MODE_*
+        :return: {'success': True, 'method': 'init_gpio', 'result': {'mode': <mode>}}
         """
         if mode not in self.GPIO_MODE_LIST:
             err = "Invalid mode {} not in {}".format(mode, self.GPIO_MODE_LIST)
             self.logger.error(err)
-            return {'success': False, 'value': {'err': err}}
+            return self._error('init_gpio', err)
 
-        mode_b = mode.encode()
-        with self._lock:
-            self.logger.info(f"init_gpio {pin_number} {mode_b}")
-            answer = self.rpc.call_method('init_gpio', pin_number, mode_b)
-            return self._rpc_validate(answer)
+        return self._call('init_gpio', pin_number, mode.encode())
 
     def read_gpio(self, pin_number):
         """ Get GPIO
         :param pin_number: (0 - 41)
-        :return: success = True/False, method = read_gpio, result = state = 1/0
+        :return: {'success': True, 'method': 'read_gpio', 'result': {'state': 1|0}}
         """
-        with self._lock:
-            self.logger.info(f"read_gpio {pin_number}")
-            answer = self.rpc.call_method('read_gpio', pin_number)
-            return self._rpc_validate(answer)
+        squelch = pin_number == self.JIG_CLOSE_GPIO  # squelch jig closed polling
+        return self._call('read_gpio', pin_number, squelch=squelch)
 
     def write_gpio(self, pin_number, state: bool):
         """ Set GPIO
         :param pin_number: (0 - 41)
-        :param state: 1/0
-        :return: success = True/False, method = write_gpio, result = state = 1/0
+        :param state: True/False
+        :return: {'success': True, 'method': 'write_gpio', 'result': {'state': True|False}}
         """
-        with self._lock:
-            self.logger.info(f"write_gpio {pin_number} {state}")
-            answer = self.rpc.call_method('write_gpio', pin_number, state)
-            return self._rpc_validate(answer)
+        return self._call('write_gpio', pin_number, state)
 
     #
     # API (wrapper functions)
@@ -359,18 +362,18 @@ class Teensy4:
 
     def jig_closed_detect(self):
         """ Read Jig Closed feature on Teensy
-        This is used by Prism Player logic, and can only return True|False
+        This is used by Prism Player logic
         True - Jig Closed (testing will start)
         False - Jig Open
         None - Not implemented, or error
 
         # NOTE: !! if not using jig_closed_detect the play function should be None
-        #          See hwdrv_teensy4.py:discover_channels():line 108
+        #          See hwdrv_teensy4.py:discover_channels()
 
         return: <True|False|None>
         """
         if self.JIG_CLOSE_GPIO is None:
-            self.logger.error("Jig Closed JIG_CLOSE_GPIO Detector not defined (None), returning None")
+            self.logger.error("Jig Closed JIG_CLOSE_GPIO not defined (None), returning None")
             # if not using jig_closed_detect feature see note above
             return None
 
@@ -378,19 +381,17 @@ class Teensy4:
             self.logger.error("No rpc handler returning None")
             return None
 
-        answer = json.loads(self.rpc.call_method('read_gpio', self.JIG_CLOSE_GPIO))
+        answer = self.read_gpio(self.JIG_CLOSE_GPIO)
         if not answer['success']:
             self.logger.error("Failed to detect Jig Close GPIO")
             return None
 
-        # Example uses an Active LOW for indicating jig is closed
-        if answer['result']['state'] != 1:
-            self.logger.info("Jig close detected")
-        else:
-            # squelched log line to avoid flooding log
-            self.logger.debug("Jig close NOT detected")
+        closed = answer['result']['state'] == self.JIG_CLOSED_STATE
+        if closed != self._jig_closed_last:  # log changes only, this is polled
+            self.logger.info(f"Jig closed: {closed}")
+            self._jig_closed_last = closed
 
-        return not answer['result']['state']
+        return closed
 
     def show_pass_fail(self, p=False, f=False, o=False):
         """ Set pass/fail indicator
@@ -404,40 +405,24 @@ class Teensy4:
         if self.rpc is None:
             return
 
-        with self._lock:
-            for k in self.TEST_INDICATORS.keys():
-                self.rpc.call_method('write_gpio',
-                                     self.TEST_INDICATORS[k]['gpio'],
-                                     not self.TEST_INDICATORS[k]['active_high'])
-
-            if p and self.TEST_INDICATORS.get('pass', False):
-                self.rpc.call_method('write_gpio',
-                                     self.TEST_INDICATORS["pass"]["gpio"],
-                                     self.TEST_INDICATORS["pass"]["active_high"])
-
-            if f and self.TEST_INDICATORS.get('fail', False):
-                self.rpc.call_method('write_gpio',
-                                     self.TEST_INDICATORS["fail"]["gpio"],
-                                     self.TEST_INDICATORS["fail"]["active_high"])
-
-            if o and self.TEST_INDICATORS.get('other', False):
-                self.rpc.call_method('write_gpio',
-                                     self.TEST_INDICATORS["other"]["gpio"],
-                                     self.TEST_INDICATORS["other"]["active_high"])
-
-        return
+        states = {"pass": p, "fail": f, "other": o}
+        for k, indicator in self.TEST_INDICATORS.items():
+            if indicator['gpio'] is None:
+                continue
+            on = states.get(k, False)
+            level = indicator['active_high'] if on else not indicator['active_high']
+            answer = self.write_gpio(indicator['gpio'], level)
+            if not answer['success']:
+                self.logger.error(f"Test Indicator {k} failed {answer}")
 
     def jig_reset(self):
         """ Called by Prism at the start and end of testing
         - use this callback to set the hardware to a known good reset state
         - should also be called on hardware discovery
 
-        :return:
+        :return: reset() response
         """
-        with self._lock:
-            self.logger.info(f"reset")
-            answer = self.rpc.call_method('reset')
-            self._rpc_validate(answer)
+        return self.reset()
 
     #
     # Prism Player functions
@@ -448,4 +433,3 @@ class Teensy4:
     # - APIs to features that are off the Teensy module
     # - for example, I2C component APIs, etc
     #
-

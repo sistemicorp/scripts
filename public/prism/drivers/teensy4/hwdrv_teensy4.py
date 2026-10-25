@@ -1,17 +1,41 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Sistemi Corporation, copyright, all rights reserved, 2021-2022
+Sistemi Corporation, copyright, all rights reserved, 2021-2026
 Owen Li, Martin Guthrie
 
 """
 import os
 import logging
 import pyudev
+from core.const import NOTICE_TYPE
 from core.sys_log import pub_notice
-from public.prism.drivers.common.list_serial import serial_ports
 
 from public.prism.drivers.teensy4.Teensy4 import Teensy4, DRIVER_TYPE
+
+
+TEENSY_MANUFACTURER = "Teensyduino"
+
+
+def teensy_ports():
+    """ Teensy serial ports
+    - only ttyACM devices whose USB manufacturer is Teensyduino, other serial devices
+      (STLINK, J-Link, ...) must never be opened, the simpleRPC handshake waits forever
+      for an answer from a device that is not running a simpleRPC server
+
+    :return: [(<device node>, <USB device path>), ...], the USB path sets the slot order
+    """
+    ports = []
+    for device in pyudev.Context().list_devices(subsystem='tty'):
+        if not device.device_node or 'ttyACM' not in device.device_node:
+            continue
+        usb_device = device.find_parent('usb', 'usb_device')
+        if usb_device is None:
+            continue
+        manufacturer = usb_device.attributes.get('manufacturer')
+        if manufacturer and manufacturer.decode('utf-8') == TEENSY_MANUFACTURER:
+            ports.append((device.device_node, device.device_path))
+    return ports
 
 
 class HWDriver(object):
@@ -37,7 +61,7 @@ class HWDriver(object):
         self._num_chan = 0
         self.teensys = []  # holds a list of all objects found
 
-    def discover_channels(self):
+    def discover_channels(self, scriptArgs=None):
         """ determine the number of channels, and populate hw drivers into shared state
 
         [ {"id": i,                    # ~slot number of the channel (see Note 1)
@@ -70,65 +94,43 @@ class HWDriver(object):
         """
         sender = "{}.{}".format(self.SFN, __class__.__name__)  # for debug purposes
 
-        port_candidates = serial_ports()
+        port_candidates = teensy_ports()
         self.logger.info("Serial Ports to look for Teensy {}".format(port_candidates))
 
-        for port in port_candidates:
-            if "ttyACM" not in port:  # this does not work on Windows as only see "COM#"
-                self.logger.info("skipping port {}...".format(port))
-                continue
-
-            _teensy = {"port": port}
+        for port, usb_path in port_candidates:
             self.logger.info("Trying teensy at {}...".format(port))
-
-            #https: // stackoverflow.com / questions / 21050671 / how - to - check - if -device - is -connected - pyserial / 49450813
-            # test if this COM port is really a Teensy
-            # create an instance of Teensy()
-            _teensy['hwdrv'] = Teensy4(port, loggerIn=logging.getLogger("teensy.try"))
-            success = _teensy['hwdrv'].init()
-            if not success:
+            hwdrv = Teensy4(port, loggerIn=logging.getLogger("teensy.try"))
+            if not hwdrv.init():
                 self.logger.error("failed on {}...".format(port))
+                hwdrv.close()
                 continue
 
-            # yes, its a Teensy, add it to the list...
-            answer = _teensy['hwdrv'].slot()
-            _teensy['id'] = answer['result']['id']
-            success = answer['success']
-            if not success:
-                self.logger.error("failed on {}...".format('slot'))
-                continue
-
-            answer = _teensy['hwdrv'].unique_id()
-            _teensy['unique_id'] = answer['result']['unique_id']
-            success = answer['success']
-            if not success:
+            answer = hwdrv.unique_id()
+            if not answer['success']:
                 self.logger.error("failed on {}...".format('unique_id'))
+                hwdrv.close()
                 continue
 
-            _teensy['close'] = _teensy['hwdrv'].close
-
-            # NOTE: !! If not using jig_closed_detect this should be NONE !!
-            #_teensy['play'] = _teensy['hwdrv'].jig_closed_detect
-            _teensy['play'] = None
-
-            _teensy['show_pass_fail'] = _teensy['hwdrv'].show_pass_fail
-            _teensy['jig_reset'] = _teensy['hwdrv'].jig_reset
-
-            # add USB port location
-            context = pyudev.Context()
-            for device in context.list_devices(subsystem='tty'):
-                _node = str(device.device_node)
-                if port in _node:
-                    _teensy['usb_path'] = device.device_path
-                    break
-
-            if not _teensy.get('usb_path', False):
-                _teensy['usb_path'] = None
+            play = hwdrv.jig_closed_detect if hwdrv.JIG_CLOSE_GPIO is not None else None
+            _teensy = {"port": port,
+                       "version": self.VERSION,
+                       "hwdrv": hwdrv,
+                       "unique_id": answer['result']['unique_id'],
+                       "usb_path": usb_path,
+                       "close": hwdrv.close,
+                       # NOTE: !! If not using jig_closed_detect this should be None !!
+                       "play": play,
+                       "show_pass_fail": hwdrv.show_pass_fail,
+                       "jig_reset": hwdrv.jig_reset}
 
             self.logger.info(_teensy)
             self.teensys.append(_teensy)
 
         self._num_chan = len(self.teensys)
+        if self._num_chan == 0:
+            pub_notice("HWDriver:{}: no Teensy found".format(self.SFN), sender=sender,
+                       type=NOTICE_TYPE.ERROR)
+            return -1, DRIVER_TYPE, []
 
         # sort based on USB path, slot 0, 1, 2, etc
         self.teensys = sorted(self.teensys, key=lambda d: d['usb_path'])

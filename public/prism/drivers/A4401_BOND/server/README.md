@@ -67,6 +67,7 @@ Things to read before starting:
 
 2) Start the Arduino IDE
    - Select the board, Tools->Board->TeensyArduino->Teensy41
+   - Tested with the Teensy core (teensy:avr) 1.62.0 (Tools->Board->Boards Manager)
 
 ![A test image](readme_images/rm_install_arduino_02.png)
 
@@ -76,7 +77,7 @@ Things to read before starting:
 3) Install library dependencies: Go to the top ribbon menu and select 'Sketch'.
    - In the drop down menu select 'Include Library' then 'Manage Libraries' to open the Library Manager.
    - In the Library Manager put simpleRPC (ver 3.2.0) in the search bar. Install the library.
-   - In the Library Manager put ArduinoJson (ver 7.4.2) in the search bar. Install the library.
+   - In the Library Manager put ArduinoJson (ver 7.4.3) in the search bar. Install the library.
    - In the Library Manager put INA226_WE (ver 1.3.0) in the search bar. Install the library.
 
 4) Open teensy4_server.ino with the Arduino IDE.  This is where you will find `setup()`, `loop()` and
