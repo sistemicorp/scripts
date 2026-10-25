@@ -282,3 +282,25 @@ def test_apply_sub_defaults_no_default_uses_placeholder():
     script = prism_dev.apply_sub_defaults(script)
     assert script["info"]["lot"] == prism_dev.SUB_PLACEHOLDER_STR
     assert script["tests"][0]["items"][0]["args"]["min"] == prism_dev.SUB_PLACEHOLDER_NUM
+
+
+# ---- prism_dev play_poll_sec --------------------------------------------------
+
+def test_play_poll_sec_default_and_in_range():
+    assert prism_dev.play_poll_sec(None) == prism_dev.PLAY_POLL_SEC
+    assert prism_dev.play_poll_sec(scanners_mod.PLAY_POLL_SEC) == scanners_mod.PLAY_POLL_SEC
+    assert prism_dev.play_poll_sec(prism_dev.PLAY_POLL_MAX_SEC) == prism_dev.PLAY_POLL_MAX_SEC
+
+
+@pytest.mark.parametrize("value, expect", [(0, prism_dev.PLAY_POLL_MIN_SEC),
+                                           (0.05, prism_dev.PLAY_POLL_MIN_SEC),
+                                           (5, prism_dev.PLAY_POLL_MAX_SEC)])
+def test_play_poll_sec_clamped(value, expect):
+    # [Edge] outside the range is clamped to the nearest limit, like Prism
+    assert prism_dev.play_poll_sec(value) == expect
+
+
+@pytest.mark.parametrize("value", ["0.2", True])
+def test_play_poll_sec_not_a_number_uses_default(value):
+    # [Unhappy] a bad driver value type uses the default, like Prism
+    assert prism_dev.play_poll_sec(value) == prism_dev.PLAY_POLL_SEC

@@ -88,7 +88,7 @@ path can be used to synchronize the two lists.  This is done in the examples pro
 <span class="sd">       # optional</span>
 <span class="sd">       &quot;close&quot;: None,              # register a callback on closing the channel, or None</span>
 <span class="sd">       &quot;play&quot;: jig_closed_detect   # function for detecting jig closed</span>
-<span class="sd">       &quot;play_poll_sec&quot;: 1          # seconds between play calls, default 1</span>
+<span class="sd">       &quot;play_poll_sec&quot;: 1          # seconds between play calls, 0.2 to 2, default 1</span>
 <span class="sd">       &quot;show_pass_fail&quot;: jig_led   # function for indicating pass/fail (like LED)</span>
 <span class="sd">       &quot;show_msg&quot;: jig_display     # function for indicating test status (like display)</span>
 
@@ -113,8 +113,9 @@ path can be used to synchronize the two lists.  This is done in the examples pro
 </pre></div>
 </div>
 <p>Prism calls the <cite>play</cite> function every second to see if the jig has closed, and starts the test when it
-does.  A driver can set <cite>play_poll_sec</cite> to call it more often, down to 0.1 seconds, for example so a
-test restarts sooner.  An invalid value is logged and the default is used.</p>
+does.  A driver can set <cite>play_poll_sec</cite> to change this, from 0.2 to 2 seconds, for example so a test
+restarts sooner after the jig closes.  A value outside the range is logged and set to the nearest
+limit, and a value that is not a number is logged and the default of 1 second is used.</p>
 </section>
 <section id="slot-number">
 <h2>Slot Number<a class="headerlink" href="#slot-number" title="Link to this heading">¶</a></h2>

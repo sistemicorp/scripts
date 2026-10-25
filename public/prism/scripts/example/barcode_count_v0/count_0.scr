@@ -5,6 +5,8 @@
 //          The script restarts after each scan, if no scan within the item timeout,
 //          the item records TIMEOUT and the restarts stop, press channel Start to resume.
 //          Make barcodes with make_barcodes.py, see sample barcodes_P001.pdf
+//          See the count in Lente, Results Analytics, Throughput & Yield: select Lot,
+//          and "Unique units, last result" so a barcode scanned twice counts once.
 {
   "subs": {
     "Lot": {

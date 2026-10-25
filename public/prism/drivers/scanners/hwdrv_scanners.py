@@ -69,7 +69,7 @@ class HWDriver(object):
            # optional
            "close": None,              # register a callback on closing the channel, or None
            "play": jig_closed_detect   # function for detecting jig closed
-           "play_poll_sec": 1          # seconds between play calls, default 1
+           "play_poll_sec": 1          # seconds between play calls, 0.2 to 2, default 1
            "show_pass_fail": jig_led   # function for indicating pass/fail (like LED)
            "show_msg": jig_display     # function for indicating test status (like display)
 

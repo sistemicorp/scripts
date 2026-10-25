@@ -103,8 +103,24 @@ def item_enabled(item):
     return bool(enable)
 
 
-# jig closed poll period, a driver can set "play_poll_sec"
+# jig closed poll period, a driver can set "play_poll_sec", same limits as Prism
 PLAY_POLL_SEC = 1
+PLAY_POLL_MIN_SEC = 0.2
+PLAY_POLL_MAX_SEC = 2
+
+
+def play_poll_sec(value):
+    """ The driver "play_poll_sec", clamped to the limits, a non number uses PLAY_POLL_SEC """
+    if value is None:
+        return PLAY_POLL_SEC
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        logger.warning("play_poll_sec {!r} is not a number, using {}".format(value, PLAY_POLL_SEC))
+        return PLAY_POLL_SEC
+    clamped = min(max(value, PLAY_POLL_MIN_SEC), PLAY_POLL_MAX_SEC)
+    if clamped != value:
+        logger.warning("play_poll_sec {} out of range {}..{}, using {}".format(
+            value, PLAY_POLL_MIN_SEC, PLAY_POLL_MAX_SEC, clamped))
+    return clamped
 
 
 class ChanCon(object):
@@ -163,7 +179,7 @@ class ChanCon(object):
         # process HW drivers
         num_channels = -1
         play = None
-        play_poll_sec = PLAY_POLL_SEC
+        poll_sec = PLAY_POLL_SEC
         for hwdrv in self.script["config"]["drivers"]:
             self.logger.info("Installing HWDRV: {}".format(hwdrv))
 
@@ -190,7 +206,7 @@ class ChanCon(object):
                 if drivers:
                     if drivers[0].get('play', None) and play is None:
                         play = drivers[0].get('play')
-                        play_poll_sec = drivers[0].get('play_poll_sec', PLAY_POLL_SEC)
+                        poll_sec = play_poll_sec(drivers[0].get('play_poll_sec'))
 
                     if show_pass_fail is None:
                         show_pass_fail = drivers[0].get("show_pass_fail", None)
@@ -221,7 +237,7 @@ class ChanCon(object):
             while not _play:
                 _play = play()
                 self.logger.info("player: {}".format(_play))
-                if not _play: time.sleep(play_poll_sec)
+                if not _play: time.sleep(poll_sec)
 
         for test in self.script["tests"]:
             fail_fast = self.script["config"].get("fail_fast", True)
