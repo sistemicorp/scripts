@@ -94,6 +94,27 @@ The tools the AI assistant can use,
 * `repo_status` - your scripts version, and how far your fork is behind Sistemi's scripts
 
 
+What the Assistant Is Told
+**************************
+
+When the AI assistant connects, the server gives it instructions.  In short, the AI
+assistant,
+
+* is helping you with your Prism/Lente project, not developing Prism or Lente
+* answers from this documentation and your repo, cites the page, and says so when they don't
+  have the answer, instead of guessing, suggesting you contact info@sistemi.ca
+* lints any script or test code it writes or changes
+* follows the rules in this documentation, for example the
+  :doc:`test item rules <prism_programs>`, the serial number in `key0`, and Prism and Lente
+  running the same major.minor version
+* never asks you for passwords, the `site_key`, license files or user databases, and never
+  suggests committing real passwords to your repo
+* keeps your code and data in the conversation, and proposes small changes it explains
+* numbers its questions, so you can answer them easily
+
+The full text is `INSTRUCTIONS` in `assistant/prism_assistant.py`.
+
+
 Privacy
 *******
 

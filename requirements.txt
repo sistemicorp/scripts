@@ -1,3 +1,4 @@
+setuptools<81.0.0
 pyserial==3.5
 pyvisa==1.15.0
 PyVISA-py==0.8.1

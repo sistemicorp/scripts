@@ -57,7 +57,8 @@ versions</p></li>
 <li><p><a class="reference internal" href="#install" id="id1">Install</a></p></li>
 <li><p><a class="reference internal" href="#connect-an-ai-assistant" id="id2">Connect an AI Assistant</a></p></li>
 <li><p><a class="reference internal" href="#using-it" id="id3">Using It</a></p></li>
-<li><p><a class="reference internal" href="#privacy" id="id4">Privacy</a></p></li>
+<li><p><a class="reference internal" href="#what-the-assistant-is-told" id="id4">What the Assistant Is Told</a></p></li>
+<li><p><a class="reference internal" href="#privacy" id="id5">Privacy</a></p></li>
 </ul>
 </nav>
 <section id="install">
@@ -122,8 +123,27 @@ passwords or keys</p></li>
 <li><p><cite>repo_status</cite> - your scripts version, and how far your fork is behind Sistemi’s scripts</p></li>
 </ul>
 </section>
+<section id="what-the-assistant-is-told">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">What the Assistant Is Told</a><a class="headerlink" href="#what-the-assistant-is-told" title="Link to this heading">¶</a></h2>
+<p>When the AI assistant connects, the server gives it instructions.  In short, the AI
+assistant,</p>
+<ul class="simple">
+<li><p>is helping you with your Prism/Lente project, not developing Prism or Lente</p></li>
+<li><p>answers from this documentation and your repo, cites the page, and says so when they don’t
+have the answer, instead of guessing, suggesting you contact <a class="reference external" href="mailto:info&#37;&#52;&#48;sistemi&#46;ca">info<span>&#64;</span>sistemi<span>&#46;</span>ca</a></p></li>
+<li><p>lints any script or test code it writes or changes</p></li>
+<li><p>follows the rules in this documentation, for example the
+<a class="reference internal" href="prism_programs.html"><span class="doc">test item rules</span></a>, the serial number in <cite>key0</cite>, and Prism and Lente
+running the same major.minor version</p></li>
+<li><p>never asks you for passwords, the <cite>site_key</cite>, license files or user databases, and never
+suggests committing real passwords to your repo</p></li>
+<li><p>keeps your code and data in the conversation, and proposes small changes it explains</p></li>
+<li><p>numbers its questions, so you can answer them easily</p></li>
+</ul>
+<p>The full text is <cite>INSTRUCTIONS</cite> in <cite>assistant/prism_assistant.py</cite>.</p>
+</section>
 <section id="privacy">
-<h2><a class="toc-backref" href="#id4" role="doc-backlink">Privacy</a><a class="headerlink" href="#privacy" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Privacy</a><a class="headerlink" href="#privacy" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>The assistant only reads files, it does not change your repo.  The AI assistant may still
 change files with its own tools, review those changes as you would any other.</p></li>
