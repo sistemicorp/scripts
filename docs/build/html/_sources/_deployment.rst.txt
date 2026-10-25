@@ -132,6 +132,101 @@ your scripts repo, it gets the scripts, drivers and license from its Lente.
     :ref:`Lente Git Pull <lente-git-pull>`.
 
 
+.. _prism-computer-setup:
+
+Prism Computer Checklist
+************************
+
+A checklist for each Prism computer on the production floor.  The steps are covered in more
+detail above and in the linked sections.
+
+* Computer and network
+
+  * meets the :ref:`System Requirements <_deployment:System Requirements>`, on a UPS if it is
+    not a laptop
+  * Ubuntu 24.04, with an operator account and an admin account, see
+    :ref:`Ubuntu File System and Users <deployment-ubuntu-filesystem>`
+  * wired LAN to Lente, with a fixed IP address, and a label on the computer with its IP address,
+    see :ref:`IP Addressing <_prodplan:IP Addressing>`
+
+* Software
+
+  * Docker, with the admin user in the `docker` group, see
+    :ref:`Prism Full Install <prism-full-install>`
+  * Google Chrome, with a bookmark to `http://127.0.0.1:6590` for the operator
+  * no git or Python is needed, unless scripts are developed on this computer
+
+* Prism
+
+  * a `public` folder, for example `~/prism/public`, with `prism.sh` from Lente and this
+    station's `settings.json`.  `site_key` and `prism_lente_pw` are the same as on Lente,
+    `"demo": false`, and `auto_sync_scripts` is set as you want.
+  * vendor programming tools, if your drivers need them, in the `tools` folder of the
+    `public` folder (for example `~/prism/public/tools`), see :ref:`prism_drivers:Included Drivers`
+  * started with `./prism.sh --server=<Lente IP> --restart=always start`, and pinned to an image
+    tag with `--image=` if you hold your deployment at a version,
+    see :ref:`Docker Images <_deployment:Prism/Lente Docker Images>`
+
+* Test jigs
+
+  * a fixed USB layout, for example one USB hub per jig, always cabled the same way, so the
+    drivers find each jig's devices in the same order, see :doc:`Drivers <prism_drivers>`
+  * barcode scanners set to keyboard emulation, for :doc:`Travellers <prism_travellers>`
+  * Prism runs in a privileged container with the host `/dev`, so no udev rules are needed for
+    Prism.  To run driver CLIs or `prism_dev.py` on the host, give users access to USB devices
+    with `sudo ./udev-install-usbusers.sh` from the scripts repo.
+
+* Check
+
+  * `docker ps` shows the `prism` container running, and it is still running after a reboot
+  * the station is listed in the Lente `Station Manager`, with its `Site Key` and `Health` OK
+  * the scripts version on the Prism matches Lente
+  * an operator can log in, scan a Traveller, and test a known good unit and a known bad unit
+
+
+Typical Deployment
+******************
+
+This is a typical deployment of one product with two test stages, on one production line.
+
+* Repos
+
+  * a private fork of `scripts`, with Sistemi's `scripts` as a second remote for updates, see
+    :ref:`Getting Updates From Sistemi <fork-updates>`
+  * the product's scripts in a folder per stage, each with its script, test code and assets,
+
+    ::
+
+        public/prism/scripts/<project>/BLT/<project>_BLT_01.scr
+        public/prism/scripts/<project>/BLT/<project>_BLT_01.py
+        public/prism/scripts/<project>/BLT/assets/         <---- BOND header file, firmware images
+        public/prism/scripts/<project>/FAT/<project>_FAT_01.scr
+        public/prism/scripts/<project>/FAT/<project>_FAT_01.py
+        public/prism/scripts/<project>/<lib>/              <---- code shared by both stages
+
+  * examples and drivers that are not used are deleted from the fork
+  * a `deploy` folder at the top of the repo, outside `public`, with a template `settings.json`
+    for the Lente and for the Prism stations.  The real passwords and `site_key` are filled in
+    when a computer is installed, and are not committed.
+
+* Computers
+
+  * one root Lente (`"root_authority": true`) on the production LAN, running from a clone of the
+    private fork, with `git_pull_watcher.sh` so an admin can update the scripts from the
+    `Station Manager`
+  * one Prism per jig type, BLT on a :doc:`BOND <prism_bond>` Bed of Nails jig with a
+    programmer, FAT with a label printer, each set up with the
+    :ref:`Prism Computer Checklist <prism-computer-setup>`
+  * `auto_sync_scripts` on, so a new scripts version reaches the stations without visiting them
+
+* Releasing a script change
+
+  #. develop and check the change with `prism_dev.py` and `--lint`
+  #. commit, tag a release if wanted, and push to the private fork
+  #. press `git pull` on the Lente `Station Manager`.  Lente syncs each station as soon as no
+     user is logged in to it.
+
+
 .. _deploy-settings-file:
 
 
@@ -155,8 +250,8 @@ Settings.JSON File
   every computer in the deployment.  If they are not set, Prism/Lente refuse all station requests
   (pings, results, script and user syncs).
 * `site_key` must be set, and must be the same on every computer in the deployment.  It encrypts
-  the scripts package, the manifest, travellers and results.  The demo value only works with
-  `"demo": true`.  Generate a key with `python3 -c "import secrets; print(secrets.token_urlsafe(24))"`.
+  the scripts package, the manifest, travellers and results.  It must be at least 16
+  characters, and the demo value only works with `"demo": true`.  Generate a key with `python3 -c "import secrets; print(secrets.token_urlsafe(24))"`.
 * To check `site_key`, each Prism/Lente logs a `site_key fingerprint` at startup, which is the same
   on every computer when the keys match.  The fingerprint does not reveal the key.  The Lente
   Station Manager `Site Key` column shows `Mismatch` or `Not set` in red, and a station with a

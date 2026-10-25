@@ -180,6 +180,106 @@ stations.</p></li>
 </li>
 </ul>
 </section>
+<section id="prism-computer-checklist">
+<span id="prism-computer-setup"></span><h2>Prism Computer Checklist<a class="headerlink" href="#prism-computer-checklist" title="Link to this heading">¶</a></h2>
+<p>A checklist for each Prism computer on the production floor.  The steps are covered in more
+detail above and in the linked sections.</p>
+<ul class="simple">
+<li><p>Computer and network</p>
+<ul>
+<li><p>meets the <a class="reference internal" href="#system-requirements"><span class="std std-ref">System Requirements</span></a>, on a UPS if it is
+not a laptop</p></li>
+<li><p>Ubuntu 24.04, with an operator account and an admin account, see
+<a class="reference internal" href="#deployment-ubuntu-filesystem"><span class="std std-ref">Ubuntu File System and Users</span></a></p></li>
+<li><p>wired LAN to Lente, with a fixed IP address, and a label on the computer with its IP address,
+see <a class="reference internal" href="_prodplan.html#ip-addressing"><span class="std std-ref">IP Addressing</span></a></p></li>
+</ul>
+</li>
+<li><p>Software</p>
+<ul>
+<li><p>Docker, with the admin user in the <cite>docker</cite> group, see
+<a class="reference internal" href="prism_demo.html#prism-full-install"><span class="std std-ref">Prism Full Install</span></a></p></li>
+<li><p>Google Chrome, with a bookmark to <cite>http://127.0.0.1:6590</cite> for the operator</p></li>
+<li><p>no git or Python is needed, unless scripts are developed on this computer</p></li>
+</ul>
+</li>
+<li><p>Prism</p>
+<ul>
+<li><p>a <cite>public</cite> folder, for example <cite>~/prism/public</cite>, with <cite>prism.sh</cite> from Lente and this
+station’s <cite>settings.json</cite>.  <cite>site_key</cite> and <cite>prism_lente_pw</cite> are the same as on Lente,
+<cite>“demo”: false</cite>, and <cite>auto_sync_scripts</cite> is set as you want.</p></li>
+<li><p>vendor programming tools, if your drivers need them, in the <cite>tools</cite> folder of the
+<cite>public</cite> folder (for example <cite>~/prism/public/tools</cite>), see <a class="reference internal" href="prism_drivers.html#included-drivers"><span class="std std-ref">Included Drivers</span></a></p></li>
+<li><p>started with <cite>./prism.sh –server=&lt;Lente IP&gt; –restart=always start</cite>, and pinned to an image
+tag with <cite>–image=</cite> if you hold your deployment at a version,
+see <a class="reference internal" href="#prism-lente-docker-images"><span class="std std-ref">Docker Images</span></a></p></li>
+</ul>
+</li>
+<li><p>Test jigs</p>
+<ul>
+<li><p>a fixed USB layout, for example one USB hub per jig, always cabled the same way, so the
+drivers find each jig’s devices in the same order, see <a class="reference internal" href="prism_drivers.html"><span class="doc">Drivers</span></a></p></li>
+<li><p>barcode scanners set to keyboard emulation, for <a class="reference internal" href="prism_travellers.html"><span class="doc">Travellers</span></a></p></li>
+<li><p>Prism runs in a privileged container with the host <cite>/dev</cite>, so no udev rules are needed for
+Prism.  To run driver CLIs or <cite>prism_dev.py</cite> on the host, give users access to USB devices
+with <cite>sudo ./udev-install-usbusers.sh</cite> from the scripts repo.</p></li>
+</ul>
+</li>
+<li><p>Check</p>
+<ul>
+<li><p><cite>docker ps</cite> shows the <cite>prism</cite> container running, and it is still running after a reboot</p></li>
+<li><p>the station is listed in the Lente <cite>Station Manager</cite>, with its <cite>Site Key</cite> and <cite>Health</cite> OK</p></li>
+<li><p>the scripts version on the Prism matches Lente</p></li>
+<li><p>an operator can log in, scan a Traveller, and test a known good unit and a known bad unit</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="typical-deployment">
+<h2>Typical Deployment<a class="headerlink" href="#typical-deployment" title="Link to this heading">¶</a></h2>
+<p>This is a typical deployment of one product with two test stages, on one production line.</p>
+<ul>
+<li><p>Repos</p>
+<ul>
+<li><p>a private fork of <cite>scripts</cite>, with Sistemi’s <cite>scripts</cite> as a second remote for updates, see
+<a class="reference internal" href="_development.html#fork-updates"><span class="std std-ref">Getting Updates From Sistemi</span></a></p></li>
+<li><p>the product’s scripts in a folder per stage, each with its script, test code and assets,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/&lt;</span><span class="n">project</span><span class="o">&gt;/</span><span class="n">BLT</span><span class="o">/&lt;</span><span class="n">project</span><span class="o">&gt;</span><span class="n">_BLT_01</span><span class="o">.</span><span class="n">scr</span>
+<span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/&lt;</span><span class="n">project</span><span class="o">&gt;/</span><span class="n">BLT</span><span class="o">/&lt;</span><span class="n">project</span><span class="o">&gt;</span><span class="n">_BLT_01</span><span class="o">.</span><span class="n">py</span>
+<span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/&lt;</span><span class="n">project</span><span class="o">&gt;/</span><span class="n">BLT</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span>         <span class="o">&lt;----</span> <span class="n">BOND</span> <span class="n">header</span> <span class="n">file</span><span class="p">,</span> <span class="n">firmware</span> <span class="n">images</span>
+<span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/&lt;</span><span class="n">project</span><span class="o">&gt;/</span><span class="n">FAT</span><span class="o">/&lt;</span><span class="n">project</span><span class="o">&gt;</span><span class="n">_FAT_01</span><span class="o">.</span><span class="n">scr</span>
+<span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/&lt;</span><span class="n">project</span><span class="o">&gt;/</span><span class="n">FAT</span><span class="o">/&lt;</span><span class="n">project</span><span class="o">&gt;</span><span class="n">_FAT_01</span><span class="o">.</span><span class="n">py</span>
+<span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/&lt;</span><span class="n">project</span><span class="o">&gt;/&lt;</span><span class="n">lib</span><span class="o">&gt;/</span>              <span class="o">&lt;----</span> <span class="n">code</span> <span class="n">shared</span> <span class="n">by</span> <span class="n">both</span> <span class="n">stages</span>
+</pre></div>
+</div>
+</li>
+<li><p>examples and drivers that are not used are deleted from the fork</p></li>
+<li><p>a <cite>deploy</cite> folder at the top of the repo, outside <cite>public</cite>, with a template <cite>settings.json</cite>
+for the Lente and for the Prism stations.  The real passwords and <cite>site_key</cite> are filled in
+when a computer is installed, and are not committed.</p></li>
+</ul>
+</li>
+<li><p>Computers</p>
+<ul class="simple">
+<li><p>one root Lente (<cite>“root_authority”: true</cite>) on the production LAN, running from a clone of the
+private fork, with <cite>git_pull_watcher.sh</cite> so an admin can update the scripts from the
+<cite>Station Manager</cite></p></li>
+<li><p>one Prism per jig type, BLT on a <a class="reference internal" href="prism_bond.html"><span class="doc">BOND</span></a> Bed of Nails jig with a
+programmer, FAT with a label printer, each set up with the
+<a class="reference internal" href="#prism-computer-setup"><span class="std std-ref">Prism Computer Checklist</span></a></p></li>
+<li><p><cite>auto_sync_scripts</cite> on, so a new scripts version reaches the stations without visiting them</p></li>
+</ul>
+</li>
+<li><p>Releasing a script change</p>
+<ol class="arabic simple">
+<li><p>develop and check the change with <cite>prism_dev.py</cite> and <cite>–lint</cite></p></li>
+<li><p>commit, tag a release if wanted, and push to the private fork</p></li>
+<li><p>press <cite>git pull</cite> on the Lente <cite>Station Manager</cite>.  Lente syncs each station as soon as no
+user is logged in to it.</p></li>
+</ol>
+</li>
+</ul>
+</section>
 <section id="settings-json-file">
 <span id="deploy-settings-file"></span><h2>Settings.JSON File<a class="headerlink" href="#settings-json-file" title="Link to this heading">¶</a></h2>
 <ul class="simple">
@@ -200,8 +300,8 @@ real deployment passwords to your repo.</p></li>
 every computer in the deployment.  If they are not set, Prism/Lente refuse all station requests
 (pings, results, script and user syncs).</p></li>
 <li><p><cite>site_key</cite> must be set, and must be the same on every computer in the deployment.  It encrypts
-the scripts package, the manifest, travellers and results.  The demo value only works with
-<cite>“demo”: true</cite>.  Generate a key with <cite>python3 -c “import secrets; print(secrets.token_urlsafe(24))”</cite>.</p></li>
+the scripts package, the manifest, travellers and results.  It must be at least 16
+characters, and the demo value only works with <cite>“demo”: true</cite>.  Generate a key with <cite>python3 -c “import secrets; print(secrets.token_urlsafe(24))”</cite>.</p></li>
 <li><p>To check <cite>site_key</cite>, each Prism/Lente logs a <cite>site_key fingerprint</cite> at startup, which is the same
 on every computer when the keys match.  The fingerprint does not reveal the key.  The Lente
 Station Manager <cite>Site Key</cite> column shows <cite>Mismatch</cite> or <cite>Not set</cite> in red, and a station with a

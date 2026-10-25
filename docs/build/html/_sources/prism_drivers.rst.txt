@@ -145,7 +145,9 @@ These drivers are included in `public/prism/drivers`.  Several have a `README.md
 .. note::
 
     The vendor programming tools used by `nrfprog` (Nordic nrfjprog) and `stlinkv3mods` (ST STM32CubeProgrammer)
-    are not included in the scripts.  Each Prism station installs them under `~/scripts/public/tools/`.
+    are not included in the scripts.  Each Prism station installs them in the `tools` folder of
+    its `public` folder (the folder `prism.sh` is run from), for example `~/prism/public/tools/`
+    on a station set up as in :ref:`Deployment <deployment-new-prism>`.
     This folder is ignored by git, is not synced from Lente, and Prism sees it through its
     existing `public` mount.  Each driver's `README.md` has the install steps, and the driver
     checks its tool runs when Prism loads a script.

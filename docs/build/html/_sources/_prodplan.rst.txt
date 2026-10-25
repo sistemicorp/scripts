@@ -46,6 +46,64 @@ Consider the following simplified production flow diagram,
   * Responsibility for damaged or faulty product needs to be assigned to the right sub-contractor
 
 
+Planning Your Test Stages
+=========================
+
+Each test stage is a separate script, usually run on its own jig.  How many stages you need depends on
+your process steps, not on Prism.
+
+Add a test stage,
+
+* after a process step that is expensive to undo, so faults are found before more value is added.
+  For example, test the PCBA before it is put in an enclosure.
+* where the parts that can be tested change.  After assembly some test points can no longer be reached,
+  and a Bed of Nails test must move to the connectors or to the DUT's own interfaces.
+* when the product moves to another factory or sub-contractor (incoming test).
+
+Fewer stages are cheaper to run and to maintain, as each stage needs a jig, a script, and operators.
+
+A common plan for a PCBA in an enclosure has two stages,
+
+* Board Level Test (BLT), on a Bed of Nails jig, before assembly
+
+  * check the power rails
+  * program the bootloader or firmware
+  * connect to the DUT, record its serial number, unique id and firmware version
+  * write the hardware revision to the DUT, calibrate, and check the calibration
+
+* Final Assembly Test (FAT), after assembly, through the product's connectors
+
+  * connect to the DUT, check its serial number and firmware version
+  * functional tests that need the full assembly
+  * print the product label
+
+Programming can be its own stage when programming takes much longer than testing, so that more
+programming jigs can feed one test jig.
+
+Within a stage,
+
+* start with a setup item and end with a teardown item, and keep the teardown enabled.  Prism runs the
+  teardown after a fail, a timeout or an abort.
+* keep ``fail_fast`` on, unless the tests are independent of each other.
+* order the tests so the cheapest and most likely failures come first.  For example check the power
+  rails before programming.
+* put the limits in the script ``args`` so they can be changed without changing code.
+* one test item method can be used by several items, for example a voltage check for each rail,
+  with the rail name and limits in each item,
+
+  ::
+
+      {"id": "TST100_voltage", "args": {"name": "V3V3", "min": 3200, "max": 3400}},
+      {"id": "TST100_voltage", "args": {"name": "V1V8", "min": 1725, "max": 1875}},
+
+  The measurement name must be unique in the item, so build it from the rail name.
+
+* code shared by stages and products goes in a common module, see `File Organization` below.
+
+Use the same unit id, key slots and measurement names in every stage, so that the results of all
+stages of a unit can be found together, see :doc:`Traceability <_traceability>`.
+
+
 
 File Organization
 *****************

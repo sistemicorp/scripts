@@ -47,18 +47,22 @@ would be configured.</p>
 <nav class="contents local" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#production-infrastructure-cycle" id="id1">Production Infrastructure Cycle</a></p></li>
-<li><p><a class="reference internal" href="#stages" id="id2">Stages</a></p></li>
-<li><p><a class="reference internal" href="#file-organization" id="id3">File Organization</a></p>
+<li><p><a class="reference internal" href="#stages" id="id2">Stages</a></p>
 <ul>
-<li><p><a class="reference internal" href="#naming-conventions" id="id4">Naming Conventions</a></p></li>
+<li><p><a class="reference internal" href="#planning-your-test-stages" id="id3">Planning Your Test Stages</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#naming-proposal" id="id5">Naming Proposal</a></p></li>
-<li><p><a class="reference internal" href="#ip-addressing" id="id6">IP Addressing</a></p>
+<li><p><a class="reference internal" href="#file-organization" id="id4">File Organization</a></p>
 <ul>
-<li><p><a class="reference internal" href="#prism-ips" id="id7">Prism IPs</a></p></li>
-<li><p><a class="reference internal" href="#lente-ips" id="id8">Lente IPs</a></p></li>
-<li><p><a class="reference internal" href="#example" id="id9">Example</a></p></li>
+<li><p><a class="reference internal" href="#naming-conventions" id="id5">Naming Conventions</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#naming-proposal" id="id6">Naming Proposal</a></p></li>
+<li><p><a class="reference internal" href="#ip-addressing" id="id7">IP Addressing</a></p>
+<ul>
+<li><p><a class="reference internal" href="#prism-ips" id="id8">Prism IPs</a></p></li>
+<li><p><a class="reference internal" href="#lente-ips" id="id9">Lente IPs</a></p></li>
+<li><p><a class="reference internal" href="#example" id="id10">Example</a></p></li>
 </ul>
 </li>
 </ul>
@@ -96,9 +100,63 @@ more processing is done on the DUT</p></li>
 </ul>
 </li>
 </ul>
+<section id="planning-your-test-stages">
+<h3><a class="toc-backref" href="#id3" role="doc-backlink">Planning Your Test Stages</a><a class="headerlink" href="#planning-your-test-stages" title="Link to this heading">¶</a></h3>
+<p>Each test stage is a separate script, usually run on its own jig.  How many stages you need depends on
+your process steps, not on Prism.</p>
+<p>Add a test stage,</p>
+<ul class="simple">
+<li><p>after a process step that is expensive to undo, so faults are found before more value is added.
+For example, test the PCBA before it is put in an enclosure.</p></li>
+<li><p>where the parts that can be tested change.  After assembly some test points can no longer be reached,
+and a Bed of Nails test must move to the connectors or to the DUT’s own interfaces.</p></li>
+<li><p>when the product moves to another factory or sub-contractor (incoming test).</p></li>
+</ul>
+<p>Fewer stages are cheaper to run and to maintain, as each stage needs a jig, a script, and operators.</p>
+<p>A common plan for a PCBA in an enclosure has two stages,</p>
+<ul class="simple">
+<li><p>Board Level Test (BLT), on a Bed of Nails jig, before assembly</p>
+<ul>
+<li><p>check the power rails</p></li>
+<li><p>program the bootloader or firmware</p></li>
+<li><p>connect to the DUT, record its serial number, unique id and firmware version</p></li>
+<li><p>write the hardware revision to the DUT, calibrate, and check the calibration</p></li>
+</ul>
+</li>
+<li><p>Final Assembly Test (FAT), after assembly, through the product’s connectors</p>
+<ul>
+<li><p>connect to the DUT, check its serial number and firmware version</p></li>
+<li><p>functional tests that need the full assembly</p></li>
+<li><p>print the product label</p></li>
+</ul>
+</li>
+</ul>
+<p>Programming can be its own stage when programming takes much longer than testing, so that more
+programming jigs can feed one test jig.</p>
+<p>Within a stage,</p>
+<ul>
+<li><p>start with a setup item and end with a teardown item, and keep the teardown enabled.  Prism runs the
+teardown after a fail, a timeout or an abort.</p></li>
+<li><p>keep <code class="docutils literal notranslate"><span class="pre">fail_fast</span></code> on, unless the tests are independent of each other.</p></li>
+<li><p>order the tests so the cheapest and most likely failures come first.  For example check the power
+rails before programming.</p></li>
+<li><p>put the limits in the script <code class="docutils literal notranslate"><span class="pre">args</span></code> so they can be changed without changing code.</p></li>
+<li><p>one test item method can be used by several items, for example a voltage check for each rail,
+with the rail name and limits in each item,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST100_voltage&quot;</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;V3V3&quot;</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">3200</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mi">3400</span><span class="p">}},</span>
+<span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST100_voltage&quot;</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;V1V8&quot;</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">1725</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mi">1875</span><span class="p">}},</span>
+</pre></div>
+</div>
+<p>The measurement name must be unique in the item, so build it from the rail name.</p>
+</li>
+<li><p>code shared by stages and products goes in a common module, see <cite>File Organization</cite> below.</p></li>
+</ul>
+<p>Use the same unit id, key slots and measurement names in every stage, so that the results of all
+stages of a unit can be found together, see <a class="reference internal" href="_traceability.html"><span class="doc">Traceability</span></a>.</p>
+</section>
 </section>
 <section id="file-organization">
-<h2><a class="toc-backref" href="#id3" role="doc-backlink">File Organization</a><a class="headerlink" href="#file-organization" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">File Organization</a><a class="headerlink" href="#file-organization" title="Link to this heading">¶</a></h2>
 <p>Naming and organizing the location of files is a difficult thing to prescribe because your needs
 may require a specific solution.  Regardless, a general proposal will be given and from there one can
 create a more specific solution.</p>
@@ -115,7 +173,7 @@ are the kinds of things you need to think about when you implement test program 
 <li><p>all script files must be under <code class="docutils literal notranslate"><span class="pre">./public/prism/scripts</span></code></p></li>
 </ul>
 <section id="naming-conventions">
-<h3><a class="toc-backref" href="#id4" role="doc-backlink">Naming Conventions</a><a class="headerlink" href="#naming-conventions" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id5" role="doc-backlink">Naming Conventions</a><a class="headerlink" href="#naming-conventions" title="Link to this heading">¶</a></h3>
 <p>A naming strategy is totally up to you.  No strategy at also is also a choice.</p>
 <p>That being said, experience has taught that not having a strategy very quickly leads to confusion and
 chaos.  If you end up being successful, upfront planning will really pay off 1-2 years down the road when
@@ -167,7 +225,7 @@ label.  This is whgat you keep track of in a spreadsheet (which is the secret de
 </section>
 </section>
 <section id="naming-proposal">
-<h2><a class="toc-backref" href="#id5" role="doc-backlink">Naming Proposal</a><a class="headerlink" href="#naming-proposal" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">Naming Proposal</a><a class="headerlink" href="#naming-proposal" title="Link to this heading">¶</a></h2>
 <p>All of these naming conventions, versions, will end up in the results file, in that way, you precisely know
 by which scripts, programs, and methods a test was done.</p>
 <p>Product naming</p>
@@ -327,7 +385,7 @@ or actual BOM numbers, etc.</p></li>
 </div>
 </section>
 <section id="ip-addressing">
-<h2><a class="toc-backref" href="#id6" role="doc-backlink">IP Addressing</a><a class="headerlink" href="#ip-addressing" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id7" role="doc-backlink">IP Addressing</a><a class="headerlink" href="#ip-addressing" title="Link to this heading">¶</a></h2>
 <p>What follows is a simple design for allocating the IP addresses of Prism and Lente
 computers.  You may decide to do this differently.</p>
 <p>Assumptions:</p>
@@ -336,7 +394,7 @@ computers.  You may decide to do this differently.</p>
 <li><p>the LAN IP is 192.168.0.X</p></li>
 </ul>
 <section id="prism-ips">
-<h3><a class="toc-backref" href="#id7" role="doc-backlink">Prism IPs</a><a class="headerlink" href="#prism-ips" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id8" role="doc-backlink">Prism IPs</a><a class="headerlink" href="#prism-ips" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p>Label each PC what its IP address is</p></li>
 <li><p>Addresses</p>
@@ -350,7 +408,7 @@ computers.  You may decide to do this differently.</p>
 </ul>
 </section>
 <section id="lente-ips">
-<h3><a class="toc-backref" href="#id8" role="doc-backlink">Lente IPs</a><a class="headerlink" href="#lente-ips" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id9" role="doc-backlink">Lente IPs</a><a class="headerlink" href="#lente-ips" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p>Label each PC what its IP address is</p></li>
 <li><p>Addresses</p>
@@ -363,7 +421,7 @@ computers.  You may decide to do this differently.</p>
 </ul>
 </section>
 <section id="example">
-<h3><a class="toc-backref" href="#id9" role="doc-backlink">Example</a><a class="headerlink" href="#example" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id10" role="doc-backlink">Example</a><a class="headerlink" href="#example" title="Link to this heading">¶</a></h3>
 <p>In this example there are two factories,</p>
 <ul class="simple">
 <li><p>no computers are exchanged between the factories</p></li>

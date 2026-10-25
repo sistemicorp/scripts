@@ -1,0 +1,158 @@
+Traceability
+############
+
+Traceability is being able to answer, for any unit, what was tested, when, where, how, and with
+what result.  For example, a unit comes back from the field: which tests did it pass, which
+firmware was loaded, which lot was it built in, and which version of the test was used?
+
+Prism records some of this for you.  The rest your scripts and test code must record.
+Plan it before production starts, because results that were not recorded can't be added later.
+
+.. contents::
+   :local:
+
+
+Recorded Automatically
+**********************
+
+Every result has these fields in the Lente `record` table (see :doc:`Database <_database>`),
+
+* `ruid`, a unique id for this result
+* `info_product`, `info_bom`, `info_lot`, `info_location` and `info_config`, from the script
+  :ref:`prism_scripts:info` section, often filled in from :ref:`prism_scripts:subs` or a
+  :doc:`Traveller <prism_travellers>`
+* `meta_script`, the path of the script that ran, for example
+  `public/prism/scripts/mycompany/P001/P00100_T0100_SmokeTests.scr`
+* `meta_git_public`, the version of your scripts repo (`public/VERSION`), see
+  :ref:`_development:Create a Tag`
+* `meta_git_prism`, the version of Prism
+* `meta_uuid_getnode`, an id of the Prism computer, derived from its network interface
+* `meta_channel`, the test channel (jig) that ran the test
+* `meta_result`, `meta_start`, `meta_end` and `_duration`
+
+Each test item and measurement is stored with its full name, which includes the module path and
+the item `id`, for example `mycompany.P001.P00100_T0100_SmokeTests.TST0200_measVDD.vdd`.
+
+The result JSON file also has the operator and the station IP address.  These are kept in the
+result file backups (`public/result/.../bkup`), but they are not database columns.
+
+Because `meta_git_public` is recorded, every file in your scripts repo is traceable: scripts,
+test code, limits, and firmware images stored with the scripts (for example in an `assets`
+folder).  Use the version to find the exact files with `git checkout`.
+
+
+What You Record
+***************
+
+Serial Numbers and Unit Ids
+===========================
+
+Save the unit's serial number (or other unique id) in `key0`.  The Lente Throughput & Yield chart
+uses `product` + `key0` to count each unit once,
+
+::
+
+    ctx.record.add_key("sn", serial_number, slot=0)
+
+There are 5 key slots, `key0` to `key4`.  Each is an indexed database column, so searches on keys
+are fast.  Use the other slots for ids you will search on, such as a microcontroller unique id, a
+MAC address, or the serial number of a sub-assembly.
+
+* A key is stored as `<name>:<value>`, for example `sn:A12345`.  Keep the whole string within
+  64 characters, the size of the database column.
+* Use the same slot for the same id in every script of a product, and in every stage.
+  Write the slot assignments down, for example as constants in a common module,
+
+  ::
+
+      DBKEY_SERIAL_NUM = 0
+      DBKEY_MCU_UID = 1
+
+* The serial number can be read from the DUT, scanned from a label (with `input_textbox()`),
+  or created and programmed by the test.  When the test creates it, also print or program it
+  onto the unit, otherwise the result can't be matched to the unit later.
+
+Firmware and Hardware Versions
+==============================
+
+Record versions read from the DUT as string measurements.  A string measurement always passes,
+and is stored with the test item,
+
+::
+
+    success, _result, _bullet = ctx.record.measurement("fw_ver", fw_ver, ResultAPI.UNIT_STRING)
+
+* Record the version the DUT reports, after programming, not only the file that was programmed.
+* Record the bootloader, application and any co-processor versions separately.
+* A hardware revision that the test writes to the DUT (for example from a `select` sub) should
+  also be recorded as a measurement.
+* String values are stored in a 128 character column.
+
+Test Equipment
+==============
+
+To trace a fault to a jig or instrument, record the serial number of the test equipment as string
+measurements in the setup item, for example the programmer's serial number and the jig
+controller's id.  Drivers often return a `unique_id` from `discover_channels()` for this.
+
+Lots
+====
+
+`info_lot` (16 characters) is the lot or work order.  It usually comes from a sub, so the operator
+enters it or a Traveller sets it.  Use a `regex` on the sub to enforce your lot format, see
+:ref:`prism_scripts:subs`.  The Lente Throughput & Yield chart can group results by lot.
+
+Test Versions
+=============
+
+The script records which test ran (`meta_script`), and the scripts version records the exact
+files.  Decide how a change shows up in your searches,
+
+* Changing a limit or a test item in place keeps the script name.  Searches by `meta_script`
+  then mix results from both versions.  Use `meta_git_public` or the date to separate them.
+* Making a new script version (for example `P00100_T0101_SmokeTests.scr`) keeps the versions
+  separate in every search.  This is the better choice for changes made by an ECO.
+* Measurement names include the module and item names.  Renaming either starts a new series
+  in the database, which breaks trend charts and SQL queries across the change.
+
+See :ref:`_prodplan:Naming Proposal` for a naming scheme that puts the stage and version in the
+names.
+
+
+Example Queries
+***************
+
+All results for one unit, in time order,
+
+::
+
+    select r.id, r.info_product, r.meta_script, r.meta_result, r.meta_start, r.meta_git_public
+    from record r
+    where r.key0 = 'sn:A12345'
+    order by r.meta_start
+
+The firmware version recorded for each unit of a lot,
+
+::
+
+    select r.key0, m.value, r.meta_start
+    from measurement m join record r on m.record_id = r.id
+    where m.name = 'mycompany.P001.P00100_T0100_SmokeTests.TST0100_connect.fw_ver'
+          and r.info_lot = 'L2026-07'
+    order by r.meta_start
+
+See :ref:`_database:SQL Queries` for more queries and tools.
+
+
+Checklist
+*********
+
+Before production, decide,
+
+#. which id identifies a unit (`key0`), and where it comes from
+#. which other ids are keys, and their slot numbers
+#. which versions are recorded (firmware, bootloader, hardware revision)
+#. which test equipment ids are recorded
+#. the lot format, and who enters it (operator, Traveller)
+#. how scripts and test items are named and versioned
+#. how long results are kept, and where (Lente, upstream Lente, backups)

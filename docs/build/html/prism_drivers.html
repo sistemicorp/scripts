@@ -15,7 +15,7 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Accounts" href="prism_accounts.html" />
+    <link rel="next" title="BOND" href="prism_bond.html" />
     <link rel="prev" title="Programs" href="prism_programs.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -25,7 +25,7 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="prism_accounts.html" title="Accounts"
+          <a href="prism_bond.html" title="BOND"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="prism_programs.html" title="Programs"
@@ -161,7 +161,9 @@ Loading a script fails if the Bluetooth adapter is off or missing.  Test the hos
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The vendor programming tools used by <cite>nrfprog</cite> (Nordic nrfjprog) and <cite>stlinkv3mods</cite> (ST STM32CubeProgrammer)
-are not included in the scripts.  Each Prism station installs them under <cite>~/scripts/public/tools/</cite>.
+are not included in the scripts.  Each Prism station installs them in the <cite>tools</cite> folder of
+its <cite>public</cite> folder (the folder <cite>prism.sh</cite> is run from), for example <cite>~/prism/public/tools/</cite>
+on a station set up as in <a class="reference internal" href="_deployment.html#deployment-new-prism"><span class="std std-ref">Deployment</span></a>.
 This folder is ignored by git, is not synced from Lente, and Prism sees it through its
 existing <cite>public</cite> mount.  Each driver’s <cite>README.md</cite> has the install steps, and the driver
 checks its tool runs when Prism loads a script.</p>
@@ -188,8 +190,8 @@ checks its tool runs when Prism loads a script.</p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="prism_accounts.html"
-                          title="next chapter">Accounts</a></p>
+    <p class="topless"><a href="prism_bond.html"
+                          title="next chapter">BOND</a></p>
   </div>
 <div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
@@ -212,7 +214,7 @@ checks its tool runs when Prism loads a script.</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="prism_accounts.html" title="Accounts"
+          <a href="prism_bond.html" title="BOND"
              >next</a> |</li>
         <li class="right" >
           <a href="prism_programs.html" title="Programs"

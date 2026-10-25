@@ -12,6 +12,34 @@ Prism/Lente version should match major/minor version.  For example Prism/Lente v
 where `x` can/will be different.  Do not use Prism 0.8.x with Lente 0.7.x, or vice versa.
 
 
+.. _upgrading:
+
+*********
+Upgrading
+*********
+
+An upgrade to a new major or minor version (for example `0.8` to `0.9`) changes every Prism and
+Lente of the deployment.  Plan it for a time without production, and try it on a spare Lente and
+Prism first.
+
+#. Read the Migration Guide of the new version, and of every version in between.
+#. Merge the new Sistemi `scripts` into your fork, on a branch, see
+   :ref:`Getting Updates From Sistemi <fork-updates>`.  Fix your scripts and drivers as the
+   Migration Guide says, and check them with `prism_dev.py --lint`.
+#. Update the `settings.json` of each computer, as the Migration Guide says.  `settings.json`
+   is not synced by Lente.
+#. Let the stations send their staged results to Lente before upgrading, check that each
+   station's `public/result/.../stage` folder is empty.
+#. Upgrade Lente: `update` the image, then `start` it again, see
+   :ref:`Docker Images <_deployment:Prism/Lente Docker Images>`.  Use `--image=` with the new tag
+   if the deployment is held at a version.
+#. Merge your branch, and update Lente's scripts (`git pull`).
+#. Upgrade each Prism the same way, and check it with the
+   :ref:`Prism Computer Checklist <prism-computer-setup>`.
+
+Keep the previous image tag written down, so you can go back with `--image=<old tag>`.
+
+
 *********
 Ver 0.9.x
 *********

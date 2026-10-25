@@ -22,6 +22,7 @@ What is Prism?
    prism_scripts
    prism_programs
    prism_drivers
+   prism_bond
    prism_accounts
    prism_travellers
    prism_barcode_count
