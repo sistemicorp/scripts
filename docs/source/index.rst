@@ -25,6 +25,7 @@ EMAIL: info@sistemi.ca for more information.
    _system
    _prodplan
    _database
+   _traceability
    _development
    _jigs
    _security

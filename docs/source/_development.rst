@@ -69,6 +69,38 @@ Remove the temporary bare clone folder and perform a standard clone of your new 
    git clone https://github.com/yourname/private-repo.git
 
 
+.. _fork-updates:
+
+Getting Updates From Sistemi
+============================
+
+Sistemi updates the public `scripts` repo with documentation, drivers, examples, `prism_dev.py`
+and the helper scripts.  To get these updates, add the public repo as a second remote of your
+private repo, and merge it into your branch,
+
+.. code-block:: bash
+
+   cd ~/git/private-repo
+   git remote add --no-tags scripts https://github.com/sistemicorp/scripts.git   # once
+   git fetch scripts
+   git checkout -b scripts-sync
+   git merge scripts/master
+
+* Merge on a branch, run your scripts with ``prism_dev.py`` (and ``--lint``), then merge the
+  branch into your main branch.
+* Files you deleted from your fork, for example examples or drivers you don't use, come back as
+  `modify/delete` conflicts when Sistemi changes them.  Keep your deletion with
+  ``git rm <file>``.
+* If you changed a Sistemi driver, merge carefully, or copy the driver into a folder of your own
+  so later updates don't conflict.
+* Keep the deployment `settings.json` files outside of `public`, see
+  :ref:`settings.json <deploy-settings-file>`.  The example `public/settings.json` may change
+  in an update.
+* An update to a new Prism/Lente major or minor version (for example `0.8` to `0.9`) can need
+  changes to your deployment, read the :doc:`Migration Guide <_version_history>` first.
+* Your scripts version comes from your own tags, see `Create a Tag` below.  ``--no-tags``
+  keeps Sistemi's tags out of your repo, so they don't change your version.
+
 
 Install Git Hooks
 =================

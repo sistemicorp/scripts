@@ -13,10 +13,13 @@ that Lente syncs to the station.
 
 The driver expects the tool at,
 
-    ~/scripts/public/tools/STM32CubeProgrammer/bin/STM32_Programmer_CLI
+    ~/prism/public/tools/STM32CubeProgrammer/bin/STM32_Programmer_CLI
 
 `public/tools/` is ignored by git and is not touched by a Lente script sync.
 Prism sees it as `/app/public/tools/` through its existing `public` mount.
+The commands below use `~/prism/public`, the `public` folder of a Prism station set
+up as in the Deployment docs.  Use the folder that `prism.sh` is run from, for
+example `~/git/scripts/public` on a development computer.
 
 * Download STM32CubeProgrammer for Linux from the ST website (a free myST
   account is required). Tested with v2.22.0, `SetupSTM32CubeProgrammer_linux_64.zip`.
@@ -25,16 +28,16 @@ Prism sees it as `/app/public/tools/` through its existing `public` mount.
 
       mkdir -p ~/stm32cubeprog && cd ~/stm32cubeprog
       unzip ~/Downloads/SetupSTM32CubeProgrammer_linux_64.zip
-      echo "INSTALL_PATH=$HOME/scripts/public/tools/STM32CubeProgrammer" > install.properties
+      echo "INSTALL_PATH=$HOME/prism/public/tools/STM32CubeProgrammer" > install.properties
       ./SetupSTM32CubeProgrammer-2.22.0.linux -options install.properties
 
   For the interactive installer, run `./SetupSTM32CubeProgrammer-2.22.0.linux`
   (or add `-console` on a headless station) and set the install path to
-  `~/scripts/public/tools/STM32CubeProgrammer`.
+  `~/prism/public/tools/STM32CubeProgrammer`.
 
 * Check the tool runs,
 
-      cd ~/scripts
+      cd ~/prism
       ./public/tools/STM32CubeProgrammer/bin/STM32_Programmer_CLI --version
 
 * The installer download folder (`~/stm32cubeprog`) can be deleted.
@@ -43,7 +46,7 @@ When Prism loads a script that uses this driver, `discover_channels()` runs
 `STM32_Programmer_CLI --version`. If the tool is missing or does not run, the
 driver logs an error and shows a Prism notice that points to this README.
 
-To uninstall, delete `~/scripts/public/tools/STM32CubeProgrammer`.
+To uninstall, delete `~/prism/public/tools/STM32CubeProgrammer`.
 
 
 ## Debugging

@@ -16,10 +16,13 @@ syncs to the station.
 
 The driver expects the tool at,
 
-    ~/scripts/public/tools/nrf-command-line-tools/bin/nrfjprog
+    ~/prism/public/tools/nrf-command-line-tools/bin/nrfjprog
 
 `public/tools/` is ignored by git and is not touched by a Lente script sync.
 Prism sees it as `/app/public/tools/` through its existing `public` mount.
+The commands below use `~/prism/public`, the `public` folder of a Prism station set
+up as in the Deployment docs.  Use the folder that `prism.sh` is run from, for
+example `~/git/scripts/public` on a development computer.
 
 `nrfjprog` also needs the Segger J-Link library.  This is already installed
 in the Prism Docker image (`/opt/SEGGER/JLink`), so only the Nordic tools are
@@ -33,9 +36,9 @@ about 7 s longer to connect to the probe.
 * As the station user (not root), unpack only the `nrf-command-line-tools`
   folder.  The J-Link package in the tar is not needed.
 
-      mkdir -p ~/scripts/public/tools
+      mkdir -p ~/prism/public/tools
       tar xzf ~/Downloads/nrf-command-line-tools-10.24.2_linux-amd64.tar.gz \
-          -C ~/scripts/public/tools ./nrf-command-line-tools
+          -C ~/prism/public/tools ./nrf-command-line-tools
 
 * Check the tool runs inside Prism (it will not run on the host unless J-Link
   is installed there too),
@@ -52,7 +55,7 @@ When Prism loads a script that uses this driver, `discover_channels()` runs
 library, the driver logs an error and shows a Prism notice that points to
 this README.
 
-To uninstall, delete `~/scripts/public/tools/nrf-command-line-tools`.
+To uninstall, delete `~/prism/public/tools/nrf-command-line-tools`.
 
 
 ## Debugging
