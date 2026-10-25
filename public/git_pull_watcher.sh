@@ -524,7 +524,8 @@ cleanup_running_file() {
     rm -f "$HEARTBEAT_FILE"
 }
 
-trap cleanup_running_file EXIT INT TERM
+trap cleanup_running_file EXIT
+trap 'exit 0' INT TERM  # without the exit, a trapped TERM keeps the loop running
 
 echo "Watching for git pull trigger: $TRIGGER_FILE"
 echo "Repository directory: $REPO_DIR"
@@ -571,13 +572,20 @@ while true; do
         continue
     fi
 
-    if git -C "$REPO_DIR" pull >> "$LOG_FILE" 2>&1; then
-        message="git pull completed successfully"
+    # Lente shows the result message, so it carries a summary line of the git output
+    pull_output="$(git -C "$REPO_DIR" pull 2>&1)"
+    rc="$?"
+    printf '%s\n' "$pull_output" >> "$LOG_FILE"
+
+    if [[ "$rc" -eq 0 ]]; then
+        summary="$(printf '%s\n' "$pull_output" | grep -v '^[[:space:]]*$' | tail -n 1)"
+        summary="${summary#"${summary%%[![:space:]]*}"}"  # strip leading spaces
+        message="git pull: ${summary:-done}"
         echo "$(date -Iseconds) $message" >> "$LOG_FILE"
         write_result "true" "$message" "$started_at"
     else
-        rc="$?"
-        message="git pull failed with exit code $rc"
+        summary="$(printf '%s\n' "$pull_output" | grep -m 1 -E '^(fatal|error):')"
+        message="git pull failed with exit code $rc${summary:+: $summary}"
         echo "$(date -Iseconds) $message" >> "$LOG_FILE"
         write_result "false" "$message" "$started_at"
     fi
