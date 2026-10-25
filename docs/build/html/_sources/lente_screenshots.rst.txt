@@ -96,6 +96,9 @@ Prism and Lente Station management console, Admin only.
 
 * `Station Logs` below lists station events, filtered by the Type/Computer/Version/Cause and date selections
 
+  * click `Station Logs` to open or close the list.  It starts closed, and the page remembers
+    your choice
+
 .. image:: static/Screenshot_lente_station_mgr.png
 
 
