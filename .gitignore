@@ -24,7 +24,8 @@ public/prism/scripts/a43/temp/
 public/prism/drivers/A4401_BOND/server/libraries/ArduinoJson/extras/
 public/prism/drivers/A4401_BOND/server/libraries/ArduinoJson/examples/
 
-public/prism/drivers/stlinkv3mods/STM32CubeProgrammer/
+# vendor tools installed per station, see driver READMEs (scripts#58)
+public/tools/
 
 # runtime files created by Prism/Lente in public/
 public/.env

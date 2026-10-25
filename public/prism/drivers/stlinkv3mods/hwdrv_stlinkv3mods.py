@@ -8,11 +8,12 @@ Martin guthrie
 import os
 import logging
 import pyudev
+from core.const import NOTICE_TYPE
 from core.sys_log import pub_notice
 
-from public.prism.drivers.stlinkv3mods.STLINK import STLINKprog, DRIVER_TYPE
+from public.prism.drivers.stlinkv3mods.STLINK import STLINKprog, DRIVER_TYPE, cli_version
 # switch path when debugging, see main code at bottom
-#from STLINK import STLINKprog, DRIVER_TYPE
+#from STLINK import STLINKprog, DRIVER_TYPE, cli_version
 
 # Information:
 # USB Property Keys:
@@ -77,6 +78,15 @@ class HWDriver(object):
                 list:   List of installed driver dicts
         """
         sender = "{}.{}".format(self.SFN, __class__.__name__)  # for debug purposes
+
+        # STM32CubeProgrammer is installed per station, check it is there and runs
+        success, version = cli_version()
+        if not success:
+            self.logger.error(version)
+            pub_notice("HWDriver:{}: {}".format(self.SFN, version), sender=sender, type=NOTICE_TYPE.ERROR)
+            return -1, DRIVER_TYPE, []
+        self.logger.info(f"STM32CubeProgrammer version: {version}")
+
         context = pyudev.Context()
 
         for device in context.list_devices():

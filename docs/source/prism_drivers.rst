@@ -137,5 +137,12 @@ These drivers are included in `public/prism/drivers`.  Several have a `README.md
 .. note::
 
     The vendor programming tools used by `nrfprog` (Nordic nrfjprog) and `stlinkv3mods` (ST STM32CubeProgrammer)
-    are not included.  They will be installed on the host computer, instructions to follow.
-    Until then these two drivers will not find their tools.
+    are not included in the scripts.  Each Prism station installs them under `~/scripts/public/tools/`.
+    This folder is ignored by git, is not synced from Lente, and Prism sees it through its
+    existing `public` mount.  Each driver's `README.md` has the install steps, and the driver
+    checks its tool runs when Prism loads a script.
+
+    * `stlinkv3mods` - see `public/prism/drivers/stlinkv3mods/README.md`
+    * `nrfprog` - instructions to follow, until then this driver will not find its tool
+
+    Segger J-Link is installed in the Prism Docker image (`/opt/SEGGER/JLink`) and needs no host install.
