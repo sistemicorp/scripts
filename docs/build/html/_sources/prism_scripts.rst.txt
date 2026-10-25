@@ -103,6 +103,7 @@ Here is a full example of what `subs` section could look like (taken from exampl
   * the variable in other sections, would be named ``"%%key"``
   * the variable would be listed with double quotes, regardless of the variable type
 * ``key`` should not have any special characters in it, else bad things happen
+* keys are matched whole, so ``"%%Lot"`` and ``"%%LotSize"`` are two different subs
 
 ``title``
 
@@ -113,6 +114,8 @@ Here is a full example of what `subs` section could look like (taken from exampl
 
 * indicates type of variable that is ultimately required in the final JSON version of the script
 * string (`str`) and number (`num`) (covers float and ints) are the only options
+* a `num` value must be a number, for example ``9`` or ``-0.5``, otherwise `Validate` fails
+* a `str` value is used as typed; quotes and other special characters are kept as text
 
 ``widget``
 
@@ -296,8 +299,10 @@ See ``public/prism/scripts/example/prod_v0/tst00xx.py`` for usage.
 
 ``items``
 
-* a list of test ``items``
+* a list of test ``items``, at least one
 * the system will execute these tests in order
+* `Validate` checks that every ``id`` is a function in `module`, ``args`` and ``options`` are
+  objects, and any ``timeout`` is a positive number
 
   * ``id`` - A unique identifier of the test, which is also the Python (class) function name in `module`.
   * ``enable`` - `true` or `false`, can be omitted if always enabled

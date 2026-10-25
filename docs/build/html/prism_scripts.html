@@ -137,6 +137,7 @@ the <code class="docutils literal notranslate"><span class="pre">info</span></co
 </ul>
 </li>
 <li><p><code class="docutils literal notranslate"><span class="pre">key</span></code> should not have any special characters in it, else bad things happen</p></li>
+<li><p>keys are matched whole, so <code class="docutils literal notranslate"><span class="pre">&quot;%%Lot&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;%%LotSize&quot;</span></code> are two different subs</p></li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">title</span></code></p>
 <ul class="simple">
@@ -147,6 +148,8 @@ the <code class="docutils literal notranslate"><span class="pre">info</span></co
 <ul class="simple">
 <li><p>indicates type of variable that is ultimately required in the final JSON version of the script</p></li>
 <li><p>string (<cite>str</cite>) and number (<cite>num</cite>) (covers float and ints) are the only options</p></li>
+<li><p>a <cite>num</cite> value must be a number, for example <code class="docutils literal notranslate"><span class="pre">9</span></code> or <code class="docutils literal notranslate"><span class="pre">-0.5</span></code>, otherwise <cite>Validate</cite> fails</p></li>
+<li><p>a <cite>str</cite> value is used as typed; quotes and other special characters are kept as text</p></li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">widget</span></code></p>
 <ul class="simple">
@@ -318,8 +321,10 @@ is recorded as <cite>TIMEOUT</cite>, which is a fail.</p></li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">items</span></code></p>
 <ul class="simple">
-<li><p>a list of test <code class="docutils literal notranslate"><span class="pre">items</span></code></p></li>
-<li><p>the system will execute these tests in order</p>
+<li><p>a list of test <code class="docutils literal notranslate"><span class="pre">items</span></code>, at least one</p></li>
+<li><p>the system will execute these tests in order</p></li>
+<li><p><cite>Validate</cite> checks that every <code class="docutils literal notranslate"><span class="pre">id</span></code> is a function in <cite>module</cite>, <code class="docutils literal notranslate"><span class="pre">args</span></code> and <code class="docutils literal notranslate"><span class="pre">options</span></code> are
+objects, and any <code class="docutils literal notranslate"><span class="pre">timeout</span></code> is a positive number</p>
 <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> - A unique identifier of the test, which is also the Python (class) function name in <cite>module</cite>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">enable</span></code> - <cite>true</cite> or <cite>false</cite>, can be omitted if always enabled</p></li>

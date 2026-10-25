@@ -265,6 +265,22 @@ waiting on hardware; the item stops when that call returns.
 If the item is still running 5 seconds later, Prism shows a “not responding” notice.
 For a long blocking driver call, give the driver its own timeout shorter than the item <code class="docutils literal notranslate"><span class="pre">timeout</span></code>.</p>
 </section>
+<section id="errors-in-a-test-item">
+<h2>Errors in a Test Item<a class="headerlink" href="#errors-in-a-test-item" title="Link to this heading">¶</a></h2>
+<p>Prism records a test item as <code class="docutils literal notranslate"><span class="pre">INTERNAL_ERROR</span></code>, a fail, and moves on to the teardown item when,</p>
+<ul class="simple">
+<li><p>the item raises an exception that it does not catch</p></li>
+<li><p>the item returns without calling <code class="docutils literal notranslate"><span class="pre">self.item_start()</span></code></p></li>
+<li><p>the result passed to <code class="docutils literal notranslate"><span class="pre">self.item_end()</span></code> is not one of the <code class="docutils literal notranslate"><span class="pre">ResultAPI.RECORD_RESULT_*</span></code> constants,
+or a list of them</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">self.item_end(_next=&quot;&lt;id&gt;&quot;)</span></code> names an item that does not come later in the script</p></li>
+</ul>
+<p>The error is shown in the channel log and stored in the result <code class="docutils literal notranslate"><span class="pre">errors</span></code> list.</p>
+<p>An item that calls <code class="docutils literal notranslate"><span class="pre">self.item_start()</span></code> and returns without <code class="docutils literal notranslate"><span class="pre">self.item_end()</span></code> is recorded as
+<code class="docutils literal notranslate"><span class="pre">TIMEOUT</span></code> when its timeout expires.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">ResultAPI.BLOB_*</span></code> dicts are templates.  Copy one with <code class="docutils literal notranslate"><span class="pre">copy.deepcopy()</span></code> before filling it in,
+as the example does; changing the template itself changes it for every later test and channel.</p>
+</section>
 <section id="everything-example">
 <h2>Everything Example<a class="headerlink" href="#everything-example" title="Link to this heading">¶</a></h2>
 <p>Here is a fully documented program example that shows just about every feature of the Prism system.
@@ -404,8 +420,11 @@ It is the example distributed with the system, <cite>public/prism/scripts/exampl
         <span class="c1"># play sound based on whether passing or failing</span>
         <span class="c1"># NOTE: playing these sounds could have also been placed</span>
         <span class="c1">#       in the driver that implements player show_pass_fail()</span>
+        <span class="c1"># hw_fake is None if TST0xxSETUP did not get that far</span>
         <span class="n">meta_result</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">record_meta_get_result</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">meta_result</span> <span class="o">==</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_PASS</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hw_fake</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;no fake hardware to play a sound&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">meta_result</span> <span class="o">==</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_PASS</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">hw_fake</span><span class="o">.</span><span class="n">play_sound</span><span class="p">(</span><span class="s2">&quot;pass&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">hw_fake</span><span class="o">.</span><span class="n">play_sound</span><span class="p">(</span><span class="s2">&quot;fail&quot;</span><span class="p">)</span>
@@ -641,7 +660,7 @@ It is the example distributed with the system, <cite>public/prism/scripts/exampl
     <span class="k">def</span> <span class="nf">TST009_LogPctProgress</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Demo a log bullet with increasing percent</span>
 
-<span class="sd">        {&quot;id&quot;: &quot;TST008_TextInput&quot;,      &quot;enable&quot;: true, &quot;timeout&quot;: 10 },</span>
+<span class="sd">        {&quot;id&quot;: &quot;TST009_LogPctProgress&quot;, &quot;enable&quot;: true, &quot;timeout&quot;: 15 },</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
@@ -665,7 +684,8 @@ It is the example distributed with the system, <cite>public/prism/scripts/exampl
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>   <span class="c1"># always first line of test</span>
 
-        <span class="n">myBlob</span> <span class="o">=</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">BLOB_UNKNOWN</span>
+        <span class="c1"># always copy a BLOB_* template, never change ResultAPI&#39;s own dict</span>
+        <span class="n">myBlob</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">BLOB_UNKNOWN</span><span class="p">)</span>
         <span class="c1"># key &#39;data&#39; is automatically created, or you may add your own keys</span>
         <span class="n">myBlob</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1000</span><span class="p">))</span>
         <span class="c1">#myBlob[&quot;my_other_key&quot;] = json.dumps(dict(k1=&quot;data1&quot;, k2=1.23))</span>
@@ -688,34 +708,35 @@ It is the example distributed with the system, <cite>public/prism/scripts/exampl
         <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>   <span class="c1"># always first line of test</span>
         <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">sin</span><span class="p">,</span> <span class="n">arange</span>
 
-        <span class="n">myPlotFigure</span> <span class="o">=</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">BLOB_BOKEH_FIGURE</span>
+        <span class="c1"># always copy a BLOB_* template, never change ResultAPI&#39;s own dict</span>
+        <span class="n">myPlotFigure</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">BLOB_BOKEH_FIGURE</span><span class="p">)</span>
         <span class="n">myPlotFigure</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Voltage vs Current&quot;</span>
         <span class="n">myPlotFigure</span><span class="p">[</span><span class="s2">&quot;x_axis_label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Current&quot;</span>
         <span class="n">myPlotFigure</span><span class="p">[</span><span class="s2">&quot;y_axis_label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Voltage&quot;</span>
 
-        <span class="n">myPlotBlob</span> <span class="o">=</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">BLOB_PLOTXY</span>
+        <span class="n">myPlotBlob</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">BLOB_PLOTXY</span><span class="p">)</span>
         <span class="n">myPlotBlob</span><span class="p">[</span><span class="s2">&quot;BLOB_BOKEH_FIGURE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">myPlotFigure</span>
 
         <span class="c1"># this is the waveform, could come from a scope, artificially generated example</span>
-        <span class="n">myPlot</span> <span class="o">=</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">BLOB_PLOTXY_PLOT</span>
+        <span class="n">myPlot</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">BLOB_PLOTXY_PLOT</span><span class="p">)</span>
         <span class="n">myPlot</span><span class="p">[</span><span class="s2">&quot;legend&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;sin wave&quot;</span>
         <span class="n">myPlot</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">3.2</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>  <span class="c1"># hundreds of data points...</span>
         <span class="n">myPlot</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">myPlot</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-        <span class="n">myPlotBlob</span><span class="p">[</span><span class="s2">&quot;plots&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">myPlot</span><span class="p">))</span>
+        <span class="n">myPlotBlob</span><span class="p">[</span><span class="s2">&quot;plots&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">myPlot</span><span class="p">)</span>
 
         <span class="c1"># upper template</span>
-        <span class="n">myPlot</span> <span class="o">=</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">BLOB_PLOTXY_PLOT</span>
+        <span class="n">myPlot</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">BLOB_PLOTXY_PLOT</span><span class="p">)</span>
         <span class="n">myPlot</span><span class="p">[</span><span class="s2">&quot;legend&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;upper&quot;</span>
         <span class="n">myPlot</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.2</span><span class="p">,</span> <span class="mf">3.2</span><span class="p">]</span>
         <span class="n">myPlot</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">]</span>
-        <span class="n">myPlotBlob</span><span class="p">[</span><span class="s2">&quot;plots&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">myPlot</span><span class="p">))</span>
+        <span class="n">myPlotBlob</span><span class="p">[</span><span class="s2">&quot;plots&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">myPlot</span><span class="p">)</span>
 
         <span class="c1"># lower template</span>
-        <span class="n">myPlot</span> <span class="o">=</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">BLOB_PLOTXY_PLOT</span>
+        <span class="n">myPlot</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">BLOB_PLOTXY_PLOT</span><span class="p">)</span>
         <span class="n">myPlot</span><span class="p">[</span><span class="s2">&quot;legend&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;lower&quot;</span>
         <span class="n">myPlot</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">1.3</span><span class="p">,</span> <span class="mf">1.8</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">]</span>
         <span class="n">myPlot</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
-        <span class="n">myPlotBlob</span><span class="p">[</span><span class="s2">&quot;plots&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">myPlot</span><span class="p">))</span>
+        <span class="n">myPlotBlob</span><span class="p">[</span><span class="s2">&quot;plots&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">myPlot</span><span class="p">)</span>
 
         <span class="c1"># save the blob of data</span>
         <span class="n">success</span><span class="p">,</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span><span class="s2">&quot;sin&quot;</span><span class="p">,</span> <span class="n">myPlotBlob</span><span class="p">)</span>
