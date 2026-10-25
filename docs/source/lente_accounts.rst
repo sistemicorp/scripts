@@ -102,6 +102,7 @@ A read-only results viewer, for example a screen on the production floor that sh
 results as they come in.
 
 A Dashboard User can open the Home, `Result Search` and `Result Analytics` pages.
+Home shows them the yield summary and the stations table.
 They cannot export CSV files, send logs, or open any other page.
 
 A Dashboard User is not logged out when idle.

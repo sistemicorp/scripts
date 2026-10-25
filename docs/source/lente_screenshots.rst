@@ -10,6 +10,17 @@ The left menu has `Home`, `Station Manager`, `Result Search`, `Result Analytics`
 `Result Search` shows the same filters and results table as `Result Analytics`, without the charts.
 Both pages have an `Export CSV` button, and a `Copy SQL Hint` button which copies the SQL query behind the table.
 
+Home
+****
+
+Before login, Home shows the license operator and the Lente host name and IP.
+
+After login, Home is a summary of the production line.
+The top chart shows the throughput and yield of all stations over the last `Days` (1 to 30), in hourly bars
+for up to 2 days and daily bars after that.  It refreshes every minute.
+
+Below the chart is the stations table, with each station's health, running script, users and last ping.
+
 Result Analytics
 ****************
 
