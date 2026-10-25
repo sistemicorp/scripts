@@ -42,6 +42,10 @@ The `Throughput & Yield` tab charts the units tested over time; Pass and Fail as
 axis, and Yield as a line against the right axis.  The period selector sets the size of each bar, for
 example `Daily`.  Use this to track production output and yield trend.
 
+Select `Lot` in the period selector to get one bar per lot instead, ordered by the date each lot was first
+tested.  Results without a lot are grouped as `(none)`.  Use the date and `Lot` filters to limit which lots
+are shown.
+
 .. image:: static/Screenshot_lente_throughput.png
 
 The `Failure Pareto` tab ranks the failing tests by quantity, and shows each as a percentage of the failed runs

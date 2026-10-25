@@ -21,6 +21,7 @@ replacing the Flask/Bokeh interface.  See :doc:`Prism <prism_screenshots>` and :
 screenshots.
 
 * Lente Results Analytics page, with yield, pareto and test runtime charts
+* Lente Throughput & Yield chart can group results by lot
 * Lente Station Manager can automatically sync scripts to stations, `auto_sync_scripts`
 * Lente Station Manager `git pull` button, see `public/git_pull_watcher.sh`
 * Script sync sends all of `public/prism`, and the station replaces its whole `public/prism`
