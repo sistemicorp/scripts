@@ -217,7 +217,8 @@ Settings.JSON File
           // Health checks
           // Levels: Warn, Error, Critical (case insensitive)
           // "Warn" and "Error" only appear in the notification log
-          // "Critical" additionally prevents new test sessions from starting
+          // "Critical" additionally prevents new test sessions from starting on Prism,
+          // and Lente refuses result uploads
           // First rule that matches for each health check is reported
           "health_checks": {
             "disk_space": {
@@ -286,7 +287,8 @@ For Prism stations, a number of items can be removed per the comments, which wil
 the file smaller and easier to manage.
 
 * see :ref:`HTTPS <https>` for creating necessary files if using HTTPS feature
-* `health_checks` is used by Prism only, `results_bkup_encrypted` by Lente only
+* `health_checks` applies to Prism and Lente, see :ref:`Health Checks <health-checks>`.
+  `results_bkup_encrypted` is used by Lente only
 * On Prism, `result_server_url` is always set from the `--server` flag of `prism.sh`
 * `auto_sync_scripts` also applies to Prism stations, keep it in the Prism file.  When it is
   `true` on a Prism, its Lente installs new scripts on it automatically.
@@ -415,7 +417,17 @@ the comments at the top of `public/git_pull_watcher.sh`.
 Health Checks
 *************
 
-When enabled/specified in `settings.json` (see example above) Prism will perform health checks on
-boot up and when the test configuration changes.  Based on the health check item severity the system will
-indicate the status in the GUI.  When the failure severity is `Critical` Prism will not allow testing
-to begin.
+When enabled/specified in `settings.json` (see example above) Prism and Lente perform health checks.
+Each check result is shown in the notification log, at the severity of the first rule that fails.
+
+The `disk_space` check compares the free disk space against each rule, in order.  Prism checks
+the disk of its result backup folder, Lente checks the disk of its result stage folder, where
+results from the stations arrive.
+
+* Prism runs the checks on boot up, when the test configuration changes, and with every ping to
+  Lente.  When the severity is `Critical` Prism does not allow testing to begin.
+* Lente runs the checks on boot up and every 60 seconds.  When the severity is `Critical` Lente
+  refuses result uploads.  The stations keep the results staged and send them again once the
+  disk space is fixed, so no results are lost.
+* Prism and Lente report their health in the ping to their Lente, and the `Station Manager`
+  `Health` column shows it.  `Warn` is shown in yellow, `Error` and `Critical` in red.

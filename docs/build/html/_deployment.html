@@ -259,7 +259,8 @@ different key shows a <cite>site_key does not match Lente</cite> notice.</p></li
   // Health checks
   // Levels: Warn, Error, Critical (case insensitive)
   // &quot;Warn&quot; and &quot;Error&quot; only appear in the notification log
-  // &quot;Critical&quot; additionally prevents new test sessions from starting
+  // &quot;Critical&quot; additionally prevents new test sessions from starting on Prism,
+  // and Lente refuses result uploads
   // First rule that matches for each health check is reported
   &quot;health_checks&quot;: {
     &quot;disk_space&quot;: {
@@ -327,7 +328,8 @@ different key shows a <cite>site_key does not match Lente</cite> notice.</p></li
 the file smaller and easier to manage.</p>
 <ul class="simple">
 <li><p>see <a class="reference internal" href="_security.html#https"><span class="std std-ref">HTTPS</span></a> for creating necessary files if using HTTPS feature</p></li>
-<li><p><cite>health_checks</cite> is used by Prism only, <cite>results_bkup_encrypted</cite> by Lente only</p></li>
+<li><p><cite>health_checks</cite> applies to Prism and Lente, see <a class="reference internal" href="#health-checks"><span class="std std-ref">Health Checks</span></a>.
+<cite>results_bkup_encrypted</cite> is used by Lente only</p></li>
 <li><p>On Prism, <cite>result_server_url</cite> is always set from the <cite>–server</cite> flag of <cite>prism.sh</cite></p></li>
 <li><p><cite>auto_sync_scripts</cite> also applies to Prism stations, keep it in the Prism file.  When it is
 <cite>true</cite> on a Prism, its Lente installs new scripts on it automatically.</p></li>
@@ -443,10 +445,20 @@ Use the host user that owns the repo:</p>
 </section>
 <section id="health-checks">
 <span id="id2"></span><h2>Health Checks<a class="headerlink" href="#health-checks" title="Link to this heading">¶</a></h2>
-<p>When enabled/specified in <cite>settings.json</cite> (see example above) Prism will perform health checks on
-boot up and when the test configuration changes.  Based on the health check item severity the system will
-indicate the status in the GUI.  When the failure severity is <cite>Critical</cite> Prism will not allow testing
-to begin.</p>
+<p>When enabled/specified in <cite>settings.json</cite> (see example above) Prism and Lente perform health checks.
+Each check result is shown in the notification log, at the severity of the first rule that fails.</p>
+<p>The <cite>disk_space</cite> check compares the free disk space against each rule, in order.  Prism checks
+the disk of its result backup folder, Lente checks the disk of its result stage folder, where
+results from the stations arrive.</p>
+<ul class="simple">
+<li><p>Prism runs the checks on boot up, when the test configuration changes, and with every ping to
+Lente.  When the severity is <cite>Critical</cite> Prism does not allow testing to begin.</p></li>
+<li><p>Lente runs the checks on boot up and every 60 seconds.  When the severity is <cite>Critical</cite> Lente
+refuses result uploads.  The stations keep the results staged and send them again once the
+disk space is fixed, so no results are lost.</p></li>
+<li><p>Prism and Lente report their health in the ping to their Lente, and the <cite>Station Manager</cite>
+<cite>Health</cite> column shows it.  <cite>Warn</cite> is shown in yellow, <cite>Error</cite> and <cite>Critical</cite> in red.</p></li>
+</ul>
 </section>
 </section>
 

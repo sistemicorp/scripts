@@ -28,6 +28,8 @@ screenshots.
 * Script sync size limit and exclusions, see :ref:`Script Sync Exclusions <_security:Script Sync Exclusions>`
 * `site_key` in `settings.json` replaces the built-in encryption keys, and the Station Manager
   shows any station whose `site_key` does not match
+* Lente runs the :ref:`Health Checks <health-checks>`, and refuses result uploads when `Critical`.
+  The Station Manager shows the health of each station
 * License files are signed, see Migration Guide below
 * New Prism stations no longer need a `git clone` of the scripts repo.  Lente serves `prism.sh`,
   and on first start Prism downloads its scripts from Lente.

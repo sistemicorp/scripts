@@ -58,6 +58,8 @@ folder, so files removed on Lente are also removed on the stations</p></li>
 <li><p>Script sync size limit and exclusions, see <a class="reference internal" href="_security.html#script-sync-exclusions"><span class="std std-ref">Script Sync Exclusions</span></a></p></li>
 <li><p><cite>site_key</cite> in <cite>settings.json</cite> replaces the built-in encryption keys, and the Station Manager
 shows any station whose <cite>site_key</cite> does not match</p></li>
+<li><p>Lente runs the <a class="reference internal" href="_deployment.html#health-checks"><span class="std std-ref">Health Checks</span></a>, and refuses result uploads when <cite>Critical</cite>.
+The Station Manager shows the health of each station</p></li>
 <li><p>License files are signed, see Migration Guide below</p></li>
 <li><p>New Prism stations no longer need a <cite>git clone</cite> of the scripts repo.  Lente serves <cite>prism.sh</cite>,
 and on first start Prism downloads its scripts from Lente.
