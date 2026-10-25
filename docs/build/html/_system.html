@@ -149,7 +149,11 @@ JSON to it.</p></li>
 </li>
 <li><p>Derr</p>
 <ul>
-<li><p>If there was a processing error, the result JSON is stored in <cite>quarantine</cite> folder.</p></li>
+<li><p>If there was a processing error, the result JSON is stored in <cite>quarantine</cite> folder.
+The reason is written next to it in a file with the same name and a <cite>.reason.txt</cite>
+extension, for example <cite>result_&lt;ruid&gt;.reason.txt</cite>.  The result JSON is not changed.</p></li>
+<li><p>If the database is not available, the result JSON stays in <cite>stage</cite> and is processed
+when the database is back.</p></li>
 </ul>
 </li>
 <li><p>E</p>
