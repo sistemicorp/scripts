@@ -62,6 +62,7 @@ Per the code documentation, `discover_channels` must return a dictionary with pr
            # optional
            "close": None,              # register a callback on closing the channel, or None
            "play": jig_closed_detect   # function for detecting jig closed
+           "play_poll_sec": 1          # seconds between play calls, default 1
            "show_pass_fail": jig_led   # function for indicating pass/fail (like LED)
            "show_msg": jig_display     # function for indicating test status (like display)
 
@@ -84,6 +85,10 @@ Per the code documentation, `discover_channels` must return a dictionary with pr
                 list:   List of installed driver dicts
         """
 
+
+Prism calls the `play` function every second to see if the jig has closed, and starts the test when it
+does.  A driver can set `play_poll_sec` to call it more often, down to 0.1 seconds, for example so a
+test restarts sooner.  An invalid value is logged and the default is used.
 
 
 Slot Number

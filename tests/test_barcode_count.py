@@ -3,7 +3,11 @@ program, make_barcodes.py, and prism_dev sub defaults.
 
 Run from the scripts repo root: python -m pytest tests
 """
+import io
 import re
+import subprocess
+import wave
+
 import jstyleson
 import pytest
 
@@ -11,6 +15,7 @@ import prism_dev
 from core.shared_state import SharedState
 from public.prism.api import ResultAPI
 from public.prism.drivers.scanners import hwdrv_scanners
+from public.prism.drivers.scanners import Scanners as scanners_mod
 from public.prism.drivers.scanners.Scanners import Scanner, DRIVER_TYPE
 from public.prism.scripts.example.barcode_count_v0 import make_barcodes
 from public.prism.scripts.example.barcode_count_v0.tst00xx import tst00xx
@@ -40,6 +45,87 @@ def test_stop_player_holds_jig_open_until_start():
     assert any(s.jig_closed_always() for _ in range(2))
 
 
+# ---- Ready beep ---------------------------------------------------------------
+
+class FakeRun:
+    """ Records subprocess.run calls, returns returncode """
+    def __init__(self, returncode=0, raises=None):
+        self.calls = []
+        self.returncode = returncode
+        self.raises = raises
+
+    def __call__(self, cmd, **kwargs):
+        self.calls.append((cmd, kwargs))
+        if self.raises: raise self.raises
+        return subprocess.CompletedProcess(cmd, self.returncode, stderr=b"no device")
+
+
+class ListLogger:
+    def __init__(self):
+        self.warnings = []
+
+    def warning(self, msg): self.warnings.append(msg)
+    def info(self, *a, **k): pass
+
+
+def beep_scanner(monkeypatch, run, aplay="/usr/bin/aplay"):
+    monkeypatch.setattr(scanners_mod.shutil, "which", lambda name: aplay)
+    monkeypatch.setattr(scanners_mod.subprocess, "run", run)
+    return Scanner(loggerIn=ListLogger())
+
+
+def test_beep_wav_is_valid_tone():
+    with wave.open(io.BytesIO(scanners_mod.beep_wav())) as w:
+        assert (w.getnchannels(), w.getsampwidth()) == (1, 2)
+        assert w.getframerate() == scanners_mod.BEEP_RATE_HZ
+        assert w.getnframes() == int(scanners_mod.BEEP_SEC * scanners_mod.BEEP_RATE_HZ)
+
+
+def test_ready_beep_plays_wav_on_aplay_stdin(monkeypatch):
+    run = FakeRun()
+    s = beep_scanner(monkeypatch, run)
+    s.ready_beep(0).join()
+    cmd, kwargs = run.calls[0]
+    assert cmd == ["/usr/bin/aplay", "-q", "-"]
+    assert kwargs["input"] == scanners_mod.beep_wav()
+    assert s.logger.warnings == []
+
+
+def test_ready_beep_does_not_block(monkeypatch):
+    run = FakeRun()
+    s = beep_scanner(monkeypatch, run)
+    timer = s.ready_beep(60)
+    assert timer.is_alive() and run.calls == []
+    timer.cancel()
+
+
+def test_ready_beep_audio_device(monkeypatch):
+    run = FakeRun()
+    monkeypatch.setattr(scanners_mod, "AUDIO_DEVICE", "plughw:CARD=Generic_1,DEV=0")
+    beep_scanner(monkeypatch, run)._play_beep()
+    assert run.calls[0][0] == ["/usr/bin/aplay", "-q", "-D", "plughw:CARD=Generic_1,DEV=0", "-"]
+
+
+def test_ready_beep_no_aplay_warns_once(monkeypatch):
+    # [Unhappy] no aplay on the computer, the test carries on silently
+    run = FakeRun()
+    s = beep_scanner(monkeypatch, run, aplay=None)
+    s._play_beep()
+    s._play_beep()
+    assert run.calls == [] and len(s.logger.warnings) == 1
+
+
+@pytest.mark.parametrize("run", [FakeRun(returncode=1),
+                                 FakeRun(raises=subprocess.TimeoutExpired("aplay", 5)),
+                                 FakeRun(raises=OSError("no exec"))])
+def test_ready_beep_aplay_error_warns_once(monkeypatch, run):
+    # [Unhappy] aplay fails (no sound device, hangs, cannot run)
+    s = beep_scanner(monkeypatch, run)
+    s._play_beep()
+    s._play_beep()
+    assert len(s.logger.warnings) == 1
+
+
 # ---- HWDriver discovery -----------------------------------------------------
 
 class FakeDevice:
@@ -64,6 +150,7 @@ def test_discover_one_scanner(monkeypatch):
     assert (num, dtype, len(drivers)) == (1, DRIVER_TYPE, 1)
     assert drivers[0]["unique_id"] == "/usb/3-2"
     assert drivers[0]["play"] == drivers[0]["hwdrv"].jig_closed_always
+    assert drivers[0]["play_poll_sec"] == scanners_mod.PLAY_POLL_SEC
 
 
 def test_discover_no_scanner_is_error(monkeypatch):
@@ -84,15 +171,26 @@ def test_discover_two_scanners_is_one_channel(monkeypatch):
 
 # ---- TST000_Scan ------------------------------------------------------------
 
+class QuietScanner(Scanner):
+    """ Counts ready beeps instead of playing them """
+    def __init__(self):
+        super().__init__()
+        self.beeps = 0
+
+    def ready_beep(self, delay_sec=scanners_mod.BEEP_DELAY_SEC):
+        self.beeps += 1
+
+
 @pytest.fixture
 def scan_item():
-    """ :return: function(textbox_response) -> (record, scanner) """
+    """ :return: function(textbox_response, args=None) -> (record, scanner) """
     script = prism_dev.apply_sub_defaults(load_script())
-    item = script["tests"][0]["items"][0]
 
-    def run(response):
+    def run(response, args=None):
+        item = dict(script["tests"][0]["items"][0])
+        if args is not None: item["args"] = args
         ss = SharedState()
-        scanner = Scanner()
+        scanner = QuietScanner()
         ss.add_drivers(DRIVER_TYPE, [{"id": 0, "hwdrv": scanner}])
         con = prism_dev.ChanCon(0, script, ss, SCRIPT)
         con._item, con._options = item, script["tests"][0]["options"]
@@ -109,6 +207,17 @@ def test_scan_good_barcode(scan_item):
     assert record._record["info"]["product"] == "P001"
     assert record._record["keys"]["key0"] == "sn:00123"
     assert not scanner.player_stopped()
+    assert scanner.beeps == 1
+
+
+@pytest.mark.parametrize("ready_beep, beeps", [(False, 0), (None, 1)])
+def test_scan_ready_beep_arg(scan_item, ready_beep, beeps):
+    # [Edge] ready_beep false turns the beep off, absent means on
+    args = {"regex": load_script()["tests"][0]["items"][0]["args"]["regex"]}
+    if ready_beep is not None: args["ready_beep"] = ready_beep
+    _, scanner = scan_item({"success": True, "textbox": "P001-S00123", "err": None},
+                           args=prism_dev.attrdict(args))
+    assert scanner.beeps == beeps
 
 
 def test_scan_bad_format_fails(scan_item):

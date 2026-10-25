@@ -73,6 +73,14 @@ Running
 After the script is loaded and started, the operator just keeps scanning.  The scanner driver
 restarts the script after each scan, there is no button to press.
 
+A scan made before Prism shows the next text box is lost, so Prism beeps when it is ready for the next
+scan.  The driver checks every 0.2 seconds (`play_poll_sec`, see :doc:`Drivers <prism_drivers>`), so the
+next text box is ready about a second after a scan.
+
+* The beep plays on the Prism computer, using `aplay`.  Set `AUDIO_DEVICE` in `Scanners.py` if the
+  default sound output is not the right one, `aplay -L` lists them.
+* Set `"ready_beep": false` in the `TST000_Scan` `args` to turn the beep off.
+
 The scan item has a 5 minute timeout (`"timeout": 300` in the script).  If nothing is scanned in
 that time, the item is recorded as `TIMEOUT` and the script stops restarting, so an idle station
 sends one `TIMEOUT` result, not one every 5 minutes.  To resume, press the channel number (Start)

@@ -12,7 +12,7 @@ from core.const import NOTICE_TYPE
 from core.sys_log import pub_notice
 
 # import your hardware driver class, and details
-from public.prism.drivers.scanners.Scanners import Scanner, VERSION, DRIVER_TYPE
+from public.prism.drivers.scanners.Scanners import Scanner, VERSION, DRIVER_TYPE, PLAY_POLL_SEC
 
 
 class HWDriver(object):
@@ -69,6 +69,7 @@ class HWDriver(object):
            # optional
            "close": None,              # register a callback on closing the channel, or None
            "play": jig_closed_detect   # function for detecting jig closed
+           "play_poll_sec": 1          # seconds between play calls, default 1
            "show_pass_fail": jig_led   # function for indicating pass/fail (like LED)
            "show_msg": jig_display     # function for indicating test status (like display)
 
@@ -115,6 +116,7 @@ class HWDriver(object):
               "unique_id": scanners[0],
               "version": VERSION,
               "play": _scanner.jig_closed_always,
+              "play_poll_sec": PLAY_POLL_SEC,
               "show_pass_fail": None,
               "show_msg": None,
               "close": None}

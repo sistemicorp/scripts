@@ -103,6 +103,10 @@ def item_enabled(item):
     return bool(enable)
 
 
+# jig closed poll period, a driver can set "play_poll_sec"
+PLAY_POLL_SEC = 1
+
+
 class ChanCon(object):
 
     def __init__(self, num=0, script=None, shared_state=None, script_filename="UNKNOWN", operator="UNKNOWN"):
@@ -159,6 +163,7 @@ class ChanCon(object):
         # process HW drivers
         num_channels = -1
         play = None
+        play_poll_sec = PLAY_POLL_SEC
         for hwdrv in self.script["config"]["drivers"]:
             self.logger.info("Installing HWDRV: {}".format(hwdrv))
 
@@ -185,6 +190,7 @@ class ChanCon(object):
                 if drivers:
                     if drivers[0].get('play', None) and play is None:
                         play = drivers[0].get('play')
+                        play_poll_sec = drivers[0].get('play_poll_sec', PLAY_POLL_SEC)
 
                     if show_pass_fail is None:
                         show_pass_fail = drivers[0].get("show_pass_fail", None)
@@ -215,7 +221,7 @@ class ChanCon(object):
             while not _play:
                 _play = play()
                 self.logger.info("player: {}".format(_play))
-                if not _play: time.sleep(1)
+                if not _play: time.sleep(play_poll_sec)
 
         for test in self.script["tests"]:
             fail_fast = self.script["config"].get("fail_fast", True)

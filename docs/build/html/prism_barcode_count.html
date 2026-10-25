@@ -100,6 +100,14 @@ there is only one channel, even with more scanners attached.</p></li>
 <h2>Running<a class="headerlink" href="#running" title="Link to this heading">¶</a></h2>
 <p>After the script is loaded and started, the operator just keeps scanning.  The scanner driver
 restarts the script after each scan, there is no button to press.</p>
+<p>A scan made before Prism shows the next text box is lost, so Prism beeps when it is ready for the next
+scan.  The driver checks every 0.2 seconds (<cite>play_poll_sec</cite>, see <a class="reference internal" href="prism_drivers.html"><span class="doc">Drivers</span></a>), so the
+next text box is ready about a second after a scan.</p>
+<ul class="simple">
+<li><p>The beep plays on the Prism computer, using <cite>aplay</cite>.  Set <cite>AUDIO_DEVICE</cite> in <cite>Scanners.py</cite> if the
+default sound output is not the right one, <cite>aplay -L</cite> lists them.</p></li>
+<li><p>Set <cite>“ready_beep”: false</cite> in the <cite>TST000_Scan</cite> <cite>args</cite> to turn the beep off.</p></li>
+</ul>
 <p>The scan item has a 5 minute timeout (<cite>“timeout”: 300</cite> in the script).  If nothing is scanned in
 that time, the item is recorded as <cite>TIMEOUT</cite> and the script stops restarting, so an idle station
 sends one <cite>TIMEOUT</cite> result, not one every 5 minutes.  To resume, press the channel number (Start)
@@ -154,7 +162,8 @@ into the terminal prompt,</p>
       <span class="s2">&quot;options&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;fail_fast&quot;</span><span class="p">:</span> <span class="n">false</span> <span class="p">},</span>
       <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST000_Scan&quot;</span><span class="p">,</span>           <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">300</span><span class="p">,</span>
-                                        <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;regex&quot;</span><span class="p">:</span> <span class="s2">&quot;^(?P&lt;product&gt;P</span><span class="se">\\</span><span class="s2">d</span><span class="si">{3}</span><span class="s2">)-S(?P&lt;sn&gt;</span><span class="se">\\</span><span class="s2">d</span><span class="si">{5}</span><span class="s2">)$&quot;</span><span class="p">}</span> <span class="p">},</span>
+                                        <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;regex&quot;</span><span class="p">:</span> <span class="s2">&quot;^(?P&lt;product&gt;P</span><span class="se">\\</span><span class="s2">d</span><span class="si">{3}</span><span class="s2">)-S(?P&lt;sn&gt;</span><span class="se">\\</span><span class="s2">d</span><span class="si">{5}</span><span class="s2">)$&quot;</span><span class="p">,</span>
+                                                 <span class="s2">&quot;ready_beep&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">}</span> <span class="p">},</span>
         <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST0xxTEARDOWN&quot;</span><span class="p">,</span>        <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span> <span class="p">}</span>
       <span class="p">]</span>
     <span class="p">}</span>
@@ -210,17 +219,20 @@ into the terminal prompt,</p>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Scan barcode</span>
 <span class="sd">        - args.regex is the barcode format, P###-S#####, its groups &quot;product&quot; and &quot;sn&quot;</span>
 <span class="sd">          pick the fields, product goes to info product, sn is the serial number key</span>
+<span class="sd">        - args.ready_beep, beep when ready for the scan, default true</span>
 <span class="sd">        - if nothing is scanned before the item timeout, Prism records TIMEOUT,</span>
 <span class="sd">          and the scanner stops restarting the script, until the next good scan</span>
 
 <span class="sd">        {&quot;id&quot;: &quot;TST000_Scan&quot;, &quot;enable&quot;: true, &quot;timeout&quot;: 300,</span>
-<span class="sd">                              &quot;args&quot;: {&quot;regex&quot;: &quot;^(?P&lt;product&gt;P\\d{3})-S(?P&lt;sn&gt;\\d{5})$&quot;} },</span>
+<span class="sd">                              &quot;args&quot;: {&quot;regex&quot;: &quot;^(?P&lt;product&gt;P\\d{3})-S(?P&lt;sn&gt;\\d{5})$&quot;,</span>
+<span class="sd">                                       &quot;ready_beep&quot;: true} },</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>   <span class="c1"># always first line of test</span>
         <span class="n">scanner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scanner</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;Scan barcode&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">scanner</span> <span class="ow">and</span> <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ready_beep&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span> <span class="n">scanner</span><span class="o">.</span><span class="n">ready_beep</span><span class="p">()</span>
         <span class="n">user_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_textbox</span><span class="p">(</span><span class="s2">&quot;Scan:&quot;</span><span class="p">,</span> <span class="s2">&quot;barcode&quot;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">TEXTBOX_TIMEOUT_SEC</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">user_text</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]:</span>

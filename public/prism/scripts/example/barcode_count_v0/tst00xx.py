@@ -43,17 +43,20 @@ class tst00xx(TestItem):
         """ Scan barcode
         - args.regex is the barcode format, P###-S#####, its groups "product" and "sn"
           pick the fields, product goes to info product, sn is the serial number key
+        - args.ready_beep, beep when ready for the scan, default true
         - if nothing is scanned before the item timeout, Prism records TIMEOUT,
           and the scanner stops restarting the script, until the next good scan
 
         {"id": "TST000_Scan", "enable": true, "timeout": 300,
-                              "args": {"regex": "^(?P<product>P\\d{3})-S(?P<sn>\\d{5})$"} },
+                              "args": {"regex": "^(?P<product>P\\d{3})-S(?P<sn>\\d{5})$",
+                                       "ready_beep": true} },
 
         """
         ctx = self.item_start()   # always first line of test
         scanner = self._scanner()
 
         self.log_bullet("Scan barcode")
+        if scanner and ctx.item.args.get("ready_beep", True): scanner.ready_beep()
         user_text = self.input_textbox("Scan:", "barcode", timeout=self.TEXTBOX_TIMEOUT_SEC)
 
         if not user_text["success"]:
