@@ -74,6 +74,7 @@ screenshots.
 * Lente DASHBOARD role, a read-only results viewer that is not logged out when idle,
   see :doc:`Accounts <lente_accounts>`
 * Lente menus only list the pages the user's roles can open
+* Prism and Lente side menus show each page as an icon row, with the current page highlighted
 * With `use_https`, stations only connect to a computer with the site's `cert.pem`,
   see :ref:`HTTPS <https>`
 * Test Portal channel number buttons start just that channel, while other channels keep testing
