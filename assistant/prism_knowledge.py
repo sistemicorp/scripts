@@ -26,6 +26,7 @@ DEFAULT_REPO = os.path.dirname(ASSISTANT_DIR)
 DOCS_DIR = "docs/source"
 SCRIPTS_DIR = "public/prism/scripts"
 DRIVERS_DIR = "public/prism/drivers"
+DRIVERS_DOC = "docs/source/prism_drivers.rst"
 SETTINGS_FILE = "public/settings.json"
 VERSION_FILE = "public/VERSION"
 ONLINE_DOCS = "https://sistemicorp.github.io/scripts/build/html/{}.html"
@@ -487,7 +488,12 @@ def list_drivers(root=None):
     """
     root = root or repo_root()
     base = os.path.join(root, DRIVERS_DIR)
-    out = ["Drivers (use the module path in the script config.drivers):"]
+    doc = os.path.join(root, DRIVERS_DOC)
+    sections = set()
+    if os.path.isfile(doc):
+        sections = {t for _, _, t in _headings(_read_text(doc).splitlines(), True)}
+    out = ["Drivers (use the module path in the script config.drivers).  To add test "
+           f"equipment, read {DRIVERS_DOC} section 'Adding Test Equipment':"]
     for name in sorted(os.listdir(base)):
         d = os.path.join(base, name)
         if not os.path.isdir(d) or _denied(_rel(d, root)):
@@ -499,8 +505,10 @@ def list_drivers(root=None):
         line = f"- {name}"
         for h in hwdrvs:
             line += f"\n    module: public.prism.drivers.{name}.{h}"
-        if docs or pdfs:
-            line += "\n    docs: " + ", ".join(f"{DRIVERS_DIR}/{name}/{f}" for f in docs + pdfs)
+        refs = [f"{DRIVERS_DOC} section '{name}'"] if name in sections else []
+        refs += [f"{DRIVERS_DIR}/{name}/{f}" for f in docs + pdfs]
+        if refs:
+            line += "\n    docs: " + ", ".join(refs)
         out.append(line)
     return "\n".join(out)
 

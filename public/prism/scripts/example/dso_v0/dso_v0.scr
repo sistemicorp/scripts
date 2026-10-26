@@ -1,8 +1,11 @@
 // Example: Connects to an Agilent DSO7000 DSO via VISA
 // !! NOTE: This example will only load if there is an Agilent DSO7000 Series on USB !!
-// For a scope on Ethernet, replace the agilent driver line with,
-//   ["public.prism.drivers.agilent_dso_usb_1.hwdrv_agilent_dso_usb_1",
-//    {"interface": "ethernet", "ip": "192.168.1.100"}]
+// One scope is shared by all channels, {"only_one": true}, so the Fake hardware sets
+// the number of channels, and scope input <channel + 1> is wired to each jig.
+// For a scope on Ethernet, add to the driver arguments,
+//   "interface": "ethernet", "ip": "192.168.1.100"
+// For one scope per channel, remove the fake driver and "only_one", and on Ethernet
+// give one IP per channel, "ip": ["192.168.1.100", "192.168.1.101"]
 {
   "info": {
     "product": "pybrd_1",
@@ -14,7 +17,7 @@
     "fail_fast": false,
     "drivers": [
       "public.prism.drivers.fake.hwdrv_fake",
-      "public.prism.drivers.agilent_dso_usb_1.hwdrv_agilent_dso_usb_1"
+      ["public.prism.drivers.agilent_dso_usb_1.hwdrv_agilent_dso_usb_1", {"only_one": true}]
     ]
   },
   "tests": [

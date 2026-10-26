@@ -11,6 +11,7 @@ It can help you,
 * migrate to a new Prism/Lente version, for example `0.8` to `0.9`
 * write test scripts and Python test code, and lint them
 * use :doc:`BOND <prism_bond>`
+* add test equipment to a jig, one per jig or shared by the jigs, see :doc:`Drivers <prism_drivers>`
 * lay out your test plan and test stages
 * plan :doc:`Traceability <_traceability>`: serial numbers, lots, firmware versions and test
   versions
@@ -77,6 +78,7 @@ example `/mcp__prism-assistant__migrate_version`,
 * `migrate_version` - plan a version migration of your deployment
 * `write_test_script` - write a script and its test code for one test stage
 * `use_bond` - set up BOND and its Pogo board header definition
+* `add_equipment` - add test equipment to a jig, one per jig or shared, with its driver
 * `plan_test_stages` - lay out the test stages of a product
 * `plan_traceability` - plan what your results record
 * `plan_deployment` - plan and install Lente and the Prism computers
@@ -90,7 +92,8 @@ The tools the AI assistant can use,
 * `list_scripts`, `lint_script` - your scripts, and the :ref:`_development:Script Lint`
 * `check_settings` - check a `settings.json` for the current version, without showing any
   passwords or keys
-* `list_drivers`, `python_api` - the drivers, and the Prism APIs used by test code
+* `list_drivers`, `python_api` - the drivers with their documentation, and the Prism APIs
+  used by test code
 * `repo_status` - your scripts version, and how far your fork is behind Sistemi's scripts
 
 
@@ -104,6 +107,9 @@ assistant,
 * answers from this documentation and your repo, cites the page, and says so when they don't
   have the answer, instead of guessing, suggesting you contact info@sistemi.ca
 * lints any script or test code it writes or changes
+* records the serial number of each piece of test equipment in the results, see
+  :ref:`Test Equipment <_traceability:Test Equipment>`, and follows the
+  :doc:`driver <prism_drivers>` rules for equipment per jig or shared
 * follows the rules in this documentation, for example the
   :doc:`test item rules <prism_programs>`, the serial number in `key0`, and Prism and Lente
   running the same major.minor version

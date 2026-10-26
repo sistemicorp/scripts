@@ -17,7 +17,8 @@ import prism_assistant  # noqa: E402
 
 TOOLS = {"list_docs", "read_doc", "search_docs", "read_file", "list_scripts", "lint_script",
          "check_settings", "list_drivers", "python_api", "repo_status"}
-PROMPTS = {"migrate_version", "write_test_script", "use_bond", "plan_test_stages",
+PROMPTS = {"migrate_version", "write_test_script", "use_bond", "add_equipment",
+           "plan_test_stages",
            "plan_traceability", "plan_deployment", "setup_prism_computer"}
 
 
@@ -60,3 +61,12 @@ def test_migrate_prompt_has_versions():
     text = run(go).messages[0].content.text
     assert "from version 0.8 to 0.9" in text
     assert "_version_history.rst" in text
+
+
+def test_add_equipment_prompt_reads_drivers_doc():
+    async def go(c):
+        return await c.get_prompt("add_equipment", {"equipment": "a power supply"})
+    text = run(go).messages[0].content.text
+    assert "add a power supply to my test jig" in text
+    assert "prism_drivers.rst" in text
+    assert "UNIT_STRING" in text  # equipment serial number is recorded

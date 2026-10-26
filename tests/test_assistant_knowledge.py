@@ -267,6 +267,20 @@ def test_list_drivers(repo):
     assert "public/prism/drivers/fake/README.md" in out
 
 
+def test_list_drivers_links_docs_section(repo):
+    write(repo, "docs/source/prism_drivers.rst", "Drivers\n=======\n\nfake\n~~~~\n\nsim\n")
+    write(repo, "public/prism/drivers/other/hwdrv_other.py", "class HWDriver:\n    pass\n")
+    out = pk.list_drivers(root=repo)
+    assert "docs/source/prism_drivers.rst section 'fake'" in out
+    assert "section 'other'" not in out
+
+
+def test_list_drivers_without_drivers_doc(repo):
+    """[Edge] a repo without prism_drivers.rst still lists the drivers"""
+    out = pk.list_drivers(root=repo)
+    assert "section 'fake'" not in out
+
+
 def test_python_api_alias():
     out = pk.python_api("record")
     assert "def add_key(self, key, value, slot=None)" in out

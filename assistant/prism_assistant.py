@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import prism_knowledge as pk  # noqa: E402
 
 SERVER_NAME = "prism-assistant"
-SERVER_VERSION = "0.1.0"
+SERVER_VERSION = "0.2.0"
 CONTACT = "info@sistemi.ca"
 
 INSTRUCTIONS = f"""\
@@ -49,11 +49,20 @@ Rules to follow when helping:
 - Test items: the first statement is `ctx = self.item_start()`, every path ends with
   `self.item_end(...)`, the module file name matches the class name, and limits go in the
   script `args`.  Use self.sleep() and self.check_abort(), not time.sleep().
+- Traceability: record the serial number of every piece of test equipment the test uses
+  (scope, power supply, programmer, jig controller, shared or per jig) in the setup item, as
+  a string measurement, `ctx.record.measurement("dso_sn", sn, ResultAPI.UNIT_STRING)`, which
+  has no limits and is only recorded.  Use the driver's unique_id when it has one.
 - Store the unit serial number in key0 (`ctx.record.add_key("sn", value, slot=0)`), keep each
   `name:value` key within 64 characters and string measurements within 128.
 - Never ask the customer to paste passwords, site_key, license files or user databases.  Never
   suggest committing real passwords to their repo, settings.json is per computer.
 - The customer's fork may be private: keep their code and data in this conversation.
+- Drivers: every driver that sets the number of channels must report the same number, in the
+  same jig order, and a driver that returns 0 channels is shared by all the jigs of one Prism
+  computer.  Lock shared equipment with `with self.shared_lock(<name>):`.  Equipment shared
+  between Prism computers is not supported.  Get drivers with
+  `self.shared_state.get_drivers(self.chan, type=...)`.
 - Prefer small, reviewable changes to the customer's files, and explain what each change does.
 - Number your questions so the customer can answer them easily.
 """
@@ -82,7 +91,8 @@ Help me write a Prism test script and its Python test code for {product}, test s
 3. Ask me (numbered) what the stage tests, which instruments and drivers it uses
    (list_drivers), the limits, and how the unit serial number is found.
 4. Propose the file names and folder (see docs/source/_prodplan.rst Naming Proposal), then
-   write the .scr and .py with a setup item first and a teardown item last.
+   write the .scr and .py with a setup item first and a teardown item last.  The setup item
+   records the serial number of each piece of test equipment as a string measurement.
 5. Run lint_script on the new script and fix every ERROR.  Tell me how to run it with
    `python prism_dev.py --script <path>`.
 """
@@ -97,6 +107,28 @@ Help me use BOND (the Sistemi Bed of Nails tester) for {product}.
    signal needs (ADC, DAC, GPO, GPI, DUT supply, battery emulator).
 4. Help me write the Pogo board header definition file, and the test items that use it.
 5. Lint the script with lint_script.
+"""
+
+PROMPT_ADD_EQUIPMENT = """\
+Help me add {equipment} to my test jig, for one jig per instrument or shared by the jigs.
+
+1. Read docs/source/prism_drivers.rst, sections Discover Channels, Shared Drivers, Locking
+   Shared Equipment and Adding Test Equipment.
+2. Ask me (numbered) for the make and model, how it connects (USB, Ethernet, serial), how many
+   jigs each Prism computer runs, whether each jig has its own instrument or one is shared,
+   and how the jigs are wired to it.
+3. Use list_drivers to pick the closest included driver, for example agilent_dso_usb_1 for a
+   VISA instrument, and read its section in prism_drivers.rst and its hwdrv file.
+4. Propose the new driver folder and write the driver: how instruments are found, ordered by
+   jig, and identified (unique_id), with an error when one is missing.
+5. Write the setup item that gets the driver with get_drivers(self.chan, type=...) and records
+   the instrument serial number as a string measurement (ResultAPI.UNIT_STRING), for a shared
+   instrument also the input used, see docs/source/_traceability.rst Test Equipment.  Lock a
+   shared instrument with self.shared_lock.
+6. Document the driver: its arguments in the discover_channels doc string, and a README.md in
+   the driver folder with the equipment, connection, per jig or shared, and setup steps.
+7. Lint the script with lint_script.  Tell me how to run the driver's __main__ check and
+   `python prism_dev.py --script <path>`.
 """
 
 PROMPT_TEST_PLAN = """\
@@ -118,9 +150,10 @@ and test versions.
 
 1. Read docs/source/_traceability.rst and docs/source/_database.rst.
 2. Ask me (numbered) how a unit is identified, which ids and versions I need to search on,
-   where the lot comes from, and how I version my test scripts.
-3. Propose the key slot assignments, the measurement names for versions, the lot sub with its
-   regex, and the script naming and versioning.
+   which test equipment each stage uses, where the lot comes from, and how I version my test
+   scripts.
+3. Propose the key slot assignments, the measurement names for versions and for the test
+   equipment serial numbers, the lot sub with its regex, and the script naming and versioning.
 4. Give me example SQL queries for my most common searches.
 """
 
@@ -244,6 +277,11 @@ def create_server():
     def use_bond(product: str = "my product") -> str:
         """Set up BOND, its Pogo board header definition, and BOND test items."""
         return PROMPT_BOND.format(product=product)
+
+    @mcp.prompt(title="Add test equipment")
+    def add_equipment(equipment: str = "an instrument") -> str:
+        """Add test equipment to a jig, one per jig or shared by the jigs, with its driver."""
+        return PROMPT_ADD_EQUIPMENT.format(equipment=equipment)
 
     @mcp.prompt(title="Plan test stages")
     def plan_test_stages(product: str = "my product") -> str:

@@ -92,9 +92,26 @@ and is stored with the test item,
 Test Equipment
 ==============
 
-To trace a fault to a jig or instrument, record the serial number of the test equipment as string
-measurements in the setup item, for example the programmer's serial number and the jig
-controller's id.  Drivers often return a `unique_id` from `discover_channels()` for this.
+To trace a fault to a jig or instrument, record the serial number of each piece of test
+equipment as a string measurement in the setup item.  For example the scope, power supply and
+programmer serial numbers, and the jig controller's id.  A unit tested on an instrument later
+found out of calibration can then be found in the results.
+
+A string measurement has no limits, it always passes and is only recorded.  Drivers often
+return a `unique_id` from `discover_channels()` for this,
+
+::
+
+    drivers = self.shared_state.get_drivers(self.chan, type="AGILENT_DSO_USB_1")
+    dso_sn = drivers[0]["obj"]["unique_id"]
+    success, _result, _bullet = ctx.record.measurement("dso_sn", dso_sn, ResultAPI.UNIT_STRING)
+
+* Record every instrument the test uses, including shared ones, in every result.
+* For a shared instrument with several inputs, also record the input used by the channel.
+* Use the same measurement name for the same instrument in all your scripts, so one query
+  finds them all.
+* If a driver does not give a `unique_id`, read the serial number from the instrument, for
+  example its `*IDN?` reply.
 
 Lots
 ====
@@ -153,7 +170,7 @@ Before production, decide,
 #. which id identifies a unit (`key0`), and where it comes from
 #. which other ids are keys, and their slot numbers
 #. which versions are recorded (firmware, bootloader, hardware revision)
-#. which test equipment ids are recorded
+#. which test equipment serial numbers are recorded, and their measurement names
 #. the lot format, and who enters it (operator, Traveller)
 #. how scripts and test items are named and versioned
 #. how long results are kept, and where (Lente, upstream Lente, backups)
