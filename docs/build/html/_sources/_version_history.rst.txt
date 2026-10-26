@@ -75,6 +75,9 @@ screenshots.
   see :doc:`Accounts <lente_accounts>`
 * Lente menus only list the pages the user's roles can open
 * Prism and Lente side menus show each page as an icon row, with the current page highlighted
+* Test Portal channel logs, and the log on the Lente record page, use a monospace font and keep
+  the indent of test item lines.  The Lente record page log now reads oldest line first.
+* System Log notices start with `SYS:` instead of `SYSTEM:`
 * With `use_https`, stations only connect to a computer with the site's `cert.pem`,
   see :ref:`HTTPS <https>`
 * Test Portal channel number buttons start just that channel, while other channels keep testing
