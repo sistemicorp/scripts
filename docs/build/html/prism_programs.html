@@ -329,19 +329,21 @@ It is the example distributed with the system, <cite>public/prism/scripts/exampl
         <span class="c1"># API Reference:</span>
         <span class="c1">#</span>
         <span class="c1"># from prod_0.scr:</span>
-        <span class="c1">#         {&quot;id&quot;: &quot;TST000_Meas&quot;,  &quot;enable&quot;: true, &quot;args&quot;: {&quot;min&quot;: 0, &quot;max&quot;: 10},</span>
-        <span class="c1">#                                &quot;fail&quot;: [ {&quot;fid&quot;: &quot;TST000-0&quot;, &quot;msg&quot;: &quot;Component apple R1&quot;},</span>
-        <span class="c1">#                                          {&quot;fid&quot;: &quot;TST000-1&quot;, &quot;msg&quot;: &quot;Component banana R1&quot;}] },</span>
+        <span class="c1">#   {&quot;id&quot;: &quot;TST000_Meas&quot;,  &quot;enable&quot;: true, &quot;args&quot;: {&quot;min&quot;: 0, &quot;max&quot;: 10},</span>
+        <span class="c1">#                          &quot;fail&quot;: [ {&quot;fid&quot;: &quot;TST000-0&quot;, &quot;msg&quot;: &quot;Component apple R1&quot;},</span>
+        <span class="c1">#                                    {&quot;fid&quot;: &quot;TST000-1&quot;, &quot;msg&quot;: &quot;Component banana R1&quot;}] },</span>
         <span class="c1">#</span>
         <span class="c1"># ctx = self.item_start()  # always first line of test</span>
-        <span class="c1">#  - ctx (context) is a namespace of content from the test script, returned as a python dict,</span>
+        <span class="c1">#  - ctx (context) is a namespace of content from the test script,</span>
+        <span class="c1">#    returned as a python dict,</span>
         <span class="c1">#  - ctx.config = script config section</span>
         <span class="c1">#  - ctx.item = {&quot;id&quot;: &quot;TST000&quot;, &quot;enable&quot;: True,  &quot;args&quot;: {&quot;min&quot;: 0, &quot;max&quot;: 10}}</span>
         <span class="c1">#  - ctx.item.args = {&quot;min&quot;: 0, &quot;max&quot;: 10}</span>
         <span class="c1">#  - ctx.item.args.max = 10</span>
         <span class="c1">#  - ctx.options = { &quot;fail_fast&quot;: False }</span>
         <span class="c1">#  - ctx.options.fail_fast = &lt;True|False&gt;</span>
-        <span class="c1">#  - ctx.fail_fast = &lt;True|False&gt;  # From script &quot;config&quot; (lower precedence) &quot;options&quot; (higher)</span>
+        <span class="c1">#  - ctx.fail_fast = &lt;True|False&gt;</span>
+        <span class="c1">#    From script &quot;config&quot; (lower precedence) &quot;options&quot; (higher)</span>
         <span class="c1">#</span>
         <span class="c1">#  - record functions</span>
         <span class="c1">#    - ctx.record.measurement(name, value, unit, min=None, max=None)</span>
@@ -383,8 +385,10 @@ It is the example distributed with the system, <cite>public/prism/scripts/exampl
         <span class="c1"># Notes</span>
         <span class="c1">#</span>
         <span class="c1"># 1) Test Item Timeout</span>
-        <span class="c1">#    - every test time is guarded by a timeout which has a default of ResultAPI.TESTITEM_TIMEOUT Sec.</span>
-        <span class="c1">#    - this value can be overridden by adding &#39;&quot;timeout&quot;: &lt;value&gt;&#39; to the test item in the script</span>
+        <span class="c1">#    - every test time is guarded by a timeout which has a default of</span>
+        <span class="c1">#      ResultAPI.TESTITEM_TIMEOUT Sec.</span>
+        <span class="c1">#    - this value can be overridden by adding &#39;&quot;timeout&quot;: &lt;value&gt;&#39; to the test item</span>
+        <span class="c1">#      in the script</span>
         <span class="c1">#    - if the timeout expires, it is considered a Fail, even if it is</span>
         <span class="c1">#      on a user input item.  The test script will fail.</span>
         <span class="c1">#    - Prism cannot interrupt your code; loops (while/for) and waits for long running</span>
@@ -474,7 +478,7 @@ It is the example distributed with the system, <cite>public/prism/scripts/exampl
 
         <span class="bp">self</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_DELAY</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEMO_TIME_RND_ENABLE</span><span class="p">)</span>
 
-        <span class="n">FAIL_APPLE</span>   <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># indexes into the &quot;fail&quot; list, just for code readability</span>
+        <span class="n">FAIL_APPLE</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># indexes into the &quot;fail&quot; list, just for code readability</span>
         <span class="n">FAIL_BANANNA</span> <span class="o">=</span> <span class="mi">1</span>
 
         <span class="n">measurement_results</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># list for all the coming measurements...</span>
@@ -613,8 +617,10 @@ It is the example distributed with the system, <cite>public/prism/scripts/exampl
         <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;waiting for my_resource...&quot;</span><span class="p">)</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_lock</span><span class="p">(</span><span class="s2">&quot;my_resource&quot;</span><span class="p">):</span>  <span class="c1"># released even if the item is stopped</span>
             <span class="k">while</span> <span class="n">hold_time</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;my_resource is locked for </span><span class="si">{}</span><span class="s2"> seconds&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">hold_time</span><span class="p">),</span> <span class="n">ovrwrite_last_line</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span> <span class="k">break</span>  <span class="c1"># item timed out or was aborted</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;my_resource is locked for </span><span class="si">{}</span><span class="s2"> seconds&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">hold_time</span><span class="p">),</span> <span class="n">ovrwrite_last_line</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
+                    <span class="k">break</span>  <span class="c1"># item timed out or was aborted</span>
                 <span class="n">hold_time</span> <span class="o">-=</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;my_resource is free&quot;</span><span class="p">)</span>
 
@@ -659,7 +665,8 @@ It is the example distributed with the system, <cite>public/prism/scripts/exampl
         <span class="k">if</span> <span class="n">user_text</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;Text: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">user_text</span><span class="p">[</span><span class="s2">&quot;textbox&quot;</span><span class="p">]))</span>
             <span class="c1"># Note: ResultAPI.UNIT_STRING is used to format the measurement correctly in JSON</span>
-            <span class="n">_</span><span class="p">,</span> <span class="n">_result</span><span class="p">,</span> <span class="n">_bullet</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span><span class="s2">&quot;input&quot;</span><span class="p">,</span> <span class="n">user_text</span><span class="p">[</span><span class="s2">&quot;textbox&quot;</span><span class="p">],</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_STRING</span><span class="p">)</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_result</span><span class="p">,</span> <span class="n">_bullet</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
+                <span class="s2">&quot;input&quot;</span><span class="p">,</span> <span class="n">user_text</span><span class="p">[</span><span class="s2">&quot;textbox&quot;</span><span class="p">],</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_STRING</span><span class="p">)</span>
             <span class="c1"># qualify the text here, and override _result if required</span>
 
         <span class="k">else</span><span class="p">:</span>
@@ -700,7 +707,7 @@ It is the example distributed with the system, <cite>public/prism/scripts/exampl
         <span class="n">myBlob</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">BLOB_UNKNOWN</span><span class="p">)</span>
         <span class="c1"># key &#39;data&#39; is automatically created, or you may add your own keys</span>
         <span class="n">myBlob</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1000</span><span class="p">))</span>
-        <span class="c1">#myBlob[&quot;my_other_key&quot;] = json.dumps(dict(k1=&quot;data1&quot;, k2=1.23))</span>
+        <span class="c1"># myBlob[&quot;my_other_key&quot;] = json.dumps(dict(k1=&quot;data1&quot;, k2=1.23))</span>
         <span class="n">success</span><span class="p">,</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span><span class="s2">&quot;random&quot;</span><span class="p">,</span> <span class="n">myBlob</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
@@ -760,7 +767,8 @@ It is the example distributed with the system, <cite>public/prism/scripts/exampl
         <span class="n">within_template</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># or False</span>
 
         <span class="c1"># store measurement result</span>
-        <span class="n">success</span><span class="p">,</span> <span class="n">_result</span><span class="p">,</span> <span class="n">_bullet</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span><span class="s2">&quot;template&quot;</span><span class="p">,</span> <span class="n">within_template</span><span class="p">,</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_BOOLEAN</span><span class="p">)</span>
+        <span class="n">success</span><span class="p">,</span> <span class="n">_result</span><span class="p">,</span> <span class="n">_bullet</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
+            <span class="s2">&quot;template&quot;</span><span class="p">,</span> <span class="n">within_template</span><span class="p">,</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_BOOLEAN</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="n">_bullet</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">_result</span><span class="p">)</span>

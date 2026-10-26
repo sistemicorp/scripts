@@ -204,7 +204,8 @@ into the terminal prompt,</p>
     <span class="k">def</span> <span class="nf">_scanner</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; The scanner driver for this channel, or None &quot;&quot;&quot;</span>
         <span class="n">drivers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_state</span><span class="o">.</span><span class="n">get_drivers</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chan</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">DRIVER_TYPE_SCANNER</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">drivers</span><span class="p">:</span> <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">drivers</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="n">drivers</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;obj&quot;</span><span class="p">][</span><span class="s2">&quot;hwdrv&quot;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">TST0xxTEARDOWN</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -234,12 +235,14 @@ into the terminal prompt,</p>
         <span class="n">scanner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scanner</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;Scan barcode&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">scanner</span> <span class="ow">and</span> <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ready_beep&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span> <span class="n">scanner</span><span class="o">.</span><span class="n">ready_beep</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">scanner</span> <span class="ow">and</span> <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ready_beep&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+            <span class="n">scanner</span><span class="o">.</span><span class="n">ready_beep</span><span class="p">()</span>
         <span class="n">user_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_textbox</span><span class="p">(</span><span class="s2">&quot;Scan:&quot;</span><span class="p">,</span> <span class="s2">&quot;barcode&quot;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">TEXTBOX_TIMEOUT_SEC</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">user_text</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]:</span>
             <span class="c1"># timed out or aborted, stop restarting the script, Prism records the TIMEOUT</span>
-            <span class="k">if</span> <span class="n">scanner</span><span class="p">:</span> <span class="n">scanner</span><span class="o">.</span><span class="n">stop_player</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">scanner</span><span class="p">:</span>
+                <span class="n">scanner</span><span class="o">.</span><span class="n">stop_player</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;No scan: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">user_text</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;err&quot;</span><span class="p">)))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="s2">&quot;Press channel Start to resume&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_FAIL</span><span class="p">)</span>
@@ -262,7 +265,8 @@ into the terminal prompt,</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="n">_bullet</span><span class="p">)</span>
 
         <span class="c1"># a good scan (re)starts the automatic restarts, after a timeout and channel Start</span>
-        <span class="k">if</span> <span class="n">scanner</span><span class="p">:</span> <span class="n">scanner</span><span class="o">.</span><span class="n">start_player</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">scanner</span><span class="p">:</span>
+            <span class="n">scanner</span><span class="o">.</span><span class="n">start_player</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">_result</span><span class="p">)</span>  <span class="c1"># always last line of test</span>
 </pre></div>
