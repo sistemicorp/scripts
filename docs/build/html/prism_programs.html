@@ -264,6 +264,16 @@ This breaks a Python loop, but it cannot interrupt a blocked call such as <code 
 waiting on hardware; the item stops when that call returns.
 If the item is still running 5 seconds later, Prism shows a “not responding” notice.
 For a long blocking driver call, give the driver its own timeout shorter than the item <code class="docutils literal notranslate"><span class="pre">timeout</span></code>.</p>
+<p>The teardown item runs normally after an abort: <code class="docutils literal notranslate"><span class="pre">self.sleep()</span></code>, <code class="docutils literal notranslate"><span class="pre">self.check_abort()</span></code> and
+operator inputs work, and its own result is recorded.
+Aborting again while the teardown runs stops the teardown too.</p>
+<p>Exit Script Runner while a test is running asks to Abort-All.
+Prism then waits for each channel to run its teardown item and write its result before the
+script runner exits.
+If an item never returns, press Exit Script Runner again to exit right away; the teardown is
+skipped and no result is written.
+Stopping Prism (<code class="docutils literal notranslate"><span class="pre">./prism.sh</span> <span class="pre">stop</span></code>) also aborts a running test and gives the teardown up to
+5 seconds to finish.</p>
 </section>
 <section id="errors-in-a-test-item">
 <h2>Errors in a Test Item<a class="headerlink" href="#errors-in-a-test-item" title="Link to this heading">¶</a></h2>

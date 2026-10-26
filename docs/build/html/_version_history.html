@@ -132,6 +132,9 @@ was not reset</p></li>
 <li><p>[BUGFIX] Prism and Lente were slow to exit on shutdown</p></li>
 <li><p>[BUGFIX] After a test item timeout, the teardown item’s waits and prompts were skipped and it
 was recorded as an error</p></li>
+<li><p>[BUGFIX] Exit Script Runner &gt; Abort-All, and stopping Prism, skipped the teardown item and
+wrote no result.  Prism now waits for the teardown, and the teardown item is no longer cut
+short by the abort.</p></li>
 <li><p>[BUGFIX] With <cite>use_https</cite>, script sync from Lente failed</p></li>
 <li><p>[BUGFIX] Script and user syncs could interrupt a station’s test runner once the operator
 logged out.  Syncs now wait until the Script Runner is exited.</p></li>
