@@ -1,6 +1,8 @@
 // Example: Brother Printer QL700
 // Note that the Fake hardware is used to set up number of channels
 // because a shared resource cannot set number of channels.
+// For one printer per channel, remove {"only_one": true}, the number of printers
+// must then match the number of fake channels.
 {
   "info": {
     "product": "widget_1",

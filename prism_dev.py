@@ -220,7 +220,9 @@ class ChanCon(object):
             self.logger.info("{} - number channels {}".format(hwdrv_sname, _num_channels))
             if _num_channels == 0:
                 # this HW DRV does not indicate number of channels, its a shared resource
-                pass
+                if not drivers:
+                    raise ValueError('HWDRV {} shared, but no driver object'.format(
+                        hwdrv_sname))
             elif _num_channels < 0:
                 raise ValueError('Error returned by HWDRV {}'.format(hwdrv_sname))
             elif num_channels == -1:

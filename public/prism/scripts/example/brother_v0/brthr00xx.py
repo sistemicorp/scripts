@@ -16,13 +16,13 @@ from public.prism.drivers.brother_ql.hwdrv_brother_ql import DRIVER_TYPE as BROT
 class brthr00xx(TestItem):
     """ Brother Label Printer Example
 
-    If the printer is serving multiple channels, then somehow need to know which
-    station (channel) gets the printed label.  Could add a small channel number
-    on the label.
+    If the printer is serving multiple channels (driver arg {"only_one": true}), then
+    somehow need to know which station (channel) gets the printed label, the channel
+    number is printed on the label.
 
-    There could be more than one printer, for example, one printer
-    per test station (channel). Thus you could register more printers, and
-    address them per channel number using self.chan as an index.
+    There could be more than one printer, one printer per test station (channel),
+    by leaving out "only_one".  get_drivers(self.chan, ...) returns this channel's
+    printer, or the shared printer, so this code works for both.
 
     """
 
@@ -36,7 +36,7 @@ class brthr00xx(TestItem):
 
         """
         ctx = self.item_start()  # always first line of test
-        printer_info = self.shared_state.get_drivers(None, type=BROTHER_DRIVER)
+        printer_info = self.shared_state.get_drivers(self.chan, type=BROTHER_DRIVER)
         if not printer_info:
             self.logger.error(f"driver {BROTHER_DRIVER} not found")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)

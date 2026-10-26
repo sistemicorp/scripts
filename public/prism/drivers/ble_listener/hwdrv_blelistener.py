@@ -38,7 +38,7 @@ class HWDriver(object):
     def __init__(self):
         self.logger = logging.getLogger("{}".format(self.SFN))
         self.logger.info("Start")
-        self._num_chan = None
+        self._num_chan = 0
 
     def discover_channels(self):
         """ Determine the number of channels, and populate hw drivers into shared state
@@ -107,9 +107,9 @@ class HWDriver(object):
         drivers.append(_d)
         pub_notice("HWDriver:{}: Found channel {}".format(self.SFN, 0), sender=sender)
 
-        self._num_chan = len(drivers)
+        self._num_chan = 0  # one BLE adapter, shared by all channels
         self.logger.info("{} channels found".format(self._num_chan))
-        return 0, DRIVER_TYPE, drivers
+        return self._num_chan, DRIVER_TYPE, drivers
 
     def num_channels(self):
         return self._num_chan

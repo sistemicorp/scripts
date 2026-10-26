@@ -95,6 +95,8 @@ screenshots.
 * A HW driver can set `play_poll_sec` to call its `play` function more often than once a second,
   see :doc:`Drivers <prism_drivers>`
 * `prism_dev.py` runs scripts with `subs`, using each sub's default or first choice
+* The `brother_ql` driver supports one printer per channel, or with `{"only_one": true}` one
+  printer shared by all channels, see :ref:`Shared Drivers <prism_drivers:Shared Drivers>`
 
 Bug fixes,
 
@@ -127,6 +129,10 @@ Bug fixes,
   starting, instead of failing the check.  See :ref:`Manifest Checking <_security:Manifest Checking>`.
 * [BUGFIX] Lente Result Analytics charts kept showing the previous results when the filters were
   not valid, or the results database could not be read
+* [BUGFIX] The `brother_ql` driver was always shared, even without `only_one`, and with
+  `only_one` did not report finding more than one printer
+* [BUGFIX] `prism_dev.py` accepted a shared driver (0 channels) with no driver items, which Prism
+  rejects
 
 
 Migration Guide
@@ -151,6 +157,10 @@ Migration Guide
 * With `use_https`, every Prism/Lente computer of a site needs the same `public/cert.pem` and
   `public/key.pem`.  An upstream Lente needs a certificate from a public certificate authority.
   See :ref:`HTTPS <https>`.
+* Scripts using the `brother_ql` driver without `{"only_one": true}` now get one printer per
+  channel, and the number of printers must match the other drivers' number of channels.  Add
+  `{"only_one": true}` to keep one shared printer.  Get the printer with
+  `get_drivers(self.chan, type=...)`, as in the `brother_v0` example.
 
 
 *********

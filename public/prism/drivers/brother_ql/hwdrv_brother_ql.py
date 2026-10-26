@@ -301,7 +301,9 @@ class HWDriver(object):
     drivers is a list, so multiple HWDriver can be installed.
 
     Finds attached Brother QL printers of the models in BROTHER_QL_MODELS (usblp,
-    /dev/usb/lp*), in USB hub port order.  See discover_channels() for the arguments.
+    /dev/usb/lp*), in USB hub port order.  One printer can be shared by all channels
+    ({"only_one": true}), or there can be one printer per channel (the default).
+    See discover_channels() for the arguments.
     """
     SFN = os.path.basename(__file__)
 
@@ -377,12 +379,17 @@ class HWDriver(object):
 
         scriptArgs = {"only_one": true|false, "test_label": true|false}
 
-            only_one = Only one Printer is expected to be found and will be shared
+            only_one = true: one printer is shared by all channels (returns 0 channels),
+                       finding more than one printer is an error
+                       false (default): one printer per channel (returns the number found)
             test_label = Print a test label before starting the test script
 
         This driver is for the Brother QL only.
-        Multiple printers will be ordered by the USB hub port they are connected to. Presumably,
-        each printer is associated with a Jig, so the order of the printers is important.
+        Multiple printers will be ordered by the USB hub port they are connected to, the
+        first printer is channel 0, the next channel 1, etc.
+
+        A shared printer does not use play, show_pass_fail, show_msg or jig_reset, so they
+        are None.  Prism would call them for every channel, see Note 1.
 
         [ {"id": i,                    # ~slot number of the channel (see Note 1)
            "version": <VERSION>,       # version of the driver
@@ -406,6 +413,8 @@ class HWDriver(object):
         1) The hw driver objects are expected to have an 'id' field, the lowest
            id is assigned to channel 0, the next highest to channel 1, etc.
            A shared driver (returns 0 channels) is not assigned a channel, all channels use it.
+           Its play, show_pass_fail, show_msg and jig_reset functions, if any, are called
+           by every channel, so a shared driver usually sets them to None.
 
         :return: <#>, <driver_type>, <list> (use Zero for a device shared across all channels)
             where
@@ -438,25 +447,32 @@ class HWDriver(object):
                        sender="discover_channels", type=NOTICE_TYPE.ERROR)
             return -1, DRIVER_TYPE, []
 
+        only_one = bool(scriptArgs and scriptArgs.get("only_one", False))
+        if only_one and len(drivers) > 1:
+            # can't know which printer is the shared one
+            self.logger.error("only_one, but found %d printers", len(drivers))
+            pub_notice("HWDriver:{}: Error only one printer expected, found {}".format(
+                self.SFN, len(drivers)), sender="discover_channels", type=NOTICE_TYPE.ERROR)
+            return -1, DRIVER_TYPE, []
+
         # do not allow the test script validation step to succeed if can't print a test label
         if scriptArgs and scriptArgs.get("test_label", False):
             for d in drivers:
-                id, path = d["hwdrv"].get_id_path()
-                success = d["hwdrv"].print_ruid_barcode("id{}-{}".format(id, path))
+                p_id, p_path = d["hwdrv"].get_id_path()
+                success = d["hwdrv"].print_ruid_barcode("id{}-{}".format(p_id, p_path))
                 if not success:
                     self.logger.error("failed to print")
                     pub_notice("HWDriver:{}: failed to print".format(self.SFN),
                                sender="discover_channels", type=NOTICE_TYPE.ERROR)
                     return -1, DRIVER_TYPE, []
 
-        pub_notice("HWDriver:{}: found {}".format(self.SFN, id),
+        pub_notice("HWDriver:{}: found {}".format(self.SFN, len(drivers)),
                    sender="discover_channels",
                    type=NOTICE_TYPE.NORMAL)
 
-        # Setting number of channels to zero means this device is shared across all test fixtures
-        if scriptArgs and scriptArgs.get('only_one', False):
-            self._num_chan = 0
-
+        # zero channels means the printer is shared across all test jigs,
+        # otherwise one printer per jig (channel)
+        self._num_chan = 0 if only_one else len(drivers)
         return self._num_chan, DRIVER_TYPE, drivers
 
     def num_channels(self):
