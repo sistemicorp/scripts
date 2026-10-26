@@ -38,8 +38,9 @@ The important method of the `HWDriver` class is `discover_channels`.
 
 `discover_channels` method returns a list of dictionaries that represent the connected hardware used in
 the test system.  Every driver that reports a number of channels must report the same number, otherwise
-the script fails validation.  A driver that reports 0 channels is a shared resource for all channels.  That list may contain one item that is shared among all the attached test jigs, or it
-might be one item per test jig.
+the script fails validation.  A driver that reports 0 channels is a shared resource for all channels,
+see `Shared Drivers`_.  The list may contain one item that is shared among all the attached test jigs,
+or it might be one item per test jig.
 
 If there are multiple hardware items, the list of those items must be in the same order across the
 different hardware types.  For example, if each test jig has a Teensy4 and a Segger programmer, the list
@@ -75,6 +76,7 @@ Per the code documentation, `discover_channels` must return a dictionary with pr
         Note:
         1) The hw driver objects are expected to have an 'slot' field, the lowest
            id is assigned to channel 0, the next highest to channel 1, etc
+           A shared driver (returns 0 channels) is not assigned a channel, all channels use it.
 
         :return: <#>, <driver_type>, <list> (use Zero for a device shared across all channels)
             where
@@ -90,6 +92,28 @@ Prism calls the `play` function every second to see if the jig has closed, and s
 does.  A driver can set `play_poll_sec` to change this, from 0.2 to 2 seconds, for example so a test
 restarts sooner after the jig closes.  A value outside the range is logged and set to the nearest
 limit, and a value that is not a number is logged and the default of 1 second is used.
+
+
+Shared Drivers
+--------------
+
+A driver that returns 0 channels is shared by all channels, for example one label printer for
+all the test jigs.  Its driver items are not assigned to a channel, and
+`self.shared_state.get_drivers(self.chan, type=...)` returns them for every channel, along with
+that channel's own drivers.
+
+* At least one driver of the script must set the number of channels, a script with only shared
+  drivers fails validation.
+* A shared driver must return at least one item in its list, otherwise validation fails.
+* The `play`, `show_pass_fail`, `show_msg` and `jig_reset` functions of a shared driver, if set,
+  are called by every channel.  A shared driver usually sets them to `None`.
+
+A driver can support both, with a script argument.  For example, the `brother_ql` driver with
+`{"only_one": true}` expects one printer shared by all channels, and finding more than one is an
+error.  Without it, there is one printer per channel, in USB hub port order::
+
+    "drivers": ["public.prism.drivers.fake.hwdrv_fake",
+                ["public.prism.drivers.brother_ql.hwdrv_brother_ql", {"only_one": true}]]
 
 
 Slot Number

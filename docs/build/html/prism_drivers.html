@@ -70,8 +70,9 @@ them.  <cite>Drivers</cite> are typically common to test multiple products.</p>
 <p>The important method of the <cite>HWDriver</cite> class is <cite>discover_channels</cite>.</p>
 <p><cite>discover_channels</cite> method returns a list of dictionaries that represent the connected hardware used in
 the test system.  Every driver that reports a number of channels must report the same number, otherwise
-the script fails validation.  A driver that reports 0 channels is a shared resource for all channels.  That list may contain one item that is shared among all the attached test jigs, or it
-might be one item per test jig.</p>
+the script fails validation.  A driver that reports 0 channels is a shared resource for all channels,
+see <a class="reference internal" href="#shared-drivers">Shared Drivers</a>.  The list may contain one item that is shared among all the attached test jigs,
+or it might be one item per test jig.</p>
 <p>If there are multiple hardware items, the list of those items must be in the same order across the
 different hardware types.  For example, if each test jig has a Teensy4 and a Segger programmer, the list
 of Teensy4s and Seggers must be in the same order.  In this example, both Segger and the Teensy4s are
@@ -101,6 +102,7 @@ path can be used to synchronize the two lists.  This is done in the examples pro
 <span class="sd">    Note:</span>
 <span class="sd">    1) The hw driver objects are expected to have an &#39;slot&#39; field, the lowest</span>
 <span class="sd">       id is assigned to channel 0, the next highest to channel 1, etc</span>
+<span class="sd">       A shared driver (returns 0 channels) is not assigned a channel, all channels use it.</span>
 
 <span class="sd">    :return: &lt;#&gt;, &lt;driver_type&gt;, &lt;list&gt; (use Zero for a device shared across all channels)</span>
 <span class="sd">        where</span>
@@ -116,6 +118,27 @@ path can be used to synchronize the two lists.  This is done in the examples pro
 does.  A driver can set <cite>play_poll_sec</cite> to change this, from 0.2 to 2 seconds, for example so a test
 restarts sooner after the jig closes.  A value outside the range is logged and set to the nearest
 limit, and a value that is not a number is logged and the default of 1 second is used.</p>
+</section>
+<section id="shared-drivers">
+<h2>Shared Drivers<a class="headerlink" href="#shared-drivers" title="Link to this heading">¶</a></h2>
+<p>A driver that returns 0 channels is shared by all channels, for example one label printer for
+all the test jigs.  Its driver items are not assigned to a channel, and
+<cite>self.shared_state.get_drivers(self.chan, type=…)</cite> returns them for every channel, along with
+that channel’s own drivers.</p>
+<ul class="simple">
+<li><p>At least one driver of the script must set the number of channels, a script with only shared
+drivers fails validation.</p></li>
+<li><p>A shared driver must return at least one item in its list, otherwise validation fails.</p></li>
+<li><p>The <cite>play</cite>, <cite>show_pass_fail</cite>, <cite>show_msg</cite> and <cite>jig_reset</cite> functions of a shared driver, if set,
+are called by every channel.  A shared driver usually sets them to <cite>None</cite>.</p></li>
+</ul>
+<p>A driver can support both, with a script argument.  For example, the <cite>brother_ql</cite> driver with
+<cite>{“only_one”: true}</cite> expects one printer shared by all channels, and finding more than one is an
+error.  Without it, there is one printer per channel, in USB hub port order:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;drivers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;public.prism.drivers.fake.hwdrv_fake&quot;</span><span class="p">,</span>
+            <span class="p">[</span><span class="s2">&quot;public.prism.drivers.brother_ql.hwdrv_brother_ql&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;only_one&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">}]]</span>
+</pre></div>
+</div>
 </section>
 <section id="slot-number">
 <h2>Slot Number<a class="headerlink" href="#slot-number" title="Link to this heading">¶</a></h2>
