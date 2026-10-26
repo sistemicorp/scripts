@@ -16,7 +16,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Traceability" href="_traceability.html" />
-    <link rel="prev" title="Production Planning" href="_prodplan.html" /> 
+    <link rel="prev" title="PCBA Test Coverage" href="_coverage.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -28,7 +28,7 @@
           <a href="_traceability.html" title="Traceability"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="_prodplan.html" title="Production Planning"
+          <a href="_coverage.html" title="PCBA Test Coverage"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.9.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Results Database</a></li> 
@@ -87,7 +87,9 @@ Typically these <cite>key#</cite> fields are not known until the test is run and
 For example, a key might be a microcontroller UID (MAC address) which is read at test time.</p>
 <p>Save the unit’s serial number (or other unique id) in <cite>key0</cite>, with <cite>add_key(“sn”, value, slot=0)</cite>.
 The Lente Throughput &amp; Yield chart uses the <cite>product</cite> and <cite>key0</cite> to count each unit once,
-see <a class="reference internal" href="lente_screenshots.html"><span class="doc">Lente screenshots</span></a>.</p>
+see <a class="reference internal" href="lente_screenshots.html"><span class="doc">Lente screenshots</span></a>.
+Use each <cite>key#</cite> for the same id in every test stage and product, see
+<a class="reference internal" href="_traceability.html#key-slot-plan"><span class="std std-ref">Key Slot Plan</span></a>.</p>
 </section>
 <section id="test-item">
 <h3><a class="toc-backref" href="#id3" role="doc-backlink">test_item</a><a class="headerlink" href="#test-item" title="Link to this heading">¶</a></h3>
@@ -322,8 +324,8 @@ $function$
         <div class="sphinxsidebarwrapper">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="_prodplan.html"
-                          title="previous chapter">Production Planning</a></p>
+    <p class="topless"><a href="_coverage.html"
+                          title="previous chapter">PCBA Test Coverage</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
@@ -354,7 +356,7 @@ $function$
           <a href="_traceability.html" title="Traceability"
              >next</a> |</li>
         <li class="right" >
-          <a href="_prodplan.html" title="Production Planning"
+          <a href="_coverage.html" title="PCBA Test Coverage"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">Sistemi Lente/Prism Test System 0.9.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Results Database</a></li> 

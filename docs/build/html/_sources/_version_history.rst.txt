@@ -114,6 +114,9 @@ screenshots.
 * PCBA test coverage analysis: Short, Open and Value per part, test points, BOND techniques and
   common gaps, see :doc:`PCBA Test Coverage <_coverage>`, and the Prism Assistant
   `analyze_coverage` prompt
+* Key slot plan: use each `key#` for the same id in every test stage and product, from one
+  key slot table, see :ref:`_traceability:Key Slot Plan`.  The Prism Assistant asks for the
+  table when writing scripts and planning traceability
 
 Bug fixes,
 

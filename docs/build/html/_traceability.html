@@ -53,14 +53,15 @@ Plan it before production starts, because results that were not recorded can’t
 <li><p><a class="reference internal" href="#what-you-record" id="id2">What You Record</a></p>
 <ul>
 <li><p><a class="reference internal" href="#serial-numbers-and-unit-ids" id="id3">Serial Numbers and Unit Ids</a></p></li>
-<li><p><a class="reference internal" href="#firmware-and-hardware-versions" id="id4">Firmware and Hardware Versions</a></p></li>
-<li><p><a class="reference internal" href="#test-equipment" id="id5">Test Equipment</a></p></li>
-<li><p><a class="reference internal" href="#lots" id="id6">Lots</a></p></li>
-<li><p><a class="reference internal" href="#test-versions" id="id7">Test Versions</a></p></li>
+<li><p><a class="reference internal" href="#key-slot-plan" id="id4">Key Slot Plan</a></p></li>
+<li><p><a class="reference internal" href="#firmware-and-hardware-versions" id="id5">Firmware and Hardware Versions</a></p></li>
+<li><p><a class="reference internal" href="#test-equipment" id="id6">Test Equipment</a></p></li>
+<li><p><a class="reference internal" href="#lots" id="id7">Lots</a></p></li>
+<li><p><a class="reference internal" href="#test-versions" id="id8">Test Versions</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#example-queries" id="id8">Example Queries</a></p></li>
-<li><p><a class="reference internal" href="#checklist" id="id9">Checklist</a></p></li>
+<li><p><a class="reference internal" href="#example-queries" id="id9">Example Queries</a></p></li>
+<li><p><a class="reference internal" href="#checklist" id="id10">Checklist</a></p></li>
 </ul>
 </nav>
 <section id="recorded-automatically">
@@ -100,24 +101,98 @@ uses <cite>product</cite> + <cite>key0</cite> to count each unit once,</p>
 <p>There are 5 key slots, <cite>key0</cite> to <cite>key4</cite>.  Each is an indexed database column, so searches on keys
 are fast.  Use the other slots for ids you will search on, such as a microcontroller unique id, a
 MAC address, or the serial number of a sub-assembly.</p>
-<ul>
+<ul class="simple">
 <li><p>A key is stored as <cite>&lt;name&gt;:&lt;value&gt;</cite>, for example <cite>sn:A12345</cite>.  Keep the whole string within
 64 characters, the size of the database column.  A longer key is not saved, <cite>add_key()</cite>
 returns <cite>False</cite> and logs an error.</p></li>
-<li><p>Use the same slot for the same id in every script of a product, and in every stage.
-Write the slot assignments down, for example as constants in a common module,</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DBKEY_SERIAL_NUM</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="n">DBKEY_MCU_UID</span> <span class="o">=</span> <span class="mi">1</span>
-</pre></div>
-</div>
-</li>
+<li><p>Use the same slot for the same id in every script of a product, and in every stage, see
+<cite>Key Slot Plan</cite> below.</p></li>
 <li><p>The serial number can be read from the DUT, scanned from a label (with <cite>input_textbox()</cite>),
 or created and programmed by the test.  When the test creates it, also print or program it
 onto the unit, otherwise the result can’t be matched to the unit later.</p></li>
 </ul>
 </section>
+<section id="key-slot-plan">
+<h3><a class="toc-backref" href="#id4" role="doc-backlink">Key Slot Plan</a><a class="headerlink" href="#key-slot-plan" title="Link to this heading">¶</a></h3>
+<p>Most products have more than one test stage.  A common plan is a Board Level Test (BLT) of the
+PCBA, and a Final Assembly Test (FAT) of the assembled product, see
+<a class="reference internal" href="_prodplan.html#planning-your-test-stages"><span class="std std-ref">Planning Your Test Stages</span></a>.  Use each key slot for the same id in every stage.
+For example, when the microcontroller unique id identifies the unit, BLT saves it in <cite>key0</cite>, and
+FAT saves it in <cite>key0</cite> too.  One query on <cite>key0</cite> then finds the BLT and FAT results of a unit,
+and the Lente yield chart counts the unit once.</p>
+<p>Do the same across products.  When every product uses <cite>key0</cite> for the unit id and <cite>key1</cite> for the
+MAC address, the same queries, reports and MES integration work for all of them.</p>
+<p>Make a table of the key slot usage for all your products, or for each product family, before
+writing the scripts, and keep it with your scripts (for example in a README),</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Slot</p></th>
+<th class="head"><p>Id</p></th>
+<th class="head"><p>Name</p></th>
+<th class="head"><p>BLT</p></th>
+<th class="head"><p>FAT</p></th>
+<th class="head"><p>Products</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>key0</p></td>
+<td><p>unit id, MCU unique id</p></td>
+<td><p><cite>sn</cite></p></td>
+<td><p>Y</p></td>
+<td><p>Y</p></td>
+<td><p>all</p></td>
+</tr>
+<tr class="row-odd"><td><p>key1</p></td>
+<td><p>MAC address</p></td>
+<td><p><cite>mac</cite></p></td>
+<td><p>Y</p></td>
+<td><p>Y</p></td>
+<td><p>products with a radio</p></td>
+</tr>
+<tr class="row-even"><td><p>key2</p></td>
+<td><p>label serial number</p></td>
+<td><p><cite>label</cite></p></td>
+<td><p>-</p></td>
+<td><p>Y</p></td>
+<td><p>all</p></td>
+</tr>
+<tr class="row-odd"><td><p>key3</p></td>
+<td><p>sub-assembly serial number</p></td>
+<td><p><cite>sub_sn</cite></p></td>
+<td><p>-</p></td>
+<td><p>Y</p></td>
+<td><p>family A</p></td>
+</tr>
+<tr class="row-even"><td><p>key4</p></td>
+<td><p>reserved</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><p><cite>key0</cite> is the unit id in every product and every stage, it must be known at the first stage.
+An id that is only known later, like a label printed at FAT, gets its own slot, left empty in
+the earlier stages.</p></li>
+<li><p>Never use a slot for a different id in another stage or product, leave it empty instead.
+Reserve the last slots for product specific ids.</p></li>
+<li><p>Use the same key name for the same id everywhere, for example always <cite>sn</cite>, not <cite>sn</cite> in one
+script and <cite>serial</cite> in another.</p></li>
+<li><p>Put the table in your code as constants in a common module, used by every script,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DBKEY_SERIAL_NUM</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">DBKEY_MAC</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">DBKEY_LABEL_SN</span> <span class="o">=</span> <span class="mi">2</span>
+
+<span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">add_key</span><span class="p">(</span><span class="s2">&quot;sn&quot;</span><span class="p">,</span> <span class="n">mcu_uid</span><span class="p">,</span> <span class="n">slot</span><span class="o">=</span><span class="n">DBKEY_SERIAL_NUM</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
 <section id="firmware-and-hardware-versions">
-<h3><a class="toc-backref" href="#id4" role="doc-backlink">Firmware and Hardware Versions</a><a class="headerlink" href="#firmware-and-hardware-versions" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id5" role="doc-backlink">Firmware and Hardware Versions</a><a class="headerlink" href="#firmware-and-hardware-versions" title="Link to this heading">¶</a></h3>
 <p>Record versions read from the DUT as string measurements.  A string measurement always passes,
 and is stored with the test item,</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">success</span><span class="p">,</span> <span class="n">_result</span><span class="p">,</span> <span class="n">_bullet</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span><span class="s2">&quot;fw_ver&quot;</span><span class="p">,</span> <span class="n">fw_ver</span><span class="p">,</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_STRING</span><span class="p">)</span>
@@ -132,7 +207,7 @@ also be recorded as a measurement.</p></li>
 </ul>
 </section>
 <section id="test-equipment">
-<h3><a class="toc-backref" href="#id5" role="doc-backlink">Test Equipment</a><a class="headerlink" href="#test-equipment" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id6" role="doc-backlink">Test Equipment</a><a class="headerlink" href="#test-equipment" title="Link to this heading">¶</a></h3>
 <p>To trace a fault to a jig or instrument, record the serial number of each piece of test
 equipment as a string measurement in the setup item.  For example the scope, power supply and
 programmer serial numbers, and the jig controller’s id.  A unit tested on an instrument later
@@ -154,13 +229,13 @@ example its <cite>*IDN?</cite> reply.</p></li>
 </ul>
 </section>
 <section id="lots">
-<h3><a class="toc-backref" href="#id6" role="doc-backlink">Lots</a><a class="headerlink" href="#lots" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id7" role="doc-backlink">Lots</a><a class="headerlink" href="#lots" title="Link to this heading">¶</a></h3>
 <p><cite>info_lot</cite> (16 characters) is the lot or work order.  It usually comes from a sub, so the operator
 enters it or a Traveller sets it.  Use a <cite>regex</cite> on the sub to enforce your lot format, see
 <a class="reference internal" href="prism_scripts.html#subs"><span class="std std-ref">subs</span></a>.  The Lente Throughput &amp; Yield chart can group results by lot.</p>
 </section>
 <section id="test-versions">
-<h3><a class="toc-backref" href="#id7" role="doc-backlink">Test Versions</a><a class="headerlink" href="#test-versions" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id8" role="doc-backlink">Test Versions</a><a class="headerlink" href="#test-versions" title="Link to this heading">¶</a></h3>
 <p>The script records which test ran (<cite>meta_script</cite>), and the scripts version records the exact
 files.  Decide how a change shows up in your searches,</p>
 <ul class="simple">
@@ -176,7 +251,7 @@ names.</p>
 </section>
 </section>
 <section id="example-queries">
-<h2><a class="toc-backref" href="#id8" role="doc-backlink">Example Queries</a><a class="headerlink" href="#example-queries" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id9" role="doc-backlink">Example Queries</a><a class="headerlink" href="#example-queries" title="Link to this heading">¶</a></h2>
 <p>All results for one unit, in time order,</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">select</span> <span class="n">r</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">info_product</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">meta_script</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">meta_result</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">meta_start</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">meta_git_public</span>
 <span class="kn">from</span> <span class="nn">record</span> <span class="n">r</span>
@@ -195,11 +270,12 @@ names.</p>
 <p>See <a class="reference internal" href="_database.html#sql-queries"><span class="std std-ref">SQL Queries</span></a> for more queries and tools.</p>
 </section>
 <section id="checklist">
-<h2><a class="toc-backref" href="#id9" role="doc-backlink">Checklist</a><a class="headerlink" href="#checklist" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id10" role="doc-backlink">Checklist</a><a class="headerlink" href="#checklist" title="Link to this heading">¶</a></h2>
 <p>Before production, decide,</p>
 <ol class="arabic simple">
 <li><p>which id identifies a unit (<cite>key0</cite>), and where it comes from</p></li>
-<li><p>which other ids are keys, and their slot numbers</p></li>
+<li><p>which other ids are keys, and their slot numbers, in a key slot table shared by all your
+products or product family, see <cite>Key Slot Plan</cite></p></li>
 <li><p>which versions are recorded (firmware, bootloader, hardware revision)</p></li>
 <li><p>which test equipment serial numbers are recorded, and their measurement names</p></li>
 <li><p>the lot format, and who enters it (operator, Traveller)</p></li>

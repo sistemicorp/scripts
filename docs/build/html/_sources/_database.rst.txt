@@ -34,6 +34,8 @@ For example, a key might be a microcontroller UID (MAC address) which is read at
 Save the unit's serial number (or other unique id) in `key0`, with `add_key("sn", value, slot=0)`.
 The Lente Throughput & Yield chart uses the `product` and `key0` to count each unit once,
 see :doc:`Lente screenshots <lente_screenshots>`.
+Use each `key#` for the same id in every test stage and product, see
+:ref:`_traceability:Key Slot Plan`.
 
 test_item
 =========
