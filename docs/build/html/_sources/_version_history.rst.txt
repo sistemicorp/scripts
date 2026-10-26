@@ -121,6 +121,8 @@ Bug fixes,
   Prism and Lente logs now include the commit hash.
 * [BUGFIX] With manifest checking on, a file missing from `public/prism` stopped Prism from
   starting, instead of failing the check.  See :ref:`Manifest Checking <_security:Manifest Checking>`.
+* [BUGFIX] Lente Result Analytics charts kept showing the previous results when the filters were
+  not valid, or the results database could not be read
 
 
 Migration Guide

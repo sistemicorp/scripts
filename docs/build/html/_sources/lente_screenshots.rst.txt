@@ -27,6 +27,9 @@ Result Analytics
 The Result Analytics dashboard is for detailed results analysis.  Results shown graphically and in
 the table are filtered by the current state of the "Select/Date" filters.
 
+If a date filter is not valid, or the results database cannot be read, the table shows
+`Results Data not valid` and the charts are emptied.
+
 The dashboard has three views, selected by the tabs across the top,
 
 * `Throughput & Yield` - history of Pass/Fail/Yield numbers
