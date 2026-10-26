@@ -76,6 +76,20 @@ changes to the files it will use to test.  The Manifest file itself is encrypted
 and cannot be viewed.</p>
 <p>Only the Lente that is marked as <cite>root_authority</cite> in <cite>settings.json</cite> will create the Manifest.  All other
 Lente’s will pass along the Manifest.</p>
+<p>Manifest checking needs a valid license file.  Without a license the check always passes.</p>
+<p>Prism checks the Manifest at startup, after a script sync, and each time a script is validated or
+loaded.  A Lente that is not <cite>root_authority</cite> checks it before it syncs scripts to its stations.</p>
+<p>The check fails if,</p>
+<ul class="simple">
+<li><p>the Manifest cannot be read, for example the <cite>site_key</cite> is different from the root Lente’s</p></li>
+<li><p>a file in the Manifest has changed</p></li>
+<li><p>a file in the Manifest is missing</p></li>
+</ul>
+<p>When the check fails a <cite>manifest failed</cite> notice is shown, and the station log names the file.
+Prism will not load a script while the check fails, and a Lente will not sync scripts.</p>
+<p>Files that are not in the Manifest do not fail the check.  Scripts and drivers can create files
+under <cite>./public/prism</cite> while running, for example a driver’s working folder.  The next script sync
+removes these files, because each station replaces its whole <cite>./public/prism</cite> folder.</p>
 <p>If some files need to be excluded from Manifest checking, create <cite>./public/prism/manifest.exclude</cite> and list
 the path names of the files to be excluded, for example,</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># comments are allowed, startswith #</span>
