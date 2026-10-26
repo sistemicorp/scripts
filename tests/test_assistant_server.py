@@ -80,3 +80,11 @@ def test_analyze_coverage_prompt_reads_coverage_doc():
     assert "_coverage.rst" in text
     assert "test points to add" in text
     assert "Pin Budget" in text
+
+
+def test_key_slot_table_in_instructions_and_prompts():
+    assert "Key Slot Plan" in prism_assistant.INSTRUCTIONS
+    for name in ("write_test_script", "plan_traceability"):
+        async def go(c, name=name):
+            return await c.get_prompt(name, {})
+        assert "key slot table" in run(go).messages[0].content.text

@@ -61,17 +61,58 @@ MAC address, or the serial number of a sub-assembly.
 * A key is stored as `<name>:<value>`, for example `sn:A12345`.  Keep the whole string within
   64 characters, the size of the database column.  A longer key is not saved, `add_key()`
   returns `False` and logs an error.
-* Use the same slot for the same id in every script of a product, and in every stage.
-  Write the slot assignments down, for example as constants in a common module,
+* Use the same slot for the same id in every script of a product, and in every stage, see
+  `Key Slot Plan` below.
+* The serial number can be read from the DUT, scanned from a label (with `input_textbox()`),
+  or created and programmed by the test.  When the test creates it, also print or program it
+  onto the unit, otherwise the result can't be matched to the unit later.
+
+Key Slot Plan
+=============
+
+Most products have more than one test stage.  A common plan is a Board Level Test (BLT) of the
+PCBA, and a Final Assembly Test (FAT) of the assembled product, see
+:ref:`_prodplan:Planning Your Test Stages`.  Use each key slot for the same id in every stage.
+For example, when the microcontroller unique id identifies the unit, BLT saves it in `key0`, and
+FAT saves it in `key0` too.  One query on `key0` then finds the BLT and FAT results of a unit,
+and the Lente yield chart counts the unit once.
+
+Do the same across products.  When every product uses `key0` for the unit id and `key1` for the
+MAC address, the same queries, reports and MES integration work for all of them.
+
+Make a table of the key slot usage for all your products, or for each product family, before
+writing the scripts, and keep it with your scripts (for example in a README),
+
++-------+--------------------------------+-------------+-----+-----+-------------------------+
+| Slot  | Id                             | Name        | BLT | FAT | Products                |
++=======+================================+=============+=====+=====+=========================+
+| key0  | unit id, MCU unique id         | `sn`        | Y   | Y   | all                     |
++-------+--------------------------------+-------------+-----+-----+-------------------------+
+| key1  | MAC address                    | `mac`       | Y   | Y   | products with a radio   |
++-------+--------------------------------+-------------+-----+-----+-------------------------+
+| key2  | label serial number            | `label`     | \-  | Y   | all                     |
++-------+--------------------------------+-------------+-----+-----+-------------------------+
+| key3  | sub-assembly serial number     | `sub_sn`    | \-  | Y   | family A                |
++-------+--------------------------------+-------------+-----+-----+-------------------------+
+| key4  | reserved                       |             |     |     |                         |
++-------+--------------------------------+-------------+-----+-----+-------------------------+
+
+* `key0` is the unit id in every product and every stage, it must be known at the first stage.
+  An id that is only known later, like a label printed at FAT, gets its own slot, left empty in
+  the earlier stages.
+* Never use a slot for a different id in another stage or product, leave it empty instead.
+  Reserve the last slots for product specific ids.
+* Use the same key name for the same id everywhere, for example always `sn`, not `sn` in one
+  script and `serial` in another.
+* Put the table in your code as constants in a common module, used by every script,
 
   ::
 
       DBKEY_SERIAL_NUM = 0
-      DBKEY_MCU_UID = 1
+      DBKEY_MAC = 1
+      DBKEY_LABEL_SN = 2
 
-* The serial number can be read from the DUT, scanned from a label (with `input_textbox()`),
-  or created and programmed by the test.  When the test creates it, also print or program it
-  onto the unit, otherwise the result can't be matched to the unit later.
+      ctx.record.add_key("sn", mcu_uid, slot=DBKEY_SERIAL_NUM)
 
 Firmware and Hardware Versions
 ==============================
@@ -168,7 +209,8 @@ Checklist
 Before production, decide,
 
 #. which id identifies a unit (`key0`), and where it comes from
-#. which other ids are keys, and their slot numbers
+#. which other ids are keys, and their slot numbers, in a key slot table shared by all your
+   products or product family, see `Key Slot Plan`
 #. which versions are recorded (firmware, bootloader, hardware revision)
 #. which test equipment serial numbers are recorded, and their measurement names
 #. the lot format, and who enters it (operator, Traveller)

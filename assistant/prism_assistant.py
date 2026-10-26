@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import prism_knowledge as pk  # noqa: E402
 
 SERVER_NAME = "prism-assistant"
-SERVER_VERSION = "0.3.0"
+SERVER_VERSION = "0.3.1"
 CONTACT = "info@sistemi.ca"
 
 INSTRUCTIONS = f"""\
@@ -55,6 +55,10 @@ Rules to follow when helping:
   has no limits and is only recorded.  Use the driver's unique_id when it has one.
 - Store the unit serial number in key0 (`ctx.record.add_key("sn", value, slot=0)`), keep each
   `name:value` key within 64 characters and string measurements within 128.
+- Key slots: use each key slot for the same id, with the same key name, in every test stage
+  (for example BLT and FAT) and every product.  Ask for the customer's key slot table, and if
+  there isn't one, propose one for all their products or product family, see
+  docs/source/_traceability.rst Key Slot Plan.
 - Never ask the customer to paste passwords, site_key, license files or user databases.  Never
   suggest committing real passwords to their repo, settings.json is per computer.
 - The customer's fork may be private: keep their code and data in this conversation.
@@ -94,10 +98,12 @@ Help me write a Prism test script and its Python test code for {product}, test s
    public/prism/scripts/example/prod_v0 (prod_0.scr, tst00xx.py) as the reference example.
 2. Use python_api for test_item and record to check each API you use.
 3. Ask me (numbered) what the stage tests, which instruments and drivers it uses
-   (list_drivers), the limits, and how the unit serial number is found.
+   (list_drivers), the limits, and how the unit serial number is found.  Ask for my key slot
+   table, and look at my other scripts for the slots and key names they use.
 4. Propose the file names and folder (see docs/source/_prodplan.rst Naming Proposal), then
    write the .scr and .py with a setup item first and a teardown item last.  The setup item
-   records the serial number of each piece of test equipment as a string measurement.
+   records the serial number of each piece of test equipment as a string measurement.  Save
+   the keys in the slots of my key slot table, using its constants.
 5. Run lint_script on the new script and fix every ERROR.  Tell me how to run it with
    `python prism_dev.py --script <path>`.
 """
@@ -157,8 +163,10 @@ and test versions.
 2. Ask me (numbered) how a unit is identified, which ids and versions I need to search on,
    which test equipment each stage uses, where the lot comes from, and how I version my test
    scripts.
-3. Propose the key slot assignments, the measurement names for versions and for the test
-   equipment serial numbers, the lot sub with its regex, and the script naming and versioning.
+3. Propose the key slot table, one for all my products or product family, with the same slot
+   and key name for an id in every stage (see Key Slot Plan), then the measurement names for
+   versions and for the test equipment serial numbers, the lot sub with its regex, and the
+   script naming and versioning.
 4. Give me example SQL queries for my most common searches.
 """
 
