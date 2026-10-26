@@ -38,6 +38,8 @@ fi
 flag_server_ip=not_specified
 flag_hostname=$(hostname)
 flag_restart=no
+# seconds docker stop waits: an aborted test runs its teardown item first
+STOP_TIMEOUT_SEC=20
 flag_instno=""
 flag_image="sistemicorp/prismng"
 flag_network="host"
@@ -101,6 +103,7 @@ start () {
             --device /dev/snd \
             --group-add audio \
             --name prism${flag_instno} \
+            --stop-timeout=${STOP_TIMEOUT_SEC} \
             ${flag_image}
     elif [[ $flag_restart == "no" ]]; then
         docker run -d \
@@ -117,6 +120,7 @@ start () {
             --device /dev/snd \
             --group-add audio \
             --name prism${flag_instno} \
+            --stop-timeout=${STOP_TIMEOUT_SEC} \
             --rm \
             ${flag_image}
     fi

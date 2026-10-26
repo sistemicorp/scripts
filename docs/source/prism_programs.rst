@@ -230,6 +230,18 @@ waiting on hardware; the item stops when that call returns.
 If the item is still running 5 seconds later, Prism shows a "not responding" notice.
 For a long blocking driver call, give the driver its own timeout shorter than the item ``timeout``.
 
+The teardown item runs normally after an abort: ``self.sleep()``, ``self.check_abort()`` and
+operator inputs work, and its own result is recorded.
+Aborting again while the teardown runs stops the teardown too.
+
+Exit Script Runner while a test is running asks to Abort-All.
+Prism then waits for each channel to run its teardown item and write its result before the
+script runner exits.
+If an item never returns, press Exit Script Runner again to exit right away; the teardown is
+skipped and no result is written.
+Stopping Prism (``./prism.sh stop``) also aborts a running test and gives the teardown up to
+5 seconds to finish.
+
 
 Errors in a Test Item
 ---------------------
