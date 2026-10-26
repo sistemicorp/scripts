@@ -133,9 +133,25 @@ also be recorded as a measurement.</p></li>
 </section>
 <section id="test-equipment">
 <h3><a class="toc-backref" href="#id5" role="doc-backlink">Test Equipment</a><a class="headerlink" href="#test-equipment" title="Link to this heading">¶</a></h3>
-<p>To trace a fault to a jig or instrument, record the serial number of the test equipment as string
-measurements in the setup item, for example the programmer’s serial number and the jig
-controller’s id.  Drivers often return a <cite>unique_id</cite> from <cite>discover_channels()</cite> for this.</p>
+<p>To trace a fault to a jig or instrument, record the serial number of each piece of test
+equipment as a string measurement in the setup item.  For example the scope, power supply and
+programmer serial numbers, and the jig controller’s id.  A unit tested on an instrument later
+found out of calibration can then be found in the results.</p>
+<p>A string measurement has no limits, it always passes and is only recorded.  Drivers often
+return a <cite>unique_id</cite> from <cite>discover_channels()</cite> for this,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">drivers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_state</span><span class="o">.</span><span class="n">get_drivers</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chan</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;AGILENT_DSO_USB_1&quot;</span><span class="p">)</span>
+<span class="n">dso_sn</span> <span class="o">=</span> <span class="n">drivers</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;obj&quot;</span><span class="p">][</span><span class="s2">&quot;unique_id&quot;</span><span class="p">]</span>
+<span class="n">success</span><span class="p">,</span> <span class="n">_result</span><span class="p">,</span> <span class="n">_bullet</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span><span class="s2">&quot;dso_sn&quot;</span><span class="p">,</span> <span class="n">dso_sn</span><span class="p">,</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_STRING</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Record every instrument the test uses, including shared ones, in every result.</p></li>
+<li><p>For a shared instrument with several inputs, also record the input used by the channel.</p></li>
+<li><p>Use the same measurement name for the same instrument in all your scripts, so one query
+finds them all.</p></li>
+<li><p>If a driver does not give a <cite>unique_id</cite>, read the serial number from the instrument, for
+example its <cite>*IDN?</cite> reply.</p></li>
+</ul>
 </section>
 <section id="lots">
 <h3><a class="toc-backref" href="#id6" role="doc-backlink">Lots</a><a class="headerlink" href="#lots" title="Link to this heading">¶</a></h3>
@@ -185,7 +201,7 @@ names.</p>
 <li><p>which id identifies a unit (<cite>key0</cite>), and where it comes from</p></li>
 <li><p>which other ids are keys, and their slot numbers</p></li>
 <li><p>which versions are recorded (firmware, bootloader, hardware revision)</p></li>
-<li><p>which test equipment ids are recorded</p></li>
+<li><p>which test equipment serial numbers are recorded, and their measurement names</p></li>
 <li><p>the lot format, and who enters it (operator, Traveller)</p></li>
 <li><p>how scripts and test items are named and versioned</p></li>
 <li><p>how long results are kept, and where (Lente, upstream Lente, backups)</p></li>

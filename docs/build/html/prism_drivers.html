@@ -124,27 +124,89 @@ limit, and a value that is not a number is logged and the default of 1 second is
 <p>A driver that returns 0 channels is shared by all channels, for example one label printer for
 all the test jigs.  Its driver items are not assigned to a channel, and
 <cite>self.shared_state.get_drivers(self.chan, type=…)</cite> returns them for every channel, along with
-that channel’s own drivers.</p>
+that channel’s own drivers.  <cite>get_drivers(None, type=…)</cite> returns only the shared drivers.</p>
 <ul class="simple">
 <li><p>At least one driver of the script must set the number of channels, a script with only shared
 drivers fails validation.</p></li>
 <li><p>A shared driver must return at least one item in its list, otherwise validation fails.</p></li>
 <li><p>The <cite>play</cite>, <cite>show_pass_fail</cite>, <cite>show_msg</cite> and <cite>jig_reset</cite> functions of a shared driver, if set,
 are called by every channel.  A shared driver usually sets them to <cite>None</cite>.</p></li>
+<li><p>The channels run at the same time, so lock shared equipment while a channel uses it, see
+<a class="reference internal" href="#locking-shared-equipment">Locking Shared Equipment</a>.</p></li>
 </ul>
-<p>A driver can support both, with a script argument.  For example, the <cite>brother_ql</cite> driver with
-<cite>{“only_one”: true}</cite> expects one printer shared by all channels, and finding more than one is an
-error.  Without it, there is one printer per channel, in USB hub port order:</p>
+<p>A driver can support both, with a script argument.  For example, the <cite>brother_ql</cite> and
+<cite>agilent_dso_usb_1</cite> drivers with <cite>{“only_one”: true}</cite> expect one instrument shared by all
+channels, and finding more than one is an error.  Without it, there is one instrument per
+channel, in USB hub port order:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;drivers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;public.prism.drivers.fake.hwdrv_fake&quot;</span><span class="p">,</span>
             <span class="p">[</span><span class="s2">&quot;public.prism.drivers.brother_ql.hwdrv_brother_ql&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;only_one&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">}]]</span>
 </pre></div>
 </div>
+<p>Equipment is shared by the jigs (channels) of one Prism computer.  Sharing one instrument
+between Prism computers is not supported: Prism does not lock it between computers, and a
+driver that resets its instrument when a script loads would reset it in the middle of
+the other computer’s test.</p>
+<section id="locking-shared-equipment">
+<h3>Locking Shared Equipment<a class="headerlink" href="#locking-shared-equipment" title="Link to this heading">¶</a></h3>
+<p>Each channel runs its test items in its own thread.  Without a lock, two channels can send
+commands to a shared instrument at the same time, and each reads the other’s settings or
+results.</p>
+<p>Hold <cite>self.shared_lock(&lt;name&gt;)</cite> for the whole sequence of commands that must not be
+interleaved, for example set up, trigger and measure.  Every channel that uses the
+instrument must use the same name, such as the driver type.  Use <cite>with</cite> so the lock is
+released when the item fails, times out or is aborted:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_lock</span><span class="p">(</span><span class="s2">&quot;AGILENT_DSO_USB_1&quot;</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">dso</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;:AUT CHAN</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dso_ch</span><span class="p">))</span>
+    <span class="n">vpp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dso</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:MEASure:VPP? CHANnel</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dso_ch</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Keep the time the lock is held short, the other channels wait for it.  A test that holds
+a shared instrument for a long time makes the jigs take turns.</p>
+</section>
 </section>
 <section id="slot-number">
 <h2>Slot Number<a class="headerlink" href="#slot-number" title="Link to this heading">¶</a></h2>
 <p>When implementing python code to implement tests, there is a <cite>channel (self.chan)</cite> number and a <cite>slot</cite> number.
 The channel is how Prism indexes the running threads, usually from 0 to a max of 7.  The slot number
 is a number used to setup configuration of the physical system.</p>
+</section>
+<section id="adding-test-equipment">
+<h2>Adding Test Equipment<a class="headerlink" href="#adding-test-equipment" title="Link to this heading">¶</a></h2>
+<p>Test equipment, like an oscilloscope, a power supply or a programmer, is added to a test jig
+with a driver.  Start from the included driver closest to your equipment, see
+<a class="reference internal" href="#included-drivers">Included Drivers</a>, and copy its folder into <cite>public/prism/drivers</cite> with a new name.</p>
+<ol class="arabic simple">
+<li><p><strong>One per jig, or shared.</strong>  Decide if each jig has its own instrument, or one instrument
+serves all the jigs of the Prism computer.  One per jig is simpler and lets the jigs test
+at the same time.  A shared instrument saves cost, but the jigs take turns using it.</p></li>
+<li><p><strong>Find the instruments.</strong>  <cite>discover_channels</cite> finds the instruments on USB, Ethernet or
+serial.  On USB, a driver can find every instrument by its USB vendor and product id.
+On Ethernet, the instruments are listed in the driver arguments by IP address.</p></li>
+<li><p><strong>Put them in jig order.</strong>  With one instrument per jig, channel 0 must get the
+instrument wired to jig 0, and so on.  Order USB instruments by the USB hub port they are
+plugged into, and use one hub per jig, or the same port on each hub.  Order Ethernet
+instruments by the list of IP addresses.  Instruments that report the same number of
+channels as the jig controller must be in the same order, see <a class="reference internal" href="#discover-channels">Discover Channels</a>.</p></li>
+<li><p><strong>Fail if one is missing.</strong>  If an instrument is not found, return an error rather than
+fewer channels.  Skipping a missing instrument moves the next one to the wrong jig.</p></li>
+<li><p><strong>Wire a shared instrument.</strong>  A shared instrument with several inputs usually has one
+input per jig, for example scope input <cite>self.chan + 1</cite> for the jig of <cite>self.chan</cite>.  The
+number of inputs limits the number of jigs.</p></li>
+<li><p><strong>Lock a shared instrument</strong>, see <a class="reference internal" href="#locking-shared-equipment">Locking Shared Equipment</a>.</p></li>
+<li><p><strong>Record it.</strong>  Return the instrument’s serial number as the <cite>unique_id</cite>, and record it
+in a setup item as a string measurement, for a shared instrument also the input used.
+A problem found later can then be traced to one instrument or input, see
+<a class="reference internal" href="_traceability.html#test-equipment"><span class="std std-ref">Test Equipment</span></a>.</p></li>
+<li><p><strong>Test it.</strong>  Each driver file has a <cite>__main__</cite> section to run <cite>discover_channels</cite> from a
+terminal, without Prism.  Then run the script with <cite>prism_dev.py –script &lt;path&gt;</cite>, and
+with Prism.  Remember that the <cite>discover_channels</cite> of some drivers reset their
+instrument, as the script loads.</p></li>
+<li><p><strong>Document it.</strong>  Describe the driver arguments in the <cite>discover_channels</cite> doc string, and
+add a <cite>README.md</cite> to the driver folder with the equipment, how it connects, per jig or
+shared, and any setup such as udev rules or vendor tools.</p></li>
+</ol>
+<p>The <cite>agilent_dso_usb_1</cite> driver and the <cite>dso_v0</cite> example do all of the above, for one scope
+per jig or one shared scope, see <a class="reference internal" href="#agilent-dso-usb-1">agilent_dso_usb_1</a>.</p>
 </section>
 <section id="visa">
 <h2>VISA<a class="headerlink" href="#visa" title="Link to this heading">¶</a></h2>
@@ -156,13 +218,8 @@ for more information.</p>
 <li><p><a class="reference external" href="https://pypi.org/project/PyVISA-py">PyVISA-py</a></p></li>
 </ul>
 <p>An example of VISA driver based hardware is provided in the <cite>agilent_dso_usb_1</cite> driver example.
-It finds the scope on USB by default, or on Ethernet (VXI-11) with driver arguments,</p>
-<div class="highlight-JSON notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;drivers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">  </span><span class="p">[</span><span class="s2">&quot;public.prism.drivers.agilent_dso_usb_1.hwdrv_agilent_dso_usb_1&quot;</span><span class="p">,</span>
-<span class="w">   </span><span class="p">{</span><span class="nt">&quot;interface&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ethernet&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;ip&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;192.168.1.100&quot;</span><span class="p">}]</span>
-<span class="p">]</span>
-</pre></div>
-</div>
+It finds the scope on USB by default, or on Ethernet (VXI-11) with driver arguments,
+see <a class="reference internal" href="#agilent-dso-usb-1">agilent_dso_usb_1</a>.</p>
 <p>On USB, Prism in its Docker container needs no udev rule, see <a class="reference internal" href="_deployment.html"><span class="doc">Deployment</span></a>.
 To run the driver or <cite>prism_dev.py</cite> on the host, your user account needs access to the scope,
 either for all USB devices with <cite>sudo ./udev-install-usbusers.sh</cite> from the scripts repo, or just
@@ -183,22 +240,78 @@ sudo<span class="w"> </span>udevadm<span class="w"> </span>control<span class="w
 </section>
 <section id="included-drivers">
 <h2>Included Drivers<a class="headerlink" href="#included-drivers" title="Link to this heading">¶</a></h2>
-<p>These drivers are included in <cite>public/prism/drivers</cite>.  Several have a <cite>README.md</cite> with setup details.</p>
-<ul class="simple">
-<li><p><cite>fake</cite> - simulated hardware, used by the example scripts, see <cite>hwdrv_fake.py</cite> for the driver API</p></li>
-<li><p><cite>teensy4</cite> - Teensy 4 based jig controller</p></li>
-<li><p><cite>A4401_BOND</cite> - Sistemi BOND (Bed of Nails Design) tester</p></li>
-<li><p><cite>agilent_dso_usb_1</cite> - Agilent oscilloscope over USB or Ethernet (VISA)</p></li>
-<li><p><cite>brother_ql</cite> - Brother QL label printer</p></li>
-<li><p><cite>ble_listener</cite> - Bluetooth LE listener, uses the host BlueZ through the D-Bus mount in <cite>prism.sh</cite>.
-Loading a script fails if the Bluetooth adapter is off or missing.  Test the host with
-<cite>python3 blelistener_cli.py scan -t 30</cite> from the driver folder</p></li>
-<li><p><cite>prism_play</cite> - trigger the Prism <cite>play</cite> (start test) feature from the command line, for CI</p></li>
-<li><p><cite>nrfprog</cite> - Nordic nRF programmer (nrfjprog)</p></li>
-<li><p><cite>stlinkv3mods</cite> - ST-LINK/V3 programmer (STM32CubeProgrammer)</p></li>
-<li><p><cite>segger</cite> - placeholder, not complete</p></li>
-<li><p><cite>common</cite> - shared helpers</p></li>
-</ul>
+<p>These drivers are included in <cite>public/prism/drivers</cite>.  Each driver’s <cite>hwdrv_*.py</cite> file
+documents its arguments, and several have a <cite>README.md</cite> with setup details.  The driver type
+is the <cite>type</cite> to use with <cite>self.shared_state.get_drivers(self.chan, type=…)</cite>.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 25.0%" />
+<col style="width: 25.0%" />
+<col style="width: 30.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Driver</p></th>
+<th class="head"><p>Equipment</p></th>
+<th class="head"><p>Channels</p></th>
+<th class="head"><p>Example script</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><cite>fake</cite></p></td>
+<td><p>none, simulated</p></td>
+<td><p>one per channel (<cite>NUM_CHANNELS</cite>)</p></td>
+<td><p><cite>prod_v0</cite></p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>agilent_dso_usb_1</cite></p></td>
+<td><p>Agilent oscilloscope</p></td>
+<td><p>per jig, or shared</p></td>
+<td><p><cite>dso_v0</cite></p></td>
+</tr>
+<tr class="row-even"><td><p><cite>brother_ql</cite></p></td>
+<td><p>Brother QL label printer</p></td>
+<td><p>per jig, or shared</p></td>
+<td><p><cite>brother_v0</cite></p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>ble_listener</cite></p></td>
+<td><p>station Bluetooth adapter</p></td>
+<td><p>shared</p></td>
+<td><p><cite>prod_v0/prod_ble.scr</cite></p></td>
+</tr>
+<tr class="row-even"><td><p><cite>scanners</cite></p></td>
+<td><p>USB barcode scanner</p></td>
+<td><p>one channel</p></td>
+<td><p><cite>barcode_count_v0</cite></p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>teensy4</cite></p></td>
+<td><p>Teensy 4 jig controller</p></td>
+<td><p>per jig</p></td>
+<td><p><cite>teensy4_v0</cite></p></td>
+</tr>
+<tr class="row-even"><td><p><cite>A4401_BOND</cite></p></td>
+<td><p>Sistemi BOND tester</p></td>
+<td><p>per jig</p></td>
+<td><p><cite>BOND_v0</cite></p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>nrfprog</cite></p></td>
+<td><p>Nordic nRF programmer</p></td>
+<td><p>per jig</p></td>
+<td><p><cite>nRF52833-DK</cite></p></td>
+</tr>
+<tr class="row-even"><td><p><cite>stlinkv3mods</cite></p></td>
+<td><p>ST-LINK/V3 programmer</p></td>
+<td><p>per jig</p></td>
+<td><p><cite>stlinkv3mods</cite></p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>prism_play</cite></p></td>
+<td><p>none, command line start</p></td>
+<td><p>one per channel (argument)</p></td>
+<td><p><cite>prod_v0/githubci_0.scr</cite></p></td>
+</tr>
+</tbody>
+</table>
+<p>The example scripts are in <cite>public/prism/scripts/example</cite>.  <cite>segger</cite> is a placeholder, not
+complete, and <cite>common</cite> holds shared helpers, it is not a driver.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The vendor programming tools used by <cite>nrfprog</cite> (Nordic nrfjprog) and <cite>stlinkv3mods</cite> (ST STM32CubeProgrammer)
@@ -214,6 +327,146 @@ checks its tool runs when Prism loads a script.</p>
 </ul>
 <p>Segger J-Link is installed in the Prism Docker image (<cite>/opt/SEGGER/JLink</cite>) and needs no host install.</p>
 </div>
+<section id="fake">
+<h3>fake<a class="headerlink" href="#fake" title="Link to this heading">¶</a></h3>
+<p>Simulated hardware, so the example scripts run without a jig.  <cite>hwdrv_fake</cite> makes
+<cite>NUM_CHANNELS</cite> channels (1 to 8, set in the file), and its <cite>show_pass_fail</cite> and <cite>show_msg</cite>
+functions only log.  <cite>hwdrv_fakeArgs</cite> shows how a driver takes arguments, the second item of
+the driver in the script, which can be any JSON value.</p>
+<ul class="simple">
+<li><p>Driver types: <cite>FAKE</cite>, <cite>FakeWithArgs</cite></p></li>
+<li><p>Start here to learn the driver API, <cite>hwdrv_fake.py</cite> documents every field of
+<cite>discover_channels</cite>.</p></li>
+<li><p>Because a shared driver cannot set the number of channels, several examples use <cite>fake</cite> to
+set it next to a shared driver.</p></li>
+</ul>
+</section>
+<section id="agilent-dso-usb-1">
+<h3>agilent_dso_usb_1<a class="headerlink" href="#agilent-dso-usb-1" title="Link to this heading">¶</a></h3>
+<p>Agilent InfiniiVision oscilloscope, tested with a DSO7104B, using VISA on USB or Ethernet.
+<cite>discover_channels</cite> resets each scope it finds (<cite>*RST</cite>), so loading the script resets the
+scope.  Only the models in the driver’s <cite>WHITE_LIST</cite> are used.</p>
+<ul class="simple">
+<li><p>Driver type: <cite>AGILENT_DSO_USB_1</cite>, the scope’s serial number is the <cite>unique_id</cite></p></li>
+<li><p><cite>{“only_one”: true}</cite> - one scope shared by all channels, finding more than one is an
+error.  Without it, there is one scope per channel.</p></li>
+<li><p><cite>{“interface”: “ethernet”, “ip”: …}</cite> - scopes on Ethernet (VXI-11), USB is the default.
+<cite>ip</cite> is one IP address, or a list with one IP per channel, in channel order.  Every scope in
+the list must be found.</p></li>
+<li><p>On USB, the scopes are ordered by the USB hub port they are plugged into.</p></li>
+</ul>
+<div class="highlight-JSON notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;drivers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="s2">&quot;public.prism.drivers.fake.hwdrv_fake&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="p">[</span><span class="s2">&quot;public.prism.drivers.agilent_dso_usb_1.hwdrv_agilent_dso_usb_1&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;only_one&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">}]</span>
+<span class="p">]</span>
+
+<span class="nt">&quot;drivers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="p">[</span><span class="s2">&quot;public.prism.drivers.agilent_dso_usb_1.hwdrv_agilent_dso_usb_1&quot;</span><span class="p">,</span>
+<span class="w">   </span><span class="p">{</span><span class="nt">&quot;interface&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ethernet&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;ip&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;192.168.1.100&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;192.168.1.101&quot;</span><span class="p">]}]</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>The first is one shared scope on USB, the second one scope per jig on Ethernet, with two
+jigs.  The <cite>dso_v0</cite> example test code works with both.  A shared scope uses input
+<cite>self.chan + 1</cite> for each jig, so up to 4 jigs on a 4 input scope, and is locked while a
+channel uses it.  A scope per jig uses input 1.  See <a class="reference external" href="https://en.wikipedia.org/wiki/Virtual_instrument_software_architecture">VISA</a> for USB access on the host.</p>
+</section>
+<section id="brother-ql">
+<h3>brother_ql<a class="headerlink" href="#brother-ql" title="Link to this heading">¶</a></h3>
+<p>Brother QL label printer (QL-700) on USB, to print a label such as a serial number barcode.</p>
+<ul class="simple">
+<li><p>Driver type: <cite>Brother_QL</cite></p></li>
+<li><p><cite>{“only_one”: true}</cite> - one printer shared by all channels.  Without it, there is one printer
+per channel, in USB hub port order.</p></li>
+<li><p><cite>{“test_label”: true}</cite> - print a test label when the script loads, the script fails
+validation if it cannot print.</p></li>
+</ul>
+</section>
+<section id="ble-listener">
+<h3>ble_listener<a class="headerlink" href="#ble-listener" title="Link to this heading">¶</a></h3>
+<p>Listens for Bluetooth LE advertisements, for example to check a DUT advertises, using the
+station’s Bluetooth adapter.  It is always shared, so another driver sets the number of
+channels.</p>
+<ul class="simple">
+<li><p>Driver type: <cite>BLE_LISTENER</cite></p></li>
+<li><p>Prism uses the host BlueZ through the D-Bus mount in <cite>prism.sh</cite>.</p></li>
+<li><p>Loading a script fails if the Bluetooth adapter is off or missing.  Test the host with
+<cite>python3 blelistener_cli.py scan -t 30</cite> from the driver folder.</p></li>
+</ul>
+</section>
+<section id="scanners">
+<h3>scanners<a class="headerlink" href="#scanners" title="Link to this heading">¶</a></h3>
+<p>USB barcode scanner in keyboard mode (Datalogic).  It makes one channel, and its <cite>play</cite>
+function restarts the script for each scan, see
+<a class="reference internal" href="prism_barcode_count.html"><span class="doc">Barcode Count Example</span></a>.</p>
+<ul class="simple">
+<li><p>Driver type: <cite>SCANNER</cite></p></li>
+<li><p>A scanner in keyboard mode types into the window that has focus, so scans cannot be told
+apart by scanner.  More scanners still make one channel.</p></li>
+</ul>
+</section>
+<section id="teensy4">
+<h3>teensy4<a class="headerlink" href="#teensy4" title="Link to this heading">¶</a></h3>
+<p>Teensy 4 based jig controller, the reference <a class="reference internal" href="_jigs.html"><span class="doc">Interface Controller</span></a>.  The Teensy4
+runs the Prism simpleRPC server firmware, from <cite>teensy4/server</cite>, which gives Python access to
+its pins.</p>
+<ul class="simple">
+<li><p>Driver types: <cite>TEENSY4</cite>, and <cite>TEENSY4_PROG</cite> for <cite>hwdrv_teensy4_prog</cite></p></li>
+<li><p><cite>hwdrv_teensy4</cite> makes one channel per Teensy4, in USB path order.  The jig closed GPIO, if
+set, is its <cite>play</cite> function, and it has <cite>show_pass_fail</cite> and <cite>jig_reset</cite> functions.</p></li>
+<li><p><cite>hwdrv_teensy4_prog</cite> programs the firmware into a new Teensy4, with one Teensy4 connected,
+<cite>teensy4_ProgFresh_0.scr</cite>.  <cite>teensy4_Update_0.scr</cite> updates the firmware.</p></li>
+<li><p>The firmware version is checked, a Teensy4 running another version is not used.</p></li>
+<li><p>Building the firmware, see <cite>public/prism/drivers/teensy4/server/README.md</cite></p></li>
+</ul>
+</section>
+<section id="a4401-bond">
+<h3>A4401_BOND<a class="headerlink" href="#a4401-bond" title="Link to this heading">¶</a></h3>
+<p>Sistemi BOND (Bed of Nails Design), a Teensy 4.1 based tester with configurable analog and
+digital pins, a DUT supply and a battery emulator, see <a class="reference internal" href="prism_bond.html"><span class="doc">BOND</span></a>.</p>
+<ul class="simple">
+<li><p>Driver types: <cite>A4401_BOND</cite>, and <cite>A4401_BOND_PROG</cite> for <cite>hwdrv_A4401_BOND_prog</cite></p></li>
+<li><p><cite>hwdrv_A4401_BOND</cite> takes the path of the Pogo board header definition file, and makes one
+channel per BOND, in USB path order.</p></li>
+<li><p><cite>hwdrv_A4401_BOND_prog</cite> programs the firmware into a new BOND, <cite>bond_progfresh_0.scr</cite>.</p></li>
+<li><p>Setup and pin rules, see <cite>public/prism/drivers/A4401_BOND/README.md</cite></p></li>
+</ul>
+</section>
+<section id="nrfprog">
+<h3>nrfprog<a class="headerlink" href="#nrfprog" title="Link to this heading">¶</a></h3>
+<p>Programs Nordic nRF devices with <cite>nrfjprog</cite>, through a SEGGER J-Link probe, such as the one on
+a Nordic nRF DK.</p>
+<ul class="simple">
+<li><p>Driver type: <cite>NRFJPROG</cite>, the probe serial number is the <cite>unique_id</cite></p></li>
+<li><p>One channel per probe, in USB path order.  The serial number selects the probe for
+<cite>nrfjprog</cite>.</p></li>
+<li><p>The nRF Command Line Tools are installed on each station, see the note above and
+<cite>public/prism/drivers/nrfprog/README.md</cite>.</p></li>
+</ul>
+</section>
+<section id="stlinkv3mods">
+<h3>stlinkv3mods<a class="headerlink" href="#stlinkv3mods" title="Link to this heading">¶</a></h3>
+<p>Programs STM32 devices with STM32CubeProgrammer, through an ST-LINK/V3 probe, such as the
+STLINK-V3MODS.</p>
+<ul class="simple">
+<li><p>Driver type: <cite>STLINKV3MODS</cite>, the probe serial number is the <cite>unique_id</cite></p></li>
+<li><p>One channel per probe, in USB path order.  A probe that fails the version check is skipped.</p></li>
+<li><p>STM32CubeProgrammer is installed on each station, see the note above and
+<cite>public/prism/drivers/stlinkv3mods/README.md</cite>.</p></li>
+</ul>
+</section>
+<section id="prism-play">
+<h3>prism_play<a class="headerlink" href="#prism-play" title="Link to this heading">¶</a></h3>
+<p>Starts a test from the command line instead of a jig, for example from a GitHub Actions runner
+to test firmware in CI.  There is no hardware, a named pipe per channel takes the play command.</p>
+<ul class="simple">
+<li><p>Driver type: <cite>PrismPlay</cite></p></li>
+<li><p><cite>{“work_dir”: &lt;path&gt;, “channels”: &lt;#&gt;}</cite> - <cite>work_dir</cite> is required, the folder under <cite>public</cite>
+for the pipes.  <cite>channels</cite> defaults to 1.</p></li>
+<li><p>Run <cite>prism_play_cli.py</cite> to start a channel, see <cite>public/prism/drivers/prism_play/README.md</cite>
+and <cite>README_github_prism_ci.md</cite>.</p></li>
+</ul>
+</section>
 </section>
 </section>
 

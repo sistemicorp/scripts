@@ -47,6 +47,7 @@ this documentation, your scripts, the drivers and the Prism APIs.</p>
 <li><p>migrate to a new Prism/Lente version, for example <cite>0.8</cite> to <cite>0.9</cite></p></li>
 <li><p>write test scripts and Python test code, and lint them</p></li>
 <li><p>use <a class="reference internal" href="prism_bond.html"><span class="doc">BOND</span></a></p></li>
+<li><p>add test equipment to a jig, one per jig or shared by the jigs, see <a class="reference internal" href="prism_drivers.html"><span class="doc">Drivers</span></a></p></li>
 <li><p>lay out your test plan and test stages</p></li>
 <li><p>plan <a class="reference internal" href="_traceability.html"><span class="doc">Traceability</span></a>: serial numbers, lots, firmware versions and test
 versions</p></li>
@@ -106,6 +107,7 @@ example <cite>/mcp__prism-assistant__migrate_version</cite>,</p>
 <li><p><cite>migrate_version</cite> - plan a version migration of your deployment</p></li>
 <li><p><cite>write_test_script</cite> - write a script and its test code for one test stage</p></li>
 <li><p><cite>use_bond</cite> - set up BOND and its Pogo board header definition</p></li>
+<li><p><cite>add_equipment</cite> - add test equipment to a jig, one per jig or shared, with its driver</p></li>
 <li><p><cite>plan_test_stages</cite> - lay out the test stages of a product</p></li>
 <li><p><cite>plan_traceability</cite> - plan what your results record</p></li>
 <li><p><cite>plan_deployment</cite> - plan and install Lente and the Prism computers</p></li>
@@ -119,7 +121,8 @@ READMEs</p></li>
 <li><p><cite>list_scripts</cite>, <cite>lint_script</cite> - your scripts, and the <a class="reference internal" href="_development.html#script-lint"><span class="std std-ref">Script Lint</span></a></p></li>
 <li><p><cite>check_settings</cite> - check a <cite>settings.json</cite> for the current version, without showing any
 passwords or keys</p></li>
-<li><p><cite>list_drivers</cite>, <cite>python_api</cite> - the drivers, and the Prism APIs used by test code</p></li>
+<li><p><cite>list_drivers</cite>, <cite>python_api</cite> - the drivers with their documentation, and the Prism APIs
+used by test code</p></li>
 <li><p><cite>repo_status</cite> - your scripts version, and how far your fork is behind Sistemi’s scripts</p></li>
 </ul>
 </section>
@@ -132,6 +135,9 @@ assistant,</p>
 <li><p>answers from this documentation and your repo, cites the page, and says so when they don’t
 have the answer, instead of guessing, suggesting you contact <a class="reference external" href="mailto:info&#37;&#52;&#48;sistemi&#46;ca">info<span>&#64;</span>sistemi<span>&#46;</span>ca</a></p></li>
 <li><p>lints any script or test code it writes or changes</p></li>
+<li><p>records the serial number of each piece of test equipment in the results, see
+<a class="reference internal" href="_traceability.html#test-equipment"><span class="std std-ref">Test Equipment</span></a>, and follows the
+<a class="reference internal" href="prism_drivers.html"><span class="doc">driver</span></a> rules for equipment per jig or shared</p></li>
 <li><p>follows the rules in this documentation, for example the
 <a class="reference internal" href="prism_programs.html"><span class="doc">test item rules</span></a>, the serial number in <cite>key0</cite>, and Prism and Lente
 running the same major.minor version</p></li>

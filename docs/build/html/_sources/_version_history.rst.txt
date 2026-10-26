@@ -102,6 +102,13 @@ screenshots.
 * The `agilent_dso_usb_1` driver can find the scope on Ethernet, with
   `{"interface": "ethernet", "ip": "<ip>"}`, see :ref:`VISA <prism_drivers:VISA>`.  USB is
   still the default.
+* The `agilent_dso_usb_1` driver supports one scope per channel, or with `{"only_one": true}`
+  one scope shared by all channels, like `brother_ql`.  On Ethernet, `ip` can be a list with
+  one IP per channel, see :ref:`prism_drivers:agilent_dso_usb_1`.
+* Drivers documentation: how to add test equipment to a jig, per jig or shared, locking shared
+  equipment, and a section for each included driver, see :doc:`Drivers <prism_drivers>`
+* Prism Assistant `add_equipment` prompt, and the assistant records test equipment serial
+  numbers for traceability, see :doc:`Prism Assistant <_assistant>`
 
 Bug fixes,
 
@@ -166,6 +173,8 @@ Migration Guide
   channel, and the number of printers must match the other drivers' number of channels.  Add
   `{"only_one": true}` to keep one shared printer.  Get the printer with
   `get_drivers(self.chan, type=...)`, as in the `brother_v0` example.
+* The same applies to the `agilent_dso_usb_1` driver: add `{"only_one": true}` to keep one
+  shared scope, and get it with `get_drivers(self.chan, type=...)`, as in the `dso_v0` example.
 
 
 *********

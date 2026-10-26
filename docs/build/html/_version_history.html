@@ -131,6 +131,13 @@ printer shared by all channels, see <a class="reference internal" href="prism_dr
 <li><p>The <cite>agilent_dso_usb_1</cite> driver can find the scope on Ethernet, with
 <cite>{“interface”: “ethernet”, “ip”: “&lt;ip&gt;”}</cite>, see <a class="reference internal" href="prism_drivers.html#visa"><span class="std std-ref">VISA</span></a>.  USB is
 still the default.</p></li>
+<li><p>The <cite>agilent_dso_usb_1</cite> driver supports one scope per channel, or with <cite>{“only_one”: true}</cite>
+one scope shared by all channels, like <cite>brother_ql</cite>.  On Ethernet, <cite>ip</cite> can be a list with
+one IP per channel, see <a class="reference internal" href="prism_drivers.html#agilent-dso-usb-1"><span class="std std-ref">agilent_dso_usb_1</span></a>.</p></li>
+<li><p>Drivers documentation: how to add test equipment to a jig, per jig or shared, locking shared
+equipment, and a section for each included driver, see <a class="reference internal" href="prism_drivers.html"><span class="doc">Drivers</span></a></p></li>
+<li><p>Prism Assistant <cite>add_equipment</cite> prompt, and the assistant records test equipment serial
+numbers for traceability, see <a class="reference internal" href="_assistant.html"><span class="doc">Prism Assistant</span></a></p></li>
 </ul>
 <p>Bug fixes,</p>
 <ul class="simple">
@@ -194,6 +201,8 @@ See <a class="reference internal" href="_security.html#https"><span class="std s
 channel, and the number of printers must match the other drivers’ number of channels.  Add
 <cite>{“only_one”: true}</cite> to keep one shared printer.  Get the printer with
 <cite>get_drivers(self.chan, type=…)</cite>, as in the <cite>brother_v0</cite> example.</p></li>
+<li><p>The same applies to the <cite>agilent_dso_usb_1</cite> driver: add <cite>{“only_one”: true}</cite> to keep one
+shared scope, and get it with <cite>get_drivers(self.chan, type=…)</cite>, as in the <cite>dso_v0</cite> example.</p></li>
 </ul>
 </section>
 </section>
