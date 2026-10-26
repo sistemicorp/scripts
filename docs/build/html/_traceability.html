@@ -102,7 +102,8 @@ are fast.  Use the other slots for ids you will search on, such as a microcontro
 MAC address, or the serial number of a sub-assembly.</p>
 <ul>
 <li><p>A key is stored as <cite>&lt;name&gt;:&lt;value&gt;</cite>, for example <cite>sn:A12345</cite>.  Keep the whole string within
-64 characters, the size of the database column.</p></li>
+64 characters, the size of the database column.  A longer key is not saved, <cite>add_key()</cite>
+returns <cite>False</cite> and logs an error.</p></li>
 <li><p>Use the same slot for the same id in every script of a product, and in every stage.
 Write the slot assignments down, for example as constants in a common module,</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DBKEY_SERIAL_NUM</span> <span class="o">=</span> <span class="mi">0</span>
