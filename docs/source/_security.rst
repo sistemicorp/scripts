@@ -39,6 +39,24 @@ and cannot be viewed.
 Only the Lente that is marked as `root_authority` in `settings.json` will create the Manifest.  All other
 Lente's will pass along the Manifest.
 
+Manifest checking needs a valid license file.  Without a license the check always passes.
+
+Prism checks the Manifest at startup, after a script sync, and each time a script is validated or
+loaded.  A Lente that is not `root_authority` checks it before it syncs scripts to its stations.
+
+The check fails if,
+
+* the Manifest cannot be read, for example the `site_key` is different from the root Lente's
+* a file in the Manifest has changed
+* a file in the Manifest is missing
+
+When the check fails a `manifest failed` notice is shown, and the station log names the file.
+Prism will not load a script while the check fails, and a Lente will not sync scripts.
+
+Files that are not in the Manifest do not fail the check.  Scripts and drivers can create files
+under `./public/prism` while running, for example a driver's working folder.  The next script sync
+removes these files, because each station replaces its whole `./public/prism` folder.
+
 If some files need to be excluded from Manifest checking, create `./public/prism/manifest.exclude` and list
 the path names of the files to be excluded, for example,
 

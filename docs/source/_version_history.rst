@@ -119,6 +119,8 @@ Bug fixes,
   other browser's session.
 * [BUGFIX] Prism, Lente and scripts versions showed the number of the previous commit.
   Prism and Lente logs now include the commit hash.
+* [BUGFIX] With manifest checking on, a file missing from `public/prism` stopped Prism from
+  starting, instead of failing the check.  See :ref:`Manifest Checking <_security:Manifest Checking>`.
 
 
 Migration Guide
