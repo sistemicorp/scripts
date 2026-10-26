@@ -111,6 +111,9 @@ screenshots.
   equipment, and a section for each included driver, see :doc:`Drivers <prism_drivers>`
 * Prism Assistant `add_equipment` prompt, and the assistant records test equipment serial
   numbers for traceability, see :doc:`Prism Assistant <_assistant>`
+* PCBA test coverage analysis: Short, Open and Value per part, test points, BOND techniques and
+  common gaps, see :doc:`PCBA Test Coverage <_coverage>`, and the Prism Assistant
+  `analyze_coverage` prompt
 
 Bug fixes,
 

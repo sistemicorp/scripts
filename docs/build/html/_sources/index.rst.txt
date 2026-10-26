@@ -24,6 +24,7 @@ EMAIL: info@sistemi.ca for more information.
    lente_main
    _system
    _prodplan
+   _coverage
    _database
    _traceability
    _development
