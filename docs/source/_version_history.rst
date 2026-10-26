@@ -97,14 +97,16 @@ screenshots.
 * A HW driver can set `play_poll_sec` to call its `play` function more often than once a second,
   see :doc:`Drivers <prism_drivers>`
 * `prism_dev.py` runs scripts with `subs`, using each sub's default or first choice
-* The `brother_ql` driver supports one printer per channel, or with `{"only_one": true}` one
+* The `brother_ql` driver supports one printer per channel, or with `{"shared": true}` one
   printer shared by all channels, see :ref:`Shared Drivers <prism_drivers:Shared Drivers>`
 * The `agilent_dso_usb_1` driver can find the scope on Ethernet, with
   `{"interface": "ethernet", "ip": "<ip>"}`, see :ref:`VISA <prism_drivers:VISA>`.  USB is
   still the default.
-* The `agilent_dso_usb_1` driver supports one scope per channel, or with `{"only_one": true}`
+* The `agilent_dso_usb_1` driver supports one scope per channel, or with `{"shared": true}`
   one scope shared by all channels, like `brother_ql`.  On Ethernet, `ip` can be a list with
   one IP per channel, see :ref:`prism_drivers:agilent_dso_usb_1`.
+* The `only_one` argument of the `brother_ql` and `agilent_dso_usb_1` drivers is renamed
+  `shared`, a script with `only_one` fails to load
 * Drivers documentation: how to add test equipment to a jig, per jig or shared, locking shared
   equipment, and a section for each included driver, see :doc:`Drivers <prism_drivers>`
 * Prism Assistant `add_equipment` prompt, and the assistant records test equipment serial
@@ -141,8 +143,8 @@ Bug fixes,
   starting, instead of failing the check.  See :ref:`Manifest Checking <_security:Manifest Checking>`.
 * [BUGFIX] Lente Result Analytics charts kept showing the previous results when the filters were
   not valid, or the results database could not be read
-* [BUGFIX] The `brother_ql` driver was always shared, even without `only_one`, and with
-  `only_one` did not report finding more than one printer
+* [BUGFIX] The `brother_ql` driver was always shared, even without `{"shared": true}`, and
+  when shared did not report finding more than one printer
 * [BUGFIX] `prism_dev.py` accepted a shared driver (0 channels) with no driver items, which Prism
   rejects
 
@@ -169,11 +171,11 @@ Migration Guide
 * With `use_https`, every Prism/Lente computer of a site needs the same `public/cert.pem` and
   `public/key.pem`.  An upstream Lente needs a certificate from a public certificate authority.
   See :ref:`HTTPS <https>`.
-* Scripts using the `brother_ql` driver without `{"only_one": true}` now get one printer per
+* Scripts using the `brother_ql` driver without `{"shared": true}` now get one printer per
   channel, and the number of printers must match the other drivers' number of channels.  Add
-  `{"only_one": true}` to keep one shared printer.  Get the printer with
+  `{"shared": true}` to keep one shared printer.  Get the printer with
   `get_drivers(self.chan, type=...)`, as in the `brother_v0` example.
-* The same applies to the `agilent_dso_usb_1` driver: add `{"only_one": true}` to keep one
+* The same applies to the `agilent_dso_usb_1` driver: add `{"shared": true}` to keep one
   shared scope, and get it with `get_drivers(self.chan, type=...)`, as in the `dso_v0` example.
 
 

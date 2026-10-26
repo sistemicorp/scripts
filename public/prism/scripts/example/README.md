@@ -13,7 +13,7 @@
 
 ## dso_v0
 * example connecting to an Agilent DSO7104B using the VISA modules, on USB or Ethernet
-  * one scope shared by all channels (`{"only_one": true}`), or one scope per channel
+  * one scope shared by all channels (`{"shared": true}`), or one scope per channel
   * without the DSO, the system will fail to run the script
 * As an experiment, if you have a similiar Agilent DSO, you should be able to modify the driver and use your scope
   * see ./public/prism/drivers/agilent_dso_usb_1

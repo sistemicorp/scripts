@@ -36,6 +36,7 @@ DRIVER_TYPE = "Brother_QL"
 # QL-710W (✓), QL-720NW (✓), QL-800 (✓), QL-810W (✓), QL-820NWB (✓), QL-1050 (✓), and QL-1060N (✓)
 # However, only the following has been tested in Prism, add or replace with your specific printer,
 BROTHER_QL_MODELS = ["QL-700"]
+RENAMED_ARGS = {"only_one": "shared"}
 
 # Information:
 # USB devices are found with pyudev, see https://pyudev.readthedocs.io
@@ -295,14 +296,14 @@ class HWDriver(object):
       "config": {
         # drivers: list of code to initialize the test environment, must be specified
         "drivers": ["public.prism.drivers.fake.hwdrv_fake",
-                    ["public.prism.drivers.brother_ql.hwdrv_brother_ql", {"only_one": true}]]
+                    ["public.prism.drivers.brother_ql.hwdrv_brother_ql", {"shared": true}]]
       },
 
     drivers is a list, so multiple HWDriver can be installed.
 
     Finds attached Brother QL printers of the models in BROTHER_QL_MODELS (usblp,
     /dev/usb/lp*), in USB hub port order.  One printer can be shared by all channels
-    ({"only_one": true}), or there can be one printer per channel (the default).
+    ({"shared": true}), or there can be one printer per channel (the default).
     See discover_channels() for the arguments.
     """
     SFN = os.path.basename(__file__)
@@ -377,9 +378,9 @@ class HWDriver(object):
     def discover_channels(self, scriptArgs=None):
         """ Determine the number of channels, and populate hw drivers into shared state
 
-        scriptArgs = {"only_one": true|false, "test_label": true|false}
+        scriptArgs = {"shared": true|false, "test_label": true|false}
 
-            only_one = true: one printer is shared by all channels (returns 0 channels),
+            shared = true: one printer is shared by all channels (returns 0 channels),
                        finding more than one printer is an error
                        false (default): one printer per channel (returns the number found)
             test_label = Print a test label before starting the test script
@@ -424,6 +425,11 @@ class HWDriver(object):
                 driver_type: String constant identifying Installed drivers type
                 list:   List of installed driver dicts
         """
+        for old, new in RENAMED_ARGS.items():
+            if scriptArgs and old in scriptArgs:
+                self.logger.error("Driver argument %s is renamed %s", old, new)
+                raise ValueError("Driver argument {} is renamed {}".format(old, new))
+
         drivers = []
         id = 0
         context = pyudev.Context()
@@ -447,10 +453,10 @@ class HWDriver(object):
                        sender="discover_channels", type=NOTICE_TYPE.ERROR)
             return -1, DRIVER_TYPE, []
 
-        only_one = bool(scriptArgs and scriptArgs.get("only_one", False))
-        if only_one and len(drivers) > 1:
+        shared = bool(scriptArgs and scriptArgs.get("shared", False))
+        if shared and len(drivers) > 1:
             # can't know which printer is the shared one
-            self.logger.error("only_one, but found %d printers", len(drivers))
+            self.logger.error("shared, but found %d printers", len(drivers))
             pub_notice("HWDriver:{}: Error only one printer expected, found {}".format(
                 self.SFN, len(drivers)), sender="discover_channels", type=NOTICE_TYPE.ERROR)
             return -1, DRIVER_TYPE, []
@@ -472,7 +478,7 @@ class HWDriver(object):
 
         # zero channels means the printer is shared across all test jigs,
         # otherwise one printer per jig (channel)
-        self._num_chan = 0 if only_one else len(drivers)
+        self._num_chan = 0 if shared else len(drivers)
         return self._num_chan, DRIVER_TYPE, drivers
 
     def num_channels(self):

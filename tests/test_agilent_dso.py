@@ -84,9 +84,9 @@ def test_usb_default_one_per_channel(rm, args):
     assert drivers[0]["hwdrv"].writes == ["*RST"]
 
 
-def test_usb_only_one_is_shared(rm):
+def test_usb_shared(rm):
     rm({USB_DSO: IDN})
-    num, _, drivers = HWDriver().discover_channels({"only_one": True})
+    num, _, drivers = HWDriver().discover_channels({"shared": True})
     assert num == 0
     assert len(drivers) == 1
 
@@ -105,11 +105,11 @@ def test_usb_unknown_port_sorts_last(rm):
     assert [d["unique_id"] for d in drivers] == ["B", "A"]
 
 
-def test_usb_only_one_with_two_scopes_is_error(rm):
+def test_usb_shared_with_two_scopes_is_error(rm):
     # [Unhappy] which scope would be the shared one is unknown
     rm({usb("A"): idn("A"), usb("B"): idn("B")})
     d = HWDriver()
-    assert d.discover_channels({"only_one": True})[0] == -1
+    assert d.discover_channels({"shared": True})[0] == -1
     assert d.instrs == []
 
 
@@ -140,16 +140,16 @@ def test_ethernet_ip_list_in_channel_order(rm):
     assert [(d["id"], d["unique_id"]) for d in drivers] == [(0, "B"), (1, "A")]
 
 
-def test_ethernet_only_one(rm):
+def test_ethernet_shared(rm):
     rm({tcpip("10.0.0.1"): IDN})
-    args = {"interface": "ethernet", "ip": ["10.0.0.1"], "only_one": True}
+    args = {"interface": "ethernet", "ip": ["10.0.0.1"], "shared": True}
     assert HWDriver().discover_channels(args)[0] == 0
 
 
-def test_ethernet_only_one_with_two_ips_is_error(rm):
+def test_ethernet_shared_with_two_ips_is_error(rm):
     # [Unhappy]
     fake = rm({tcpip("10.0.0.1"): idn("A"), tcpip("10.0.0.2"): idn("B")})
-    args = {"interface": "ethernet", "ip": ["10.0.0.1", "10.0.0.2"], "only_one": True}
+    args = {"interface": "ethernet", "ip": ["10.0.0.1", "10.0.0.2"], "shared": True}
     assert HWDriver().discover_channels(args)[0] == -1
     assert fake.opened == []
 
@@ -181,7 +181,8 @@ def test_not_white_listed_is_closed(rm):
                                          ({"interface": "ethernet", "ip": ""}, "ip"),
                                          ({"interface": "ethernet", "ip": []}, "ip"),
                                          ({"interface": "ethernet", "ip": [1]}, "ip"),
-                                         ({"interface": "gpib"}, "interface")])
+                                         ({"interface": "gpib"}, "interface"),
+                                         ({"only_one": True}, "only_one is renamed shared")])
 def test_bad_args_raise_value_error(rm, args, match):
     # [Unhappy]
     rm({})

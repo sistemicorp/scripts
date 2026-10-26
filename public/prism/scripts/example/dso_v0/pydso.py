@@ -15,7 +15,7 @@ class pydso(TestItem):
     """ DSO Functions
 
     Notes:
-        1) With {"only_one": true} one scope is shared by all the channels, up to 4 channels,
+        1) With {"shared": true} one scope is shared by all the channels, up to 4 channels,
            and scope input self.chan + 1 is wired to the jig of self.chan.  The scope is
            locked while a channel uses it.
         2) Without it, each channel has its own scope, and its input 1 is wired to the jig.

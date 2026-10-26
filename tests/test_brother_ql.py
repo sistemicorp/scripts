@@ -47,30 +47,36 @@ def discover(monkeypatch, devnodes, args=None):
 
 
 def test_one_printer_per_channel(monkeypatch, notices):
-    """ without only_one, each printer is a channel, in USB port order (was always 0) """
+    """ without shared, each printer is a channel, in USB port order (was always 0) """
     num, drivers = discover(monkeypatch, [LP0, LP1])
     assert num == 2
     assert [d["id"] for d in drivers] == [0, 1]
     assert [d["hwdrv"].path for d in drivers] == [LP0, LP1]
 
 
-def test_only_one_is_shared(monkeypatch, notices):
-    num, drivers = discover(monkeypatch, [LP0], {"only_one": True})
+def test_shared(monkeypatch, notices):
+    num, drivers = discover(monkeypatch, [LP0], {"shared": True})
     assert num == 0
     assert len(drivers) == 1
 
 
-def test_only_one_found_two_is_error(monkeypatch, notices):
-    """ [Unhappy] only_one but two printers, can't know which one to use """
-    num, drivers = discover(monkeypatch, [LP0, LP1], {"only_one": True})
+def test_shared_found_two_is_error(monkeypatch, notices):
+    """ [Unhappy] shared but two printers, can't know which one to use """
+    num, drivers = discover(monkeypatch, [LP0, LP1], {"shared": True})
     assert num == -1
     assert drivers == []
     assert any("found 2" in n for n in notices)
 
 
+def test_old_only_one_arg_is_refused(monkeypatch, notices):
+    """ [Unhappy] only_one is renamed shared, it must not quietly mean one per channel """
+    with pytest.raises(ValueError, match="only_one is renamed shared"):
+        discover(monkeypatch, [LP0], {"only_one": True})
+
+
 def test_none_found_is_error(monkeypatch, notices):
     """ [Unhappy] no printer attached """
-    num, drivers = discover(monkeypatch, [], {"only_one": True})
+    num, drivers = discover(monkeypatch, [], {"shared": True})
     assert num == -1
     assert drivers == []
 
@@ -118,7 +124,7 @@ def test_example_uses_channel_printer(monkeypatch, notices):
 
 
 def test_example_uses_shared_printer(monkeypatch, notices):
-    record, printer = run_setup(monkeypatch, notices, [LP0], {"only_one": True}, chan=1)
+    record, printer = run_setup(monkeypatch, notices, [LP0], {"shared": True}, chan=1)
     assert record.record_test_get_result() == ResultAPI.RECORD_RESULT_PASS
     assert printer.path == LP0
 

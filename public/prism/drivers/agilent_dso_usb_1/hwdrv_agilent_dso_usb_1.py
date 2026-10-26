@@ -25,7 +25,7 @@ class HWDriver(object):
         # drivers: list of code to initialize the test environment, must be specified
         "drivers": ["public.prism.drivers.fake.hwdrv_fake",
                     ["public.prism.drivers.agilent_dso_usb_1.hwdrv_agilent_dso_usb_1",
-                     {"only_one": true}]]
+                     {"shared": true}]]
       },
 
     or one scope per channel (the default), on USB in USB hub port order,
@@ -76,6 +76,7 @@ class HWDriver(object):
     OPEN_TIMEOUT_MS = 5000
     # list of DSOs that accept the same command set
     WHITE_LIST = ["DSO7104B"]
+    RENAMED_ARGS = {"only_one": "shared"}
 
     def __init__(self):
         self.logger = logging.getLogger("{}.{}".format(__class__.__name__, self.SFN))
@@ -149,10 +150,10 @@ class HWDriver(object):
     def discover_channels(self, scriptArgs=None):
         """ Determine the number of channels, and populate hw drivers into shared state
 
-        :param scriptArgs: None, or {"only_one": true|false,
+        :param scriptArgs: None, or {"shared": true|false,
                                      "interface": "usb"|"ethernet",
                                      "ip": <ip address> | [<ip address>, ...]}
-            only_one = true: one scope is shared by all channels (returns 0 channels),
+            shared = true: one scope is shared by all channels (returns 0 channels),
                        finding more than one scope is an error
                        false (default): one scope per channel (returns the number found)
             interface = optional, default "usb"
@@ -197,7 +198,11 @@ class HWDriver(object):
         """
         sender = "{}.{}".format(self.SFN, __class__.__name__)
         scriptArgs = scriptArgs or {}
-        only_one = bool(scriptArgs.get("only_one", False))
+        for old, new in self.RENAMED_ARGS.items():
+            if old in scriptArgs:
+                self.logger.error("Driver argument {} is renamed {}".format(old, new))
+                raise ValueError("Driver argument {} is renamed {}".format(old, new))
+        shared = bool(scriptArgs.get("shared", False))
 
         interface = scriptArgs.get("interface", "usb")
         if interface not in self.INTERFACES:
@@ -221,8 +226,8 @@ class HWDriver(object):
 
         rm = pyvisa.ResourceManager()
         if ips is not None:
-            if only_one and len(ips) > 1:
-                return self._error(sender, "only_one, but {} IPs given".format(len(ips)))
+            if shared and len(ips) > 1:
+                return self._error(sender, "shared, but {} IPs given".format(len(ips)))
             resources = [self.TCPIP_RESOURCE.format(ip) for ip in ips]
         else:
             resources = self._usb_resources(rm)
@@ -252,7 +257,7 @@ class HWDriver(object):
             # an error here will indicate a system fail and won't proceed to testing
             return self._error(sender, "none found")
 
-        if only_one and len(drivers) > 1:
+        if shared and len(drivers) > 1:
             # can't know which scope is the shared one
             return self._error(sender, "only one scope expected, found {}".format(len(drivers)))
 
@@ -260,7 +265,7 @@ class HWDriver(object):
 
         # zero channels means the scope is shared across all test jigs,
         # otherwise one scope per jig (channel)
-        self._num_chan = 0 if only_one else len(drivers)
+        self._num_chan = 0 if shared else len(drivers)
         self.logger.info("{} channels found".format(self._num_chan))
         return self._num_chan, self.DRIVER_TYPE, drivers
 

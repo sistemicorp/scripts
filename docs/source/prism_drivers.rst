@@ -111,12 +111,12 @@ that channel's own drivers.  `get_drivers(None, type=...)` returns only the shar
   `Locking Shared Equipment`_.
 
 A driver can support both, with a script argument.  For example, the `brother_ql` and
-`agilent_dso_usb_1` drivers with `{"only_one": true}` expect one instrument shared by all
+`agilent_dso_usb_1` drivers with `{"shared": true}` expect one instrument shared by all
 channels, and finding more than one is an error.  Without it, there is one instrument per
 channel, in USB hub port order::
 
     "drivers": ["public.prism.drivers.fake.hwdrv_fake",
-                ["public.prism.drivers.brother_ql.hwdrv_brother_ql", {"only_one": true}]]
+                ["public.prism.drivers.brother_ql.hwdrv_brother_ql", {"shared": true}]]
 
 Equipment is shared by the jigs (channels) of one Prism computer.  Sharing one instrument
 between Prism computers is not supported: Prism does not lock it between computers, and a
@@ -328,7 +328,7 @@ Agilent InfiniiVision oscilloscope, tested with a DSO7104B, using VISA on USB or
 scope.  Only the models in the driver's `WHITE_LIST` are used.
 
 * Driver type: `AGILENT_DSO_USB_1`, the scope's serial number is the `unique_id`
-* `{"only_one": true}` - one scope shared by all channels, finding more than one is an
+* `{"shared": true}` - one scope shared by all channels, finding more than one is an
   error.  Without it, there is one scope per channel.
 * `{"interface": "ethernet", "ip": ...}` - scopes on Ethernet (VXI-11), USB is the default.
   `ip` is one IP address, or a list with one IP per channel, in channel order.  Every scope in
@@ -339,7 +339,7 @@ scope.  Only the models in the driver's `WHITE_LIST` are used.
 
     "drivers": [
       "public.prism.drivers.fake.hwdrv_fake",
-      ["public.prism.drivers.agilent_dso_usb_1.hwdrv_agilent_dso_usb_1", {"only_one": true}]
+      ["public.prism.drivers.agilent_dso_usb_1.hwdrv_agilent_dso_usb_1", {"shared": true}]
     ]
 
     "drivers": [
@@ -359,7 +359,7 @@ brother_ql
 Brother QL label printer (QL-700) on USB, to print a label such as a serial number barcode.
 
 * Driver type: `Brother_QL`
-* `{"only_one": true}` - one printer shared by all channels.  Without it, there is one printer
+* `{"shared": true}` - one printer shared by all channels.  Without it, there is one printer
   per channel, in USB hub port order.
 * `{"test_label": true}` - print a test label when the script loads, the script fails
   validation if it cannot print.
