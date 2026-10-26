@@ -13,12 +13,26 @@ import visa
 
 class HWDriver(object):
     """
+    HWDriver is a class that installs a HW driver into the shared state.
+    This is not the HW driver itself, just an installer.
+
+    When a script is loaded, there is a config section that lists all the HWDriver
+    to call, for example,
+
+      "config": {
+        # drivers: list of code to initialize the test environment, must be specified
+        "drivers": ["public.prism.drivers.fake.hwdrv_fake",
+                    "public.prism.drivers.agilent_dso_usb_1.hwdrv_agilent_dso_usb_1"]
+      },
+
+    drivers is a list, so multiple HWDriver can be installed.
+
     Create a single instance of an Agilent DSO of "type 1"
     - presumably most Agilent scopes are compatible with each other...
     - those that are compatible can share the same driver...(presumably)
-    - this driver supports USB attached devices
+    - this driver supports USB attached devices, found with VISA, not pyudev
     - See https://pyvisa.readthedocs.io/en/1.8/names.html
-    - SB[board]::manufacturer ID::model code::serial number[::USB interface number][::INSTR]
+    - USB[board]::manufacturer ID::model code::serial number[::USB interface number][::INSTR]
     - DSO Agilent DSO7104B, returns ('USB0::2391::5981::MY49520121::0::INSTR',)
     - therefore, assuming 2391::5981, means Agilent DSO7000 series (?)
     - query('*IDN?') returns
@@ -48,7 +62,7 @@ class HWDriver(object):
         self.instr = None
 
     def discover_channels(self):
-        """ determine the number of channels, and populate hw drivers into shared state
+        """ Determine the number of channels, and populate hw drivers into shared state
 
         [ {"id": i,                    # ~slot number of the channel (see Note 1)
            "version": <VERSION>,       # version of the driver
@@ -56,21 +70,24 @@ class HWDriver(object):
 
            # optional
            "close": None,              # register a callback on closing the channel, or None
-           "play": jig_closed_detect   # function for detecting jig closed
+           "play": jig_closed_detect   # function for detecting jig closed, returns True|False
+           "play_poll_sec": 1          # seconds between play calls, 0.2 to 2, default 1
            "show_pass_fail": jig_led   # function for indicating pass/fail (like LED)
            "show_msg": jig_display     # function for indicating test status (like display)
+           "jig_reset": jig_reset      # function to reset the jig when the channel is DONE/READY
 
            # not part of the required block
            "unique_id": <unique_id>,   # unique id of the hardware (for tracking purposes)
-           ...
+           ...                         # you may add your own key/values
           }, ...
         ]
 
         Note:
-        1) The hw driver objects are expected to have an 'slot' field, the lowest
-           id is assigned to channel 0, the next highest to channel 1, etc
+        1) The hw driver objects are expected to have an 'id' field, the lowest
+           id is assigned to channel 0, the next highest to channel 1, etc.
+           A shared driver (returns 0 channels) is not assigned a channel, all channels use it.
 
-        :return: <#>, <driver_type>, <list>
+        :return: <#>, <driver_type>, <list> (use Zero for a device shared across all channels)
             where
                 #:      >0 number of channels,
                         0 does not indicate num channels, like a shared hardware driver

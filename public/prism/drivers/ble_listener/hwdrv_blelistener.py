@@ -24,12 +24,14 @@ class HWDriver(object):
 
       "config": {
         # drivers: list of code to initialize the test environment, must be specified
-        "drivers": ["public.prism.drivers.fake.hwdrv_fake"]
+        "drivers": ["public.prism.drivers.ble_listener.hwdrv_blelistener"]
       },
 
     drivers is a list, so multiple HWDriver can be installed.
 
     Installs the BLE Listener, a shared resource across all channels.
+    It uses the BLE adapter of the station (bleak, over D-Bus), it does not scan USB.
+    Returns 0 channels, so another driver must set the number of channels.
     """
     SFN = os.path.basename(__file__)  # for logging path
 
@@ -39,7 +41,7 @@ class HWDriver(object):
         self._num_chan = None
 
     def discover_channels(self):
-        """ determine the number of channels, and popultae hw drivers into shared state
+        """ Determine the number of channels, and populate hw drivers into shared state
 
         [ {"id": i,                    # ~slot number of the channel (see Note 1)
            "version": <VERSION>,       # version of the driver
@@ -47,19 +49,22 @@ class HWDriver(object):
 
            # optional
            "close": None,              # register a callback on closing the channel, or None
-           "play": jig_closed_detect   # function for detecting jig closed
+           "play": jig_closed_detect   # function for detecting jig closed, returns True|False
+           "play_poll_sec": 1          # seconds between play calls, 0.2 to 2, default 1
            "show_pass_fail": jig_led   # function for indicating pass/fail (like LED)
            "show_msg": jig_display     # function for indicating test status (like display)
+           "jig_reset": jig_reset      # function to reset the jig when the channel is DONE/READY
 
            # not part of the required block
            "unique_id": <unique_id>,   # unique id of the hardware (for tracking purposes)
-           ...
+           ...                         # you may add your own key/values
           }, ...
         ]
 
         Note:
-        1) The hw driver objects are expected to have an 'slot' field, the lowest
-           id is assigned to channel 0, the next highest to channel 1, etc
+        1) The hw driver objects are expected to have an 'id' field, the lowest
+           id is assigned to channel 0, the next highest to channel 1, etc.
+           A shared driver (returns 0 channels) is not assigned a channel, all channels use it.
 
         :return: <#>, <driver_type>, <list> (use Zero for a device shared across all channels)
             where
@@ -112,7 +117,12 @@ class HWDriver(object):
 
 # ===============================================================================================
 # Debugging code
-# - Test your hardware discover here by running this file from a terminal
+# - Test your hardware discovery here by running this file from a terminal,
+#     $ cd ~/git/scripts
+#     $ python -m public.prism.drivers.ble_listener.hwdrv_blelistener
+#   or from PyCharm (be sure to set the working directory as ~/git/scripts, else imports will fail)
+# - the purpose is to validate discover_channels() is working
+# - ~/git/scripts/core has stand-ins for the Prism core imports, pub_notice() only logs
 #
 if __name__ == '__main__':
     logger = logging.getLogger()

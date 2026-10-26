@@ -23,17 +23,19 @@ class HWDriver(object):
 
       "config": {
         # drivers: list of code to initialize the test environment, must be specified
-        "drivers": ["public.prism.drivers.teensy4.hwdrv_teensy4_prog"]
+        "drivers": ["public.prism.drivers.A4401_BOND.hwdrv_A4401_BOND_prog"]
       },
 
-    This driver is to find all attached Teensy4 instances for the purposes of programming them.
-    So we only need to find the appropriate serial port interfaces.  We don't expect to see
-    other devices with the same serial port name.  If that can occur, it would need to be handled...
+    drivers is a list, so multiple HWDriver can be installed.
 
-    This is only used with script: teensy4_Prog_0.scr.
+    This driver is for programming the Teensy4 on an attached BOND (A4401).  It does not
+    scan USB, it always reports one channel, and the script programs the Teensy4 with
+    the teensy CLI programming utility.
+
+    This is only used with script: bond_progfresh_0.scr.
 
     !! NOTE: Only one Teensy should be connected, multiple Teensys are not supported !!
-    !!       The teensy CLI programming utitilty cannot program a specific USB cpnnected Teensy,
+    !!       The teensy CLI programming utility cannot program a specific USB connected Teensy,
     !!       it will scan USB, looking for any Teensy.
 
     """
@@ -47,28 +49,34 @@ class HWDriver(object):
         self.teensys = []
 
     def discover_channels(self, scriptArgs=None):
-        """ determine the number of channels, and populate hw drivers into shared state
+        """ Determine the number of channels, and populate hw drivers into shared state
+
+        :param scriptArgs: not used
 
         [ {"id": i,                    # ~slot number of the channel (see Note 1)
            "version": <VERSION>,       # version of the driver
-           "hwdrv": <foobar>,          # instance of your hardware driver
-           "unique_id": <unique_id>,   # unique id of the hardware (for tracking purposes)
+           "hwdrv": <object>,          # instance of your hardware driver
 
-           # optional, related to Prism
-           "close": None},             # register a callback on closing the channel, or None
-           "play": jig_closed_detect   # function for detecting jig closed
+           # optional
+           "close": None,              # register a callback on closing the channel, or None
+           "play": jig_closed_detect   # function for detecting jig closed, returns True|False
+           "play_poll_sec": 1          # seconds between play calls, 0.2 to 2, default 1
            "show_pass_fail": jig_led   # function for indicating pass/fail (like LED)
+           "show_msg": jig_display     # function for indicating test status (like display)
+           "jig_reset": jig_reset      # function to reset the jig when the channel is DONE/READY
 
-           # you may add your own key/values
-
+           # not part of the required block
+           "unique_id": <unique_id>,   # unique id of the hardware (for tracking purposes)
+           ...                         # you may add your own key/values
           }, ...
         ]
 
         Note:
-        1) The hw driver objects are expected to have an 'slot' field, the lowest
-           id is assigned to channel 0, the next highest to channel 1, etc
+        1) The hw driver objects are expected to have an 'id' field, the lowest
+           id is assigned to channel 0, the next highest to channel 1, etc.
+           A shared driver (returns 0 channels) is not assigned a channel, all channels use it.
 
-        :return: <#>, <driver_type>, <list>
+        :return: <#>, <driver_type>, <list> (use Zero for a device shared across all channels)
             where
                 #:      >0 number of channels,
                         0 does not indicate num channels, like a shared hardware driver
@@ -101,7 +109,12 @@ class HWDriver(object):
 
 # ===============================================================================================
 # Debugging code
-# - Test your hardware discover here by running this file from a terminal
+# - Test your hardware discovery here by running this file from a terminal,
+#     $ cd ~/git/scripts
+#     $ python -m public.prism.drivers.A4401_BOND.hwdrv_A4401_BOND_prog
+#   or from PyCharm (be sure to set the working directory as ~/git/scripts, else imports will fail)
+# - the purpose is to validate discover_channels() is working
+# - ~/git/scripts/core has stand-ins for the Prism core imports, pub_notice() only logs
 #
 if __name__ == '__main__':
     logger = logging.getLogger()

@@ -16,11 +16,25 @@ from public.prism.drivers.stlinkv3mods.STLINK import STLINKprog, DRIVER_TYPE, cl
 #from STLINK import STLINKprog, DRIVER_TYPE, cli_version
 
 # Information:
-# USB Property Keys:
-# DEVLINKS, DEVNAME, DEVPATH, ID_BUS, ID_MODEL, ID_MODEL_ENC, ID_MODEL_FROM_DATABASE, ID_MODEL_ID, ID_PATH
-# ID_PATH_TAG, ID_REVISION, ID_SERIAL, ID_SERIAL_SHORT, ID_TYPE, ID_USB_CLASS_FROM_DATABASE, ID_USB_DRIVER
-# ID_USB_INTERFACES, ID_USB_INTERFACE_NUM, ID_VENDOR, ID_VENDOR_ENC, ID_VENDOR_FROM_DATABASE, ID_VENDOR_ID
-# MAJOR, MINOR, SUBSYSTEM, TAGS, USEC_INITIALIZED
+# USB devices are found with pyudev, see https://pyudev.readthedocs.io
+# - device.properties are the udev properties, USB Property Keys:
+#   DEVLINKS, DEVNAME, DEVPATH, ID_BUS, ID_MODEL, ID_MODEL_ENC, ID_MODEL_FROM_DATABASE, ID_MODEL_ID
+#   ID_PATH, ID_PATH_TAG, ID_REVISION, ID_SERIAL, ID_SERIAL_SHORT, ID_TYPE,
+#   ID_USB_CLASS_FROM_DATABASE, ID_USB_DRIVER, ID_USB_INTERFACES, ID_USB_INTERFACE_NUM, ID_VENDOR,
+#   ID_VENDOR_ENC, ID_VENDOR_FROM_DATABASE, ID_VENDOR_ID, MAJOR, MINOR, SUBSYSTEM, TAGS,
+#   USEC_INITIALIZED
+# - device.attributes are the sysfs attributes (bytes), useful ones are
+#   manufacturer, product, serial, idVendor, idProduct
+# - to see everything a device has, from a terminal,
+#     $ udevadm info -q property -n /dev/ttyACM0   (properties)
+#     $ udevadm info -a -n /dev/ttyACM0            (attributes, of the device and its parents)
+#   or in code,
+#     for a in device.attributes.available_attributes:
+#         print(a, device.attributes.get(a))
+# - USB permissions: Prism in Docker runs as root, a user account (like when developing)
+#   needs a udev rule, see ~/git/scripts/udev-install-usbusers.sh
+# - more than one device is put in channel order by its USB path, which is set by the
+#   USB hub port, so a jig keeps its channel number as long as it stays on the same port
 
 
 class HWDriver(object):
@@ -33,9 +47,17 @@ class HWDriver(object):
 
       "config": {
         # drivers: list of code to initialize the test environment, must be specified
-        "drivers": ["public.prism.drivers.teensy4.hwdrv_teensy4"]
+        "drivers": ["public.prism.drivers.stlinkv3mods.hwdrv_stlinkv3mods"]
       },
 
+    drivers is a list, so multiple HWDriver can be installed.
+
+    Finds attached STLINK-V3 debug probes (like STLINK-V3MODS) by the USB product
+    attribute, one channel per probe, in USB path order.  The probe serial number is the
+    unique_id, and selects the probe for STM32CubeProgrammer.  A probe that fails the
+    version check is skipped.
+
+    STM32CubeProgrammer must be installed on the station.
     """
     SFN = os.path.basename(__file__)
     VERSION = "0.0.1"
@@ -47,7 +69,7 @@ class HWDriver(object):
         self.stlinks = []
 
     def discover_channels(self):
-        """ determine the number of channels, and populate hw drivers into shared state
+        """ Determine the number of channels, and populate hw drivers into shared state
 
         [ {"id": i,                    # ~slot number of the channel (see Note 1)
            "version": <VERSION>,       # version of the driver
@@ -55,21 +77,24 @@ class HWDriver(object):
 
            # optional
            "close": None,              # register a callback on closing the channel, or None
-           "play": jig_closed_detect   # function for detecting jig closed
+           "play": jig_closed_detect   # function for detecting jig closed, returns True|False
+           "play_poll_sec": 1          # seconds between play calls, 0.2 to 2, default 1
            "show_pass_fail": jig_led   # function for indicating pass/fail (like LED)
            "show_msg": jig_display     # function for indicating test status (like display)
+           "jig_reset": jig_reset      # function to reset the jig when the channel is DONE/READY
 
            # not part of the required block
            "unique_id": <unique_id>,   # unique id of the hardware (for tracking purposes)
-           ...
+           ...                         # you may add your own key/values
           }, ...
         ]
 
         Note:
-        1) The hw driver objects are expected to have an 'slot' field, the lowest
-           id is assigned to channel 0, the next highest to channel 1, etc
+        1) The hw driver objects are expected to have an 'id' field, the lowest
+           id is assigned to channel 0, the next highest to channel 1, etc.
+           A shared driver (returns 0 channels) is not assigned a channel, all channels use it.
 
-        :return: <#>, <driver_type>, <list>
+        :return: <#>, <driver_type>, <list> (use Zero for a device shared across all channels)
             where
                 #:      >0 number of channels,
                         0 does not indicate num channels, like a shared hardware driver
@@ -141,10 +166,12 @@ class HWDriver(object):
 
 # ===============================================================================================
 # Debugging code
-# - Test your hardware discover here by running this file from PyCharm (be sure to set the working
-#   directory as ~/git/scripts, else imports will fail)
-# - the purpose is to valid discover_channels() is working
-# - you will have to comment out pub_notice() and the core import whilst using this
+# - Test your hardware discovery here by running this file from a terminal,
+#     $ cd ~/git/scripts
+#     $ python -m public.prism.drivers.stlinkv3mods.hwdrv_stlinkv3mods
+#   or from PyCharm (be sure to set the working directory as ~/git/scripts, else imports will fail)
+# - the purpose is to validate discover_channels() is working
+# - ~/git/scripts/core has stand-ins for the Prism core imports, pub_notice() only logs
 #
 if __name__ == '__main__':
     logging.basicConfig()
