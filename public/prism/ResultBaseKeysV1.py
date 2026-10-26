@@ -21,6 +21,7 @@ class ResultBaseKeysV1(ResultBaseClass):
     "add_key"
     - are meant to hold things like serial numbers, password keys, etc from the product
     - there are 5 key slots that can be used (0..4)
+    - "<keyName>:<value>" must fit in KEY_MAX_LEN (64) characters, else False is returned
     - are index in the backend SQL DB
     - The DB record holds key0, key1, key2, .. up to key{}.format(MAX_KEYS - 1)
       The idea is that these keys would be mapped for specific purposes, and thus
@@ -60,6 +61,8 @@ class ResultBaseKeysV1(ResultBaseClass):
     - getter
     """
 
+    KEY_MAX_LEN = 64  # !! size of Lente record.key# columns
+
     def __init__(self, chan_num, operator="UNKNOWN", script_filename="UNKNOWN"):
         super().__init__(chan_num, operator, script_filename)
         self.logger = logging.getLogger("{}.{}".format(__class__.__name__, chan_num))
@@ -76,6 +79,11 @@ class ResultBaseKeysV1(ResultBaseClass):
         :param slot: if not specified, the next available slot is used
         :return: True if succeeded, False otherwise
         """
+        key_str = key + ":" + str(value)
+        if len(key_str) > self.KEY_MAX_LEN:
+            self.logger.error(f"key {key_str} exceeds maximum len of {self.KEY_MAX_LEN}")
+            return False
+
         if slot is None:
             num_keys = len(self._record["keys"])
             if num_keys >= self.MAX_KEYS:
@@ -86,13 +94,13 @@ class ResultBaseKeysV1(ResultBaseClass):
             for i in range(self.MAX_KEYS):
                 if not "key{}".format(i) in self._record["keys"]:
                     break
-            self._record["keys"]["key{}".format(i)] = key + ":" + str(value)
+            self._record["keys"]["key{}".format(i)] = key_str
 
         else:
-            if slot >= self.MAX_KEYS:
-                self.logger.error("recorded has exceeded maximum keys")
+            if not 0 <= slot < self.MAX_KEYS:
+                self.logger.error(f"key slot {slot} out of range 0..{self.MAX_KEYS - 1}")
                 return False
-            self._record["keys"]["key{}".format(slot)] = key + ":" + str(value)
+            self._record["keys"]["key{}".format(slot)] = key_str
 
         return True
 

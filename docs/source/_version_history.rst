@@ -78,6 +78,8 @@ screenshots.
 * Test Portal channel logs, and the log on the Lente record page, use a monospace font and keep
   the indent of test item lines.  The Lente record page log now reads oldest line first.
 * System Log notices start with `SYS:` instead of `SYSTEM:`
+* `add_key()` returns `False` when `<name>:<value>` is longer than 64 characters, or the slot is
+  out of range, so the error shows on the station instead of when Lente stores the result
 * With `use_https`, stations only connect to a computer with the site's `cert.pem`,
   see :ref:`HTTPS <https>`
 * Test Portal channel number buttons start just that channel, while other channels keep testing
