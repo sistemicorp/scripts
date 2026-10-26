@@ -112,7 +112,7 @@ Clone Sistemi Scripts
   * In real production environment, the operator would scan a traveller to
     configure Prism to test a product.  Since this is a demo, we will select a
     test manually.
-  * Select the `Test Configuration` link in the left sidebar (1)
+  * Select `Test Configuration` in the left menu (1)
 
 .. image:: static/Screenshot_prism_demo_1.png
 
