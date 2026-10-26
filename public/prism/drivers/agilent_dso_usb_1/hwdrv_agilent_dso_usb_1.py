@@ -8,7 +8,7 @@ import os
 import logging
 from core.const import NOTICE_TYPE
 from core.sys_log import pub_notice
-import visa
+import pyvisa
 
 
 class HWDriver(object):
@@ -25,12 +25,20 @@ class HWDriver(object):
                     "public.prism.drivers.agilent_dso_usb_1.hwdrv_agilent_dso_usb_1"]
       },
 
+    or, for a scope on Ethernet,
+
+        "drivers": ["public.prism.drivers.fake.hwdrv_fake",
+                    ["public.prism.drivers.agilent_dso_usb_1.hwdrv_agilent_dso_usb_1",
+                     {"interface": "ethernet", "ip": "192.168.1.100"}]]
+
     drivers is a list, so multiple HWDriver can be installed.
 
     Create a single instance of an Agilent DSO of "type 1"
     - presumably most Agilent scopes are compatible with each other...
     - those that are compatible can share the same driver...(presumably)
-    - this driver supports USB attached devices, found with VISA, not pyudev
+    - this driver supports USB (default) or Ethernet attached devices, found with VISA,
+      not pyudev
+    - Ethernet uses VXI-11, TCPIP0::<ip>::INSTR, set the scope's IP from its Utility menu
     - See https://pyvisa.readthedocs.io/en/1.8/names.html
     - USB[board]::manufacturer ID::model code::serial number[::USB interface number][::INSTR]
     - DSO Agilent DSO7104B, returns ('USB0::2391::5981::MY49520121::0::INSTR',)
@@ -44,8 +52,12 @@ class HWDriver(object):
     USB permissions: (for the error, "Found a device whose serial number cannot be read")
     - https://stackoverflow.com/questions/52256123
       (unable to get full visa address that includes the serial number)
+    - not needed for Prism in Docker, on the host run sudo ./udev-install-usbusers.sh,
+      or for just the scope add a udev rule, /etc/udev/rules.d/99-agilent-dso.rules,
+        SUBSYSTEM=="usb", ATTR{idVendor}=="0957", ATTR{idProduct}=="175d", MODE="0666"
+      then, sudo udevadm control --reload-rules && sudo udevadm trigger, and re-plug the scope
 
-    NOTE: This driver assumes only one scope is attached to the PC via USB
+    NOTE: This driver assumes only one scope is attached to the PC
           and this scope is shared among the channels
     """
     SFN = os.path.basename(__file__)
@@ -53,6 +65,9 @@ class HWDriver(object):
     VERSION = "0.0.1"
     DRIVER_TYPE = "AGILENT_DSO_USB_1"
     QUERY_STRING = 'USB?::2391::5981::?*::?*::INSTR'  # look for USB Agilent scopes only...
+    TCPIP_RESOURCE = 'TCPIP0::{}::INSTR'
+    INTERFACES = ["usb", "ethernet"]
+    OPEN_TIMEOUT_MS = 5000
     # list of DSOs that accept the same command set
     WHITE_LIST = ["DSO7104B"]
 
@@ -63,8 +78,12 @@ class HWDriver(object):
         self._num_chan = 0  # not used in this driver
         self.instr = None
 
-    def discover_channels(self):
+    def discover_channels(self, scriptArgs=None):
         """ Determine the number of channels, and populate hw drivers into shared state
+
+        :param scriptArgs: None, or {"interface": "usb"|"ethernet", "ip": <ip address>}
+            interface = optional, default "usb"
+            ip = required when interface is "ethernet"
 
         [ {"id": i,                    # ~slot number of the channel (see Note 1)
            "version": <VERSION>,       # version of the driver
@@ -98,17 +117,40 @@ class HWDriver(object):
                 list:   List of installed driver dicts
         """
         sender = "{}.{}".format(self.SFN, __class__.__name__)
-        pub_notice("HWDriver:{}: Scanning for {}".format(self.SFN, self.DRIVER_TYPE), sender=sender)
+        scriptArgs = scriptArgs or {}
 
-        rm = visa.ResourceManager()
-        self.logger.info(rm.list_resources())
-        dso_agilent_usb_list = rm.list_resources(query=self.QUERY_STRING)
+        interface = scriptArgs.get("interface", "usb")
+        if interface not in self.INTERFACES:
+            self.logger.error("Unknown interface: {}".format(interface))
+            raise ValueError("Unknown driver argument interface: {}, use one of {}".format(
+                interface, self.INTERFACES))
+
+        if interface == "ethernet":
+            if "ip" not in scriptArgs:
+                self.logger.error("Missing required argument: ip")
+                raise ValueError("Missing required driver argument: ip")
+            resources = [self.TCPIP_RESOURCE.format(scriptArgs["ip"])]
+        else:
+            resources = None  # scanned below
+
+        pub_notice("HWDriver:{}: Scanning for {} on {}".format(self.SFN, self.DRIVER_TYPE,
+                                                               interface), sender=sender)
+
+        rm = pyvisa.ResourceManager()
+        if resources is None:
+            self.logger.info(rm.list_resources())
+            resources = rm.list_resources(query=self.QUERY_STRING)
 
         # find the first scope
         found = False
-        for dso in dso_agilent_usb_list:
-            self.instr = rm.open_resource(dso)
-            deets = self.instr.query('*IDN?').strip()
+        for dso in resources:
+            try:
+                instr = rm.open_resource(dso, open_timeout=self.OPEN_TIMEOUT_MS)
+                deets = instr.query('*IDN?').strip()
+            except Exception as e:
+                self.logger.error("{}: {}".format(dso, e))
+                continue
+
             for scope in self.WHITE_LIST:
                 # deets looks like: AGILENT TECHNOLOGIES,DSO7104B,MY49520121,06.00.0003
                 if scope in deets:
@@ -116,11 +158,14 @@ class HWDriver(object):
                     break
 
             if found:
-                self.logger.info("found: {} {}".format(found, deets))
+                self.instr = instr
+                self.logger.info("found: {} {}".format(dso, deets))
                 break
+            instr.close()
 
         if not found:
-            self.logger.error("No matching {} VISA instrument found".format(self.QUERY_STRING))
+            self.logger.error("No matching {} VISA instrument found".format(
+                resources if interface == "ethernet" else self.QUERY_STRING))
             pub_notice("HWDriver:{}: Error none found".format(
                 self.SFN), sender=sender, type=NOTICE_TYPE.ERROR)
 
@@ -150,3 +195,31 @@ class HWDriver(object):
 
     def close(self):
         self.instr.close()
+
+
+# ===============================================================================================
+# Debugging code
+# - Test your hardware discovery here by running this file from a terminal,
+#     $ cd ~/git/scripts
+#     $ python -m public.prism.drivers.agilent_dso_usb_1.hwdrv_agilent_dso_usb_1
+#   or from PyCharm (be sure to set the working directory as ~/git/scripts, else imports will fail)
+# - the purpose is to validate discover_channels() is working
+# - ~/git/scripts/core has stand-ins for the Prism core imports, pub_notice() only logs
+#
+if __name__ == '__main__':
+    logging.basicConfig()
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+
+    # USB is the default, for Ethernet give the scope's IP, for example,
+    #     $ python -m public.prism.drivers.agilent_dso_usb_1.hwdrv_agilent_dso_usb_1 192.168.1.100
+    import sys
+    args = {"interface": "ethernet", "ip": sys.argv[1]} if len(sys.argv) > 1 else None
+
+    d = HWDriver()
+    num_channels, driver_type, drivers = d.discover_channels(args)
+    logger.info("discover_channels: num channels {}, type {}, drivers {}".format(num_channels,
+                                                                                 driver_type,
+                                                                                 drivers))
+    if drivers:
+        d.close()

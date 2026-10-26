@@ -117,7 +117,9 @@ class HWDriver(object):
 # - ~/git/scripts/core has stand-ins for the Prism core imports, pub_notice() only logs
 #
 if __name__ == '__main__':
+    logging.basicConfig()
     logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
 
     d = HWDriver()
     d.discover_channels()

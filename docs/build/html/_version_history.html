@@ -126,6 +126,9 @@ see <a class="reference internal" href="prism_drivers.html"><span class="doc">Dr
 <li><p><cite>prism_dev.py</cite> runs scripts with <cite>subs</cite>, using each sub’s default or first choice</p></li>
 <li><p>The <cite>brother_ql</cite> driver supports one printer per channel, or with <cite>{“only_one”: true}</cite> one
 printer shared by all channels, see <a class="reference internal" href="prism_drivers.html#shared-drivers"><span class="std std-ref">Shared Drivers</span></a></p></li>
+<li><p>The <cite>agilent_dso_usb_1</cite> driver can find the scope on Ethernet, with
+<cite>{“interface”: “ethernet”, “ip”: “&lt;ip&gt;”}</cite>, see <a class="reference internal" href="prism_drivers.html#visa"><span class="std std-ref">VISA</span></a>.  USB is
+still the default.</p></li>
 </ul>
 <p>Bug fixes,</p>
 <ul class="simple">

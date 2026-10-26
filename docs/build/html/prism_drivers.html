@@ -155,7 +155,25 @@ for more information.</p>
 <li><p><a class="reference external" href="https://pypi.org/project/PyVISA">pyvisa</a></p></li>
 <li><p><a class="reference external" href="https://pypi.org/project/PyVISA-py">PyVISA-py</a></p></li>
 </ul>
-<p>An example of VISA driver based hardware is provided in the <cite>agilent_dso_usb_1</cite> driver example.</p>
+<p>An example of VISA driver based hardware is provided in the <cite>agilent_dso_usb_1</cite> driver example.
+It finds the scope on USB by default, or on Ethernet (VXI-11) with driver arguments,</p>
+<div class="highlight-JSON notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;drivers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="p">[</span><span class="s2">&quot;public.prism.drivers.agilent_dso_usb_1.hwdrv_agilent_dso_usb_1&quot;</span><span class="p">,</span>
+<span class="w">   </span><span class="p">{</span><span class="nt">&quot;interface&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ethernet&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;ip&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;192.168.1.100&quot;</span><span class="p">}]</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>On USB, Prism in its Docker container needs no udev rule, see <a class="reference internal" href="_deployment.html"><span class="doc">Deployment</span></a>.
+To run the driver or <cite>prism_dev.py</cite> on the host, your user account needs access to the scope,
+either for all USB devices with <cite>sudo ./udev-install-usbusers.sh</cite> from the scripts repo, or just
+for the scope with this rule (DSO7000 series, USB id <cite>0957:175d</cite>),</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;SUBSYSTEM==&quot;usb&quot;, ATTR{idVendor}==&quot;0957&quot;, ATTR{idProduct}==&quot;175d&quot;, MODE=&quot;0666&quot;&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>sudo<span class="w"> </span>tee<span class="w"> </span>/etc/udev/rules.d/99-agilent-dso.rules
+sudo<span class="w"> </span>udevadm<span class="w"> </span>control<span class="w"> </span>--reload-rules<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sudo<span class="w"> </span>udevadm<span class="w"> </span>trigger
+</pre></div>
+</div>
+<p>Then unplug and plug in the scope’s USB cable.  Without access, pyvisa logs
+<cite>Found a USB INSTR device whose serial number cannot be read</cite> and the driver finds no scope.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Error: Found a device whose serial number cannot be read</p>
@@ -170,7 +188,7 @@ for more information.</p>
 <li><p><cite>fake</cite> - simulated hardware, used by the example scripts, see <cite>hwdrv_fake.py</cite> for the driver API</p></li>
 <li><p><cite>teensy4</cite> - Teensy 4 based jig controller</p></li>
 <li><p><cite>A4401_BOND</cite> - Sistemi BOND (Bed of Nails Design) tester</p></li>
-<li><p><cite>agilent_dso_usb_1</cite> - Agilent oscilloscope over USB (VISA)</p></li>
+<li><p><cite>agilent_dso_usb_1</cite> - Agilent oscilloscope over USB or Ethernet (VISA)</p></li>
 <li><p><cite>brother_ql</cite> - Brother QL label printer</p></li>
 <li><p><cite>ble_listener</cite> - Bluetooth LE listener, uses the host BlueZ through the D-Bus mount in <cite>prism.sh</cite>.
 Loading a script fails if the Bluetooth adapter is off or missing.  Test the host with

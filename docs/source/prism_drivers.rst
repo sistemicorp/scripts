@@ -138,6 +138,28 @@ Prism includes these two PyPi VISA modules,
 
 
 An example of VISA driver based hardware is provided in the `agilent_dso_usb_1` driver example.
+It finds the scope on USB by default, or on Ethernet (VXI-11) with driver arguments,
+
+.. code-block:: JSON
+
+    "drivers": [
+      ["public.prism.drivers.agilent_dso_usb_1.hwdrv_agilent_dso_usb_1",
+       {"interface": "ethernet", "ip": "192.168.1.100"}]
+    ]
+
+On USB, Prism in its Docker container needs no udev rule, see :doc:`Deployment <_deployment>`.
+To run the driver or `prism_dev.py` on the host, your user account needs access to the scope,
+either for all USB devices with `sudo ./udev-install-usbusers.sh` from the scripts repo, or just
+for the scope with this rule (DSO7000 series, USB id `0957:175d`),
+
+.. code-block:: bash
+
+    echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="0957", ATTR{idProduct}=="175d", MODE="0666"' | \
+        sudo tee /etc/udev/rules.d/99-agilent-dso.rules
+    sudo udevadm control --reload-rules && sudo udevadm trigger
+
+Then unplug and plug in the scope's USB cable.  Without access, pyvisa logs
+`Found a USB INSTR device whose serial number cannot be read` and the driver finds no scope.
 
 .. note::
     Error: Found a device whose serial number cannot be read
@@ -155,7 +177,7 @@ These drivers are included in `public/prism/drivers`.  Several have a `README.md
 * `fake` - simulated hardware, used by the example scripts, see `hwdrv_fake.py` for the driver API
 * `teensy4` - Teensy 4 based jig controller
 * `A4401_BOND` - Sistemi BOND (Bed of Nails Design) tester
-* `agilent_dso_usb_1` - Agilent oscilloscope over USB (VISA)
+* `agilent_dso_usb_1` - Agilent oscilloscope over USB or Ethernet (VISA)
 * `brother_ql` - Brother QL label printer
 * `ble_listener` - Bluetooth LE listener, uses the host BlueZ through the D-Bus mount in `prism.sh`.
   Loading a script fails if the Bluetooth adapter is off or missing.  Test the host with

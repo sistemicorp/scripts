@@ -149,7 +149,9 @@ class HWDriver(object):
 #
 if __name__ == '__main__':
     import shutil
+    logging.basicConfig()
     logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
 
     work_dir = os.path.join("public", "actions-runner")
     made_work_dir = not os.path.isdir(work_dir)

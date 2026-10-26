@@ -97,6 +97,9 @@ screenshots.
 * `prism_dev.py` runs scripts with `subs`, using each sub's default or first choice
 * The `brother_ql` driver supports one printer per channel, or with `{"only_one": true}` one
   printer shared by all channels, see :ref:`Shared Drivers <prism_drivers:Shared Drivers>`
+* The `agilent_dso_usb_1` driver can find the scope on Ethernet, with
+  `{"interface": "ethernet", "ip": "<ip>"}`, see :ref:`VISA <prism_drivers:VISA>`.  USB is
+  still the default.
 
 Bug fixes,
 

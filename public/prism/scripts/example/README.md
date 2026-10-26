@@ -12,10 +12,10 @@
   * As an experiment, edit the driver (./public/prism/drivers/fake/fake.py) and change NUM_CHANNELS up to 4
 
 ## dso_v0
-* example connecting to an Agilent DSO7104B using the VISA modules
+* example connecting to an Agilent DSO7104B using the VISA modules, on USB or Ethernet
   * without the DSO, the system will fail to run the script
 * As an experiment, if you have a similiar Agilent DSO, you should be able to modify the driver and use your scope
-  * see ./public/station/drivers/agilent_dso_usb_1
+  * see ./public/prism/drivers/agilent_dso_usb_1
 
 ## teensy4_v0
 * Various Teensy4 scripts and examples.

@@ -1,5 +1,8 @@
 // Example: Connects to an Agilent DSO7000 DSO via VISA
 // !! NOTE: This example will only load if there is an Agilent DSO7000 Series on USB !!
+// For a scope on Ethernet, replace the agilent driver line with,
+//   ["public.prism.drivers.agilent_dso_usb_1.hwdrv_agilent_dso_usb_1",
+//    {"interface": "ethernet", "ip": "192.168.1.100"}]
 {
   "info": {
     "product": "pybrd_1",
