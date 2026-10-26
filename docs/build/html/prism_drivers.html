@@ -135,11 +135,11 @@ are called by every channel.  A shared driver usually sets them to <cite>None</c
 <a class="reference internal" href="#locking-shared-equipment">Locking Shared Equipment</a>.</p></li>
 </ul>
 <p>A driver can support both, with a script argument.  For example, the <cite>brother_ql</cite> and
-<cite>agilent_dso_usb_1</cite> drivers with <cite>{“only_one”: true}</cite> expect one instrument shared by all
+<cite>agilent_dso_usb_1</cite> drivers with <cite>{“shared”: true}</cite> expect one instrument shared by all
 channels, and finding more than one is an error.  Without it, there is one instrument per
 channel, in USB hub port order:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;drivers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;public.prism.drivers.fake.hwdrv_fake&quot;</span><span class="p">,</span>
-            <span class="p">[</span><span class="s2">&quot;public.prism.drivers.brother_ql.hwdrv_brother_ql&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;only_one&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">}]]</span>
+            <span class="p">[</span><span class="s2">&quot;public.prism.drivers.brother_ql.hwdrv_brother_ql&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;shared&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">}]]</span>
 </pre></div>
 </div>
 <p>Equipment is shared by the jigs (channels) of one Prism computer.  Sharing one instrument
@@ -348,7 +348,7 @@ set it next to a shared driver.</p></li>
 scope.  Only the models in the driver’s <cite>WHITE_LIST</cite> are used.</p>
 <ul class="simple">
 <li><p>Driver type: <cite>AGILENT_DSO_USB_1</cite>, the scope’s serial number is the <cite>unique_id</cite></p></li>
-<li><p><cite>{“only_one”: true}</cite> - one scope shared by all channels, finding more than one is an
+<li><p><cite>{“shared”: true}</cite> - one scope shared by all channels, finding more than one is an
 error.  Without it, there is one scope per channel.</p></li>
 <li><p><cite>{“interface”: “ethernet”, “ip”: …}</cite> - scopes on Ethernet (VXI-11), USB is the default.
 <cite>ip</cite> is one IP address, or a list with one IP per channel, in channel order.  Every scope in
@@ -357,7 +357,7 @@ the list must be found.</p></li>
 </ul>
 <div class="highlight-JSON notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;drivers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">  </span><span class="s2">&quot;public.prism.drivers.fake.hwdrv_fake&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="p">[</span><span class="s2">&quot;public.prism.drivers.agilent_dso_usb_1.hwdrv_agilent_dso_usb_1&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;only_one&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">}]</span>
+<span class="w">  </span><span class="p">[</span><span class="s2">&quot;public.prism.drivers.agilent_dso_usb_1.hwdrv_agilent_dso_usb_1&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;shared&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">}]</span>
 <span class="p">]</span>
 
 <span class="nt">&quot;drivers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
@@ -376,7 +376,7 @@ channel uses it.  A scope per jig uses input 1.  See <a class="reference externa
 <p>Brother QL label printer (QL-700) on USB, to print a label such as a serial number barcode.</p>
 <ul class="simple">
 <li><p>Driver type: <cite>Brother_QL</cite></p></li>
-<li><p><cite>{“only_one”: true}</cite> - one printer shared by all channels.  Without it, there is one printer
+<li><p><cite>{“shared”: true}</cite> - one printer shared by all channels.  Without it, there is one printer
 per channel, in USB hub port order.</p></li>
 <li><p><cite>{“test_label”: true}</cite> - print a test label when the script loads, the script fails
 validation if it cannot print.</p></li>

@@ -126,14 +126,16 @@ if it does not respond.  Prism no longer hangs on restart or exit while an item 
 <li><p>A HW driver can set <cite>play_poll_sec</cite> to call its <cite>play</cite> function more often than once a second,
 see <a class="reference internal" href="prism_drivers.html"><span class="doc">Drivers</span></a></p></li>
 <li><p><cite>prism_dev.py</cite> runs scripts with <cite>subs</cite>, using each sub’s default or first choice</p></li>
-<li><p>The <cite>brother_ql</cite> driver supports one printer per channel, or with <cite>{“only_one”: true}</cite> one
+<li><p>The <cite>brother_ql</cite> driver supports one printer per channel, or with <cite>{“shared”: true}</cite> one
 printer shared by all channels, see <a class="reference internal" href="prism_drivers.html#shared-drivers"><span class="std std-ref">Shared Drivers</span></a></p></li>
 <li><p>The <cite>agilent_dso_usb_1</cite> driver can find the scope on Ethernet, with
 <cite>{“interface”: “ethernet”, “ip”: “&lt;ip&gt;”}</cite>, see <a class="reference internal" href="prism_drivers.html#visa"><span class="std std-ref">VISA</span></a>.  USB is
 still the default.</p></li>
-<li><p>The <cite>agilent_dso_usb_1</cite> driver supports one scope per channel, or with <cite>{“only_one”: true}</cite>
+<li><p>The <cite>agilent_dso_usb_1</cite> driver supports one scope per channel, or with <cite>{“shared”: true}</cite>
 one scope shared by all channels, like <cite>brother_ql</cite>.  On Ethernet, <cite>ip</cite> can be a list with
 one IP per channel, see <a class="reference internal" href="prism_drivers.html#agilent-dso-usb-1"><span class="std std-ref">agilent_dso_usb_1</span></a>.</p></li>
+<li><p>The <cite>only_one</cite> argument of the <cite>brother_ql</cite> and <cite>agilent_dso_usb_1</cite> drivers is renamed
+<cite>shared</cite>, a script with <cite>only_one</cite> fails to load</p></li>
 <li><p>Drivers documentation: how to add test equipment to a jig, per jig or shared, locking shared
 equipment, and a section for each included driver, see <a class="reference internal" href="prism_drivers.html"><span class="doc">Drivers</span></a></p></li>
 <li><p>Prism Assistant <cite>add_equipment</cite> prompt, and the assistant records test equipment serial
@@ -170,8 +172,8 @@ Prism and Lente logs now include the commit hash.</p></li>
 starting, instead of failing the check.  See <a class="reference internal" href="_security.html#manifest-checking"><span class="std std-ref">Manifest Checking</span></a>.</p></li>
 <li><p>[BUGFIX] Lente Result Analytics charts kept showing the previous results when the filters were
 not valid, or the results database could not be read</p></li>
-<li><p>[BUGFIX] The <cite>brother_ql</cite> driver was always shared, even without <cite>only_one</cite>, and with
-<cite>only_one</cite> did not report finding more than one printer</p></li>
+<li><p>[BUGFIX] The <cite>brother_ql</cite> driver was always shared, even without <cite>{“shared”: true}</cite>, and
+when shared did not report finding more than one printer</p></li>
 <li><p>[BUGFIX] <cite>prism_dev.py</cite> accepted a shared driver (0 channels) with no driver items, which Prism
 rejects</p></li>
 </ul>
@@ -197,11 +199,11 @@ in <cite>public/prism/drivers</cite>.  They will be installed on the host comput
 <li><p>With <cite>use_https</cite>, every Prism/Lente computer of a site needs the same <cite>public/cert.pem</cite> and
 <cite>public/key.pem</cite>.  An upstream Lente needs a certificate from a public certificate authority.
 See <a class="reference internal" href="_security.html#https"><span class="std std-ref">HTTPS</span></a>.</p></li>
-<li><p>Scripts using the <cite>brother_ql</cite> driver without <cite>{“only_one”: true}</cite> now get one printer per
+<li><p>Scripts using the <cite>brother_ql</cite> driver without <cite>{“shared”: true}</cite> now get one printer per
 channel, and the number of printers must match the other drivers’ number of channels.  Add
-<cite>{“only_one”: true}</cite> to keep one shared printer.  Get the printer with
+<cite>{“shared”: true}</cite> to keep one shared printer.  Get the printer with
 <cite>get_drivers(self.chan, type=…)</cite>, as in the <cite>brother_v0</cite> example.</p></li>
-<li><p>The same applies to the <cite>agilent_dso_usb_1</cite> driver: add <cite>{“only_one”: true}</cite> to keep one
+<li><p>The same applies to the <cite>agilent_dso_usb_1</cite> driver: add <cite>{“shared”: true}</cite> to keep one
 shared scope, and get it with <cite>get_drivers(self.chan, type=…)</cite>, as in the <cite>dso_v0</cite> example.</p></li>
 </ul>
 </section>
