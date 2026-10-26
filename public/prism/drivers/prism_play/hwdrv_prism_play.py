@@ -81,6 +81,7 @@ class HWDriver(object):
                 list:   List of installed driver dicts
         """
         drivers = []
+        scriptArgs = scriptArgs or {}
 
         if "work_dir" not in scriptArgs:
             self.logger.error("Missing required argument: work_dir")
@@ -144,13 +145,24 @@ class HWDriver(object):
 #   or from PyCharm (be sure to set the working directory as ~/git/scripts, else imports will fail)
 # - the purpose is to validate discover_channels() is working
 # - ~/git/scripts/core has stand-ins for the Prism core imports, pub_notice() only logs
+# - the named pipes are made in public/actions-runner, which is removed when done
 #
 if __name__ == '__main__':
+    import shutil
     logger = logging.getLogger()
+
+    work_dir = os.path.join("public", "actions-runner")
+    made_work_dir = not os.path.isdir(work_dir)
+    os.makedirs(work_dir, exist_ok=True)
 
     d = HWDriver()
 
-    num_channels, driver_type, drivers = d.discover_channels()
+    num_channels, driver_type, drivers = d.discover_channels({"work_dir": "actions-runner",
+                                                              "channels": 2})
     logger.info("discover_channels: num channels {}, type {}, drivers {}".format(num_channels,
                                                                                  driver_type,
                                                                                  drivers))
+    for _d in drivers:
+        _d["close"]()
+    if made_work_dir:
+        shutil.rmtree(work_dir)
