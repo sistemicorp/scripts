@@ -127,6 +127,7 @@ def cmd_play(args, pipe):
     logger.error(f"Play command timed out after {args.timeout}s")
     return None
 
+
 if __name__ == '__main__':
     args = parse_args()
     exit_code = -1

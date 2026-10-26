@@ -26,7 +26,8 @@ class tst00xx(TestItem):
     def _scanner(self):
         """ The scanner driver for this channel, or None """
         drivers = self.shared_state.get_drivers(self.chan, type=DRIVER_TYPE_SCANNER)
-        if not drivers: return None
+        if not drivers:
+            return None
         return drivers[0]["obj"]["hwdrv"]
 
     def TST0xxTEARDOWN(self):
@@ -56,12 +57,14 @@ class tst00xx(TestItem):
         scanner = self._scanner()
 
         self.log_bullet("Scan barcode")
-        if scanner and ctx.item.args.get("ready_beep", True): scanner.ready_beep()
+        if scanner and ctx.item.args.get("ready_beep", True):
+            scanner.ready_beep()
         user_text = self.input_textbox("Scan:", "barcode", timeout=self.TEXTBOX_TIMEOUT_SEC)
 
         if not user_text["success"]:
             # timed out or aborted, stop restarting the script, Prism records the TIMEOUT
-            if scanner: scanner.stop_player()
+            if scanner:
+                scanner.stop_player()
             self.log_bullet("No scan: {}".format(user_text.get("err")))
             self.log_bullet("Press channel Start to resume")
             self.item_end(ResultAPI.RECORD_RESULT_FAIL)
@@ -84,6 +87,7 @@ class tst00xx(TestItem):
         self.log_bullet(_bullet)
 
         # a good scan (re)starts the automatic restarts, after a timeout and channel Start
-        if scanner: scanner.start_player()
+        if scanner:
+            scanner.start_player()
 
         self.item_end(_result)  # always last line of test

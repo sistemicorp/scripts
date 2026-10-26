@@ -105,7 +105,8 @@ class HWDriver(object):
         success, version = cli_version()
         if not success:
             self.logger.error(version)
-            pub_notice("HWDriver:{}: {}".format(self.SFN, version), sender=sender, type=NOTICE_TYPE.ERROR)
+            pub_notice("HWDriver:{}: {}".format(self.SFN, version),
+                       sender=sender, type=NOTICE_TYPE.ERROR)
             return -1, DRIVER_TYPE, []
         self.logger.info(version)
 

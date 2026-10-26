@@ -10,7 +10,7 @@ import logging
 import pyudev
 from core.sys_log import pub_notice
 
-from public.prism.drivers.segger.Segger import Segger, DRIVER_TYPE
+from public.prism.drivers.segger.Segger import DRIVER_TYPE
 
 # Information:
 # USB devices are found with pyudev, see https://pyudev.readthedocs.io

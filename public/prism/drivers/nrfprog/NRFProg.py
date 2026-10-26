@@ -10,13 +10,6 @@ import logging
 import threading
 import subprocess
 
-try:
-    # run locally
-    from stublogger import StubLogger
-except:
-    # run from prism
-    from public.prism.drivers.common.stublogger import StubLogger
-
 
 DRIVER_TYPE = "NRFJPROG"
 
@@ -33,14 +26,15 @@ def cli_version():
         result = subprocess.run([NRFJPROG_PATH, "--version"], capture_output=True,
                                 text=True, check=False, timeout=30)
     except FileNotFoundError:
-        return False, f"{NRFJPROG_PATH} not found, install nRF Command Line Tools, see drivers/nrfprog/README.md"
+        return False, (f"{NRFJPROG_PATH} not found, install nRF Command Line Tools, "
+                       "see drivers/nrfprog/README.md")
     except Exception as e:
         return False, f"{NRFJPROG_PATH} failed: {e}"
 
     if result.returncode != 0:
         # nrfjprog explains the failure in its first "ERROR:" line
         lines = (result.stdout + result.stderr).splitlines()
-        errors = [l for l in lines if l.startswith("ERROR:")] or lines[-1:]
+        errors = [ln for ln in lines if ln.startswith("ERROR:")] or lines[-1:]
         return False, f"{NRFJPROG_PATH} rc {result.returncode}: {' '.join(errors[:1])}"
 
     nrfjprog = re.search(r"nrfjprog version: (\S+)", result.stdout)
@@ -167,5 +161,3 @@ class NRFProg:
     #
     # Prism Player functions
     # ---------------------------------------------------------------------------------------------
-
-

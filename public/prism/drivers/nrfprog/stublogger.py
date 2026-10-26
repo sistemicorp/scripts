@@ -6,9 +6,11 @@ Martin Guthrie
 
 """
 
+
 class StubLogger(object):
     """ stubb out logger if none is provided"""
     # TODO: support print to console.
+
     def info(self, *args, **kwargs): pass
     def error(self, *args, **kwargs): pass
     def debug(self, *args, **kwargs): pass

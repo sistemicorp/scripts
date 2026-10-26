@@ -49,6 +49,7 @@ def test_stop_player_holds_jig_open_until_start():
 
 class FakeRun:
     """ Records subprocess.run calls, returns returncode """
+
     def __init__(self, returncode=0, raises=None):
         self.calls = []
         self.returncode = returncode
@@ -56,7 +57,8 @@ class FakeRun:
 
     def __call__(self, cmd, **kwargs):
         self.calls.append((cmd, kwargs))
-        if self.raises: raise self.raises
+        if self.raises:
+            raise self.raises
         return subprocess.CompletedProcess(cmd, self.returncode, stderr=b"no device")
 
 
@@ -173,6 +175,7 @@ def test_discover_two_scanners_is_one_channel(monkeypatch):
 
 class QuietScanner(Scanner):
     """ Counts ready beeps instead of playing them """
+
     def __init__(self):
         super().__init__()
         self.beeps = 0
@@ -188,7 +191,8 @@ def scan_item():
 
     def run(response, args=None):
         item = dict(script["tests"][0]["items"][0])
-        if args is not None: item["args"] = args
+        if args is not None:
+            item["args"] = args
         ss = SharedState()
         scanner = QuietScanner()
         ss.add_drivers(DRIVER_TYPE, [{"id": 0, "hwdrv": scanner}])
@@ -214,7 +218,8 @@ def test_scan_good_barcode(scan_item):
 def test_scan_ready_beep_arg(scan_item, ready_beep, beeps):
     # [Edge] ready_beep false turns the beep off, absent means on
     args = {"regex": load_script()["tests"][0]["items"][0]["args"]["regex"]}
-    if ready_beep is not None: args["ready_beep"] = ready_beep
+    if ready_beep is not None:
+        args["ready_beep"] = ready_beep
     _, scanner = scan_item({"success": True, "textbox": "P001-S00123", "err": None},
                            args=prism_dev.attrdict(args))
     assert scanner.beeps == beeps

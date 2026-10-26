@@ -38,10 +38,12 @@ class HWDriver(object):
     - query('*IDN?') returns
         AGILENT TECHNOLOGIES,DSO7104B,MY49520121,06.00.0003
 
-    - see http://ridl.cfd.rit.edu/products/manuals/Agilent/oscilloscopes/InfiniiVision7000/InfiniiVision7000_series_prog_guide.pdf
+    - see Agilent InfiniiVision 7000 Series Oscilloscopes Programmer's Guide,
+      InfiniiVision7000_series_prog_guide.pdf
 
     USB permissions: (for the error, "Found a device whose serial number cannot be read")
-    - https://stackoverflow.com/questions/52256123/unable-to-get-full-visa-address-that-includes-the-serial-number
+    - https://stackoverflow.com/questions/52256123
+      (unable to get full visa address that includes the serial number)
 
     NOTE: This driver assumes only one scope is attached to the PC via USB
           and this scope is shared among the channels
@@ -119,7 +121,8 @@ class HWDriver(object):
 
         if not found:
             self.logger.error("No matching {} VISA instrument found".format(self.QUERY_STRING))
-            pub_notice("HWDriver:{}: Error none found".format(self.SFN), sender=sender, type=NOTICE_TYPE.ERROR)
+            pub_notice("HWDriver:{}: Error none found".format(
+                self.SFN), sender=sender, type=NOTICE_TYPE.ERROR)
 
             # if no scope is found, the test fixture cannot operate, returning
             # an error here will indicate a system fail and won't proceed to testing

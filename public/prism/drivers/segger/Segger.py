@@ -10,7 +10,7 @@ import threading
 try:
     # run locally
     from stublogger import StubLogger
-except:
+except ImportError:
     # run from prism
     from public.prism.drivers.common.stublogger import StubLogger
 
@@ -26,8 +26,10 @@ class Segger:
     def __init__(self, port, loggerIn=None):
         self.lock = threading.Lock()
 
-        if loggerIn: self.logger = loggerIn
-        else: self.logger = StubLogger()
+        if loggerIn:
+            self.logger = loggerIn
+        else:
+            self.logger = StubLogger()
 
         self.port = port
         self.rpc = None
@@ -43,15 +45,13 @@ class Segger:
 
     def close(self):
         """  Close connection
-          
+
         :return:
         """
         return True
 
     # ----------------------------------------------------------------------------------------------
     # Helper Functions
-
-
 
     # Helper Functions
     # ----------------------------------------------------------------------------------------------
@@ -61,7 +61,6 @@ class Segger:
     #
     # all functions return dict: { "success": <True/False>, "result": { key: value, ... }}
 
-
     #
     # API (wrapper functions)
     # ---------------------------------------------------------------------------------------------
@@ -69,9 +68,6 @@ class Segger:
     # Prism Player functions
     #
 
-
     #
     # Prism Player functions
     # ---------------------------------------------------------------------------------------------
-
-

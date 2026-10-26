@@ -33,7 +33,8 @@ class pydso(TestItem):
         self.dso_ch = self.chan + 1
 
     def PYDSO000SETUP(self):
-        """ Get driver from SharedState Open DSO and get DSO name, serial number, and save it to the record
+        """ Get driver from SharedState Open DSO and get DSO name, serial number,
+        and save it to the record
         - need to create a lock so that multiple channels can lock this shard resource
 
         {"id": "PYDSO000SETUP",           "enable": true },
@@ -91,7 +92,8 @@ class pydso(TestItem):
 
         vpp = self.dso.query(':MEASure:VPP? CHANnel{}'.format(chan))
         value = float(vpp)
-        success, _result, _bullet = ctx.record.measurement("VPP{}".format(chan), value, ResultAPI.UNIT_VOLTS)
+        success, _result, _bullet = ctx.record.measurement(
+            "VPP{}".format(chan), value, ResultAPI.UNIT_VOLTS)
 
         self.log_bullet("Switched to channel {}".format(chan))
         self.log_bullet(_bullet)
@@ -127,19 +129,22 @@ class pydso(TestItem):
         vpp = self.dso.query(':MEASure:VPP? CHANnel{}'.format(self.dso_ch))
         value = float(vpp)
         self.logger.info("VPP: {}".format(value))
-        success, _result, _bullet = ctx.record.measurement("VPP{}".format(self.dso_ch), value, ResultAPI.UNIT_VOLTS)
+        success, _result, _bullet = ctx.record.measurement(
+            "VPP{}".format(self.dso_ch), value, ResultAPI.UNIT_VOLTS)
         self.log_bullet(_bullet)
 
         dc = self.dso.query(':MEASure:DUTYcycle? CHANnel{}'.format(self.dso_ch))
         dc = float(dc)
         self.logger.info("DC: {}".format(dc))
-        success, _result, _bullet = ctx.record.measurement("DUTYCYCLE{}".format(self.dso_ch), dc, ResultAPI.UNIT_FLOAT)
+        success, _result, _bullet = ctx.record.measurement(
+            "DUTYCYCLE{}".format(self.dso_ch), dc, ResultAPI.UNIT_FLOAT)
         self.log_bullet(_bullet)
 
         freq = self.dso.query(':MEASure:FREQ? CHANnel{}'.format(self.dso_ch))
         freq = float(freq)
         self.logger.info("FREQ: {}".format(dc))
-        success, _result, _bullet = ctx.record.measurement("FREQ{}".format(self.dso_ch), freq, ResultAPI.UNIT_FLOAT)
+        success, _result, _bullet = ctx.record.measurement(
+            "FREQ{}".format(self.dso_ch), freq, ResultAPI.UNIT_FLOAT)
         self.log_bullet(_bullet)
 
         self.shared_lock(self.DSO).release()
@@ -149,4 +154,3 @@ class pydso(TestItem):
         ctx = self.item_start()  # always first line of test
 
         self.item_end()  # always last line of test
-

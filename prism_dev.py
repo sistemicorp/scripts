@@ -49,6 +49,7 @@ class attrdict(dict):
 
     Use `'key' in a`, not `hasattr(a, 'key')`, as a consequence of the above.
     """
+
     def __init__(self, *args, **kwargs):
         # We trust the dict to init itself better than we can.
         dict.__init__(self, *args, **kwargs)
@@ -125,7 +126,8 @@ def play_poll_sec(value):
 
 class ChanCon(object):
 
-    def __init__(self, num=0, script=None, shared_state=None, script_filename="UNKNOWN", operator="UNKNOWN"):
+    def __init__(self, num=0, script=None, shared_state=None, script_filename="UNKNOWN",
+                 operator="UNKNOWN"):
         self.logger = logging.getLogger("{}.{}".format(__class__.__name__, num))
         self.ch = num
         self.script = script
@@ -140,7 +142,8 @@ class ChanCon(object):
     def item_start(self):
         d = {"item": self._item,
              "config": self.script["config"],
-             # item dict from the script, ex {"id": "TST000", "enable": true,  "args": {"min": 0, "max": 2}}
+             # item dict from the script,
+             # ex {"id": "TST000", "enable": true,  "args": {"min": 0, "max": 2}}
              "options": self._options,  # options dict from the script, ex { "fail_fast": false }
              "record": self.record,
 
@@ -199,7 +202,8 @@ class ChanCon(object):
 
             if _num_channels >= 0:  # add to shared state if all good
                 shared = False
-                if _num_channels == 0: shared = True
+                if _num_channels == 0:
+                    shared = True
                 self.shared_state.add_drivers(driver_type, drivers, shared)
 
                 # call the player function if exist, ignore result, but see logs
@@ -223,7 +227,8 @@ class ChanCon(object):
                 num_channels = _num_channels
             elif num_channels != _num_channels:
                 self.logger.error(
-                    "{} - number channels {} does not match previous HWDRV".format(hwdriver, _num_channels))
+                    "{} - number channels {} does not match previous HWDRV".format(
+                        hwdriver, _num_channels))
                 raise ValueError('Mismatch number of channels between HW Drivers')
 
         self.num_channels = num_channels
@@ -237,7 +242,8 @@ class ChanCon(object):
             while not _play:
                 _play = play()
                 self.logger.info("player: {}".format(_play))
-                if not _play: time.sleep(poll_sec)
+                if not _play:
+                    time.sleep(poll_sec)
 
         for test in self.script["tests"]:
             fail_fast = self.script["config"].get("fail_fast", True)
@@ -251,7 +257,8 @@ class ChanCon(object):
             self.logger.debug("class: {}".format(klass))
 
             test_module_klass = getattr(test_module, klass)
-            test_klass = test_module_klass(controller=self, chan=self.ch, shared_state=self.shared_state)
+            test_klass = test_module_klass(
+                controller=self, chan=self.ch, shared_state=self.shared_state)
 
             for item in test["items"]:
                 self.logger.info("ITEM: {}".format(item))
@@ -265,7 +272,8 @@ class ChanCon(object):
                     func = getattr(test_klass, item["id"])
                     func()
 
-                    if fail_fast and self.record.record_meta_get_result() != ResultAPI.RECORD_RESULT_PASS:
+                    _meta_result = self.record.record_meta_get_result()
+                    if fail_fast and _meta_result != ResultAPI.RECORD_RESULT_PASS:
                         break
 
             # run teardown if not done so already
@@ -311,14 +319,17 @@ def setup_logging(log_file_name_prefix="log", level=logging.INFO, path="./log"):
 
     log_file_name_prefix = os.path.basename(log_file_name_prefix)
 
-    if not os.path.exists(path): os.makedirs(path)
+    if not os.path.exists(path):
+        os.makedirs(path)
 
     # Here we define our formatter
-    FORMAT = "%(relativeCreated)5d %(filename)30s:%(lineno)4s - %(name)30s:%(funcName)20s() %(levelname)-5.5s : %(message)s"
+    FORMAT = ("%(relativeCreated)5d %(filename)30s:%(lineno)4s - %(name)30s:%(funcName)20s() "
+              "%(levelname)-5.5s : %(message)s")
     formatter = logging.Formatter(FORMAT)
 
     allLogHandler_filename = os.path.join(path, "".join([log_file_name_prefix, ".log"]))
-    allLogHandler = handlers.RotatingFileHandler(allLogHandler_filename, maxBytes=1024 * 1024, backupCount=4)
+    allLogHandler = handlers.RotatingFileHandler(
+        allLogHandler_filename, maxBytes=1024 * 1024, backupCount=4)
     allLogHandler.setLevel(logging.INFO)
     allLogHandler.setFormatter(formatter)
 
@@ -354,8 +365,8 @@ def parse_args():
     """
     epilog = """
 Usage examples:
-    python prism_dev.py --script ./public/prism/scripts/example/prod_v0/prod_0.scr 
-    python prism_dev.py --script ./public/prism/scripts/example/pybrd_v0/pybrd_0.scr 
+    python prism_dev.py --script ./public/prism/scripts/example/prod_v0/prod_0.scr
+    python prism_dev.py --script ./public/prism/scripts/example/pybrd_v0/pybrd_0.scr
     python prism_dev.py --lint --script ./public/prism/scripts/example/prod_v0/prod_1.scr
 
 Sistemi Corporation, copyright, all rights reserved, 2019-2025
@@ -410,15 +421,20 @@ def apply_sub_defaults(script):
     """
     replacements = []
     for name, sub in script.get("subs", {}).items():
-        if "default" in sub: value = sub["default"]
-        elif sub.get("choices"): value = sub["choices"][0]
-        elif sub.get("type") == "num": value = SUB_PLACEHOLDER_NUM
-        else: value = SUB_PLACEHOLDER_STR
+        if "default" in sub:
+            value = sub["default"]
+        elif sub.get("choices"):
+            value = sub["choices"][0]
+        elif sub.get("type") == "num":
+            value = SUB_PLACEHOLDER_NUM
+        else:
+            value = SUB_PLACEHOLDER_STR
         logger.info("sub {} = {}".format(name, value))
         replacements.append({name: str(value)})
 
     script_text = find_sub_items_replace(json.dumps(script), replacements)
-    if script_text is None: return None
+    if script_text is None:
+        return None
     script = jstyleson.loads(script_text)
     script.pop("subs", None)
     return script

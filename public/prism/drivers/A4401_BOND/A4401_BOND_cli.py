@@ -6,9 +6,9 @@ Owen Li, Martin Guthrie
 
 This CLI provides a linux CLI interface to Teensy4 SimpleRPC.
 
-Example:  (note the starting folder)
+Example:  (run from public/prism/drivers/A4401_BOND)
 
-(venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/A4401_BOND$ python A4401_BOND_cli.py -p /dev/ttyACM0 version
+$ python A4401_BOND_cli.py -p /dev/ttyACM0 version
 
 
 """
@@ -41,9 +41,9 @@ def parse_args():
                             GPIO number (0-41)
         --state {True,False}  True|False
 
-    Examples:
-    (venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/A4401_BOND$ python A4401_BOND_cli.py -p /dev/ttyACM0 version
-    (venv) martin@martin-ThinkPad-L13:~/git/scripts/public/prism/drivers/A4401_BOND$ python A4401_BOND_cli.py -p /dev/ttyACM0 -n iox_led_green --enable
+    Examples:  (run from public/prism/drivers/A4401_BOND)
+    $ python A4401_BOND_cli.py -p /dev/ttyACM0 version
+    $ python A4401_BOND_cli.py -p /dev/ttyACM0 -n iox_led_green --enable
     """
     parser = argparse.ArgumentParser(description='A4401_BOND_cli',
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -56,17 +56,20 @@ def parse_args():
                         help='Do not send the header definition to BOND (presumed previously '
                              'initialized), the file is still read for pin lookups')
 
-    parser.add_argument("-v", '--verbose', dest='verbose', default=0, action='count', help='Increase verbosity')
+    parser.add_argument("-v", '--verbose', dest='verbose', default=0,
+                        action='count', help='Increase verbosity')
 
     subp = parser.add_subparsers(dest="_cmd", help='commands')
 
     led_toggle_parser = subp.add_parser('led')
-    led_toggle_parser.add_argument('--on',  dest="_on", action='store_true', help='led on', default=False, required=False)
-    led_toggle_parser.add_argument('--off', dest="_off", action='store_true', help='led off', default=False, required=False)
+    led_toggle_parser.add_argument('--on', dest="_on", action='store_true',
+                                   help='led on', default=False, required=False)
+    led_toggle_parser.add_argument('--off', dest="_off", action='store_true',
+                                   help='led off', default=False, required=False)
 
-    uid_parser = subp.add_parser('uid')
+    subp.add_parser('uid')
 
-    version_parser = subp.add_parser('version')
+    subp.add_parser('version')
 
     write_gpio = subp.add_parser('write_gpio')
     write_gpio.add_argument('--pin-number',
@@ -75,7 +78,8 @@ def parse_args():
                             type=int,
                             help='GPIO number (0-41)',
                             default=None, required=True)
-    write_gpio.add_argument('--state', dest="_state", choices=('1', '0'), help='True|False', required=True)
+    write_gpio.add_argument('--state', dest="_state", choices=('1', '0'),
+                            help='True|False', required=True)
 
     read_gpio = subp.add_parser('read_gpio')
     read_gpio.add_argument('--pin-number',
@@ -107,74 +111,70 @@ def parse_args():
 
     bist_voltage = subp.add_parser('bist_voltage')
     bist_voltage.add_argument('--name',
-                           dest="_name",
-                           action='store',
-                           type=str,
-                           help='name (V6V, V5V, V3V3A, V3V3D, V2V5NEG)',
-                           default=None, required=True)
+                              dest="_name",
+                              action='store',
+                              type=str,
+                              help='name (V6V, V5V, V3V3A, V3V3D, V2V5NEG)',
+                              default=None, required=True)
 
-    vbat_read = subp.add_parser('vbat_read')
+    subp.add_parser('vbat_read')
     vbat_set = subp.add_parser('vbat_set')
     vbat_set.add_argument('--mv',
-                           dest="_mv",
-                           action='store',
-                           type=int,
-                           help='voltage, 1500-5000 mV, 50 mV steps',
-                           required=True,
-                           default=500)
+                          dest="_mv",
+                          action='store',
+                          type=int,
+                          help='voltage, 1500-5000 mV, 50 mV steps',
+                          required=True,
+                          default=500)
 
-    vdut_read = subp.add_parser('vdut_read')
+    subp.add_parser('vdut_read')
     vdut_set = subp.add_parser('vdut_set')
     vdut_set.add_argument('--mv',
-                           dest="_mv",
-                           action='store',
-                           type=int,
-                           help='voltage, 1000-9000 mV',
-                           required=True,
-                           default=500)
+                          dest="_mv",
+                          action='store',
+                          type=int,
+                          help='voltage, 1000-9000 mV',
+                          required=True,
+                          default=500)
 
-    iox_led_green = subp.add_parser('iox_led_green',
-                                    description="Enable/Disable Green LED (PASS indicator on Jig)")
+    iox_led_green = subp.add_parser(
+        'iox_led_green', description="Enable/Disable Green LED (PASS indicator on Jig)")
     iox_led_green.add_argument('--enable',
-                           dest="_enable",
-                           action='store_true',
-                           help='Assert LED GREEN',
-                           default=False)
+                               dest="_enable",
+                               action='store_true',
+                               help='Assert LED GREEN',
+                               default=False)
 
-    iox_led_yellow = subp.add_parser('iox_led_yellow',
-                                     description="Enable/Disable Yellow LED")
+    iox_led_yellow = subp.add_parser('iox_led_yellow', description="Enable/Disable Yellow LED")
     iox_led_yellow.add_argument('--enable',
-                           dest="_enable",
-                           action='store_true',
-                           help='Assert LED YELLOW',
-                           default=False)
+                                dest="_enable",
+                                action='store_true',
+                                help='Assert LED YELLOW',
+                                default=False)
 
-    iox_led_red = subp.add_parser('iox_led_red',
-                                  description="Enable/Disable RED LED (FAIL indicator on Jig)")
+    iox_led_red = subp.add_parser(
+        'iox_led_red', description="Enable/Disable RED LED (FAIL indicator on Jig)")
     iox_led_red.add_argument('--enable',
-                           dest="_enable",
-                           action='store_true',
-                           help='Assert LED RED',
-                           default=False)
+                             dest="_enable",
+                             action='store_true',
+                             help='Assert LED RED',
+                             default=False)
 
-    iox_led_blue = subp.add_parser('iox_led_blue',
-                                   description="Enable/Disable BLUE LED")
+    iox_led_blue = subp.add_parser('iox_led_blue', description="Enable/Disable BLUE LED")
     iox_led_blue.add_argument('--enable',
-                           dest="_enable",
-                           action='store_true',
-                           help='Assert LED BLUE',
-                           default=False)
+                              dest="_enable",
+                              action='store_true',
+                              help='Assert LED BLUE',
+                              default=False)
 
-    vdut_en = subp.add_parser('vdut_en',
-                                  description="Enable/Disable VDUT SMPS (TPS55289)")
+    vdut_en = subp.add_parser('vdut_en', description="Enable/Disable VDUT SMPS (TPS55289)")
     vdut_en.add_argument('--enable',
-                           dest="_enable",
-                           action='store_true',
-                           help='Assert VDUTSMPS_EN',
-                           default=False)
+                         dest="_enable",
+                         action='store_true',
+                         help='Assert VDUTSMPS_EN',
+                         default=False)
 
-    vdut_con = subp.add_parser('vdut_con',
-                               description="Connect/Disconnect VDUT to the DUT")
+    vdut_con = subp.add_parser('vdut_con', description="Connect/Disconnect VDUT to the DUT")
     vdut_con.add_argument('--enable',
                           dest="_enable",
                           action='store_true',
@@ -184,91 +184,87 @@ def parse_args():
     subp.add_parser('vdut_get_fault', description="Get VDUT TPS55289 faults")
     subp.add_parser('vdut_reset', description="Reset VDUT TPS55289")
 
-    vbus_en = subp.add_parser('vbus_en',
-                              description="Enable/Disable VBUS, External USB-C (HDR3 port 9)")
+    vbus_en = subp.add_parser(
+        'vbus_en', description="Enable/Disable VBUS, External USB-C (HDR3 port 9)")
     vbus_en.add_argument('--enable',
                          dest="_enable",
                          action='store_true',
                          help='Assert VBUS',
                          default=False)
 
-    iox_vbat_en = subp.add_parser('iox_vbat_en',
-                                  description="Enable/Disable VBAT")
+    iox_vbat_en = subp.add_parser('iox_vbat_en', description="Enable/Disable VBAT")
     iox_vbat_en.add_argument('--enable',
-                           dest="_enable",
-                           action='store_true',
-                           help='Assert VBAT_EN',
-                           default=False)
+                             dest="_enable",
+                             action='store_true',
+                             help='Assert VBAT_EN',
+                             default=False)
 
-    iox_vbat_con = subp.add_parser('iox_vbat_con',
-                                   description="Enable/Disable VBAT Connect to DUT")
+    iox_vbat_con = subp.add_parser('iox_vbat_con', description="Enable/Disable VBAT Connect to DUT")
     iox_vbat_con.add_argument('--enable',
-                           dest="_enable",
-                           action='store_true',
-                           help='Assert VBAT_CON',
-                           default=False)
+                              dest="_enable",
+                              action='store_true',
+                              help='Assert VBAT_CON',
+                              default=False)
 
-    iox_selftest = subp.add_parser('iox_selftest',
-                                  description="Enable/Disable SELFTEST")
+    iox_selftest = subp.add_parser('iox_selftest', description="Enable/Disable SELFTEST")
     iox_selftest.add_argument('--enable',
-                           dest="_enable",
-                           action='store_true',
-                           help='Assert SELFTEST',
-                           default=False)
+                              dest="_enable",
+                              action='store_true',
+                              help='Assert SELFTEST',
+                              default=False)
 
-    bond_max_hdr_adc_cal = subp.add_parser('bond_max_hdr_adc_cal',
-                                           description="Read Header Calibration voltage, 2500mV")
+    bond_max_hdr_adc_cal = subp.add_parser(
+        'bond_max_hdr_adc_cal', description="Read Header Calibration voltage, 2500mV")
     bond_max_hdr_adc_cal.add_argument('--header',
-                           dest="_hdr",
-                           action='store',
-                           type=int,
-                           help='header, 1-4',
-                           required=True,
-                           default=1)
+                                      dest="_hdr",
+                                      action='store',
+                                      type=int,
+                                      help='header, 1-4',
+                                      required=True,
+                                      default=1)
 
-    bond_max_hdr_adc = subp.add_parser('bond_max_hdr_adc',
-                                       description="Read Header Pin ADC Voltage in mV")
+    bond_max_hdr_adc = subp.add_parser(
+        'bond_max_hdr_adc', description="Read Header Pin ADC Voltage in mV")
     bond_max_hdr_adc.add_argument('--header',
-                           dest="_hdr",
-                           action='store',
-                           type=int,
-                           help='header, 1-4',
-                           required=True,
-                           default=1)
+                                  dest="_hdr",
+                                  action='store',
+                                  type=int,
+                                  help='header, 1-4',
+                                  required=True,
+                                  default=1)
     bond_max_hdr_adc.add_argument('--pin',
-                           dest="_pin",
-                           action='store',
-                           type=int,
-                           help='pin, 1-20, but not all pins have function',
-                           required=True,
-                           default=1)
+                                  dest="_pin",
+                                  action='store',
+                                  type=int,
+                                  help='pin, 1-20, but not all pins have function',
+                                  required=True,
+                                  default=1)
 
-    bond_max_hdr_dac = subp.add_parser('bond_max_hdr_dac',
-                                       description="Write Header Pin DAC Voltage in mV")
+    bond_max_hdr_dac = subp.add_parser(
+        'bond_max_hdr_dac', description="Write Header Pin DAC Voltage in mV")
     bond_max_hdr_dac.add_argument('--header',
-                           dest="_hdr",
-                           action='store',
-                           type=int,
-                           help='header, 1-4',
-                           required=True,
-                           default=1)
+                                  dest="_hdr",
+                                  action='store',
+                                  type=int,
+                                  help='header, 1-4',
+                                  required=True,
+                                  default=1)
     bond_max_hdr_dac.add_argument('--pin',
-                           dest="_pin",
-                           action='store',
-                           type=int,
-                           help='pin, 1-20, but not all pins have function',
-                           required=True,
-                           default=1)
+                                  dest="_pin",
+                                  action='store',
+                                  type=int,
+                                  help='pin, 1-20, but not all pins have function',
+                                  required=True,
+                                  default=1)
     bond_max_hdr_dac.add_argument('--mv',
-                           dest="_mv",
-                           action='store',
-                           type=int,
-                           help='DAC output voltage 0-10000 mV',
-                           required=True,
-                           default=2500)
+                                  dest="_mv",
+                                  action='store',
+                                  type=int,
+                                  help='DAC output voltage 0-10000 mV',
+                                  required=True,
+                                  default=2500)
 
-    bond_max_hdr_gpo = subp.add_parser('bond_max_hdr_gpo',
-                                       description="Write Header Pin GPO state")
+    bond_max_hdr_gpo = subp.add_parser('bond_max_hdr_gpo', description="Write Header Pin GPO state")
     bond_max_hdr_gpo.add_argument('--header', dest="_hdr", action='store', type=int,
                                   help='header, 1-4', required=True)
     bond_max_hdr_gpo.add_argument('--pin', dest="_pin", action='store', type=int,
@@ -276,8 +272,7 @@ def parse_args():
     bond_max_hdr_gpo.add_argument('--enable', dest="_enable", action='store_true',
                                   help='GPO high', default=False)
 
-    bond_max_hdr_gpi = subp.add_parser('bond_max_hdr_gpi',
-                                       description="Read Header Pin GPI state")
+    bond_max_hdr_gpi = subp.add_parser('bond_max_hdr_gpi', description="Read Header Pin GPI state")
     bond_max_hdr_gpi.add_argument('--header', dest="_hdr", action='store', type=int,
                                   help='header, 1-4', required=True)
     bond_max_hdr_gpi.add_argument('--pin', dest="_pin", action='store', type=int,
@@ -290,17 +285,13 @@ def parse_args():
     subp.add_parser('bond_batt_emu_cal', description="Recalibrate the battery emulator")
     subp.add_parser('list', description="List the BOND RPC methods")
 
-    debug_batt_emu = subp.add_parser('debug_batt_emu',
-                                     description="BOND debug battery emulator")
+    subp.add_parser('debug_batt_emu', description="BOND debug battery emulator")
 
-    status = subp.add_parser('status',
-                                       description="Get status")
+    subp.add_parser('status', description="Get status")
 
-    sequence = subp.add_parser('sequence',
-                                       description="Runs commands in sequence")
+    subp.add_parser('sequence', description="Runs commands in sequence")
 
-    temperature = subp.add_parser('temperature',
-                                       description="Get temperature")
+    subp.add_parser('temperature', description="Get temperature")
 
     # add new commands here...
 
@@ -343,7 +334,8 @@ def write_gpio(args):
     logging.info("write_gpio: {}".format(args))
 
     _state = True
-    if args._state == '0': _state = False
+    if args._state == '0':
+        _state = False
 
     response = teensy.write_gpio(args._pin_number, _state)
     logging.info("{}".format(response))
@@ -599,8 +591,8 @@ def sequence(args):
     logging.info("{}".format(response))
     response = teensy.iox_vbat_con(True)
     logging.info("{}".format(response))
-    #response = teensy.iox_selftest(True)
-    #logging.info("{}".format(response))
+    # response = teensy.iox_selftest(True)
+    # logging.info("{}".format(response))
 
     try:
         while True:
@@ -622,11 +614,14 @@ if __name__ == '__main__':
     exit_code = 0
 
     if args.verbose == 0:
-        logging.basicConfig(level=logging.INFO, format='%(filename)20s %(levelname)6s %(lineno)4s %(message)s')
+        logging.basicConfig(level=logging.INFO,
+                            format='%(filename)20s %(levelname)6s %(lineno)4s %(message)s')
     else:
-        logging.basicConfig(level=logging.DEBUG, format='%(filename)20s %(levelname)6s %(lineno)4s %(message)s')
+        logging.basicConfig(level=logging.DEBUG,
+                            format='%(filename)20s %(levelname)6s %(lineno)4s %(message)s')
 
-    header_def = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pogo_hdr_definition._json")
+    header_def = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                              "pogo_hdr_definition._json")
     teensy = A4401_BOND(args.port, loggerIn=logging, header_def_filename=header_def)
 
     success = teensy.init(configure_headers=not args._skip_init)

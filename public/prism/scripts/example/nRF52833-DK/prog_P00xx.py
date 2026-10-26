@@ -10,7 +10,7 @@ from core.test_item import TestItem
 from public.prism.api import ResultAPI
 import os
 
-from public.prism.drivers.nrfprog.NRFProg import NRFProg, DRIVER_TYPE
+from public.prism.drivers.nrfprog.NRFProg import DRIVER_TYPE
 
 NRF52833DK_ASSETS_PATH = "./public/prism/scripts/example/nRF52833-DK/assets"
 
@@ -20,6 +20,7 @@ class prog_P00xx(TestItem):
     """ Python Methods for nRF52833-DK programming
 
     """
+
     def __init__(self, controller, chan, shared_state):
         super().__init__(controller, chan, shared_state)
         self.logger = logging.getLogger("nrfdk.{}".format(self.chan))
@@ -74,7 +75,7 @@ class prog_P00xx(TestItem):
         file_path = os.path.join(NRF52833DK_ASSETS_PATH, ctx.item.file)
 
         if not os.path.isfile(file_path):
-            self.log_bullet(f"file not found")
+            self.log_bullet("file not found")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
@@ -89,4 +90,3 @@ class prog_P00xx(TestItem):
             return
 
         self.item_end()  # always last line of test
-

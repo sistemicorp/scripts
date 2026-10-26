@@ -54,9 +54,12 @@ class Scanner(object):
     not through this driver.  The driver restarts the script after each scan,
     so the operator just keeps scanning.
     """
+
     def __init__(self, loggerIn=None):
-        if loggerIn: self.logger = loggerIn
-        else: self.logger = StubLogger()
+        if loggerIn:
+            self.logger = loggerIn
+        else:
+            self.logger = StubLogger()
 
         self._player_stopped = False
         self._close = False
@@ -85,7 +88,8 @@ class Scanner(object):
             self._audio_warn("'aplay' not found in PATH")
             return
         cmd = [self._aplay, "-q"]
-        if AUDIO_DEVICE: cmd += ["-D", AUDIO_DEVICE]
+        if AUDIO_DEVICE:
+            cmd += ["-D", AUDIO_DEVICE]
         cmd.append("-")  # WAV from stdin
         try:
             result = subprocess.run(cmd, input=self._beep, stdout=subprocess.DEVNULL,
@@ -104,7 +108,8 @@ class Scanner(object):
 
     def start_player(self):
         """ Restart the script after each scan """
-        if self._player_stopped: self.logger.info("start_player")
+        if self._player_stopped:
+            self.logger.info("start_player")
         self._player_stopped = False
 
     def player_stopped(self):

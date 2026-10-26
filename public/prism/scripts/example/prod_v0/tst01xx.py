@@ -32,7 +32,7 @@ class tst01xx(TestItem):
         ctx = self.item_start()  # always first line of test
         self.sleep(self.DEMO_TIME_DELAY * random() * self.DEMO_TIME_RND_ENABLE)
 
-        self.item_end() # always last line of test
+        self.item_end()  # always last line of test
 
     def TST0xxTEARDOWN(self):
         """  Always called at the end of testing
@@ -57,7 +57,7 @@ class tst01xx(TestItem):
         # example of taking multiple measurements, and sending as a list of results
         # if any test fails, this test item fails
         # This test has a failure message in the script, depending on the failure mode,
-        #"fail": [ {"fid": "TST100-0", "msg": "Component R1"} ] }
+        # "fail": [ {"fid": "TST100-0", "msg": "Component R1"} ] }
         FAIL_ID = 0
 
         measurement_results = []
@@ -95,7 +95,7 @@ class tst01xx(TestItem):
         self.log_bullet(_bullet)
         measurement_results.append(_result)
 
-        self.item_end(item_result_state=measurement_results) # always last line of test
+        self.item_end(item_result_state=measurement_results)  # always last line of test
 
     def TST101_Skip(self):
         """ Example of a test that is skipped
@@ -110,4 +110,4 @@ class tst01xx(TestItem):
 
         self.sleep(self.DEMO_TIME_DELAY * random() * self.DEMO_TIME_RND_ENABLE)
 
-        self.item_end() # always last line of test
+        self.item_end()  # always last line of test

@@ -12,7 +12,7 @@ from public.prism.drivers.prism_play.prism_play_pipe import PrismPlayPipe
 try:
     # run locally
     from stublogger import StubLogger
-except:
+except ImportError:
     # run from prism
     from public.prism.drivers.common.stublogger import StubLogger
 
@@ -122,7 +122,7 @@ class PrismPlay(object):
         elif p is True:
             status = PrismPlayPipe.Status.COMPLETE
             result = PrismPlayPipe.Result.PASS
-        else: # TODO: Check meaning of this status
+        else:  # TODO: Check meaning of this status
             status = PrismPlayPipe.Status.IDLE
             result = None
 

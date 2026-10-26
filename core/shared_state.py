@@ -74,7 +74,7 @@ class SharedState(object):
 
             # create the new lock
             _lock = threading.Lock()
-            self._shared["common"]["rsrc_locks"].append({"name": name, "lock":_lock})
+            self._shared["common"]["rsrc_locks"].append({"name": name, "lock": _lock})
             self.logger.debug("created {}".format(name))
             return _lock
 
@@ -136,12 +136,15 @@ class SharedState(object):
             return False
 
         has_slot = False
-        if drivers[0].get("slot", False): has_slot = True
+        if drivers[0].get("slot", False):
+            has_slot = True
 
         with self.lock:
             if not shared:
-                if has_slot: drivers_sorted = sorted(drivers, key=itemgetter('slot'))
-                else: drivers_sorted = sorted(drivers, key=itemgetter('id'))
+                if has_slot:
+                    drivers_sorted = sorted(drivers, key=itemgetter('slot'))
+                else:
+                    drivers_sorted = sorted(drivers, key=itemgetter('id'))
 
                 for idx, d in enumerate(drivers_sorted):
                     dd = {"channel": idx, "type": type, "obj": d}
@@ -163,7 +166,8 @@ class SharedState(object):
         drivers = []
         with self.lock:
             for driver in self._shared["drivers"]:
-                if driver["channel"] not in [channel, None]: continue
+                if driver["channel"] not in [channel, None]:
+                    continue
                 if type in [None, driver["type"]]:
                     drivers.append(driver)
 
@@ -173,7 +177,8 @@ class SharedState(object):
         """ Get the whole shared state
         :return: self._shared dict
         """
-        with self.lock: return self._shared
+        with self.lock:
+            return self._shared
 
     def state_set_ch(self, ch, state):
         with self.lock:

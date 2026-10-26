@@ -44,7 +44,8 @@ def make_pdf(codes, out_file):
 
     with tempfile.TemporaryDirectory() as tmp:
         for idx, code in enumerate(codes):
-            if idx % per_page == 0: pdf.add_page()
+            if idx % per_page == 0:
+                pdf.add_page()
             col = idx % COLS
             row = (idx % per_page) // COLS
             x = MARGIN_X_MM + col * CELL_W_MM

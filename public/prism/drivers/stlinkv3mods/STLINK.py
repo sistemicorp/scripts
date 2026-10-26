@@ -26,7 +26,8 @@ def cli_version():
         result = subprocess.run([STLINK_CLI_PATH, "--version"], capture_output=True,
                                 text=True, check=False, timeout=30)
     except FileNotFoundError:
-        return False, f"{STLINK_CLI_PATH} not found, install STM32CubeProgrammer, see drivers/stlinkv3mods/README.md"
+        return False, (f"{STLINK_CLI_PATH} not found, install STM32CubeProgrammer, "
+                       "see drivers/stlinkv3mods/README.md")
     except Exception as e:
         return False, f"{STLINK_CLI_PATH} failed: {e}"
 
@@ -119,5 +120,3 @@ class STLINKprog:
     #
     # Prism Player functions
     # ---------------------------------------------------------------------------------------------
-
-

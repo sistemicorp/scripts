@@ -35,19 +35,20 @@ def parse_args():
 
     Getting Help for a command:
     $ python3 fake_cli.py version --help
-      
+
     """
     parser = argparse.ArgumentParser(description='teensy4_cli',
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
                                      epilog=epilog)
 
-    parser.add_argument("-v", '--verbose', dest='verbose', default=0, action='count', help='Increase verbosity')
+    parser.add_argument("-v", '--verbose', dest='verbose', default=0,
+                        action='count', help='Increase verbosity')
 
     subp = parser.add_subparsers(dest="_cmd", help='commands')
 
-    uid_parser = subp.add_parser('uid')
+    subp.add_parser('uid')
 
-    version_parser = subp.add_parser('version')
+    subp.add_parser('version')
 
     # add new commands here...
 
@@ -74,9 +75,11 @@ if __name__ == '__main__':
     exit_code = 0
 
     if args.verbose == 0:
-        logging.basicConfig(level=logging.INFO, format='%(filename)20s %(levelname)6s %(lineno)4s %(message)s')
+        logging.basicConfig(level=logging.INFO,
+                            format='%(filename)20s %(levelname)6s %(lineno)4s %(message)s')
     else:
-        logging.basicConfig(level=logging.DEBUG, format='%(filename)20s %(levelname)6s %(lineno)4s %(message)s')
+        logging.basicConfig(level=logging.DEBUG,
+                            format='%(filename)20s %(levelname)6s %(lineno)4s %(message)s')
 
     fake = Fake(loggerIn=logging)
 

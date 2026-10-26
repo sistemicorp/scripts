@@ -100,14 +100,14 @@ class HWDriver(object):
             _id = _driver.id()
 
             if remote_version != VERSION:
-                self.logger.error("{} has unexpected version {} != {}".format(_id, remote_version, VERSION))
+                self.logger.error("{} has unexpected version {} != {}".format(
+                    _id, remote_version, VERSION))
                 continue
 
             # ... perform any other validation of the remote hardware as required here
 
             # create the dict with keys expected by Prism
             _d = {'id': _id,
-                  "version": VERSION,
                   "hwdrv": _driver,
                   "unique_id": _driver.unique_id(),
                   "version": _driver.version(),
@@ -125,7 +125,7 @@ class HWDriver(object):
             pub_notice("HWDriver:{}: Found channel {}".format(self.SFN, i),
                        sender="{}.{}".format(self.SFN, __class__.__name__))
 
-        self._num_chan = 0 # this example driver is a shared driver
+        self._num_chan = 0  # this example driver is a shared driver
         self.logger.info("{} channels found".format(self._num_chan))
         return self._num_chan, DRIVER_TYPE, drivers
 

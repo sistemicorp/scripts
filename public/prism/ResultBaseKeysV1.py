@@ -53,7 +53,8 @@ class ResultBaseKeysV1(ResultBaseClass):
     "setCustomJSONB"
     - adds a postgres JSONB object to the database, which can be indexed
     - effectively allows any fields to be posted in the backend DB
-    - this object is global scope from a test item pov, there is only ONE of these for all test items
+    - this object is global scope from a test item pov, there is only ONE of these for all
+      test items
 
     "getCustomJSONB"
     - getter
@@ -62,7 +63,8 @@ class ResultBaseKeysV1(ResultBaseClass):
     def __init__(self, chan_num, operator="UNKNOWN", script_filename="UNKNOWN"):
         super().__init__(chan_num, operator, script_filename)
         self.logger = logging.getLogger("{}.{}".format(__class__.__name__, chan_num))
-        self._record["meta"]["processor"] = __class__.__name__.lower()  # processor is tied to db name, which must be lowercase
+        # processor is tied to db name, which must be lowercase
+        self._record["meta"]["processor"] = __class__.__name__.lower()
         self._record["keys"] = {}
         self.logger.info("DONE")
 
@@ -82,7 +84,8 @@ class ResultBaseKeysV1(ResultBaseClass):
 
             # find the next empty slot (key#) and insert the key:value
             for i in range(self.MAX_KEYS):
-                if not "key{}".format(i) in self._record["keys"]: break
+                if not "key{}".format(i) in self._record["keys"]:
+                    break
             self._record["keys"]["key{}".format(i)] = key + ":" + str(value)
 
         else:
@@ -152,7 +155,8 @@ class ResultBaseKeysV1(ResultBaseClass):
         self.logger.info("blob {} saved".format(d["name"]))
         return True, None
 
-    def measurement(self, name, value, unit=ResultAPI.UNIT_NONE, min=None, max=None, force_fail=False):
+    def measurement(self, name, value, unit=ResultAPI.UNIT_NONE, min=None, max=None,
+                    force_fail=False):
         """ Check and store a measurement
         - performs a check on the value, returning one of ResultAPI.RECORD_RESULT_*
         - all values are stored as strings in the dB, converted here
@@ -211,8 +215,10 @@ class ResultBaseKeysV1(ResultBaseClass):
             return False, ResultAPI.RECORD_RESULT_INTERNAL_ERROR, msg
 
         if isinstance(value, float):
-            if min is not None: min = float(min)
-            if max is not None: max = float(max)
+            if min is not None:
+                min = float(min)
+            if max is not None:
+                max = float(max)
         elif isinstance(value, str):
             value = value.rstrip()
 
@@ -223,37 +229,49 @@ class ResultBaseKeysV1(ResultBaseClass):
         d = {"name": lname, "unit": unit}
 
         if isinstance(min, float) and isinstance(max, float) and isinstance(value, float):
-            if force_fail: _pass = ResultAPI.RECORD_RESULT_FAIL
-            elif min <= value <= max: _pass = ResultAPI.RECORD_RESULT_PASS
-            else: _pass = ResultAPI.RECORD_RESULT_FAIL
+            if force_fail:
+                _pass = ResultAPI.RECORD_RESULT_FAIL
+            elif min <= value <= max:
+                _pass = ResultAPI.RECORD_RESULT_PASS
+            else:
+                _pass = ResultAPI.RECORD_RESULT_FAIL
             d["min"] = "{:.9g}".format(min)
             d["max"] = "{:.9g}".format(max)
             d["value"] = "{:.9g}".format(value)
-            _bullet = "{}: {} <= {} <= {} {} :: {}".format(name, d["min"], d["value"], d["max"], unit, _pass)
+            _bullet = "{}: {} <= {} <= {} {} :: {}".format(
+                name, d["min"], d["value"], d["max"], unit, _pass)
             self.logger.info(_bullet)
 
         elif isinstance(min, int) and isinstance(max, int) and isinstance(value, int):
-            if force_fail: _pass = ResultAPI.RECORD_RESULT_FAIL
-            elif min <= value <= max: _pass = ResultAPI.RECORD_RESULT_PASS
-            else: _pass = ResultAPI.RECORD_RESULT_FAIL
+            if force_fail:
+                _pass = ResultAPI.RECORD_RESULT_FAIL
+            elif min <= value <= max:
+                _pass = ResultAPI.RECORD_RESULT_PASS
+            else:
+                _pass = ResultAPI.RECORD_RESULT_FAIL
             d["min"] = "{}".format(str(min))
             d["max"] = "{}".format(str(max))
             d["value"] = "{}".format(str(value))
-            _bullet = "{}: {} <= {} <= {} {} :: {}".format(name, d["min"], d["value"], d["max"], unit, _pass)
+            _bullet = "{}: {} <= {} <= {} {} :: {}".format(
+                name, d["min"], d["value"], d["max"], unit, _pass)
             self.logger.info(_bullet)
 
         # this needs to be before 'isinstance(value, (int, float, str))', because boolean is an int
         elif min is None and max is None and isinstance(value, bool):
             _pass = ResultAPI.RECORD_RESULT_PASS
-            if force_fail: _pass = ResultAPI.RECORD_RESULT_FAIL
-            elif not value: _pass = ResultAPI.RECORD_RESULT_FAIL
+            if force_fail:
+                _pass = ResultAPI.RECORD_RESULT_FAIL
+            elif not value:
+                _pass = ResultAPI.RECORD_RESULT_FAIL
             d["value"] = f"{value}"
             _bullet = "{}: {} {} :: {}".format(name, d["value"], unit, _pass)
             self.logger.info(_bullet)
 
         elif min is None and max is None and isinstance(value, (int, float, str)):
-            if force_fail: _pass = ResultAPI.RECORD_RESULT_FAIL
-            else: _pass = ResultAPI.RECORD_RESULT_PASS
+            if force_fail:
+                _pass = ResultAPI.RECORD_RESULT_FAIL
+            else:
+                _pass = ResultAPI.RECORD_RESULT_PASS
             d["min"] = None
             d["max"] = None
             if unit == ResultAPI.UNIT_INT:
@@ -272,12 +290,14 @@ class ResultBaseKeysV1(ResultBaseClass):
             self.logger.info(_bullet)
 
         else:
-            if force_fail: _pass = ResultAPI.RECORD_RESULT_FAIL
-            else: _pass = ResultAPI.RECORD_RESULT_INTERNAL_ERROR
+            if force_fail:
+                _pass = ResultAPI.RECORD_RESULT_FAIL
+            else:
+                _pass = ResultAPI.RECORD_RESULT_INTERNAL_ERROR
             _bullet = "{}: {} <= {} <= {} {} ERR".format(name, min, value, max, unit)
             self.logger.error(_bullet)
             self.logger.error(f"types: min {type(min)}, value {type(value)}, max {type(max)}")
-            if not (type(min) == type(value) == type(max)):
+            if not (type(min) is type(value) is type(max)):
                 self.logger.error("Types are not all the same.")
             return False, _pass, _bullet
 

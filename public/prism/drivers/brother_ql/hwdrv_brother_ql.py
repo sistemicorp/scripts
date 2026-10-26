@@ -79,7 +79,8 @@ class BrotherQL(object):
         except Exception as e:
             self.logger.error("Failed to make path for {}: {}".format(self.WORKING_PATH, e))
             notice = "ERROR path {} failed".format(self.WORKING_PATH)
-            pub_notice(notice, sender="{}._make_dirs".format(__class__.__name__), type=NOTICE_TYPE.ERROR)
+            pub_notice(notice, sender="{}._make_dirs".format(
+                __class__.__name__), type=NOTICE_TYPE.ERROR)
 
         self.lock = Lock()
         self.path = path  # this is the linux usb path, /dev/usb/lp0
@@ -115,7 +116,8 @@ class BrotherQL(object):
 
         if not kept_lines:
             if suppressed_count:
-                self.logger.debug("%s contained only suppressed warning(s): %d", prefix, suppressed_count)
+                self.logger.debug("%s contained only suppressed warning(s): %d",
+                                  prefix, suppressed_count)
             return
 
         info_lines = []
@@ -162,7 +164,7 @@ class BrotherQL(object):
         img = Image.new('RGB', (696, 309), color='white')
 
         d = ImageDraw.Draw(img)
-        font_path = os.path.join(self.DRIVER_PATH,'TIMES.TTF')
+        font_path = os.path.join(self.DRIVER_PATH, 'TIMES.TTF')
         self.logger.info(font_path)
         font = ImageFont.truetype(font_path, 50)
         d.text((10, 10), "RUID:{}".format(chan), fill=(0, 0, 0), font=font)
@@ -195,7 +197,8 @@ class BrotherQL(object):
     def _print_label(self, img_path):
         brother_ql = os.path.abspath(self.DRIVER_PATH + "/brother_ql")
 
-        create_cmd = f'python3 {brother_ql}/brother_ql_create.py --model {self.model} {img_path} > {self.WORKING_PATH}/label.bin'
+        create_cmd = (f'python3 {brother_ql}/brother_ql_create.py --model {self.model} {img_path}'
+                      f' > {self.WORKING_PATH}/label.bin')
         self.logger.debug("create_cmd: %s", create_cmd)
 
         try:
@@ -418,7 +421,8 @@ class HWDriver(object):
 
         printers = self._find_brother_printers(context)
         for _, devnode, manufacturer, product, usb_sys_name in printers:
-            self.logger.info("Found printer: %s %s at %s (usb=%s)", manufacturer, product, devnode, usb_sys_name)
+            self.logger.info("Found printer: %s %s at %s (usb=%s)",
+                             manufacturer, product, devnode, usb_sys_name)
             drivers.append({"id": id,
                             "version": VERSION,
                             "hwdrv": BrotherQL(id, devnode, model=product),
@@ -430,7 +434,8 @@ class HWDriver(object):
 
         if not drivers:
             self.logger.error("printer not found")
-            pub_notice("HWDriver:{}: Error none found".format(self.SFN), sender="discover_channels", type=NOTICE_TYPE.ERROR)
+            pub_notice("HWDriver:{}: Error none found".format(self.SFN),
+                       sender="discover_channels", type=NOTICE_TYPE.ERROR)
             return -1, DRIVER_TYPE, []
 
         # do not allow the test script validation step to succeed if can't print a test label
@@ -440,7 +445,8 @@ class HWDriver(object):
                 success = d["hwdrv"].print_ruid_barcode("id{}-{}".format(id, path))
                 if not success:
                     self.logger.error("failed to print")
-                    pub_notice("HWDriver:{}: failed to print".format(self.SFN), sender="discover_channels", type=NOTICE_TYPE.ERROR)
+                    pub_notice("HWDriver:{}: failed to print".format(self.SFN),
+                               sender="discover_channels", type=NOTICE_TYPE.ERROR)
                     return -1, DRIVER_TYPE, []
 
         pub_notice("HWDriver:{}: found {}".format(self.SFN, id),
@@ -459,6 +465,7 @@ class HWDriver(object):
     def close(self):
         self.logger.info("closed")
 
+
 # ===============================================================================================
 # Debugging code
 # - Test your hardware discovery here by running this file from a terminal,
@@ -469,12 +476,13 @@ class HWDriver(object):
 # - ~/git/scripts/core has stand-ins for the Prism core imports, pub_notice() only logs
 #
 if __name__ == '__main__':
-    FORMAT = "%(relativeCreated)5d %(filename)30s:%(lineno)4d - %(name)30s:%(funcName)20s() %(levelname)-5.5s : %(message)s"
-    logging.basicConfig(level=logging.INFO, format=FORMAT )
+    FORMAT = ("%(relativeCreated)5d %(filename)30s:%(lineno)4d - %(name)30s:%(funcName)20s() "
+              "%(levelname)-5.5s : %(message)s")
+    logging.basicConfig(level=logging.INFO, format=FORMAT)
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
 
     d = HWDriver()
-    #d.discover_channels()
+    # d.discover_channels()
     d.discover_channels({"test_label": True})
     logger.info("Number channels: {}".format(d.num_channels()))

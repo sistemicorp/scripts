@@ -12,10 +12,13 @@ from public.prism.api import ResultAPI
 from public.prism.drivers.teensy4.hwdrv_teensy4 import DRIVER_TYPE
 
 # file and class name must match
+
+
 class teensy400xx(TestItem):
     """ Python Methods for Teensy 4
 
     """
+
     def __init__(self, controller, chan, shared_state):
         super().__init__(controller, chan, shared_state)
         self.logger = logging.getLogger("teensy400xx.{}".format(self.chan))
@@ -76,14 +79,17 @@ class teensy400xx(TestItem):
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
             return
 
-        if set: buttons = ["ON", "Fail"]
-        else: buttons = ["OFF", "Fail"]
+        if set:
+            buttons = ["ON", "Fail"]
+        else:
+            buttons = ["OFF", "Fail"]
         user_select = self.input_button(buttons)
 
         if user_select["success"]:
             b_idx = user_select["button"]
             self.log_bullet("{} was pressed!".format(buttons[b_idx]))
-            _, _result, _bullet = ctx.record.measurement("button", b_idx, ResultAPI.UNIT_INT, min=0, max=0)
+            _, _result, _bullet = ctx.record.measurement(
+                "button", b_idx, ResultAPI.UNIT_INT, min=0, max=0)
             self.log_bullet(_bullet)
 
         else:
@@ -95,13 +101,13 @@ class teensy400xx(TestItem):
     def T020_init_gpio(self):
         """ In this test a GPIO is initialized
 
-        {"id": "T020_init_gpio",            "enable": true, "pin_number": 5, "mode": "GPIO_MODE_OUTPUT"},
+        {"id": "T020_init_gpio", "enable": true, "pin_number": 5, "mode": "GPIO_MODE_OUTPUT"},
 
         where,
          pin_number: <0-41>
          mode: <GPIO_MODE_INPUT|GPIO_MODE_INPUT_PULLUP|GPIO_MODE_OUTPUT>
         """
-        ctx = self.item_start() #always first line of test
+        ctx = self.item_start()  # always first line of test
 
         pin_number = ctx.item.get("pin_number", None)
 
@@ -143,7 +149,7 @@ class teensy400xx(TestItem):
         where,
          pin_number: <0-41>
         """
-        ctx = self.item_start() #always first line of test
+        ctx = self.item_start()  # always first line of test
 
         pin_number = ctx.item.get("pin_number", None)
 
@@ -178,7 +184,7 @@ class teensy400xx(TestItem):
          pin_number: <0-41>
          state: <1/0> or <trule/false>
         """
-        ctx = self.item_start() #always first line of test
+        ctx = self.item_start()  # always first line of test
 
         pin_number = ctx.item.get("pin_number", None)
 
@@ -214,14 +220,15 @@ class teensy400xx(TestItem):
     def T050_read_adc(self):
         """ In this test a GPIO is read
 
-        {"id": "T050_read_adc",            "enable": true, "pin_number": 5, "sample_num": 4, "sample_rate": 12},
+        {"id": "T050_read_adc", "enable": true, "pin_number": 5, "sample_num": 4,
+         "sample_rate": 12},
 
         where,
          pin_number: <0-41>
          sample_num: number of samples to average
          sample_rate: milliseconds between each sample
         """
-        ctx = self.item_start() #always first line of test
+        ctx = self.item_start()  # always first line of test
 
         pin_number = ctx.item.get("pin_number", None)
 
@@ -244,7 +251,8 @@ class teensy400xx(TestItem):
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
             return
 
-        self.log_bullet("Reading Analog Pin {}, {} times with an interval of {} ms".format(pin_number, sample_num, sample_rate))
+        self.log_bullet("Reading Analog Pin {}, {} times with an interval of {} ms".format(
+            pin_number, sample_num, sample_rate))
 
         answer = self.teensy.read_adc(pin_number, sample_num, sample_rate)
         self.logger.info(answer)

@@ -11,6 +11,8 @@ from public.prism.api import ResultAPI
 from public.prism.drivers.brother_ql.hwdrv_brother_ql import DRIVER_TYPE as BROTHER_DRIVER
 
 # file and class name must match
+
+
 class brthr00xx(TestItem):
     """ Brother Label Printer Example
 
@@ -60,4 +62,3 @@ class brthr00xx(TestItem):
             return
 
         self.item_end()  # always last line of test
-

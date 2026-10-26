@@ -71,7 +71,8 @@ class HWDriver(object):
         context = pyudev.Context()
         for device in context.list_devices(subsystem="usb", DEVTYPE="usb_device"):
             manufacturer = device.attributes.get("manufacturer")
-            if manufacturer is None: continue
+            if manufacturer is None:
+                continue
             manufacturer = manufacturer.decode(errors="replace")
             if any(m in manufacturer for m in self.SCANNER_MANUFACTURERS):
                 self.logger.info("{}: {}".format(manufacturer, device.device_path))

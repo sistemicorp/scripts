@@ -31,7 +31,8 @@ def parse_args():
     """
     epilog = """
 Usage examples:
-    python3 prism_result_scan.py --result ./public/result/state/result_5e63895a-a5d8-47f9-a89c-cf669173bd16.json 
+    python3 prism_result_scan.py \
+        --result ./public/result/state/result_5e63895a-a5d8-47f9-a89c-cf669173bd16.json
 
     """
     parser = argparse.ArgumentParser(description='prism_result_scan',
@@ -88,7 +89,6 @@ def scan_result_file(f):
         print("Success!! There are no duplicate keys")
 
 
-
 def main():
     """ Script to list all the measurement keys found in a result record
     and report if there are any duplicates.
@@ -102,4 +102,3 @@ def main():
 if __name__ == "__main__":
     retcode = main()
     sys.exit(retcode)
-

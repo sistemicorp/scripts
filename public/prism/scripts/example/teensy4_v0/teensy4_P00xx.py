@@ -10,7 +10,6 @@ from core.test_item import TestItem
 from public.prism.api import ResultAPI
 import subprocess
 import os
-import glob
 import pyudev
 
 from public.prism.drivers.common.list_serial import serial_ports
@@ -45,6 +44,7 @@ class teensy4_P00xx(TestItem):
     https://forum.pjrc.com/threads/71624-teensy_loader_cli-with-multiple-Teensys-connected?p=316838#post316838
 
     """
+
     def __init__(self, controller, chan, shared_state):
         super().__init__(controller, chan, shared_state)
         self.logger = logging.getLogger("teensy400xx.{}".format(self.chan))
@@ -94,7 +94,7 @@ class teensy4_P00xx(TestItem):
         _cnt = result.count('Teensyduino')
         self.log_bullet(f"Teensys on USB: {_cnt}")
         if _cnt != 1:
-            self.log_bullet(f"Unexpected count")
+            self.log_bullet("Unexpected count")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
@@ -111,12 +111,12 @@ class teensy4_P00xx(TestItem):
         file_path = os.path.join(TEENSY4_ASSETS_PATH, ctx.item.file)
 
         if not os.path.isfile(file_path):
-            self.log_bullet(f"file not found")
+            self.log_bullet("file not found")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
         self.log_bullet(f"{ctx.item.file}")
-        self.log_bullet(f"Press Teensy Button")
+        self.log_bullet("Press Teensy Button")
 
         self.shared_lock(DRIVER_TYPE).acquire()
 
@@ -133,22 +133,22 @@ class teensy4_P00xx(TestItem):
 
         # expected output looks like,
         #   Teensy Loader, Command Line, Version 2.2
-        #   Read "./public/prism/scripts/example/teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
+        #   Read ".../teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
         #   Waiting for Teensy device...
         #    (hint: press the reset button)
         #   Found HalfKay Bootloader
-        #   Read "./public/prism/scripts/example/teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
+        #   Read ".../teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
         #   Programming..................................................................
         #   Booting
 
         # check for some key words to confirm success
         if not result.count('Programming'):
-            self.log_bullet(f"Unexpected Programming")
+            self.log_bullet("Unexpected Programming")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
         if not result.count('Booting'):
-            self.log_bullet(f"Unexpected Booting")
+            self.log_bullet("Unexpected Booting")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
@@ -181,16 +181,16 @@ class teensy4_P00xx(TestItem):
             _teensy = Teensy4(port, loggerIn=logging.getLogger("teensy.try"))
             success = _teensy.init()
             if not success:
-                self.log_bullet(f"Failed init")
+                self.log_bullet("Failed init")
                 self.logger.error("failed on {}...".format(port))
 
             else:
-                self.log_bullet(f"Found teensy")
+                self.log_bullet("Found teensy")
                 found_teensy = True
                 break
 
         if not found_teensy:
-            self.log_bullet(f"Teensy not found")
+            self.log_bullet("Teensy not found")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
@@ -245,7 +245,7 @@ class teensy4_P00xx(TestItem):
         self.logger.info("Found teensy4: {} {}, chan {}".format(driver, id, self.chan))
 
         self._teensy_usb_path = driver["obj"]["usb_path"]  # cache for after update reconnect
-        #self._teensy_port = driver["obj"]["port"]  # cache for after update reconnect
+        # self._teensy_port = driver["obj"]["port"]  # cache for after update reconnect
         self.teensy = driver["obj"]["hwdrv"]
 
         success = self.teensy.init()
@@ -273,7 +273,7 @@ class teensy4_P00xx(TestItem):
 
         file_path = os.path.join(TEENSY4_ASSETS_PATH, ctx.item.file)
         if not os.path.isfile(file_path):
-            self.log_bullet(f"file not found")
+            self.log_bullet("file not found")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
@@ -309,11 +309,11 @@ class teensy4_P00xx(TestItem):
 
             # expected output looks like,
             #   Teensy Loader, Command Line, Version 2.2
-            #   Read "./public/prism/scripts/example/teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
+            #   Read ".../teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
             #   Waiting for Teensy device...
             #    (hint: press the reset button)
             #   Found HalfKay Bootloader
-            #   Read "./public/prism/scripts/example/teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
+            #   Read ".../teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
             #   Programming..................................................................
             #   Booting
 
@@ -329,7 +329,7 @@ class teensy4_P00xx(TestItem):
         self.shared_lock(DRIVER_TYPE).release()
 
         if not success:
-            self.log_bullet(f"teensy_loader_cli failed")
+            self.log_bullet("teensy_loader_cli failed")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
@@ -343,7 +343,8 @@ class teensy4_P00xx(TestItem):
                 which will include the port.
 
         Example USB Device path:
-        'usb_path': '/devices/pci0000:00/0000:00:08.1/0000:03:00.3/usb1/1-2/1-2.1/1-2.1.4/1-2.1.4.1/1-2.1.4.1:1.0/tty/ttyACM3'
+        'usb_path': '/devices/pci0000:00/0000:00:08.1/0000:03:00.3/usb1/1-2/1-2.1/1-2.1.4/'
+                    '1-2.1.4.1/1-2.1.4.1:1.0/tty/ttyACM3'
 
         :param ref_path: path to find the longest match
         :return: string port (example ttyACM0)
@@ -389,7 +390,7 @@ class teensy4_P00xx(TestItem):
 
         port = self._find_matching_ttyACM_from_usb_path(self._teensy_usb_path)
         if port is None:
-            self.log_bullet(f"Failed find port")
+            self.log_bullet("Failed find port")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
@@ -399,12 +400,12 @@ class teensy4_P00xx(TestItem):
         self.teensy = Teensy4(port, loggerIn=logging.getLogger("teensy.try"))
         success = self.teensy.init()
         if not success:
-            self.log_bullet(f"Failed init")
+            self.log_bullet("Failed init")
             self.logger.error("failed on {}...".format(port))
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
-        self.log_bullet(f"Found teensy")
+        self.log_bullet("Found teensy")
 
         result = self.teensy.unique_id()
         success = result['success']
@@ -459,9 +460,8 @@ class teensy4_P00xx(TestItem):
                 self.logger.info(device.traverse)
                 self.logger.info(dir(device.properties))
                 self.logger.info(device.properties.items)
-                _parent = device.parent
 
-        self.logger.info("===============================================================================")
+        self.logger.info(
+            "===============================================================================")
 
         self.item_end()  # always last line of test
-

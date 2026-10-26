@@ -10,5 +10,6 @@ import logging
 logger = logging.getLogger("sys_log")
 
 
-def pub_notice(notice, sender, type=NOTICE_TYPE.NORMAL, on_change_only=False, replace=False, clear=False):
+def pub_notice(notice, sender, type=NOTICE_TYPE.NORMAL, on_change_only=False, replace=False,
+               clear=False):
     logger.info(notice)

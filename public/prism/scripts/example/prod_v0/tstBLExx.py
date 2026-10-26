@@ -86,7 +86,8 @@ class tstBLExx(TestItem):
                 found = True
                 break
 
-            if not self.sleep(1.0): break  # item timed out or was aborted
+            if not self.sleep(1.0):
+                break  # item timed out or was aborted
 
         if not found:
             self.logger.info("BLE device not found")
@@ -102,4 +103,3 @@ class tstBLExx(TestItem):
 
         self.log_bullet(_bullet)
         self.item_end(_result)  # always last line of test
-

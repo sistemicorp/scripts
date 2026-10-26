@@ -7,6 +7,7 @@ Andrew Oaks
 """
 import os
 import logging
+from core.const import NOTICE_TYPE
 from core.sys_log import pub_notice
 
 # import your hardware driver class, and details
@@ -105,7 +106,9 @@ class HWDriver(object):
                     f"Failed to initialize PrismPlay driver for channel {channel}: {e}",
                     exc_info=True,
                 )
-                pub_notice(f"HWDriver: Failed to initialize driver for channel {channel}")
+                pub_notice(f"HWDriver: Failed to initialize driver for channel {channel}",
+                           sender="{}.{}".format(self.SFN, __class__.__name__),
+                           type=NOTICE_TYPE.ERROR)
                 raise
 
             # create the dict with keys expected by Prism

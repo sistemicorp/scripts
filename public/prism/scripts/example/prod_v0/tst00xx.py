@@ -30,19 +30,21 @@ class tst00xx(TestItem):
         # API Reference:
         #
         # from prod_0.scr:
-        #         {"id": "TST000_Meas",  "enable": true, "args": {"min": 0, "max": 10},
-        #                                "fail": [ {"fid": "TST000-0", "msg": "Component apple R1"},
-        #                                          {"fid": "TST000-1", "msg": "Component banana R1"}] },
+        #   {"id": "TST000_Meas",  "enable": true, "args": {"min": 0, "max": 10},
+        #                          "fail": [ {"fid": "TST000-0", "msg": "Component apple R1"},
+        #                                    {"fid": "TST000-1", "msg": "Component banana R1"}] },
         #
         # ctx = self.item_start()  # always first line of test
-        #  - ctx (context) is a namespace of content from the test script, returned as a python dict,
+        #  - ctx (context) is a namespace of content from the test script,
+        #    returned as a python dict,
         #  - ctx.config = script config section
         #  - ctx.item = {"id": "TST000", "enable": True,  "args": {"min": 0, "max": 10}}
         #  - ctx.item.args = {"min": 0, "max": 10}
         #  - ctx.item.args.max = 10
         #  - ctx.options = { "fail_fast": False }
         #  - ctx.options.fail_fast = <True|False>
-        #  - ctx.fail_fast = <True|False>  # From script "config" (lower precedence) "options" (higher)
+        #  - ctx.fail_fast = <True|False>
+        #    From script "config" (lower precedence) "options" (higher)
         #
         #  - record functions
         #    - ctx.record.measurement(name, value, unit, min=None, max=None)
@@ -84,8 +86,10 @@ class tst00xx(TestItem):
         # Notes
         #
         # 1) Test Item Timeout
-        #    - every test time is guarded by a timeout which has a default of ResultAPI.TESTITEM_TIMEOUT Sec.
-        #    - this value can be overridden by adding '"timeout": <value>' to the test item in the script
+        #    - every test time is guarded by a timeout which has a default of
+        #      ResultAPI.TESTITEM_TIMEOUT Sec.
+        #    - this value can be overridden by adding '"timeout": <value>' to the test item
+        #      in the script
         #    - if the timeout expires, it is considered a Fail, even if it is
         #      on a user input item.  The test script will fail.
         #    - Prism cannot interrupt your code; loops (while/for) and waits for long running
@@ -175,7 +179,7 @@ class tst00xx(TestItem):
 
         self.sleep(self.DEMO_TIME_DELAY * random.random() * self.DEMO_TIME_RND_ENABLE)
 
-        FAIL_APPLE   = 0  # indexes into the "fail" list, just for code readability
+        FAIL_APPLE = 0  # indexes into the "fail" list, just for code readability
         FAIL_BANANNA = 1
 
         measurement_results = []  # list for all the coming measurements...
@@ -314,8 +318,10 @@ class tst00xx(TestItem):
         self.log_bullet("waiting for my_resource...")
         with self.shared_lock("my_resource"):  # released even if the item is stopped
             while hold_time:
-                self.log_bullet("my_resource is locked for {} seconds".format(hold_time), ovrwrite_last_line=True)
-                if not self.sleep(1): break  # item timed out or was aborted
+                self.log_bullet("my_resource is locked for {} seconds".format(
+                    hold_time), ovrwrite_last_line=True)
+                if not self.sleep(1):
+                    break  # item timed out or was aborted
                 hold_time -= 1
         self.log_bullet("my_resource is free")
 
@@ -360,7 +366,8 @@ class tst00xx(TestItem):
         if user_text["success"]:
             self.log_bullet("Text: {}".format(user_text["textbox"]))
             # Note: ResultAPI.UNIT_STRING is used to format the measurement correctly in JSON
-            _, _result, _bullet = ctx.record.measurement("input", user_text["textbox"], ResultAPI.UNIT_STRING)
+            _, _result, _bullet = ctx.record.measurement(
+                "input", user_text["textbox"], ResultAPI.UNIT_STRING)
             # qualify the text here, and override _result if required
 
         else:
@@ -401,7 +408,7 @@ class tst00xx(TestItem):
         myBlob = copy.deepcopy(ResultAPI.BLOB_UNKNOWN)
         # key 'data' is automatically created, or you may add your own keys
         myBlob["data"] = ''.join(random.choice(string.ascii_lowercase) for x in range(1000))
-        #myBlob["my_other_key"] = json.dumps(dict(k1="data1", k2=1.23))
+        # myBlob["my_other_key"] = json.dumps(dict(k1="data1", k2=1.23))
         success, msg = ctx.record.blob("random", myBlob)
         if not success:
             self.logger.error(msg)
@@ -461,7 +468,8 @@ class tst00xx(TestItem):
         within_template = True  # or False
 
         # store measurement result
-        success, _result, _bullet = ctx.record.measurement("template", within_template, ResultAPI.UNIT_BOOLEAN)
+        success, _result, _bullet = ctx.record.measurement(
+            "template", within_template, ResultAPI.UNIT_BOOLEAN)
         self.log_bullet(_bullet)
         if not success:
             self.item_end(_result)

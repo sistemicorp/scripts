@@ -43,8 +43,10 @@ class BLEListener(object):
                  scan_delay_s=SCAN_SLEEP_TIME_S,
                  expire_time_s=EXPIRE_UID_TIME_SECONDS,
                  loggerIn=None):
-        if loggerIn: self.logger = loggerIn
-        else: self.logger = StubLogger()
+        if loggerIn:
+            self.logger = loggerIn
+        else:
+            self.logger = StubLogger()
 
         self._unique_id = 0
         self._id = 0
@@ -96,7 +98,8 @@ class BLEListener(object):
         self.logger.debug(f" data : {advertisement_data.service_data}")
         self.logger.debug(f" uids : {advertisement_data.service_uuids}")
 
-        if not advertisement_data.service_uuids: return
+        if not advertisement_data.service_uuids:
+            return
 
         now = datetime.datetime.now()
         with self._lock:
@@ -155,7 +158,8 @@ class BLEListener(object):
         self._join()
 
     def _join(self):
-        if self._thread is None: return
+        if self._thread is None:
+            return
         self._thread.join(self._scan_delay_s + self.STOP_TIMEOUT_S)
         if self._thread.is_alive():
             self.logger.error("scanner thread did not exit")
@@ -177,7 +181,8 @@ class BLEListener(object):
         :param timeout_s: time to wait for the scan to start
         :return: True if scanning, False if BLE is not available
         """
-        if self._running: return True
+        if self._running:
+            return True
         self._join()  # a previous scanner may still be stopping
 
         self._running = True
@@ -201,7 +206,7 @@ class BLEListener(object):
             self._prune()
             return list(self._uids.keys())
 
-    def is_uid_present(self, uid: str, remove: bool=True):
+    def is_uid_present(self, uid: str, remove: bool = True):
         """ Determine if BLE Advertisement was received
         - DUT advertised UID must be known
         - this function likely needs to be polled until your
@@ -246,7 +251,8 @@ class BLEListener(object):
                 return True, self._uids.pop(uid, None)
 
             ad = self._uids.get(uid, None)
-            if ad is None: return True, None
+            if ad is None:
+                return True, None
             return True, dict(ad)
 
     # ---------------------------------------------------------------------------------------------

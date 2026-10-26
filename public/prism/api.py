@@ -10,11 +10,10 @@ Martin Guthrie
 class ResultAPI():
 
     TESTITEM_TIMEOUT = 10.0  # default test item timeout in seconds
-                             # Note this can be overridden for any specific test item,
-                             # see Example test item TST008_TextInput
+    # Note this can be overridden for any specific test item,
+    # see Example test item TST008_TextInput
 
-
-    RECORD_RESULT_UNKNOWN = "UNKNOWN" # this is an error if not changed
+    RECORD_RESULT_UNKNOWN = "UNKNOWN"  # this is an error if not changed
     RECORD_RESULT_PASS = "PASS"
     RECORD_RESULT_FAIL = "FAIL"
     RECORD_RESULT_TIMEOUT = "TIMEOUT"
@@ -73,14 +72,14 @@ class ResultAPI():
     UNIT_NONE = "None"
 
     # any new units added above need to be included in this list for checking
-    UNIT_ALL = [UNIT_OHMS, UNIT_KILOOHMS, UNIT_MILLIOHMS, UNIT_DB, UNIT_DBM, UNIT_VOLTS, UNIT_MILLIVOLTS,
-                UNIT_CURRENT, UNIT_AMPS, UNIT_MILLIAMPS, UNIT_MICROAMPS, UNIT_STRING, UNIT_INT, UNIT_FLOAT,
-                UNIT_CELSIUS, UNIT_KELVIN, UNIT_NEWTON, UNIT_PASCAL, UNIT_KILOPASCAL, UNIT_BAR, UNIT_METER,
-                UNIT_MILLIMETER, UNIT_SECONDS, UNIT_MILLISECONDS, UNIT_MICROSECONDS, UNIT_KILOGRAM,
-                UNIT_MILLIGRAM, UNIT_GRAM, UNIT_LITRE, UNIT_BOOLEAN, UNIT_CANDELA, UNIT_HERTZ, UNIT_KILOHERTZ,
-                UNIT_MEGAHERTZ, UNIT_HENRY, UNIT_MICROHENRY, UNIT_FARAD, UNIT_NANOFARAD, UNIT_SIEMENS,
-                UNIT_DEGREE, UNIT_RADIAN, UNIT_PERCENT, UNIT_WATTS, UNIT_PPM, UNIT_NONE]
-
+    UNIT_ALL = [UNIT_OHMS, UNIT_KILOOHMS, UNIT_MILLIOHMS, UNIT_DB, UNIT_DBM, UNIT_VOLTS,
+                UNIT_MILLIVOLTS, UNIT_CURRENT, UNIT_AMPS, UNIT_MILLIAMPS, UNIT_MICROAMPS,
+                UNIT_STRING, UNIT_INT, UNIT_FLOAT, UNIT_CELSIUS, UNIT_KELVIN, UNIT_NEWTON,
+                UNIT_PASCAL, UNIT_KILOPASCAL, UNIT_BAR, UNIT_METER, UNIT_MILLIMETER, UNIT_SECONDS,
+                UNIT_MILLISECONDS, UNIT_MICROSECONDS, UNIT_KILOGRAM, UNIT_MILLIGRAM, UNIT_GRAM,
+                UNIT_LITRE, UNIT_BOOLEAN, UNIT_CANDELA, UNIT_HERTZ, UNIT_KILOHERTZ, UNIT_MEGAHERTZ,
+                UNIT_HENRY, UNIT_MICROHENRY, UNIT_FARAD, UNIT_NANOFARAD, UNIT_SIEMENS, UNIT_DEGREE,
+                UNIT_RADIAN, UNIT_PERCENT, UNIT_WATTS, UNIT_PPM, UNIT_NONE]
 
     # ===================================================================================
     # BLOB data types

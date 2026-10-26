@@ -32,7 +32,7 @@
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-  'sphinx.ext.autosectionlabel',
+    'sphinx.ext.autosectionlabel',
 ]
 
 autosectionlabel_prefix_document = True
@@ -168,6 +168,3 @@ texinfo_documents = [
      author, 'Sistemi', 'Lente/Prism Test System.',
      'Miscellaneous'),
 ]
-
-
-

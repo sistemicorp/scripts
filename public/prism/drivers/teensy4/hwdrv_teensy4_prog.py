@@ -8,8 +8,6 @@ Martin Guthrie
 import os
 import logging
 from core.sys_log import pub_notice
-from public.prism.drivers.common.list_serial import serial_ports
-from public.prism.drivers.A4401_BOND.A4401_BOND import A4401_BOND
 
 DRIVER_TYPE = "TEENSY4_PROG"
 

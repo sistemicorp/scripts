@@ -92,7 +92,7 @@ def parse_args():
     """
     epilog = """
 Usage examples:
-    python3 prism_subs.py -w --script public/prism/scripts/example/prod_v0/prod_1.scr 
+    python3 prism_subs.py -w --script public/prism/scripts/example/prod_v0/prod_1.scr
 
     """
     parser = argparse.ArgumentParser(description='prism_result_scan',
@@ -147,15 +147,15 @@ if __name__ == "__main__":
     # all the values must be strings
     s = [{"Lot": "12345"},
          {"Loc": "canada/ontario/milton"},
-         #{"Loc": "us/newyork/buffalo"},
+         # {"Loc": "us/newyork/buffalo"},
          {"TST000Max": "9"}
-    ]
+         ]
     final_script_text = find_sub_items_replace(script_text, s)
     # rename subs key so that prism_dev.py will not error
     final_script_text = final_script_text.replace("subs", "subs1", 1)
     logger.info(final_script_text)
 
-    if args.write: # save output to file for use with prism_dev.py
+    if args.write:  # save output to file for use with prism_dev.py
         file_out = file.replace(".scr", "_sub.scr")
         with open(file_out, 'w') as f:
             f.write(final_script_text)

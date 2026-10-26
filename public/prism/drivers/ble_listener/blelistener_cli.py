@@ -40,7 +40,7 @@ def parse_args():
 
     Getting Help for a command:
     $ python3 blelistener_cli.py version --help
-      
+
     """
     parser = argparse.ArgumentParser(description='blelistener_cli',
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -51,9 +51,9 @@ def parse_args():
 
     subp = parser.add_subparsers(dest="_cmd", required=True, help='commands')
 
-    uid_parser = subp.add_parser('uid')
+    subp.add_parser('uid')
 
-    version_parser = subp.add_parser('version')
+    subp.add_parser('version')
 
     scan_parser = subp.add_parser('scan')
     scan_parser.add_argument("-t", '--time', dest='time', default=10.0, type=float, action='store',

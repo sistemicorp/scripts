@@ -25,18 +25,19 @@ class ResultBaseClass(object):
     """
     EPOCH_DECIMAL_PLACES = 2
     MAX_KEYS = 5  # !! must match fields in DB backend - can't change arbitrarily
-                  # !! only increase in future versions
+    # !! only increase in future versions
 
     def __init__(self, chan_num, operator="UNKNOWN", script_filename=None):
         self.logger = logging.getLogger("{}.{}".format(__class__.__name__, chan_num))
 
-        self._record = {    ## The result json record for the suite
-            "meta": { # stuff that framework populates
-                      "channel": chan_num,
-                      "result": ResultAPI.RECORD_RESULT_UNKNOWN,
-                      "processor": __class__.__name__.lower(),  #  processor is tied to db name, which must be lower case
-                      "operator": operator,
-                      "ip": "127.0.0.1",
+        self._record = {  # The result json record for the suite
+            "meta": {  # stuff that framework populates
+                "channel": chan_num,
+                "result": ResultAPI.RECORD_RESULT_UNKNOWN,
+                # processor is tied to db name, which must be lower case
+                "processor": __class__.__name__.lower(),
+                "operator": operator,
+                "ip": "127.0.0.1",
                       "script": os.path.normpath(script_filename).replace("\\", "/"),
                       "ruid": str(uuid.uuid4()),
             },
@@ -178,8 +179,10 @@ class ResultBaseClass(object):
              "processor": self._record["meta"]["processor"],
              "from": "{}.record_publish".format(__class__.__name__)}
 
-        if "from" in d: d.pop("from")  # remove debugging key
-        if "type" in d: d.pop("type")  # remove event key
+        if "from" in d:
+            d.pop("from")  # remove debugging key
+        if "type" in d:
+            d.pop("type")  # remove event key
 
         with open(_file, 'w') as fp:
             json.dump(d, fp, indent=2)

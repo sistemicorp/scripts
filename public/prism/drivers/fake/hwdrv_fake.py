@@ -13,7 +13,7 @@ from core.sys_log import pub_notice
 from public.prism.drivers.fake.Fake import Fake, VERSION, DRIVER_TYPE
 
 NUM_CHANNELS = 1  # set this to simulate multiple channels, range 1-8
-                  # Note this can be changed in Prism GUI, see Menu->Demo
+# Note this can be changed in Prism GUI, see Menu->Demo
 
 
 class HWDriver(object):
@@ -87,14 +87,14 @@ class HWDriver(object):
             _id = _driver.id()
 
             if remote_version != VERSION:
-                self.logger.error("{} has unexpected version {} != {}".format(_id, remote_version, VERSION))
+                self.logger.error("{} has unexpected version {} != {}".format(
+                    _id, remote_version, VERSION))
                 continue
 
             # ... perform any other validation of the remote hardware as required here
 
             # create the dict with keys expected by Prism
             _d = {'id': _id,
-                  "version": VERSION,
                   "hwdrv": _driver,
                   "unique_id": _driver.unique_id(),
                   "version": _driver.version(),

@@ -68,7 +68,7 @@ class TestItem(object):
         usr_input = input("Enter({}):".format(placeholder))
         return {'success': True, 'textbox': usr_input, 'err': None}
         # a failure looks like this...
-        #return {'success': False, 'textbox': None, 'err': "Timeout"}
+        # return {'success': False, 'textbox': None, 'err': "Timeout"}
 
     def sleep(self, seconds):
         """Sleep that ends early when the item times out or is aborted.
@@ -109,5 +109,3 @@ class TestItem(object):
 
     def shared_get_drivers(self):
         return self.shared_state.get_drivers(self.chan)
-
-

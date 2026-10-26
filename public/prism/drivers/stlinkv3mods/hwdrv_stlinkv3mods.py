@@ -13,7 +13,7 @@ from core.sys_log import pub_notice
 
 from public.prism.drivers.stlinkv3mods.STLINK import STLINKprog, DRIVER_TYPE, cli_version
 # switch path when debugging, see main code at bottom
-#from STLINK import STLINKprog, DRIVER_TYPE, cli_version
+# from STLINK import STLINKprog, DRIVER_TYPE, cli_version
 
 # Information:
 # USB devices are found with pyudev, see https://pyudev.readthedocs.io
@@ -108,7 +108,8 @@ class HWDriver(object):
         success, version = cli_version()
         if not success:
             self.logger.error(version)
-            pub_notice("HWDriver:{}: {}".format(self.SFN, version), sender=sender, type=NOTICE_TYPE.ERROR)
+            pub_notice("HWDriver:{}: {}".format(self.SFN, version),
+                       sender=sender, type=NOTICE_TYPE.ERROR)
             return -1, DRIVER_TYPE, []
         self.logger.info(f"STM32CubeProgrammer version: {version}")
 
@@ -119,11 +120,13 @@ class HWDriver(object):
                 if "STLINK-V3" in str(device.attributes.get("product")):
 
                     # snippet to show all kinds of useful stuff
-                    #for a in device.attributes.available_attributes:
+                    # for a in device.attributes.available_attributes:
                     #    self.logger.info(f"{a} - {str(device.attributes.get(a))}")
 
                     sn = device.attributes.get("serial").decode("utf-8").lstrip("0")
-                    self.logger.info(f"Found device: {str(device.attributes.get('product'))}, sn {sn}, {device.device_path}")
+                    self.logger.info(
+                        f"Found device: {str(device.attributes.get('product'))}, sn {sn}, "
+                        f"{device.device_path}")
                     _stlink = {"id": 0}  # this will get re-indexed below
                     _stlink['hwdrv'] = STLINKprog(sn)
                     _stlink['close'] = None

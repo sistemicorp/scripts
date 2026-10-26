@@ -1,0 +1,18 @@
+[flake8]
+max-line-length = 100
+exclude =
+    .git,
+    __pycache__,
+    .venv*,
+    log,
+    public/log,
+    .idea,
+    .claude,
+    # vendor tool installs, see public/tools
+    public/tools,
+    docs/build,
+    # vendored upstream library
+    public/prism/drivers/brother_ql/brother_ql
+per-file-ignores =
+    # docs require `ctx = self.item_start()` as the first line of each test item
+    public/prism/scripts/*:F841

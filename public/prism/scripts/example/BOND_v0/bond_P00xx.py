@@ -19,6 +19,8 @@ BOND_ASSETS_PATH = "./public/prism/scripts/example/BOND_v0/assets"
 BOND_TEENSY_CLI_LOADER_PATH = './public/prism/drivers/A4401_BOND/server/teensy_loader_cli'
 
 # file and class name must match
+
+
 class bond_P00xx(TestItem):
     """ Python Methods for BOND
 
@@ -34,6 +36,7 @@ class bond_P00xx(TestItem):
     https://forum.pjrc.com/threads/71624-teensy_loader_cli-with-multiple-Teensys-connected?p=316838#post316838
 
     """
+
     def __init__(self, controller, chan, shared_state):
         super().__init__(controller, chan, shared_state)
         self.logger = logging.getLogger("teensy400xx.{}".format(self.chan))
@@ -87,7 +90,7 @@ class bond_P00xx(TestItem):
             $ lsusb
             Bus 001 Device 053: ID 16c0:0483 Van Ooijen Technische Informatica Teensyduino Serial
             Bus 001 Device 051: ID 16c0:0486 Van Ooijen Technische Informatica Teensyduino RawHID
-            Bus 005 Device 023: ID 16c0:0478 Van Ooijen Technische Informatica Teensy Halfkay Bootloader
+            Bus 005 Device 023: ID 16c0:0478 Van Ooijen ... Teensy Halfkay Bootloader
 
         Note,
             - When 'Serial', likely this is a Teensy that was previously programmed.
@@ -102,7 +105,7 @@ class bond_P00xx(TestItem):
         _cnt = result.count('Van Ooijen Technische Informatica')
         self.log_bullet(f"Teensys on USB: {_cnt}")
         if _cnt != 1:
-            self.log_bullet(f"Unexpected count")
+            self.log_bullet("Unexpected count")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
@@ -125,7 +128,7 @@ class bond_P00xx(TestItem):
         file_path = os.path.join(BOND_ASSETS_PATH, ctx.item.file)
 
         if not os.path.isfile(file_path):
-            self.log_bullet(f"file not found")
+            self.log_bullet("file not found")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
@@ -140,29 +143,29 @@ class bond_P00xx(TestItem):
                                  '-v',
                                  '-s',
                                  file_path],
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE,
-                                 text=True)
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
+                                text=True)
 
         self.logger.info(result)
 
         self.shared_lock(DRIVER_TYPE_PROG).release()
 
         # expected output looks like,
-        #  1747                  bond_P00xx.py: 119 -                  teensy400xx.0:        P200_Program() INFO  : Teensy Loader, Command Line, Version 2.2
-        # Read "./public/prism/scripts/example/BOND_v0/assets/teensy4_server.ino.hex": 102400 bytes, 1.3% usage
+        #  1747 bond_P00xx.py: 119 - teensy400xx.0: P200_Program() INFO  : Teensy Loader, ...
+        # Read ".../BOND_v0/assets/teensy4_server.ino.hex": 102400 bytes, 1.3% usage
         # Found HalfKay Bootloader
         # Programming.................................................................................................
         # Booting
 
         # check for some key words to confirm success
         if not result.stdout.count('Programming'):
-            self.log_bullet(f"'Programming' did not occur")
+            self.log_bullet("'Programming' did not occur")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
         if not result.stdout.count('Booting'):
-            self.log_bullet(f"'Booting' did not occur")
+            self.log_bullet("'Booting' did not occur")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
@@ -260,7 +263,7 @@ class bond_P00xx(TestItem):
         self.logger.info("Found teensy4: {} {}, chan {}".format(driver, id, self.chan))
 
         self._teensy_usb_path = driver["obj"]["usb_path"]  # cache for after update reconnect
-        #self._teensy_port = driver["obj"]["port"]  # cache for after update reconnect
+        # self._teensy_port = driver["obj"]["port"]  # cache for after update reconnect
         self.teensy = driver["obj"]["hwdrv"]
 
         result = self.teensy.reset()   # set Teensy to a known good state
@@ -282,7 +285,7 @@ class bond_P00xx(TestItem):
 
         file_path = os.path.join(BOND_ASSETS_PATH, ctx.item.file)
         if not os.path.isfile(file_path):
-            self.log_bullet(f"file not found")
+            self.log_bullet("file not found")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
@@ -320,11 +323,11 @@ class bond_P00xx(TestItem):
 
             # expected output looks like,
             #   Teensy Loader, Command Line, Version 2.2
-            #   Read "./public/prism/scripts/example/teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
+            #   Read ".../teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
             #   Waiting for Teensy device...
             #    (hint: press the reset button)
             #   Found HalfKay Bootloader
-            #   Read "./public/prism/scripts/example/teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
+            #   Read ".../teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
             #   Programming..................................................................
             #   Booting
 
@@ -340,7 +343,7 @@ class bond_P00xx(TestItem):
         self.shared_lock(DRIVER_TYPE).release()
 
         if not success:
-            self.log_bullet(f"teensy_loader_cli failed")
+            self.log_bullet("teensy_loader_cli failed")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
@@ -355,7 +358,8 @@ class bond_P00xx(TestItem):
           FIXME: This code might be a bit old now, see other project to see if this has changed.
 
         Example USB Device path:
-        'usb_path': '/devices/pci0000:00/0000:00:08.1/0000:03:00.3/usb1/1-2/1-2.1/1-2.1.4/1-2.1.4.1/1-2.1.4.1:1.0/tty/ttyACM3'
+        'usb_path': '/devices/pci0000:00/0000:00:08.1/0000:03:00.3/usb1/1-2/1-2.1/1-2.1.4/'
+                    '1-2.1.4.1/1-2.1.4.1:1.0/tty/ttyACM3'
 
         :param ref_path: path to find the longest match
         :return: string port (example ttyACM0)
@@ -411,7 +415,7 @@ class bond_P00xx(TestItem):
 
         port = self._find_matching_ttyACM_from_usb_path(self._teensy_usb_path)
         if port is None:
-            self.log_bullet(f"Failed find port")
+            self.log_bullet("Failed find port")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
@@ -421,12 +425,12 @@ class bond_P00xx(TestItem):
         self.teensy.set_port(port)
         success = self.teensy.init()
         if not success:
-            self.log_bullet(f"Failed init")
+            self.log_bullet("Failed init")
             self.logger.error("failed on {}...".format(port))
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
-        self.log_bullet(f"Found teensy")
+        self.log_bullet("Found teensy")
 
         result = self.teensy.unique_id()
         success = result['success']
@@ -481,9 +485,9 @@ class bond_P00xx(TestItem):
                 self.logger.info(device.traverse)
                 self.logger.info(dir(device.properties))
                 self.logger.info(device.properties.items)
-                _parent = device.parent
 
-        self.logger.info("===============================================================================")
+        self.logger.info(
+            "===============================================================================")
 
         self.item_end()  # always last line of test
 
@@ -550,11 +554,11 @@ class bond_P00xx(TestItem):
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
-        success, _result, _bullet  = ctx.record.measurement(f"adc_cal_hdr_{ctx.item.hdr}",
-                                                            response['result']['mV'],
-                                                            unit=ResultAPI.UNIT_MILLIVOLTS,
-                                                            min=EXPECTED_MV - TOLERANCE_MV,
-                                                            max=EXPECTED_MV + TOLERANCE_MV)
+        success, _result, _bullet = ctx.record.measurement(f"adc_cal_hdr_{ctx.item.hdr}",
+                                                           response['result']['mV'],
+                                                           unit=ResultAPI.UNIT_MILLIVOLTS,
+                                                           min=EXPECTED_MV - TOLERANCE_MV,
+                                                           max=EXPECTED_MV + TOLERANCE_MV)
         self.log_bullet(_bullet)
 
         self.item_end()  # always last line of test
@@ -572,7 +576,8 @@ class bond_P00xx(TestItem):
         measurement_results = []
 
         if ctx.item.voltage not in self.teensy.BIST_VOLTAGES:
-            self.logger.error(f"invalid voltage name {ctx.item.voltage} not in {self.teensy.BIST_VOLTAGES}")
+            self.logger.error(
+                f"invalid voltage name {ctx.item.voltage} not in {self.teensy.BIST_VOLTAGES}")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
@@ -582,15 +587,15 @@ class bond_P00xx(TestItem):
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
-        success, _result, _bullet  = ctx.record.measurement(f"{ctx.item.voltage}",
-                                                            response['result']['mv'],
-                                                            unit=ResultAPI.UNIT_MILLIVOLTS)
+        success, _result, _bullet = ctx.record.measurement(f"{ctx.item.voltage}",
+                                                           response['result']['mv'],
+                                                           unit=ResultAPI.UNIT_MILLIVOLTS)
         self.log_bullet(_bullet)
         measurement_results.append(_result)
 
-        success, _result, _bullet  = ctx.record.measurement(f"{ctx.item.voltage}_pass",
-                                                            response['result']['pass'],
-                                                            unit=ResultAPI.UNIT_BOOLEAN)
+        success, _result, _bullet = ctx.record.measurement(f"{ctx.item.voltage}_pass",
+                                                           response['result']['pass'],
+                                                           unit=ResultAPI.UNIT_BOOLEAN)
         self.log_bullet(_bullet)
         measurement_results.append(_result)
 
@@ -637,21 +642,21 @@ class bond_P00xx(TestItem):
         _v = float(round(response['result']['v'], 3))
         _min = round(ctx.item.voltage_mv / 1000.0 - TOLERANCE_V, 3)
         _max = round(ctx.item.voltage_mv / 1000.0 + TOLERANCE_V, 3)
-        success, _result, _bullet  = ctx.record.measurement(f"{ctx.item.voltage_mv}_V",
-                                                            _v,
-                                                            unit=ResultAPI.UNIT_VOLTS,
-                                                            min=_min,
-                                                            max=_max)
+        success, _result, _bullet = ctx.record.measurement(f"{ctx.item.voltage_mv}_V",
+                                                           _v,
+                                                           unit=ResultAPI.UNIT_VOLTS,
+                                                           min=_min,
+                                                           max=_max)
         self.log_bullet(_bullet)
         measurement_results.append(_result)
 
         _ima_expected = float(round(ctx.item.voltage_mv / SELFTEST_LOAD_OHMS, 1))
         _ma_measured = round(response['result']['ima'], 2)
-        success, _result, _bullet  = ctx.record.measurement(f"{ctx.item.voltage_mv}_mA",
-                                                            _ma_measured,
-                                                            unit=ResultAPI.UNIT_MILLIAMPS,
-                                                            min=_ima_expected - TOLERANCE_MA,
-                                                            max=_ima_expected + TOLERANCE_MA)
+        success, _result, _bullet = ctx.record.measurement(f"{ctx.item.voltage_mv}_mA",
+                                                           _ma_measured,
+                                                           unit=ResultAPI.UNIT_MILLIAMPS,
+                                                           min=_ima_expected - TOLERANCE_MA,
+                                                           max=_ima_expected + TOLERANCE_MA)
         self.log_bullet(_bullet)
         measurement_results.append(_result)
 
@@ -682,9 +687,9 @@ class bond_P00xx(TestItem):
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
-        success, _result, _bullet  = ctx.record.measurement(None,
-                                                            response['result']['version'],
-                                                            unit=ResultAPI.UNIT_STRING)
+        success, _result, _bullet = ctx.record.measurement(None,
+                                                           response['result']['version'],
+                                                           unit=ResultAPI.UNIT_STRING)
         self.log_bullet(_bullet)
         self.item_end(_result)  # always last line of test
 
@@ -729,21 +734,21 @@ class bond_P00xx(TestItem):
         _v = float(round(response['result']['v'], 3))
         _min = round(ctx.item.voltage_mv / 1000.0 - TOLERANCE_V, 3)
         _max = round(ctx.item.voltage_mv / 1000.0 + TOLERANCE_V, 3)
-        success, _result, _bullet  = ctx.record.measurement(f"{ctx.item.voltage_mv}_V",
-                                                            _v,
-                                                            unit=ResultAPI.UNIT_VOLTS,
-                                                            min=_min,
-                                                            max=_max)
+        success, _result, _bullet = ctx.record.measurement(f"{ctx.item.voltage_mv}_V",
+                                                           _v,
+                                                           unit=ResultAPI.UNIT_VOLTS,
+                                                           min=_min,
+                                                           max=_max)
         self.log_bullet(_bullet)
         measurement_results.append(_result)
 
         _ima_expected = float(round(ctx.item.voltage_mv / SELFTEST_LOAD_OHMS, 1))
         _ma_measured = round(response['result']['ima'], 2)
-        success, _result, _bullet  = ctx.record.measurement(f"{ctx.item.voltage_mv}_mA",
-                                                            _ma_measured,
-                                                            unit=ResultAPI.UNIT_MILLIAMPS,
-                                                            min=_ima_expected - TOLERANCE_MA,
-                                                            max=_ima_expected + TOLERANCE_MA)
+        success, _result, _bullet = ctx.record.measurement(f"{ctx.item.voltage_mv}_mA",
+                                                           _ma_measured,
+                                                           unit=ResultAPI.UNIT_MILLIAMPS,
+                                                           min=_ima_expected - TOLERANCE_MA,
+                                                           max=_ima_expected + TOLERANCE_MA)
         self.log_bullet(_bullet)
         measurement_results.append(_result)
 
@@ -760,7 +765,6 @@ class bond_P00xx(TestItem):
             return
 
         self.item_end(measurement_results)  # always last line of test
-
 
     def P1200_DAC(self):
         """ Set BOND DAC pin
@@ -803,11 +807,11 @@ class bond_P00xx(TestItem):
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
-        success, _result, _bullet  = ctx.record.measurement(None, response['result']['mV'], min=ctx.item.min, max=ctx.item.max)
+        success, _result, _bullet = ctx.record.measurement(
+            None, response['result']['mV'], min=ctx.item.min, max=ctx.item.max)
         self.log_bullet(_bullet)
 
         self.item_end()  # always last line of test
-
 
     def P1900_TEARDOWN(self):
         """ teardown BOND

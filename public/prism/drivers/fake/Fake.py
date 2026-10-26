@@ -13,7 +13,7 @@ import subprocess
 try:
     # run locally
     from stublogger import StubLogger
-except:
+except ImportError:
     # run from prism
     from public.prism.drivers.common.stublogger import StubLogger
 
@@ -30,8 +30,10 @@ class Fake(object):
     """
 
     def __init__(self, loggerIn=None):
-        if loggerIn: self.logger = loggerIn
-        else: self.logger = StubLogger()
+        if loggerIn:
+            self.logger = loggerIn
+        else:
+            self.logger = StubLogger()
 
         # create an instance of the hardware driver...
         # this might be a serial port,
@@ -129,7 +131,8 @@ class Fake(object):
                         "aplay failed with return code {}: {}".format(result.returncode, stderr)
                     )
                 else:
-                    self.logger.warning("aplay failed with return code {}".format(result.returncode))
+                    self.logger.warning(
+                        "aplay failed with return code {}".format(result.returncode))
         except subprocess.TimeoutExpired:
             self.logger.warning("aplay timed out for {}".format(wav_path))
         except Exception as e:
