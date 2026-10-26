@@ -100,6 +100,9 @@ Within a stage,
 
 * code shared by stages and products goes in a common module, see `File Organization` below.
 
+To decide what a Bed of Nails stage must test, and which test points the board needs, do a
+:doc:`test coverage analysis <_coverage>`.
+
 Use the same unit id, key slots and measurement names in every stage, so that the results of all
 stages of a unit can be found together, see :doc:`Traceability <_traceability>`.
 

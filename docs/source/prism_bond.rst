@@ -59,6 +59,9 @@ Each Pogo board has a header definition file, which sets how each header pin is 
 
 The full rules are in the driver `README.md`, section `BOND Header Pin Configuration`.
 
+To plan which DUT test points go to which header pins, and the Pogo board circuits, see
+:ref:`_coverage:Pin Budget` in :doc:`PCBA Test Coverage <_coverage>`.
+
 
 Test Code
 *********

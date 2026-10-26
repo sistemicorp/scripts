@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import prism_knowledge as pk  # noqa: E402
 
 SERVER_NAME = "prism-assistant"
-SERVER_VERSION = "0.2.0"
+SERVER_VERSION = "0.3.0"
 CONTACT = "info@sistemi.ca"
 
 INSTRUCTIONS = f"""\
@@ -63,6 +63,11 @@ Rules to follow when helping:
   computer.  Lock shared equipment with `with self.shared_lock(<name>):`.  Equipment shared
   between Prism computers is not supported.  Get drivers with
   `self.shared_state.get_drivers(self.chan, type=...)`.
+- Test coverage: analyse each passive part for Short, Open and Value, and each IC pin for Short
+  and Open, see docs/source/_coverage.rst.  A fault is only covered if it moves a measurement
+  outside the limits; when it doesn't, mark it partly or not covered and say why.
+  Never plan more test points than BOND has header pins for, and assign each to the nearest
+  header.  Functions BOND doesn't have go on the Pogo board, controlled through header pins.
 - Prefer small, reviewable changes to the customer's files, and explain what each change does.
 - Number your questions so the customer can answer them easily.
 """
@@ -182,6 +187,35 @@ Help me set up a Prism computer for the production floor.
 4. Finish with the checks that prove the station works.
 """
 
+PROMPT_COVERAGE = """\
+Help me analyse the test coverage of {board}: which assembly faults (Short, Open, Value) my
+production test can detect on each part, and how to improve it.
+
+1. Read docs/source/_coverage.rst and docs/source/prism_bond.rst.
+2. Ask me (numbered) for the schematic, the BOM, which nets have test points (or the PCB
+   layout), which connectors and programming header the jig reaches, the MCU and whether it can
+   run test firmware, the other equipment in the jig, and whether the layout can still change.
+   Ask for each test point's location on the PCB.
+   Through hole connector pins can be test points.  Check first that the JTAG/SWD, reset,
+   target supply and GND pins are reachable, the board must be programmable in the jig.
+   I may share files from outside this repo, keep them in this conversation.
+3. Build the Components list: one row per passive part and one row per IC, transistor and
+   connector pin, with Short, Open and Value marked Y, P, N or -.  Start from Common Gaps.
+4. Propose the tests block by block, in the Test Order, with test ids, the BOND resource, Pogo
+   board circuit or test firmware command each uses, the nominal value calculated from the
+   schematic, and initial limits.  Fill in the Tests column of each part.
+   For a function BOND doesn't have, propose a Pogo board circuit that BOND controls through
+   the header pins.
+5. List the Gaps: the parts not fully covered, why, and a mitigation.
+6. List the test points to add, ranked by the faults each would detect.  If the layout is
+   fixed, say which of them would justify a board respin.
+7. Build the Pin Map: assign each test point and Pogo board circuit to a BOND header pin,
+   nearest header first, using each test point's location on the PCB.  Never use more pins
+   than the Pin Budget, when over it drop or share the test points that detect the fewest faults.
+8. Summarise per board: parts Full, Partial and None, and pins used per header.  Give the four
+   lists as CSV, and ask me before writing any file to my repo.
+"""
+
 
 def _call(fn, *args):
     """ Run a knowledge function, its expected errors reach the model as tool errors
@@ -277,6 +311,11 @@ def create_server():
     def use_bond(product: str = "my product") -> str:
         """Set up BOND, its Pogo board header definition, and BOND test items."""
         return PROMPT_BOND.format(product=product)
+
+    @mcp.prompt(title="Analyse test coverage")
+    def analyze_coverage(board: str = "my board") -> str:
+        """Analyse which Short, Open and Value faults the test detects on each part of a PCBA."""
+        return PROMPT_COVERAGE.format(board=board)
 
     @mcp.prompt(title="Add test equipment")
     def add_equipment(equipment: str = "an instrument") -> str:

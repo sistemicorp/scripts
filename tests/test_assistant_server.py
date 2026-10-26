@@ -18,7 +18,7 @@ import prism_assistant  # noqa: E402
 TOOLS = {"list_docs", "read_doc", "search_docs", "read_file", "list_scripts", "lint_script",
          "check_settings", "list_drivers", "python_api", "repo_status"}
 PROMPTS = {"migrate_version", "write_test_script", "use_bond", "add_equipment",
-           "plan_test_stages",
+           "plan_test_stages", "analyze_coverage",
            "plan_traceability", "plan_deployment", "setup_prism_computer"}
 
 
@@ -70,3 +70,13 @@ def test_add_equipment_prompt_reads_drivers_doc():
     assert "add a power supply to my test jig" in text
     assert "prism_drivers.rst" in text
     assert "UNIT_STRING" in text  # equipment serial number is recorded
+
+
+def test_analyze_coverage_prompt_reads_coverage_doc():
+    async def go(c):
+        return await c.get_prompt("analyze_coverage", {"board": "the main board"})
+    text = run(go).messages[0].content.text
+    assert "test coverage of the main board" in text
+    assert "_coverage.rst" in text
+    assert "test points to add" in text
+    assert "Pin Budget" in text
