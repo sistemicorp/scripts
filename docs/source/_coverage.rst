@@ -157,7 +157,8 @@ route.
 
 * Note the location of each test point on the PCB, from the layout (x, y) or as a board area.
 * Look at where the headers are under the DUT, see the Stack Up in the BOND product brief
-  `public/prism/drivers/A4401_BOND/a4402-SPC_ProductBrief_01.pdf`.  The DUT can be placed
+  `public/prism/drivers/A4401_BOND/a4402-SPC_ProductBrief_01.pdf`, and the header positions in
+  the Pogo board template, see :ref:`prism_bond:Designing the Pogo Board`.  The DUT can be placed
   and rotated in the nest so that its programming pins are near header 3 (JTAG/SWD) and its
   debug UART near header 1.
 * Put DAC and ADC pins for sensitive analog nets close to their header, and away from switching
@@ -201,6 +202,7 @@ From the Pin Map to the Pogo Board
 ==================================
 
 The Pin Map becomes the Pogo board schematic, the header definition file, and the test code.
+Start the Pogo board from Sistemi's template, see :ref:`prism_bond:Designing the Pogo Board`.
 
 * Name each Pogo board spring pin after the DUT test point it lands on, and its net, for example
   `TP2-VMAIN`, and the GND pins `TPG1`, `TPG2`...  Then the DUT, the Pogo board and the Pin Map

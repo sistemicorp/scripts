@@ -118,6 +118,10 @@ screenshots.
 * Key slot plan: use each `key#` for the same id in every test stage and product, from one
   key slot table, see :ref:`_traceability:Key Slot Plan`.  The Prism Assistant asks for the
   table when writing scripts and planning traceability
+* Designing the Pogo board from Sistemi's template
+  `a5800-BONDPogo <https://github.com/sistemicorp/a5800-BONDPogo>`_: schematic, layout, stack up
+  STEP model and mechanical guidance, see :ref:`prism_bond:Designing the Pogo Board`.  The
+  Prism Assistant points to the template when a Pogo board is designed
 
 Bug fixes,
 

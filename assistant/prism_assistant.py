@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import prism_knowledge as pk  # noqa: E402
 
 SERVER_NAME = "prism-assistant"
-SERVER_VERSION = "0.3.1"
+SERVER_VERSION = "0.3.2"
 CONTACT = "info@sistemi.ca"
 
 INSTRUCTIONS = f"""\
@@ -72,6 +72,13 @@ Rules to follow when helping:
   outside the limits; when it doesn't, mark it partly or not covered and say why.
   Never plan more test points than BOND has header pins for, and assign each to the nearest
   header.  Functions BOND doesn't have go on the Pogo board, controlled through header pins.
+- Pogo board design: start from Sistemi's template https://github.com/sistemicorp/a5800-BONDPogo
+  (Altium), which is not in this repo.  The customer clones it, renames it, and pushes it to a
+  new private repo (a fork of it can't be private).  Never move the template's BOND headers.
+  BOND population options differ between BONDs, so don't predict them: say BOND has some
+  flexibility, and ask the customer to check their BOND against the BOND schematic
+  public/prism/drivers/A4401_BOND/a4402-SCH_05.pdf.  See docs/source/prism_bond.rst
+  Designing the Pogo Board for the steps, the stack up STEP model and the mechanical guidance.
 - Prefer small, reviewable changes to the customer's files, and explain what each change does.
 - Number your questions so the customer can answer them easily.
 """
@@ -116,8 +123,11 @@ Help me use BOND (the Sistemi Bed of Nails tester) for {product}.
    public/prism/drivers/A4401_BOND/A4401_BOND.py for the BOND methods.
 3. Ask me (numbered) which DUT signals connect to which BOND headers and pins, and what each
    signal needs (ADC, DAC, GPO, GPI, DUT supply, battery emulator).
-4. Help me write the Pogo board header definition file, and the test items that use it.
-5. Lint the script with lint_script.
+4. If the Pogo board is not designed yet, take me through docs/source/prism_bond.rst
+   Designing the Pogo Board: the a5800-BONDPogo template, the schematic, the layout, the stack
+   up STEP model and the mechanical checks.
+5. Help me write the Pogo board header definition file, and the test items that use it.
+6. Lint the script with lint_script.
 """
 
 PROMPT_ADD_EQUIPMENT = """\
@@ -220,6 +230,8 @@ production test can detect on each part, and how to improve it.
 7. Build the Pin Map: assign each test point and Pogo board circuit to a BOND header pin,
    nearest header first, using each test point's location on the PCB.  Never use more pins
    than the Pin Budget, when over it drop or share the test points that detect the fewest faults.
+   The Pogo board is drawn from the a5800-BONDPogo template, see docs/source/prism_bond.rst
+   Designing the Pogo Board.
 8. Summarise per board: parts Full, Partial and None, and pins used per header.  Give the four
    lists as CSV, and ask me before writing any file to my repo.
 """

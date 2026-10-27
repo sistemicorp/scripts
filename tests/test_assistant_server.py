@@ -88,3 +88,12 @@ def test_key_slot_table_in_instructions_and_prompts():
         async def go(c, name=name):
             return await c.get_prompt(name, {})
         assert "key slot table" in run(go).messages[0].content.text
+
+
+def test_pogo_board_template_in_instructions_and_prompts():
+    assert "a5800-BONDPogo" in prism_assistant.INSTRUCTIONS
+    assert "a4402-SCH_05.pdf" in prism_assistant.INSTRUCTIONS
+    for name in ("use_bond", "analyze_coverage"):
+        async def go(c, name=name):
+            return await c.get_prompt(name, {})
+        assert "Designing the Pogo Board" in run(go).messages[0].content.text
