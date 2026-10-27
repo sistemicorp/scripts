@@ -175,7 +175,8 @@ context
 * in Python, you can do ``print(dir(ctx))`` to get a list of everything available to you
 * When designing your test script and program structure, consider what user configurable variables you want to be
   defined in the script ``args`` section and which you want in the program.  Things like min/max limits may change
-  over the product life cycle, and its better to make those things editable by a non-programmer. See TBS-Planning
+  over the product life cycle, and its better to make those things editable by a non-programmer.
+  See :ref:`prism_scripts:Script Design`
 
 
 Timeouts and Aborts

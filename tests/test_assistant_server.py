@@ -17,8 +17,8 @@ import prism_assistant  # noqa: E402
 
 TOOLS = {"list_docs", "read_doc", "search_docs", "read_file", "list_scripts", "lint_script",
          "check_settings", "list_drivers", "python_api", "repo_status"}
-PROMPTS = {"migrate_version", "write_test_script", "use_bond", "add_equipment",
-           "plan_test_stages", "analyze_coverage",
+PROMPTS = {"migrate_version", "write_test_script", "review_test_script", "use_bond",
+           "add_equipment", "plan_test_stages", "analyze_coverage",
            "plan_traceability", "plan_deployment", "setup_prism_computer"}
 
 
@@ -97,3 +97,11 @@ def test_pogo_board_template_in_instructions_and_prompts():
         async def go(c, name=name):
             return await c.get_prompt(name, {})
         assert "Designing the Pogo Board" in run(go).messages[0].content.text
+
+
+def test_script_prompts_read_script_design():
+    async def go(c):
+        return (await c.get_prompt("write_test_script", {"product": "P1", "stage": "T01"}),
+                await c.get_prompt("review_test_script", {"script": "P1/P1_T01.scr"}))
+    for r in run(go):
+        assert "Script Design" in r.messages[0].content.text

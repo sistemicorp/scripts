@@ -77,6 +77,8 @@ example `/mcp__prism-assistant__migrate_version`,
 
 * `migrate_version` - plan a version migration of your deployment
 * `write_test_script` - write a script and its test code for one test stage
+* `review_test_script` - review a script and its test code, see
+  :ref:`prism_scripts:Script Design`
 * `use_bond` - design the Pogo board from the template, set up BOND and its Pogo board
   header definition
 * `analyze_coverage` - analyse which faults the test detects on each part of a PCBA, see
@@ -110,6 +112,8 @@ assistant,
 * answers from this documentation and your repo, cites the page, and says so when they don't
   have the answer, instead of guessing, suggesting you contact info@sistemi.ca
 * lints any script or test code it writes or changes
+* writes scripts as a list of tests with their limits, that a technician can change without a
+  programmer, and keeps the test code simple, see :ref:`prism_scripts:Script Design`
 * analyses test coverage per part (Short, Open, Value) and per IC pin (Short, Open), and only
   counts a fault as covered when it moves a measurement outside the limits
 * records the serial number of each piece of test equipment in the results, see

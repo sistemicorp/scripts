@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import prism_knowledge as pk  # noqa: E402
 
 SERVER_NAME = "prism-assistant"
-SERVER_VERSION = "0.3.2"
+SERVER_VERSION = "0.4.0"
 CONTACT = "info@sistemi.ca"
 
 INSTRUCTIONS = f"""\
@@ -46,9 +46,21 @@ Don't guess at Prism/Lente internals.
 Rules to follow when helping:
 - Prism and Lente must run the same major.minor version (for example 0.9.x).  Before a version
   migration read docs/source/_version_history.rst, its Migration Guide and Upgrading sections.
+- A script is a list of tests with their limits, readable by a technician who is not a
+  programmer: when only a limit must change, they edit the script, without a programmer.  Each
+  item has only id, enable, timeout, min/max, fail and a few values a technician may change
+  (a name, a firmware file name), as fields on the item itself ("min": 4900), not in `args`.
+  Never put steps, action lists, expressions, DUT commands or BOND pins in a script, and never
+  generate scripts from another program.  See docs/source/prism_scripts.rst Script Design.
+- Keep test code simple and easy to follow, it is maintained for the life of the product,
+  often by people who did not write it.  One test item method per test, with its steps in
+  order.  Call the drivers and ctx.record.measurement directly, without your own wrapper
+  classes or helpers.  Hard code what doesn't change in production (pins, dividers, DUT
+  commands, settle times) in the program, a table like VOLTAGE_MAP for a test the script runs
+  several times by name.
 - Test items: the first statement is `ctx = self.item_start()`, every path ends with
-  `self.item_end(...)`, the module file name matches the class name, and limits go in the
-  script `args`.  Use self.sleep() and self.check_abort(), not time.sleep().
+  `self.item_end(...)`, and the module file name matches the class name.  Use self.sleep()
+  and self.check_abort(), not time.sleep().
 - Traceability: record the serial number of every piece of test equipment the test uses
   (scope, power supply, programmer, jig controller, shared or per jig) in the setup item, as
   a string measurement, `ctx.record.measurement("dso_sn", sn, ResultAPI.UNIT_STRING)`, which
@@ -102,8 +114,8 @@ PROMPT_TEST_SCRIPT = """\
 Help me write a Prism test script and its Python test code for {product}, test stage
 {stage}.
 
-1. Read docs/source/prism_scripts.rst and prism_programs.rst, and look at
-   public/prism/scripts/example/prod_v0 (prod_0.scr, tst00xx.py) as the reference example.
+1. Read docs/source/prism_scripts.rst (Script Design first) and prism_programs.rst, and look
+   at public/prism/scripts/example/prod_v0 (prod_0.scr, tst00xx.py) for the test item APIs.
 2. Use python_api for test_item and record to check each API you use.
 3. Ask me (numbered) what the stage tests, which instruments and drivers it uses
    (list_drivers), the limits, and how the unit serial number is found.  Ask for my key slot
@@ -112,8 +124,31 @@ Help me write a Prism test script and its Python test code for {product}, test s
    write the .scr and .py with a setup item first and a teardown item last.  The setup item
    records the serial number of each piece of test equipment as a string measurement.  Save
    the keys in the slots of my key slot table, using its constants.
-5. Run lint_script on the new script and fix every ERROR.  Tell me how to run it with
+5. Write one test item method per test, its steps in order, calling the drivers and
+   ctx.record.measurement directly.  The script only lists the tests, with their limits as
+   fields on each item.
+6. Before you finish, check: could a technician change every limit in the script without
+   reading Python?  Does the script hold any steps, expressions, commands or pins?  Fix it if so.
+7. Run lint_script on the new script and fix every ERROR.  Tell me how to run it with
    `python prism_dev.py --script <path>`.
+"""
+
+PROMPT_REVIEW_SCRIPT = """\
+Review my Prism test script {script} and its Python test code.
+
+1. Read docs/source/prism_scripts.rst Script Design and docs/source/prism_programs.rst.
+2. Read the script and each test module it runs, and run lint_script on it.
+3. Check the script is a list of tests with their limits, readable by a technician who is not
+   a programmer.  List each place where it is not: steps or action lists, expressions, DUT
+   commands, BOND pins, limits hidden in nested objects or in the code, a generic item that does
+   unrelated tests, a script generated from another program.
+4. Check the test code is simple: one method per test with its steps in order, drivers and
+   ctx.record.measurement called directly, no wrapper layers, easy to follow for someone who
+   did not write it.
+5. Check the traceability: the unit serial number in key0, the key slots and names of my key
+   slot table, and the serial number of each piece of test equipment in the setup item.
+6. Give me the findings, most important first, and propose the changes as small steps.  Ask me
+   before changing my files.
 """
 
 PROMPT_BOND = """\
@@ -327,6 +362,11 @@ def create_server():
     def write_test_script(product: str = "my product", stage: str = "T01") -> str:
         """Write a Prism script and its Python test code for one test stage."""
         return PROMPT_TEST_SCRIPT.format(product=product, stage=stage)
+
+    @mcp.prompt(title="Review a test script")
+    def review_test_script(script: str = "my script") -> str:
+        """Review a script and its test code: readable list of tests, simple code, traceability."""
+        return PROMPT_REVIEW_SCRIPT.format(script=script)
 
     @mcp.prompt(title="Use BOND")
     def use_bond(product: str = "my product") -> str:
