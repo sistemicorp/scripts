@@ -436,6 +436,63 @@ and settle times, in the program, in a table like <code class="docutils literal 
 <li><p>some repeated code between test items is fine, when it keeps each test item readable on its
 own</p></li>
 </ul>
+<p>A reader should be able to follow a test item from top to bottom without opening another
+file or class, other than the drivers and the Prism APIs.  So,</p>
+<ul class="simple">
+<li><p>the program is one class that inherits only from <code class="docutils literal notranslate"><span class="pre">TestItem</span></code>.  No base classes or mixins,
+and no shared module of test items.  When two programs have the same setup or teardown item,
+each program has its own copy</p></li>
+<li><p>call the drivers in the test item, check <code class="docutils literal notranslate"><span class="pre">response[&quot;success&quot;]</span></code>, and on a failure log it,
+end the item and return, as <code class="docutils literal notranslate"><span class="pre">BLT100_voltage</span></code> above.  No fixture class around BOND, and no
+looking up pins by signal name in another module</p></li>
+<li><p>record with <code class="docutils literal notranslate"><span class="pre">ctx.record.measurement(name,</span> <span class="pre">value,</span> <span class="pre">ResultAPI.UNIT_MILLIVOLTS,</span> <span class="pre">min=...,</span> <span class="pre">max=...)</span></code>
+and <code class="docutils literal notranslate"><span class="pre">self.log_bullet(bullet)</span></code>, with the measurement name written out in full.  The units
+are the <code class="docutils literal notranslate"><span class="pre">ResultAPI.UNIT_*</span></code> constants in <code class="docutils literal notranslate"><span class="pre">public/prism/api.py</span></code>: write the constant in each
+call (<code class="docutils literal notranslate"><span class="pre">ResultAPI.UNIT_MILLIVOLTS</span></code>), with no map, alias or short names of your own for them</p></li>
+<li><p>handle each error where it happens: log, <code class="docutils literal notranslate"><span class="pre">self.item_end(result)</span></code>, <code class="docutils literal notranslate"><span class="pre">return</span></code>.  No context
+managers or decorators that turn exceptions into results, and no exception classes of your
+own to jump out of a test item.  Use <code class="docutils literal notranslate"><span class="pre">try</span></code> only around the one call that can raise, such
+as opening a serial port</p></li>
+<li><p>a test item that uses the result of an earlier one (saved in <code class="docutils literal notranslate"><span class="pre">self</span></code>) checks that it is
+there, and ends with <code class="docutils literal notranslate"><span class="pre">RECORD_RESULT_INTERNAL_ERROR</span></code> and a log message naming the item it
+needs when it is not</p></li>
+<li><p>small pure functions in the program are fine, for example a checksum or a unit conversion,
+as long as they don’t call a driver or record anything</p></li>
+<li><p>a library for the DUT’s own protocol (its command link) can be a separate module, the same
+as a driver.  It doesn’t record measurements or call BOND</p></li>
+</ul>
+<p>The examples in <code class="docutils literal notranslate"><span class="pre">public/prism/scripts/example</span></code> are written this way, for example
+<code class="docutils literal notranslate"><span class="pre">BOND_v0/bond_P00xx.py</span></code>.</p>
+<p>Don’t wrap the recording and error handling into a “step” object, for example,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Don&#39;t: the reader has to find Step, meas() and the UNITS map to know what is recorded</span>
+<span class="k">def</span> <span class="nf">T105a_3v_out</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>
+    <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="s2">&quot;T1-05a&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">t</span><span class="p">:</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">meas</span><span class="p">(</span><span class="s2">&quot;v3v_out&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fx</span><span class="o">.</span><span class="n">adc_mv</span><span class="p">(</span><span class="s2">&quot;J6_1&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span> <span class="s2">&quot;V&quot;</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">result</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Write it out,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">T105a_3v_out</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; +3V_OUT at J6.1, BOND HDR1 pin 13</span>
+
+<span class="sd">        {&quot;id&quot;: &quot;T105a_3v_out&quot;, &quot;enable&quot;: true, &quot;min&quot;: 2940, &quot;max&quot;: 3060 },</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bond</span><span class="o">.</span><span class="n">bond_max_hdr_adc</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">13</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">response</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_INTERNAL_ERROR</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="n">_</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">bullet</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span><span class="s2">&quot;T105a_v3v_out&quot;</span><span class="p">,</span> <span class="n">response</span><span class="p">[</span><span class="s2">&quot;result&quot;</span><span class="p">][</span><span class="s2">&quot;mV&quot;</span><span class="p">],</span>
+                                               <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_MILLIVOLTS</span><span class="p">,</span>
+                                               <span class="nb">min</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="n">bullet</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>  <span class="c1"># always last line of test</span>
+</pre></div>
+</div>
 <p>Don’t,</p>
 <ul class="simple">
 <li><p>put lists of steps or actions in the script, for example
@@ -443,6 +500,8 @@ own</p></li>
 The script becomes a program, and the test code becomes an interpreter for it</p></li>
 <li><p>put expressions, formulas, DUT commands or BOND pin numbers in the script</p></li>
 <li><p>use one generic test item for unrelated tests, with the script choosing what it does</p></li>
+<li><p>put layers between the test item and the drivers or <code class="docutils literal notranslate"><span class="pre">ctx.record.measurement</span></code>: base
+classes, fixture classes, step objects, <code class="docutils literal notranslate"><span class="pre">meas()</span></code>/<code class="docutils literal notranslate"><span class="pre">check()</span></code> helpers, unit maps</p></li>
 <li><p>generate the script from another program or repo.  The script in your scripts repo is the one
 that is changed, by hand, when a limit changes</p></li>
 </ul>

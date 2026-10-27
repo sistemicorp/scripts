@@ -415,6 +415,68 @@ write it.  Code that is easy to follow is better than code that is short.
 * some repeated code between test items is fine, when it keeps each test item readable on its
   own
 
+A reader should be able to follow a test item from top to bottom without opening another
+file or class, other than the drivers and the Prism APIs.  So,
+
+* the program is one class that inherits only from ``TestItem``.  No base classes or mixins,
+  and no shared module of test items.  When two programs have the same setup or teardown item,
+  each program has its own copy
+* call the drivers in the test item, check ``response["success"]``, and on a failure log it,
+  end the item and return, as ``BLT100_voltage`` above.  No fixture class around BOND, and no
+  looking up pins by signal name in another module
+* record with ``ctx.record.measurement(name, value, ResultAPI.UNIT_MILLIVOLTS, min=..., max=...)``
+  and ``self.log_bullet(bullet)``, with the measurement name written out in full.  The units
+  are the ``ResultAPI.UNIT_*`` constants in ``public/prism/api.py``: write the constant in each
+  call (``ResultAPI.UNIT_MILLIVOLTS``), with no map, alias or short names of your own for them
+* handle each error where it happens: log, ``self.item_end(result)``, ``return``.  No context
+  managers or decorators that turn exceptions into results, and no exception classes of your
+  own to jump out of a test item.  Use ``try`` only around the one call that can raise, such
+  as opening a serial port
+* a test item that uses the result of an earlier one (saved in ``self``) checks that it is
+  there, and ends with ``RECORD_RESULT_INTERNAL_ERROR`` and a log message naming the item it
+  needs when it is not
+* small pure functions in the program are fine, for example a checksum or a unit conversion,
+  as long as they don't call a driver or record anything
+* a library for the DUT's own protocol (its command link) can be a separate module, the same
+  as a driver.  It doesn't record measurements or call BOND
+
+The examples in ``public/prism/scripts/example`` are written this way, for example
+``BOND_v0/bond_P00xx.py``.
+
+Don't wrap the recording and error handling into a "step" object, for example,
+
+::
+
+    # Don't: the reader has to find Step, meas() and the UNITS map to know what is recorded
+    def T105a_3v_out(self):
+        ctx = self.item_start()
+        with self.step(ctx, "T1-05a") as t:
+            t.meas("v3v_out", self.fx.adc_mv("J6_1") / 1000, "V", ctx.item.min, ctx.item.max)
+        self.item_end(t.result)
+
+Write it out,
+
+::
+
+    def T105a_3v_out(self):
+        """ +3V_OUT at J6.1, BOND HDR1 pin 13
+
+            {"id": "T105a_3v_out", "enable": true, "min": 2940, "max": 3060 },
+        """
+        ctx = self.item_start()  # always first line of test
+
+        response = self.bond.bond_max_hdr_adc(1, 13)
+        if not response["success"]:
+            self.logger.error(response)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        _, result, bullet = ctx.record.measurement("T105a_v3v_out", response["result"]["mV"],
+                                                   ResultAPI.UNIT_MILLIVOLTS,
+                                                   min=ctx.item.min, max=ctx.item.max)
+        self.log_bullet(bullet)
+        self.item_end(result)  # always last line of test
+
 Don't,
 
 * put lists of steps or actions in the script, for example
@@ -422,6 +484,8 @@ Don't,
   The script becomes a program, and the test code becomes an interpreter for it
 * put expressions, formulas, DUT commands or BOND pin numbers in the script
 * use one generic test item for unrelated tests, with the script choosing what it does
+* put layers between the test item and the drivers or ``ctx.record.measurement``: base
+  classes, fixture classes, step objects, ``meas()``/``check()`` helpers, unit maps
 * generate the script from another program or repo.  The script in your scripts repo is the one
   that is changed, by hand, when a limit changes
 

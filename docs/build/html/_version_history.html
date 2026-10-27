@@ -153,7 +153,10 @@ STEP model and mechanical guidance, see <a class="reference internal" href="pris
 Prism Assistant points to the template when a Pogo board is designed</p></li>
 <li><p>Script design: a script is a list of tests with their limits, that a technician can change
 without a programmer, and the test code stays simple, see <a class="reference internal" href="prism_scripts.html#script-design"><span class="std std-ref">Script Design</span></a>.
-The Prism Assistant writes scripts this way, and has a <cite>review_test_script</cite> prompt</p></li>
+The Prism Assistant writes scripts this way, and has a <cite>review_test_script</cite> prompt.  Test
+code is written flat like the examples: one class inheriting only from <code class="docutils literal notranslate"><span class="pre">TestItem</span></code>, drivers,
+<code class="docutils literal notranslate"><span class="pre">ctx.record.measurement</span></code> and the <code class="docutils literal notranslate"><span class="pre">ResultAPI.UNIT_*</span></code> constants called directly, no base
+classes, fixture classes, step objects or unit maps (Prism Assistant 0.4.1)</p></li>
 </ul>
 <p>Bug fixes,</p>
 <ul class="simple">
