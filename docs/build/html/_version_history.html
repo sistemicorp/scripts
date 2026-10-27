@@ -157,6 +157,9 @@ The Prism Assistant writes scripts this way, and has a <cite>review_test_script<
 code is written flat like the examples: one class inheriting only from <code class="docutils literal notranslate"><span class="pre">TestItem</span></code>, drivers,
 <code class="docutils literal notranslate"><span class="pre">ctx.record.measurement</span></code> and the <code class="docutils literal notranslate"><span class="pre">ResultAPI.UNIT_*</span></code> constants called directly, no base
 classes, fixture classes, step objects or unit maps (Prism Assistant 0.4.1)</p></li>
+<li><p>Script linter: a <code class="docutils literal notranslate"><span class="pre">fail</span></code> <code class="docutils literal notranslate"><span class="pre">msg</span></code> must be a string of at most 64 characters, a terse hint for
+the operator.  The Prism Assistant writes them this way and checks the test code calls
+<code class="docutils literal notranslate"><span class="pre">ctx.record.fail_msg()</span></code> (Prism Assistant 0.4.2)</p></li>
 </ul>
 <p>Bug fixes,</p>
 <ul class="simple">

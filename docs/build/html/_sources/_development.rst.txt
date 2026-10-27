@@ -308,7 +308,8 @@ Errors,
   `str` sub
 * a ``timeout`` must be a positive number
 * ``args`` and ``options`` must be objects
-* ``fail`` must be a list of ``{"fid": ..., "msg": ...}``
+* ``fail`` must be a list of ``{"fid": ..., "msg": ...}``, each ``msg`` a string of at most 64
+  characters
 * after substitution, no ``"%%<key>"`` may be left in the script
 
 Checks of the ``subs`` section, when linting a script before substitution (see

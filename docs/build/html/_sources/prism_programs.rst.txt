@@ -425,7 +425,9 @@ Example Notes:
   This is coded in the constants ``FAIL_APPLE`` and ``FAIL_BANANNA``
 * ``ctx.record.fail_msg()`` is used to set the user facing "binning" message
 * The ``fid`` text represents the "binning" code
-* The ``msg`` is there to provide a hint to the test engineer of where the problem might be
+* The ``msg`` is there to provide a hint to the test engineer of where the problem might be,
+  at most 64 characters (the script linter checks it)
+* The ``fail`` list is only shown when the code calls ``ctx.record.fail_msg()``
 
 ::
 

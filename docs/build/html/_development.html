@@ -325,7 +325,8 @@ pairs, and each driver module must exist</p></li>
 <cite>str</cite> sub</p></li>
 <li><p>a <code class="docutils literal notranslate"><span class="pre">timeout</span></code> must be a positive number</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">args</span></code> and <code class="docutils literal notranslate"><span class="pre">options</span></code> must be objects</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">fail</span></code> must be a list of <code class="docutils literal notranslate"><span class="pre">{&quot;fid&quot;:</span> <span class="pre">...,</span> <span class="pre">&quot;msg&quot;:</span> <span class="pre">...}</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fail</span></code> must be a list of <code class="docutils literal notranslate"><span class="pre">{&quot;fid&quot;:</span> <span class="pre">...,</span> <span class="pre">&quot;msg&quot;:</span> <span class="pre">...}</span></code>, each <code class="docutils literal notranslate"><span class="pre">msg</span></code> a string of at most 64
+characters</p></li>
 <li><p>after substitution, no <code class="docutils literal notranslate"><span class="pre">&quot;%%&lt;key&gt;&quot;</span></code> may be left in the script</p></li>
 </ul>
 <p>Checks of the <code class="docutils literal notranslate"><span class="pre">subs</span></code> section, when linting a script before substitution (see

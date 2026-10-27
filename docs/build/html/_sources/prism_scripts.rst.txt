@@ -315,7 +315,11 @@ See ``public/prism/scripts/example/prod_v0/tst00xx.py`` for usage.
 
     * These failure modes are accessed programmatically by your test code, see TBD
     * ``fid`` - a unique ID for this failure mode
-    * ``msg`` - message to show operator
+    * ``msg`` - message to show operator, at most 64 characters, a short hint like
+      ``"3V_OUT low: check U7 R49"``
+    * the test code attaches it to the result with ``ctx.record.fail_msg(ctx.item.fail[0])``
+      when a measurement fails, see :ref:`prism_programs:Binning Failures`.  Without that call
+      the ``fail`` list is never shown
   * any other field your test code needs, for example ``"name": "V5V", "min": 4900, "max": 5100``,
     read in the program as ``ctx.item.min``.  Fields on the item itself are easier to read than
     fields inside ``args``, see :ref:`prism_scripts:Script Design`
@@ -360,6 +364,9 @@ A good script looks like this,
 * each line is one test, and the limits are on the line
 * put fields on the item itself (``"min": 4900``), not in ``args``, so the line is easy to read
 * a comment says why a test is disabled
+* a ``fail`` message is a terse hint for the operator or repair technician, at most 64
+  characters, like ``"3V_OUT low: check U7 R49"``.  Not the full list of parts a test covers,
+  that belongs in the coverage analysis, see :ref:`_coverage:PCBA Test Coverage`
 * the same test may run more than once, with a different ``name``, when only the limits change,
   ``BLT100_voltage`` above.  Each run must record a different measurement name, here the
   ``name``.  Only the first copy of a repeated ``id`` can be the target of ``_next``.

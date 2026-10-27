@@ -128,6 +128,9 @@ screenshots.
   code is written flat like the examples: one class inheriting only from ``TestItem``, drivers,
   ``ctx.record.measurement`` and the ``ResultAPI.UNIT_*`` constants called directly, no base
   classes, fixture classes, step objects or unit maps (Prism Assistant 0.4.1)
+* Script linter: a ``fail`` ``msg`` must be a string of at most 64 characters, a terse hint for
+  the operator.  The Prism Assistant writes them this way and checks the test code calls
+  ``ctx.record.fail_msg()`` (Prism Assistant 0.4.2)
 
 Bug fixes,
 

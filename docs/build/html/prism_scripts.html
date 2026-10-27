@@ -339,7 +339,11 @@ objects, and any <code class="docutils literal notranslate"><span class="pre">ti
 <ul>
 <li><p>These failure modes are accessed programmatically by your test code, see TBD</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">fid</span></code> - a unique ID for this failure mode</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">msg</span></code> - message to show operator</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">msg</span></code> - message to show operator, at most 64 characters, a short hint like
+<code class="docutils literal notranslate"><span class="pre">&quot;3V_OUT</span> <span class="pre">low:</span> <span class="pre">check</span> <span class="pre">U7</span> <span class="pre">R49&quot;</span></code></p></li>
+<li><p>the test code attaches it to the result with <code class="docutils literal notranslate"><span class="pre">ctx.record.fail_msg(ctx.item.fail[0])</span></code>
+when a measurement fails, see <a class="reference internal" href="prism_programs.html#binning-failures"><span class="std std-ref">Binning Failures</span></a>.  Without that call
+the <code class="docutils literal notranslate"><span class="pre">fail</span></code> list is never shown</p></li>
 </ul>
 </li>
 <li><p>any other field your test code needs, for example <code class="docutils literal notranslate"><span class="pre">&quot;name&quot;:</span> <span class="pre">&quot;V5V&quot;,</span> <span class="pre">&quot;min&quot;:</span> <span class="pre">4900,</span> <span class="pre">&quot;max&quot;:</span> <span class="pre">5100</span></code>,
@@ -384,6 +388,9 @@ a firmware file name or a hardware version</p></li>
 <li><p>each line is one test, and the limits are on the line</p></li>
 <li><p>put fields on the item itself (<code class="docutils literal notranslate"><span class="pre">&quot;min&quot;:</span> <span class="pre">4900</span></code>), not in <code class="docutils literal notranslate"><span class="pre">args</span></code>, so the line is easy to read</p></li>
 <li><p>a comment says why a test is disabled</p></li>
+<li><p>a <code class="docutils literal notranslate"><span class="pre">fail</span></code> message is a terse hint for the operator or repair technician, at most 64
+characters, like <code class="docutils literal notranslate"><span class="pre">&quot;3V_OUT</span> <span class="pre">low:</span> <span class="pre">check</span> <span class="pre">U7</span> <span class="pre">R49&quot;</span></code>.  Not the full list of parts a test covers,
+that belongs in the coverage analysis, see <a class="reference internal" href="_coverage.html#pcba-test-coverage"><span class="std std-ref">PCBA Test Coverage</span></a></p></li>
 <li><p>the same test may run more than once, with a different <code class="docutils literal notranslate"><span class="pre">name</span></code>, when only the limits change,
 <code class="docutils literal notranslate"><span class="pre">BLT100_voltage</span></code> above.  Each run must record a different measurement name, here the
 <code class="docutils literal notranslate"><span class="pre">name</span></code>.  Only the first copy of a repeated <code class="docutils literal notranslate"><span class="pre">id</span></code> can be the target of <code class="docutils literal notranslate"><span class="pre">_next</span></code>.</p></li>
