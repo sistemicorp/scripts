@@ -43,6 +43,7 @@ INFO_OPTIONAL_FIELDS = {"config": 16}
 ITEM_KEYS = ("id", "enable", "timeout", "args", "fail")
 TYPO_CUTOFF = 0.8  # difflib ratio of an item field to a Prism item key
 FAIL_KEYS = ("fid", "msg")
+FAIL_MSG_MAX_LEN = 64  # a terse hint for the operator, one line of the channel log
 ENABLE_STRINGS = ("true", "false")
 
 ITEM_RESULTS = (ResultAPI.RECORD_RESULT_PASS, ResultAPI.RECORD_RESULT_FAIL,
@@ -306,6 +307,11 @@ def _lint_tests(script, out):
                     isinstance(f, dict) and set(f) == set(FAIL_KEYS) for f in fail):
                 out.append(Finding(LEVEL_ERROR, iwhere + " fail",
                                    'must be a list of {"fid": ..., "msg": ...}'))
+            elif any(not isinstance(f["msg"], str) or len(f["msg"]) > FAIL_MSG_MAX_LEN
+                     for f in fail):
+                out.append(Finding(LEVEL_ERROR, iwhere + " fail",
+                                   "msg must be a string of at most {} characters".format(
+                                       FAIL_MSG_MAX_LEN)))
         last = items[-1]
         if isinstance(last, dict) and last.get("enable", True) in (False, "false"):
             out.append(Finding(LEVEL_WARN, "{}.items[{}]".format(where, len(items) - 1),

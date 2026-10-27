@@ -273,11 +273,21 @@ def test_info_sub_length_checked_after_subs(lint):
     ({"enable": "yes"}, "must be true or false", "ERROR"),   # [Unhappy] string enable
     ({"timeout": -1}, "must be a positive number", "ERROR"),  # [Unhappy]
     ({"fail": [{"fid": "x"}]}, 'must be a list of {"fid": ..., "msg": ...}', "ERROR"),
+    ({"fail": [{"fid": "x", "msg": "m" * 65}]},
+     "msg must be a string of at most 64 characters", "ERROR"),  # [Unhappy] long msg
+    ({"fail": [{"fid": "x", "msg": 5}]},
+     "msg must be a string of at most 64 characters", "ERROR"),  # [Unhappy] not a string
     ({"timout": 5}, "field timout looks like a typo of timeout", "WARN"),  # [Unhappy]
 ])
 def test_item_fields(lint, item, expect, level):
     findings = lint(script=_one_item("SETUP", **item))
     assert [f.level for f in findings if f.msg == expect] == [level]
+
+
+def test_fail_msg_at_limit_is_accepted(lint):
+    # [Edge] exactly 64 characters
+    findings = lint(script=_one_item("SETUP", fail=[{"fid": "x", "msg": "m" * 64}]))
+    assert not [f for f in findings if "msg must be" in f.msg]
 
 
 def test_item_custom_fields_are_allowed(lint):

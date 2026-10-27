@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import prism_knowledge as pk  # noqa: E402
 
 SERVER_NAME = "prism-assistant"
-SERVER_VERSION = "0.4.1"
+SERVER_VERSION = "0.4.2"
 CONTACT = "info@sistemi.ca"
 
 INSTRUCTIONS = f"""\
@@ -78,6 +78,11 @@ Rules to follow when helping:
   - an item using an earlier item's result checks it is there, else INTERNAL_ERROR naming the
     item it needs
   Repeated code between test items is fine: it keeps each item readable on its own.
+- Fail messages: an item's "fail" entries are {{"fid": ..., "msg": ...}}, msg at most 64
+  characters (lint_script errors on longer), a terse hint for the operator or repair
+  technician, like "3V_OUT low: check U7 R49".  Never copy a coverage parts list into msg.
+  The test code must call ctx.record.fail_msg(ctx.item.fail[i]) when a measurement fails,
+  as public/prism/scripts/example/prod_v0/tst00xx.py does, or the message is never shown.
 - Test items: the first statement is `ctx = self.item_start()`, every path ends with
   `self.item_end(...)`, and the module file name matches the class name.  Use self.sleep()
   and self.check_abort(), not time.sleep().
@@ -151,7 +156,8 @@ Help me write a Prism test script and its Python test code for {product}, test s
    reading Python?  Does the script hold any steps, expressions, commands or pins?  Does the
    code have a base class, a wrapper around a driver or ctx.record.measurement, a step object
    or context manager, meas()/check() helpers, or a unit map?  Can each test item be read top
-   to bottom without opening another file or class?  Fix it if not.
+   to bottom without opening another file or class?  Is each fail msg at most 64 characters,
+   and does the code call ctx.record.fail_msg() for it?  Fix it if not.
 7. Run lint_script on the new script and fix every ERROR.  Tell me how to run it with
    `python prism_dev.py --script <path>`.
 """
@@ -171,6 +177,8 @@ Review my Prism test script {script} and its Python test code.
    mixins, fixture classes around BOND, pins looked up by signal name, step objects or
    context managers that turn exceptions into results, meas()/check() helpers, unit maps,
    measurement names built from a prefix.  Compare with public/prism/scripts/example.
+   Check each fail msg is a terse hint of at most 64 characters, not a parts list, and that
+   the code calls ctx.record.fail_msg() when the measurement it belongs to fails.
 5. Check the traceability: the unit serial number in key0, the key slots and names of my key
    slot table, and the serial number of each piece of test equipment in the setup item.
 6. Give me the findings, most important first, and propose the changes as small steps.  Ask me
