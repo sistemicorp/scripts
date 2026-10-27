@@ -205,7 +205,8 @@ route.</p>
 <ul class="simple">
 <li><p>Note the location of each test point on the PCB, from the layout (x, y) or as a board area.</p></li>
 <li><p>Look at where the headers are under the DUT, see the Stack Up in the BOND product brief
-<cite>public/prism/drivers/A4401_BOND/a4402-SPC_ProductBrief_01.pdf</cite>.  The DUT can be placed
+<cite>public/prism/drivers/A4401_BOND/a4402-SPC_ProductBrief_01.pdf</cite>, and the header positions in
+the Pogo board template, see <a class="reference internal" href="prism_bond.html#designing-the-pogo-board"><span class="std std-ref">Designing the Pogo Board</span></a>.  The DUT can be placed
 and rotated in the nest so that its programming pins are near header 3 (JTAG/SWD) and its
 debug UART near header 1.</p></li>
 <li><p>Put DAC and ADC pins for sensitive analog nets close to their header, and away from switching
@@ -244,7 +245,8 @@ requirements.</p>
 </section>
 <section id="from-the-pin-map-to-the-pogo-board">
 <h3><a class="toc-backref" href="#id7" role="doc-backlink">From the Pin Map to the Pogo Board</a><a class="headerlink" href="#from-the-pin-map-to-the-pogo-board" title="Link to this heading">¶</a></h3>
-<p>The Pin Map becomes the Pogo board schematic, the header definition file, and the test code.</p>
+<p>The Pin Map becomes the Pogo board schematic, the header definition file, and the test code.
+Start the Pogo board from Sistemi’s template, see <a class="reference internal" href="prism_bond.html#designing-the-pogo-board"><span class="std std-ref">Designing the Pogo Board</span></a>.</p>
 <ul>
 <li><p>Name each Pogo board spring pin after the DUT test point it lands on, and its net, for example
 <cite>TP2-VMAIN</cite>, and the GND pins <cite>TPG1</cite>, <cite>TPG2</cite>…  Then the DUT, the Pogo board and the Pin Map

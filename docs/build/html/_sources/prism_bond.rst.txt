@@ -10,6 +10,8 @@ your DUT, that plugs into the BOND headers.
 * Schematic: `public/prism/drivers/A4401_BOND/a4402-SCH_05.pdf`
 * Driver developer guide: `public/prism/drivers/A4401_BOND/README.md`
 * Example scripts and test code: `public/prism/scripts/example/BOND_v0`
+* Pogo board template: `a5800-BONDPogo <https://github.com/sistemicorp/a5800-BONDPogo>`_,
+  see `Designing the Pogo Board`_
 
 .. contents::
    :local:
@@ -31,6 +33,107 @@ Getting Started
 `bond_update_0.scr` updates the firmware of a BOND that is already programmed.  Run it only
 once per Prism start, as the BOND's USB port can change after the update.  The Arduino IDE must be
 closed while Prism uses BOND.
+
+
+Designing the Pogo Board
+************************
+
+Start your Pogo board from Sistemi's template, the Altium Designer project
+`a5800-BONDPogo <https://github.com/sistemicorp/a5800-BONDPogo>`_.  It has the four BOND
+headers already placed where they mate with BOND, a spring pin part, the BOND schematic and a 3D
+model of BOND.  You add the spring pins for your DUT's test points, and wire each one to a header
+pin.  The template's `README.md` lists its files.
+
+The stack up, from the top,
+
+* the DUT, with its test points facing down,
+* the spring pins, on the Pogo board,
+* the Pogo board, with the four headers TH1-TH4 (Molex 90151-2120) on its bottom side,
+* BOND, with its headers facing the Pogo board, and its components facing away from it.
+
+Plan the test points and their header pins first, see :doc:`PCBA Test Coverage <_coverage>`,
+sections Pin Budget, Test Point Location and From the Pin Map to the Pogo Board.
+
+
+Start a Pogo Board Project
+==========================
+
+Your Pogo board is usually private, and a GitHub fork of a public repo can't be private.  Clone
+the template, and push it to a new, empty private repo,
+
+::
+
+    git clone https://github.com/sistemicorp/a5800-BONDPogo.git myproduct-Pogo
+    cd myproduct-Pogo
+    git remote rename origin sistemi
+    git remote add origin git@github.com:<your org>/myproduct-Pogo.git
+    git push -u origin master
+
+The `sistemi` remote lets you fetch later changes to the template.  In Altium, rename the project
+and the title blocks to your own part number.
+
+
+Schematic
+=========
+
+* In `Top.SchDoc`, copy the spring pin `TP1` once for each DUT test point.  Name each after the
+  test point and its net, for example `TP1-VDD`, `TP2-IN5`, the same as the Pin Map.
+* Use several GND spring pins, `TPG1`, `TPG2`..., spread over the DUT.
+* Connect each test point to a net of the header sheets `TH1`-`TH4`.  Each sheet gives the BOND
+  function and range of its pins, for example `VDUT` (1-20V, 1A), `VBAT` (2-5V, 0.8A),
+  the open drain outputs, UART, I2C, JTAG/SWD and USB, and the general purpose `PORT` pins
+  (ADC, DAC, GPO or GPI, set in the `Header Definition File`_).
+* Circuits that BOND controls, such as switched loads, dividers or relays, go on the Pogo board
+  too, see :ref:`_coverage:Pogo Board Circuits`.
+
+BOND has some flexibility: some header pins depend on how the BOND is populated, for example
+header 3 pin 2 to the BNC connector, or the divider on header 1 pin 8.  Check your BOND against
+the BOND schematic `public/prism/drivers/A4401_BOND/a4402-SCH_05.pdf`, and change the template
+to match it.
+
+
+Layout
+======
+
+* Do not move the headers TH1-TH4, or change their footprints.  They must line up with the BOND
+  headers.
+* Place the spring pins under the DUT test points, from the DUT's layout.  Keep the trace from
+  each spring pin to its header pin short, see :ref:`_coverage:Test Point Location`.
+* The template board is 2 mm thick, which keeps the spring pins straight and the board flat
+  under the force of the pins.
+* Parts on the top of the Pogo board must clear the DUT and the parts on its bottom side.  The
+  bottom of the Pogo board sits over BOND, keep it clear apart from the headers.
+
+
+Stack Up STEP Model
+===================
+
+The template layout has a 3D model of BOND (`a4402-CAD_PCB1_01.step`) mated to the Pogo board,
+and the template's `a5800-CAD_3DwBOND_01.step` is the two boards together.  Add the 3D model of
+your DUT on its spring pins, and export a STEP of the whole stack up, BOND, Pogo board and DUT.
+The jig's mechanical design (the base, the DUT nest, the lid and its hold downs) starts from that
+model.
+
+
+Mechanical
+==========
+
+These are typical values, check them against the spring pin's datasheet and your jig.
+
+* Spring pins: the template uses `S13-503-SISTEMI`.  When the jig is closed, compress each pin
+  to about two thirds of its travel, so every pin has force even when the DUT is not flat.
+* DUT test pads: about 1 mm across, at least 2.54 mm (100 mil) apart centre to centre where you
+  can, 1.27 mm at the least.  Keep pads a few mm from tall parts, and on one side of the DUT.
+* Alignment: two non-plated tooling holes on the DUT, at opposite corners, with guide pins in the
+  nest or on the Pogo board.  Pin to pad accuracy comes from the tooling holes, not the board
+  edge.
+* Hold down: push the DUT down with hold down fingers in the lid, placed over the spring pins,
+  so the DUT does not bend.  Many spring pins add up to a large force.
+* Through hole connector pins and the programming header can be probed too, see
+  :doc:`PCBA Test Coverage <_coverage>`.
+
+Before ordering the Pogo board, check its schematic against the Pin Map and the header
+definition file, pin by pin.
 
 
 Header Definition File

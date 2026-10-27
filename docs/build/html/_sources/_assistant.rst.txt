@@ -77,7 +77,8 @@ example `/mcp__prism-assistant__migrate_version`,
 
 * `migrate_version` - plan a version migration of your deployment
 * `write_test_script` - write a script and its test code for one test stage
-* `use_bond` - set up BOND and its Pogo board header definition
+* `use_bond` - design the Pogo board from the template, set up BOND and its Pogo board
+  header definition
 * `analyze_coverage` - analyse which faults the test detects on each part of a PCBA, see
   :doc:`PCBA Test Coverage <_coverage>`
 * `add_equipment` - add test equipment to a jig, one per jig or shared, with its driver
@@ -114,6 +115,8 @@ assistant,
 * records the serial number of each piece of test equipment in the results, see
   :ref:`Test Equipment <_traceability:Test Equipment>`, and follows the
   :doc:`driver <prism_drivers>` rules for equipment per jig or shared
+* starts a Pogo board from the template, see :ref:`prism_bond:Designing the Pogo Board`, and
+  leaves your BOND's population options to you and the BOND schematic
 * follows the rules in this documentation, for example the
   :doc:`test item rules <prism_programs>`, the serial number in `key0`, and Prism and Lente
   running the same major.minor version
