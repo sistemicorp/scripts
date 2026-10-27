@@ -124,7 +124,10 @@ screenshots.
   Prism Assistant points to the template when a Pogo board is designed
 * Script design: a script is a list of tests with their limits, that a technician can change
   without a programmer, and the test code stays simple, see :ref:`prism_scripts:Script Design`.
-  The Prism Assistant writes scripts this way, and has a `review_test_script` prompt
+  The Prism Assistant writes scripts this way, and has a `review_test_script` prompt.  Test
+  code is written flat like the examples: one class inheriting only from ``TestItem``, drivers,
+  ``ctx.record.measurement`` and the ``ResultAPI.UNIT_*`` constants called directly, no base
+  classes, fixture classes, step objects or unit maps (Prism Assistant 0.4.1)
 
 Bug fixes,
 

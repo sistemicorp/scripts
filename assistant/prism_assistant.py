@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import prism_knowledge as pk  # noqa: E402
 
 SERVER_NAME = "prism-assistant"
-SERVER_VERSION = "0.4.0"
+SERVER_VERSION = "0.4.1"
 CONTACT = "info@sistemi.ca"
 
 INSTRUCTIONS = f"""\
@@ -57,7 +57,27 @@ Rules to follow when helping:
   order.  Call the drivers and ctx.record.measurement directly, without your own wrapper
   classes or helpers.  Hard code what doesn't change in production (pins, dividers, DUT
   commands, settle times) in the program, a table like VOLTAGE_MAP for a test the script runs
-  several times by name.
+  several times by name.  Write the code like the examples in public/prism/scripts/example
+  (BOND_v0/bond_P00xx.py), flat, so a test item reads top to bottom without opening another
+  file or class:
+  - the program is one class inheriting only from TestItem: no base classes, mixins or shared
+    modules of test items; two programs with the same setup or teardown each have their own
+  - in the test item, call the driver, check response["success"], and on failure log it,
+    self.item_end(...) and return.  No fixture class around BOND, no pin lookup by signal name
+    in another module
+  - record with ctx.record.measurement(name, value, ResultAPI.UNIT_..., min=..., max=...) and
+    self.log_bullet(bullet), the measurement name written out in full.  The units are the
+    ResultAPI.UNIT_* constants of public/prism/api.py, written in each call
+    (ResultAPI.UNIT_MILLIVOLTS): no unit map, alias, short names or unit variables
+  - no step objects, context managers or decorators that turn exceptions into results, no
+    meas()/check()/eq() helpers, no exception classes of your own for control flow; use try
+    only around the one call that can raise
+  - small pure functions (a checksum, a conversion) are fine in the program if they don't
+    call a driver or record anything; a library for the DUT's own command protocol can be a
+    separate module, like a driver
+  - an item using an earlier item's result checks it is there, else INTERNAL_ERROR naming the
+    item it needs
+  Repeated code between test items is fine: it keeps each item readable on its own.
 - Test items: the first statement is `ctx = self.item_start()`, every path ends with
   `self.item_end(...)`, and the module file name matches the class name.  Use self.sleep()
   and self.check_abort(), not time.sleep().
@@ -125,10 +145,13 @@ Help me write a Prism test script and its Python test code for {product}, test s
    records the serial number of each piece of test equipment as a string measurement.  Save
    the keys in the slots of my key slot table, using its constants.
 5. Write one test item method per test, its steps in order, calling the drivers and
-   ctx.record.measurement directly.  The script only lists the tests, with their limits as
-   fields on each item.
+   ctx.record.measurement directly, flat like public/prism/scripts/example/BOND_v0/bond_P00xx.py.
+   The script only lists the tests, with their limits as fields on each item.
 6. Before you finish, check: could a technician change every limit in the script without
-   reading Python?  Does the script hold any steps, expressions, commands or pins?  Fix it if so.
+   reading Python?  Does the script hold any steps, expressions, commands or pins?  Does the
+   code have a base class, a wrapper around a driver or ctx.record.measurement, a step object
+   or context manager, meas()/check() helpers, or a unit map?  Can each test item be read top
+   to bottom without opening another file or class?  Fix it if not.
 7. Run lint_script on the new script and fix every ERROR.  Tell me how to run it with
    `python prism_dev.py --script <path>`.
 """
@@ -143,8 +166,11 @@ Review my Prism test script {script} and its Python test code.
    commands, BOND pins, limits hidden in nested objects or in the code, a generic item that does
    unrelated tests, a script generated from another program.
 4. Check the test code is simple: one method per test with its steps in order, drivers and
-   ctx.record.measurement called directly, no wrapper layers, easy to follow for someone who
-   did not write it.
+   ctx.record.measurement called directly, easy to follow for someone who did not write it.
+   List each layer a reader has to open another file or class to follow: base classes or
+   mixins, fixture classes around BOND, pins looked up by signal name, step objects or
+   context managers that turn exceptions into results, meas()/check() helpers, unit maps,
+   measurement names built from a prefix.  Compare with public/prism/scripts/example.
 5. Check the traceability: the unit serial number in key0, the key slots and names of my key
    slot table, and the serial number of each piece of test equipment in the setup item.
 6. Give me the findings, most important first, and propose the changes as small steps.  Ask me

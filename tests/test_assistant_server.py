@@ -105,3 +105,16 @@ def test_script_prompts_read_script_design():
                 await c.get_prompt("review_test_script", {"script": "P1/P1_T01.scr"}))
     for r in run(go):
         assert "Script Design" in r.messages[0].content.text
+
+
+def test_flat_test_code_rules():
+    assert "inheriting only from TestItem" in prism_assistant.INSTRUCTIONS
+    assert "ResultAPI.UNIT_*" in prism_assistant.INSTRUCTIONS
+
+    async def go(c):
+        return (await c.get_prompt("write_test_script", {"product": "P1", "stage": "T01"}),
+                await c.get_prompt("review_test_script", {"script": "P1/P1_T01.scr"}))
+    for r in run(go):
+        text = r.messages[0].content.text
+        assert "public/prism/scripts/example" in text
+        assert "unit map" in text
