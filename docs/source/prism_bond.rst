@@ -97,6 +97,7 @@ Layout
 
 * Do not move the headers TH1-TH4, or change their footprints.  They must line up with the BOND
   headers.
+* The board outline can change to suit your DUT and jig, the headers stay where they are.
 * Place the spring pins under the DUT test points, from the DUT's layout.  Keep the trace from
   each spring pin to its header pin short, see :ref:`_coverage:Test Point Location`.
 * The template board is 2 mm thick, which keeps the spring pins straight and the board flat

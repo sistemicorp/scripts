@@ -74,7 +74,8 @@ Rules to follow when helping:
   header.  Functions BOND doesn't have go on the Pogo board, controlled through header pins.
 - Pogo board design: start from Sistemi's template https://github.com/sistemicorp/a5800-BONDPogo
   (Altium), which is not in this repo.  The customer clones it, renames it, and pushes it to a
-  new private repo (a fork of it can't be private).  Never move the template's BOND headers.
+  new private repo (a fork of it can't be private).  Never move the template's BOND headers,
+  the board outline can change.
   BOND population options differ between BONDs, so don't predict them: say BOND has some
   flexibility, and ask the customer to check their BOND against the BOND schematic
   public/prism/drivers/A4401_BOND/a4402-SCH_05.pdf.  See docs/source/prism_bond.rst
