@@ -342,8 +342,109 @@ objects, and any <code class="docutils literal notranslate"><span class="pre">ti
 <li><p><code class="docutils literal notranslate"><span class="pre">msg</span></code> - message to show operator</p></li>
 </ul>
 </li>
+<li><p>any other field your test code needs, for example <code class="docutils literal notranslate"><span class="pre">&quot;name&quot;:</span> <span class="pre">&quot;V5V&quot;,</span> <span class="pre">&quot;min&quot;:</span> <span class="pre">4900,</span> <span class="pre">&quot;max&quot;:</span> <span class="pre">5100</span></code>,
+read in the program as <code class="docutils literal notranslate"><span class="pre">ctx.item.min</span></code>.  Fields on the item itself are easier to read than
+fields inside <code class="docutils literal notranslate"><span class="pre">args</span></code>, see <a class="reference internal" href="#script-design"><span class="std std-ref">Script Design</span></a></p></li>
 </ul>
 </li>
+</ul>
+</section>
+<section id="script-design">
+<h2>Script Design<a class="headerlink" href="#script-design" title="Link to this heading">¶</a></h2>
+<p>A script is a list of tests, with their limits.  Keep it readable by a person who is not a
+programmer.</p>
+<p>When a test fails in production, and only a limit has to change, a production or test
+technician should be able to open the script, find the test, and change the limit.  They
+should not need a programmer, and they should not need to read Python.</p>
+<p>So,</p>
+<ul class="simple">
+<li><p>everything the test <em>does</em> is in the Python program: which BOND pin is read, the divider
+ratio, the order of the steps, the commands sent to the DUT, the settle times</p></li>
+<li><p>the script only says <em>which</em> tests run and with <em>what limits</em>: <code class="docutils literal notranslate"><span class="pre">id</span></code>, <code class="docutils literal notranslate"><span class="pre">enable</span></code>,
+<code class="docutils literal notranslate"><span class="pre">timeout</span></code>, <code class="docutils literal notranslate"><span class="pre">min</span></code>/<code class="docutils literal notranslate"><span class="pre">max</span></code>, <code class="docutils literal notranslate"><span class="pre">fail</span></code>, and a few other values a technician may change, such as
+a firmware file name or a hardware version</p></li>
+</ul>
+<p>A good script looks like this,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">[</span>
+  <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;BLT000_SETUP&quot;</span><span class="p">,</span>    <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span> <span class="p">},</span>
+  <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;BLT100_voltage&quot;</span><span class="p">,</span>  <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;V5V&quot;</span><span class="p">,</span>  <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">4900</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mi">5100</span> <span class="p">},</span>
+  <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;BLT100_voltage&quot;</span><span class="p">,</span>  <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;V3V3&quot;</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">3200</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mi">3400</span> <span class="p">},</span>
+  <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;BLT100_voltage&quot;</span><span class="p">,</span>  <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;V1V8&quot;</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">1725</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mi">1875</span> <span class="p">},</span>
+
+  <span class="o">//</span> <span class="n">disabled</span><span class="p">:</span> <span class="n">Pogo</span> <span class="n">board</span> <span class="n">schematic</span> <span class="n">error</span> <span class="n">on</span> <span class="n">VIN</span><span class="p">,</span> <span class="n">see</span> <span class="n">ECO</span><span class="o">-</span><span class="mi">123</span>
+  <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;BLT100_voltage&quot;</span><span class="p">,</span>  <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;VIN&quot;</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">11800</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mi">12200</span> <span class="p">},</span>
+
+  <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;BLT200_program&quot;</span><span class="p">,</span>  <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="s2">&quot;bootloader-1.2.hex&quot;</span><span class="p">,</span> <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">30</span> <span class="p">},</span>
+  <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;BLT300_fw_check&quot;</span><span class="p">,</span> <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;1.2&quot;</span> <span class="p">},</span>
+  <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;BLT990_TEARDOWN&quot;</span><span class="p">,</span> <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span> <span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>each line is one test, and the limits are on the line</p></li>
+<li><p>put fields on the item itself (<code class="docutils literal notranslate"><span class="pre">&quot;min&quot;:</span> <span class="pre">4900</span></code>), not in <code class="docutils literal notranslate"><span class="pre">args</span></code>, so the line is easy to read</p></li>
+<li><p>a comment says why a test is disabled</p></li>
+<li><p>the same test may run more than once, with a different <code class="docutils literal notranslate"><span class="pre">name</span></code>, when only the limits change,
+<code class="docutils literal notranslate"><span class="pre">BLT100_voltage</span></code> above.  Each run must record a different measurement name, here the
+<code class="docutils literal notranslate"><span class="pre">name</span></code>.  Only the first copy of a repeated <code class="docutils literal notranslate"><span class="pre">id</span></code> can be the target of <code class="docutils literal notranslate"><span class="pre">_next</span></code>.</p></li>
+</ul>
+<p>And its program keeps the details, written out plainly,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># BOND header and pin of each rail, and the Pogo board divider (DUT mV = ADC mV * rdivf)</span>
+<span class="n">VOLTAGE_MAP</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;V5V&quot;</span><span class="p">:</span>  <span class="p">{</span><span class="s2">&quot;hdr&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;pin&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span> <span class="s2">&quot;rdivf&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">},</span>
+    <span class="s2">&quot;V3V3&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;hdr&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;pin&quot;</span><span class="p">:</span> <span class="mi">13</span><span class="p">,</span> <span class="s2">&quot;rdivf&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">},</span>
+    <span class="s2">&quot;V1V8&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;hdr&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;pin&quot;</span><span class="p">:</span> <span class="mi">14</span><span class="p">,</span> <span class="s2">&quot;rdivf&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">},</span>
+    <span class="s2">&quot;VIN&quot;</span><span class="p">:</span>  <span class="p">{</span><span class="s2">&quot;hdr&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;pin&quot;</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;rdivf&quot;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">},</span>
+<span class="p">}</span>
+
+<span class="k">def</span> <span class="nf">BLT100_voltage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Measure a rail voltage, see VOLTAGE_MAP</span>
+
+<span class="sd">        {&quot;id&quot;: &quot;BLT100_voltage&quot;, &quot;enable&quot;: true, &quot;name&quot;: &quot;V5V&quot;, &quot;min&quot;: 4900, &quot;max&quot;: 5100 },</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
+
+    <span class="k">if</span> <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">VOLTAGE_MAP</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid voltage name </span><span class="si">{</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_INTERNAL_ERROR</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="n">rail</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">VOLTAGE_MAP</span><span class="p">[</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bond</span><span class="o">.</span><span class="n">bond_max_hdr_adc</span><span class="p">(</span><span class="n">rail</span><span class="p">[</span><span class="s2">&quot;hdr&quot;</span><span class="p">],</span> <span class="n">rail</span><span class="p">[</span><span class="s2">&quot;pin&quot;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">response</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_INTERNAL_ERROR</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="n">value</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s2">&quot;result&quot;</span><span class="p">][</span><span class="s2">&quot;mV&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">rail</span><span class="p">[</span><span class="s2">&quot;rdivf&quot;</span><span class="p">]</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">bullet</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_MILLIVOLTS</span><span class="p">,</span>
+                                               <span class="nb">min</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="n">bullet</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>  <span class="c1"># always last line of test</span>
+</pre></div>
+</div>
+<section id="keep-the-program-simple">
+<h3>Keep the program simple<a class="headerlink" href="#keep-the-program-simple" title="Link to this heading">¶</a></h3>
+<p>Production test code is maintained for the life of the product, often by people who did not
+write it.  Code that is easy to follow is better than code that is short.</p>
+<ul class="simple">
+<li><p>write one test item method for each test, with its steps in order in the method</p></li>
+<li><p>call the driver (<code class="docutils literal notranslate"><span class="pre">self.bond.bond_max_hdr_adc(...)</span></code>) and <code class="docutils literal notranslate"><span class="pre">ctx.record.measurement(...)</span></code>
+directly.  Don’t wrap them in your own layer of helper classes or functions</p></li>
+<li><p>hard code what doesn’t change in production, such as BOND pins, divider ratios, DUT commands
+and settle times, in the program, in a table like <code class="docutils literal notranslate"><span class="pre">VOLTAGE_MAP</span></code> or in the method</p></li>
+<li><p>some repeated code between test items is fine, when it keeps each test item readable on its
+own</p></li>
+</ul>
+<p>Don’t,</p>
+<ul class="simple">
+<li><p>put lists of steps or actions in the script, for example
+<code class="docutils literal notranslate"><span class="pre">&quot;actions&quot;:</span> <span class="pre">[{&quot;dac&quot;:</span> <span class="pre">&quot;J3&quot;,</span> <span class="pre">&quot;mv&quot;:</span> <span class="pre">1000},</span> <span class="pre">{&quot;sleep&quot;:</span> <span class="pre">0.05},</span> <span class="pre">{&quot;adc&quot;:</span> <span class="pre">&quot;J3&quot;,</span> <span class="pre">&quot;min&quot;:</span> <span class="pre">880,</span> <span class="pre">...}]</span></code>.
+The script becomes a program, and the test code becomes an interpreter for it</p></li>
+<li><p>put expressions, formulas, DUT commands or BOND pin numbers in the script</p></li>
+<li><p>use one generic test item for unrelated tests, with the script choosing what it does</p></li>
+<li><p>generate the script from another program or repo.  The script in your scripts repo is the one
+that is changed, by hand, when a limit changes</p></li>
 </ul>
 <aside class="footnote-list brackets">
 <aside class="footnote brackets" id="id2" role="doc-footnote">
@@ -351,6 +452,7 @@ objects, and any <code class="docutils literal notranslate"><span class="pre">ti
 <p><code class="docutils literal notranslate"><span class="pre">Scripts</span></code> CAN BE LOCKED DOWN so that a production user cannot change them.  Locking down the Prism is covered TBD.</p>
 </aside>
 </aside>
+</section>
 </section>
 </section>
 

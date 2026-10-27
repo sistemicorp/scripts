@@ -316,6 +316,114 @@ See ``public/prism/scripts/example/prod_v0/tst00xx.py`` for usage.
     * These failure modes are accessed programmatically by your test code, see TBD
     * ``fid`` - a unique ID for this failure mode
     * ``msg`` - message to show operator
+  * any other field your test code needs, for example ``"name": "V5V", "min": 4900, "max": 5100``,
+    read in the program as ``ctx.item.min``.  Fields on the item itself are easier to read than
+    fields inside ``args``, see :ref:`prism_scripts:Script Design`
+
+
+Script Design
+-------------
+
+A script is a list of tests, with their limits.  Keep it readable by a person who is not a
+programmer.
+
+When a test fails in production, and only a limit has to change, a production or test
+technician should be able to open the script, find the test, and change the limit.  They
+should not need a programmer, and they should not need to read Python.
+
+So,
+
+* everything the test *does* is in the Python program: which BOND pin is read, the divider
+  ratio, the order of the steps, the commands sent to the DUT, the settle times
+* the script only says *which* tests run and with *what limits*: ``id``, ``enable``,
+  ``timeout``, ``min``/``max``, ``fail``, and a few other values a technician may change, such as
+  a firmware file name or a hardware version
+
+A good script looks like this,
+
+::
+
+    "items": [
+      {"id": "BLT000_SETUP",    "enable": true },
+      {"id": "BLT100_voltage",  "enable": true, "name": "V5V",  "min": 4900, "max": 5100 },
+      {"id": "BLT100_voltage",  "enable": true, "name": "V3V3", "min": 3200, "max": 3400 },
+      {"id": "BLT100_voltage",  "enable": true, "name": "V1V8", "min": 1725, "max": 1875 },
+
+      // disabled: Pogo board schematic error on VIN, see ECO-123
+      {"id": "BLT100_voltage",  "enable": false, "name": "VIN", "min": 11800, "max": 12200 },
+
+      {"id": "BLT200_program",  "enable": true, "file": "bootloader-1.2.hex", "timeout": 30 },
+      {"id": "BLT300_fw_check", "enable": true, "version": "1.2" },
+      {"id": "BLT990_TEARDOWN", "enable": true }
+    ]
+
+* each line is one test, and the limits are on the line
+* put fields on the item itself (``"min": 4900``), not in ``args``, so the line is easy to read
+* a comment says why a test is disabled
+* the same test may run more than once, with a different ``name``, when only the limits change,
+  ``BLT100_voltage`` above.  Each run must record a different measurement name, here the
+  ``name``.  Only the first copy of a repeated ``id`` can be the target of ``_next``.
+
+And its program keeps the details, written out plainly,
+
+::
+
+    # BOND header and pin of each rail, and the Pogo board divider (DUT mV = ADC mV * rdivf)
+    VOLTAGE_MAP = {
+        "V5V":  {"hdr": 2, "pin": 16, "rdivf": 1.0},
+        "V3V3": {"hdr": 3, "pin": 13, "rdivf": 1.0},
+        "V1V8": {"hdr": 2, "pin": 14, "rdivf": 1.0},
+        "VIN":  {"hdr": 2, "pin": 15, "rdivf": 3.0},
+    }
+
+    def BLT100_voltage(self):
+        """ Measure a rail voltage, see VOLTAGE_MAP
+
+            {"id": "BLT100_voltage", "enable": true, "name": "V5V", "min": 4900, "max": 5100 },
+        """
+        ctx = self.item_start()  # always first line of test
+
+        if ctx.item.name not in self.VOLTAGE_MAP:
+            self.logger.error(f"invalid voltage name {ctx.item.name}")
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        rail = self.VOLTAGE_MAP[ctx.item.name]
+        response = self.bond.bond_max_hdr_adc(rail["hdr"], rail["pin"])
+        if not response["success"]:
+            self.logger.error(response)
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+            return
+
+        value = response["result"]["mV"] * rail["rdivf"]
+        _, result, bullet = ctx.record.measurement(ctx.item.name, value, ResultAPI.UNIT_MILLIVOLTS,
+                                                   min=ctx.item.min, max=ctx.item.max)
+        self.log_bullet(bullet)
+        self.item_end(result)  # always last line of test
+
+Keep the program simple
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Production test code is maintained for the life of the product, often by people who did not
+write it.  Code that is easy to follow is better than code that is short.
+
+* write one test item method for each test, with its steps in order in the method
+* call the driver (``self.bond.bond_max_hdr_adc(...)``) and ``ctx.record.measurement(...)``
+  directly.  Don't wrap them in your own layer of helper classes or functions
+* hard code what doesn't change in production, such as BOND pins, divider ratios, DUT commands
+  and settle times, in the program, in a table like ``VOLTAGE_MAP`` or in the method
+* some repeated code between test items is fine, when it keeps each test item readable on its
+  own
+
+Don't,
+
+* put lists of steps or actions in the script, for example
+  ``"actions": [{"dac": "J3", "mv": 1000}, {"sleep": 0.05}, {"adc": "J3", "min": 880, ...}]``.
+  The script becomes a program, and the test code becomes an interpreter for it
+* put expressions, formulas, DUT commands or BOND pin numbers in the script
+* use one generic test item for unrelated tests, with the script choosing what it does
+* generate the script from another program or repo.  The script in your scripts repo is the one
+  that is changed, by hand, when a limit changes
 
 
 

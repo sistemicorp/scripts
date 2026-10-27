@@ -106,6 +106,8 @@ example <cite>/mcp__prism-assistant__migrate_version</cite>,</p>
 <ul class="simple">
 <li><p><cite>migrate_version</cite> - plan a version migration of your deployment</p></li>
 <li><p><cite>write_test_script</cite> - write a script and its test code for one test stage</p></li>
+<li><p><cite>review_test_script</cite> - review a script and its test code, see
+<a class="reference internal" href="prism_scripts.html#script-design"><span class="std std-ref">Script Design</span></a></p></li>
 <li><p><cite>use_bond</cite> - design the Pogo board from the template, set up BOND and its Pogo board
 header definition</p></li>
 <li><p><cite>analyze_coverage</cite> - analyse which faults the test detects on each part of a PCBA, see
@@ -138,6 +140,8 @@ assistant,</p>
 <li><p>answers from this documentation and your repo, cites the page, and says so when they don’t
 have the answer, instead of guessing, suggesting you contact <a class="reference external" href="mailto:info&#37;&#52;&#48;sistemi&#46;ca">info<span>&#64;</span>sistemi<span>&#46;</span>ca</a></p></li>
 <li><p>lints any script or test code it writes or changes</p></li>
+<li><p>writes scripts as a list of tests with their limits, that a technician can change without a
+programmer, and keeps the test code simple, see <a class="reference internal" href="prism_scripts.html#script-design"><span class="std std-ref">Script Design</span></a></p></li>
 <li><p>analyses test coverage per part (Short, Open, Value) and per IC pin (Short, Open), and only
 counts a fault as covered when it moves a measurement outside the limits</p></li>
 <li><p>records the serial number of each piece of test equipment in the results, see

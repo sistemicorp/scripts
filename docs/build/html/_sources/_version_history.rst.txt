@@ -122,6 +122,9 @@ screenshots.
   `a5800-BONDPogo <https://github.com/sistemicorp/a5800-BONDPogo>`_: schematic, layout, stack up
   STEP model and mechanical guidance, see :ref:`prism_bond:Designing the Pogo Board`.  The
   Prism Assistant points to the template when a Pogo board is designed
+* Script design: a script is a list of tests with their limits, that a technician can change
+  without a programmer, and the test code stays simple, see :ref:`prism_scripts:Script Design`.
+  The Prism Assistant writes scripts this way, and has a `review_test_script` prompt
 
 Bug fixes,
 
