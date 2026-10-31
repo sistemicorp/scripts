@@ -164,9 +164,18 @@ the operator.  The Prism Assistant writes them this way and checks the test code
 log every measurement, no placeholder measurements, write and change scripts in your scripts
 fork (not copied in from another repo).  The Prism Assistant writes and reviews to these rules
 (Prism Assistant 0.4.3)</p></li>
+<li><p>Test programs pass each driver response to <code class="docutils literal notranslate"><span class="pre">self.expect()</span></code>, which ends the item as
+<code class="docutils literal notranslate"><span class="pre">INTERNAL_ERROR</span></code> when the test equipment fails, instead of an <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">not</span> <span class="pre">response[&quot;success&quot;]</span></code>
+block after each driver call, see
+<a class="reference internal" href="prism_programs.html#test-equipment-errors"><span class="std std-ref">Test Equipment Errors</span></a>.  Older programs keep
+working.  The examples use it, and the Prism Assistant writes code with it and has a
+<code class="docutils literal notranslate"><span class="pre">migrate_test_code</span></code> prompt to move older code to it (Prism Assistant 0.5.0)</p></li>
 </ul>
 <p>Bug fixes,</p>
 <ul class="simple">
+<li><p>[BUGFIX] BOND_v0 example: <cite>P1100_ADC_check</cite> and <cite>P1300_ADC</cite> passed whatever the measurement,
+the firmware update items could leave the shared lock held when stopped, and the teardown
+did not turn the self test load off.  teensy4_v0 had the same lock bug.</p></li>
 <li><p>[BUGFIX] Station Manager user sync (<cite>SYNCUSERS</cite>) failed on Prism, and sent every user instead of
 only <cite>SERVERSYNC</cite> users</p></li>
 <li><p>[BUGFIX] Stations with <cite>auto_sync_scripts</cite> off were treated as on by Lente</p></li>

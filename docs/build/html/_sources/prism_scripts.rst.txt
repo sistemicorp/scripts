@@ -396,11 +396,7 @@ And its program keeps the details, written out plainly,
             return
 
         rail = self.VOLTAGE_MAP[ctx.item.name]
-        response = self.bond.bond_max_hdr_adc(rail["hdr"], rail["pin"])
-        if not response["success"]:
-            self.logger.error(response)
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+        response = self.expect(self.bond.bond_max_hdr_adc(rail["hdr"], rail["pin"]))
 
         value = response["result"]["mV"] * rail["rdivf"]
         _, result, bullet = ctx.record.measurement(ctx.item.name, value, ResultAPI.UNIT_MILLIVOLTS,
@@ -428,8 +424,9 @@ file or class, other than the drivers and the Prism APIs.  So,
 * the program is one class that inherits only from ``TestItem``.  No base classes or mixins,
   and no shared module of test items.  When two programs have the same setup or teardown item,
   each program has its own copy
-* call the drivers in the test item, check ``response["success"]``, and on a failure log it,
-  end the item and return, as ``BLT100_voltage`` above.  No fixture class around BOND, and no
+* call the drivers in the test item and pass each response to ``self.expect()``, as
+  ``BLT100_voltage`` above.  It ends the item as ``INTERNAL_ERROR`` when the test equipment
+  fails, see :ref:`prism_programs:Test Equipment Errors`.  No fixture class around BOND, and no
   looking up pins by signal name in another module
 * record with ``ctx.record.measurement(name, value, ResultAPI.UNIT_MILLIVOLTS, min=..., max=...)``
   and ``self.log_bullet(bullet)``, with the measurement name written out in full.  The units
@@ -443,10 +440,11 @@ file or class, other than the drivers and the Prism APIs.  So,
   match exactly, such as a firmware version
 * a test item that calls ``ctx.record.fail_msg(ctx.item.fail[i])`` needs that entry in the
   ``fail`` list of each script line that runs it
-* handle each error where it happens: log, ``self.item_end(result)``, ``return``.  No context
-  managers or decorators that turn exceptions into results, and no exception classes of your
-  own to jump out of a test item.  Use ``try`` only around the one call that can raise, such
-  as opening a serial port
+* handle each error where it happens: a failed driver response with ``self.expect()``, any
+  other error with log, ``self.item_end(result)``, ``return``.  No context managers or
+  decorators that turn exceptions into results, and no exception classes of your own to jump
+  out of a test item.  Use ``try`` only around the one call that can raise, such as opening a
+  serial port
 * a test item that uses the result of an earlier one (saved in ``self``) checks that it is
   there, and ends with ``RECORD_RESULT_INTERNAL_ERROR`` and a log message naming the item it
   needs when it is not
@@ -480,12 +478,7 @@ Write it out,
         """
         ctx = self.item_start()  # always first line of test
 
-        response = self.bond.bond_max_hdr_adc(1, 13)
-        if not response["success"]:
-            self.logger.error(response)
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
-
+        response = self.expect(self.bond.bond_max_hdr_adc(1, 13))
         _, result, bullet = ctx.record.measurement("T105a_v3v_out", response["result"]["mV"],
                                                    ResultAPI.UNIT_MILLIVOLTS,
                                                    min=ctx.item.min, max=ctx.item.max)
@@ -500,7 +493,8 @@ Don't,
 * put expressions, formulas, DUT commands or BOND pin numbers in the script
 * use one generic test item for unrelated tests, with the script choosing what it does
 * put layers between the test item and the drivers or ``ctx.record.measurement``: base
-  classes, fixture classes, step objects, ``meas()``/``check()`` helpers, unit maps
+  classes, fixture classes, step objects, ``meas()``/``check()`` helpers of your own, unit maps.
+  ``self.expect()`` is a Prism API, not a layer of your own
 * generate the script from another program or repo.  The script in your scripts repo is the one
   that is changed, by hand, when a limit changes
 * keep the scripts and test code in another repo and copy them into your scripts fork.  Write

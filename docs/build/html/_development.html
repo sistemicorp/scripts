@@ -289,7 +289,8 @@ A script problem names the script section, and a code problem names the file, li
 <li><p><code class="docutils literal notranslate"><span class="pre">self.item_start()</span></code> must be called only once</p></li>
 <li><p>every path must end with <code class="docutils literal notranslate"><span class="pre">self.item_end()</span></code>, and every <code class="docutils literal notranslate"><span class="pre">return</span></code> must come right after it
 (or be <code class="docutils literal notranslate"><span class="pre">return</span> <span class="pre">self.item_end(...)</span></code>).  Raising an exception is allowed; Prism ends the item
-as <code class="docutils literal notranslate"><span class="pre">INTERNAL_ERROR</span></code>.</p></li>
+as <code class="docutils literal notranslate"><span class="pre">INTERNAL_ERROR</span></code>.  So is a failed <code class="docutils literal notranslate"><span class="pre">self.expect()</span></code>, see
+<a class="reference internal" href="prism_programs.html#test-equipment-errors"><span class="std std-ref">Test Equipment Errors</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">self.item_end()</span></code> must not be called twice on one path.  This usually means a missing
 <code class="docutils literal notranslate"><span class="pre">return</span></code> after an early <code class="docutils literal notranslate"><span class="pre">self.item_end()</span></code>.</p></li>
 <li><p>a result passed as a string must be a <code class="docutils literal notranslate"><span class="pre">ResultAPI.RECORD_RESULT_*</span></code> value</p></li>

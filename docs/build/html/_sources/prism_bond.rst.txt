@@ -181,15 +181,13 @@ traceability, see :doc:`Traceability <_traceability>`,
                                            ResultAPI.UNIT_STRING)
     self.teensy = driver["obj"]["hwdrv"]
 
-Each BOND method returns a dict, `{'success': True, 'method': ..., 'result': {...}}`.  Check
-`success` before using `result`,
+Each BOND method returns a dict, `{'success': True, 'method': ..., 'result': {...}}`.  Pass it
+to `self.expect()`, which ends the item as `INTERNAL_ERROR` when `success` is `False`, see
+:ref:`Test Equipment Errors <prism_programs:Test Equipment Errors>`,
 
 ::
 
-    response = self.teensy.bond_max_hdr_adc(hdr=1, pin=9)
-    if not response['success']:
-        self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-        return
+    response = self.expect(self.teensy.bond_max_hdr_adc(hdr=1, pin=9))
     success, _result, _bullet = ctx.record.measurement("v3v3", response['result']['mV'],
                                                        ResultAPI.UNIT_MILLIVOLTS,
                                                        ctx.item.args.min, ctx.item.args.max)

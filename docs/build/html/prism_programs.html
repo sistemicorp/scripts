@@ -276,17 +276,68 @@ skipped and no result is written.
 Stopping Prism (<code class="docutils literal notranslate"><span class="pre">./prism.sh</span> <span class="pre">stop</span></code>) also aborts a running test and gives the teardown up to
 5 seconds to finish.</p>
 </section>
+<section id="test-equipment-errors">
+<h2>Test Equipment Errors<a class="headerlink" href="#test-equipment-errors" title="Link to this heading">¶</a></h2>
+<p>Drivers such as BOND, ST-LINK, nRF and Segger return a dict from each method,
+<code class="docutils literal notranslate"><span class="pre">{&quot;success&quot;:</span> <span class="pre">True,</span> <span class="pre">&quot;method&quot;:</span> <span class="pre">&quot;...&quot;,</span> <span class="pre">&quot;result&quot;:</span> <span class="pre">{...}}</span></code>.  <code class="docutils literal notranslate"><span class="pre">success</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code> when the test
+equipment failed, for example BOND did not answer.  That is not a fail of the DUT, the item
+ends as <code class="docutils literal notranslate"><span class="pre">INTERNAL_ERROR</span></code>.</p>
+<p>Pass the response to <code class="docutils literal notranslate"><span class="pre">self.expect()</span></code>,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bond</span><span class="o">.</span><span class="n">bond_max_hdr_adc</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">13</span><span class="p">))</span>
+<span class="n">_</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">bullet</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span><span class="s2">&quot;T105a_v3v_out&quot;</span><span class="p">,</span> <span class="n">response</span><span class="p">[</span><span class="s2">&quot;result&quot;</span><span class="p">][</span><span class="s2">&quot;mV&quot;</span><span class="p">],</span>
+                                           <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_MILLIVOLTS</span><span class="p">,</span>
+                                           <span class="nb">min</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
+
+<span class="bp">self</span><span class="o">.</span><span class="n">expect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bond</span><span class="o">.</span><span class="n">vdut_con</span><span class="p">(</span><span class="kc">False</span><span class="p">))</span>  <span class="c1"># when the result is not needed</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>when <code class="docutils literal notranslate"><span class="pre">success</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, <code class="docutils literal notranslate"><span class="pre">self.expect()</span></code> returns the response unchanged</p></li>
+<li><p>when <code class="docutils literal notranslate"><span class="pre">success</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code>, it logs the response, shows <code class="docutils literal notranslate"><span class="pre">!&lt;method&gt;</span> <span class="pre">failed!</span> <span class="pre">&lt;error&gt;</span></code> in the
+channel log and ends the item as <code class="docutils literal notranslate"><span class="pre">INTERNAL_ERROR</span></code>, right there.  The rest of the item does not
+run, and Prism moves on to the teardown item.  Like <code class="docutils literal notranslate"><span class="pre">self.check_abort()</span></code>, it raises an
+exception that <code class="docutils literal notranslate"><span class="pre">except</span> <span class="pre">Exception</span></code> does not catch, so release held resources with <code class="docutils literal notranslate"><span class="pre">with</span></code> or
+<code class="docutils literal notranslate"><span class="pre">try/finally</span></code>, for example <code class="docutils literal notranslate"><span class="pre">with</span> <span class="pre">self.shared_lock(...):</span></code></p></li>
+<li><p>the teardown item puts the test equipment in a safe state, for example turns DUT power off,
+since an item that ends this way does not undo what it set up</p></li>
+<li><p>when something must be done before the item ends, for example sending the DUT a command, check
+<code class="docutils literal notranslate"><span class="pre">response[&quot;success&quot;]</span></code> yourself, as below</p></li>
+</ul>
+<p>Use <code class="docutils literal notranslate"><span class="pre">self.expect()</span></code> only for driver responses.  Not for,</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">self.input_button()</span></code> and <code class="docutils literal notranslate"><span class="pre">self.input_textbox()</span></code>: no answer from the operator is not an
+equipment error, handle <code class="docutils literal notranslate"><span class="pre">success</span></code> in the item</p></li>
+<li><p>a DUT that does not answer or answers wrong: that is a fail of the DUT, record it and use a
+<code class="docutils literal notranslate"><span class="pre">fail</span></code> message</p></li>
+<li><p>driver methods that return <code class="docutils literal notranslate"><span class="pre">True</span></code>/<code class="docutils literal notranslate"><span class="pre">False</span></code> or a tuple, such as a driver’s <code class="docutils literal notranslate"><span class="pre">init()</span></code></p></li>
+</ul>
+<p>Older programs check each response by hand.  This still works,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bond</span><span class="o">.</span><span class="n">bond_max_hdr_adc</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">13</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">response</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]:</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_INTERNAL_ERROR</span><span class="p">)</span>
+    <span class="k">return</span>
+</pre></div>
+</div>
+<p>To move to <code class="docutils literal notranslate"><span class="pre">self.expect()</span></code>, replace each such block with one line,
+<code class="docutils literal notranslate"><span class="pre">response</span> <span class="pre">=</span> <span class="pre">self.expect(self.bond.bond_max_hdr_adc(1,</span> <span class="pre">13))</span></code>, or <code class="docutils literal notranslate"><span class="pre">self.expect(...)</span></code> without
+<code class="docutils literal notranslate"><span class="pre">response</span> <span class="pre">=</span></code> when the response is not used.  Keep the block when it does more than log and
+end the item, such as releasing a lock (change it to <code class="docutils literal notranslate"><span class="pre">with</span></code>) or sending the DUT a command.
+Then run <code class="docutils literal notranslate"><span class="pre">prism_dev.py</span> <span class="pre">--lint</span></code>.</p>
+</section>
 <section id="errors-in-a-test-item">
 <h2>Errors in a Test Item<a class="headerlink" href="#errors-in-a-test-item" title="Link to this heading">¶</a></h2>
 <p>Prism records a test item as <code class="docutils literal notranslate"><span class="pre">INTERNAL_ERROR</span></code>, a fail, and moves on to the teardown item when,</p>
 <ul class="simple">
+<li><p>a driver response passed to <code class="docutils literal notranslate"><span class="pre">self.expect()</span></code> failed, see <a class="reference internal" href="#test-equipment-errors">Test Equipment Errors</a></p></li>
 <li><p>the item raises an exception that it does not catch</p></li>
 <li><p>the item returns without calling <code class="docutils literal notranslate"><span class="pre">self.item_start()</span></code></p></li>
 <li><p>the result passed to <code class="docutils literal notranslate"><span class="pre">self.item_end()</span></code> is not one of the <code class="docutils literal notranslate"><span class="pre">ResultAPI.RECORD_RESULT_*</span></code> constants,
 or a list of them</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">self.item_end(_next=&quot;&lt;id&gt;&quot;)</span></code> names an item that does not come later in the script</p></li>
 </ul>
-<p>The error is shown in the channel log and stored in the result <code class="docutils literal notranslate"><span class="pre">errors</span></code> list.</p>
+<p>The error is shown in the channel log.  Other than a failed <code class="docutils literal notranslate"><span class="pre">self.expect()</span></code>, which is an
+equipment error and not a program error, it is also stored in the result <code class="docutils literal notranslate"><span class="pre">errors</span></code> list.</p>
 <p>An item that calls <code class="docutils literal notranslate"><span class="pre">self.item_start()</span></code> and returns without <code class="docutils literal notranslate"><span class="pre">self.item_end()</span></code> is recorded as
 <code class="docutils literal notranslate"><span class="pre">TIMEOUT</span></code> when its timeout expires.</p>
 <p>The script linter finds most of these mistakes before the script runs, see

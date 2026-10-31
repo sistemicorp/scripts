@@ -417,11 +417,7 @@ that belongs in the coverage analysis, see <a class="reference internal" href="_
         <span class="k">return</span>
 
     <span class="n">rail</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">VOLTAGE_MAP</span><span class="p">[</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bond</span><span class="o">.</span><span class="n">bond_max_hdr_adc</span><span class="p">(</span><span class="n">rail</span><span class="p">[</span><span class="s2">&quot;hdr&quot;</span><span class="p">],</span> <span class="n">rail</span><span class="p">[</span><span class="s2">&quot;pin&quot;</span><span class="p">])</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">response</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_INTERNAL_ERROR</span><span class="p">)</span>
-        <span class="k">return</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bond</span><span class="o">.</span><span class="n">bond_max_hdr_adc</span><span class="p">(</span><span class="n">rail</span><span class="p">[</span><span class="s2">&quot;hdr&quot;</span><span class="p">],</span> <span class="n">rail</span><span class="p">[</span><span class="s2">&quot;pin&quot;</span><span class="p">]))</span>
 
     <span class="n">value</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s2">&quot;result&quot;</span><span class="p">][</span><span class="s2">&quot;mV&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">rail</span><span class="p">[</span><span class="s2">&quot;rdivf&quot;</span><span class="p">]</span>
     <span class="n">_</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">bullet</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_MILLIVOLTS</span><span class="p">,</span>
@@ -449,8 +445,9 @@ file or class, other than the drivers and the Prism APIs.  So,</p>
 <li><p>the program is one class that inherits only from <code class="docutils literal notranslate"><span class="pre">TestItem</span></code>.  No base classes or mixins,
 and no shared module of test items.  When two programs have the same setup or teardown item,
 each program has its own copy</p></li>
-<li><p>call the drivers in the test item, check <code class="docutils literal notranslate"><span class="pre">response[&quot;success&quot;]</span></code>, and on a failure log it,
-end the item and return, as <code class="docutils literal notranslate"><span class="pre">BLT100_voltage</span></code> above.  No fixture class around BOND, and no
+<li><p>call the drivers in the test item and pass each response to <code class="docutils literal notranslate"><span class="pre">self.expect()</span></code>, as
+<code class="docutils literal notranslate"><span class="pre">BLT100_voltage</span></code> above.  It ends the item as <code class="docutils literal notranslate"><span class="pre">INTERNAL_ERROR</span></code> when the test equipment
+fails, see <a class="reference internal" href="prism_programs.html#test-equipment-errors"><span class="std std-ref">Test Equipment Errors</span></a>.  No fixture class around BOND, and no
 looking up pins by signal name in another module</p></li>
 <li><p>record with <code class="docutils literal notranslate"><span class="pre">ctx.record.measurement(name,</span> <span class="pre">value,</span> <span class="pre">ResultAPI.UNIT_MILLIVOLTS,</span> <span class="pre">min=...,</span> <span class="pre">max=...)</span></code>
 and <code class="docutils literal notranslate"><span class="pre">self.log_bullet(bullet)</span></code>, with the measurement name written out in full.  The units
@@ -464,10 +461,11 @@ record <code class="docutils literal notranslate"><span class="pre">str(value)</
 match exactly, such as a firmware version</p></li>
 <li><p>a test item that calls <code class="docutils literal notranslate"><span class="pre">ctx.record.fail_msg(ctx.item.fail[i])</span></code> needs that entry in the
 <code class="docutils literal notranslate"><span class="pre">fail</span></code> list of each script line that runs it</p></li>
-<li><p>handle each error where it happens: log, <code class="docutils literal notranslate"><span class="pre">self.item_end(result)</span></code>, <code class="docutils literal notranslate"><span class="pre">return</span></code>.  No context
-managers or decorators that turn exceptions into results, and no exception classes of your
-own to jump out of a test item.  Use <code class="docutils literal notranslate"><span class="pre">try</span></code> only around the one call that can raise, such
-as opening a serial port</p></li>
+<li><p>handle each error where it happens: a failed driver response with <code class="docutils literal notranslate"><span class="pre">self.expect()</span></code>, any
+other error with log, <code class="docutils literal notranslate"><span class="pre">self.item_end(result)</span></code>, <code class="docutils literal notranslate"><span class="pre">return</span></code>.  No context managers or
+decorators that turn exceptions into results, and no exception classes of your own to jump
+out of a test item.  Use <code class="docutils literal notranslate"><span class="pre">try</span></code> only around the one call that can raise, such as opening a
+serial port</p></li>
 <li><p>a test item that uses the result of an earlier one (saved in <code class="docutils literal notranslate"><span class="pre">self</span></code>) checks that it is
 there, and ends with <code class="docutils literal notranslate"><span class="pre">RECORD_RESULT_INTERNAL_ERROR</span></code> and a log message naming the item it
 needs when it is not</p></li>
@@ -495,12 +493,7 @@ as a driver.  It doesn’t record measurements or call BOND</p></li>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
 
-    <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bond</span><span class="o">.</span><span class="n">bond_max_hdr_adc</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">13</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">response</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_INTERNAL_ERROR</span><span class="p">)</span>
-        <span class="k">return</span>
-
+    <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bond</span><span class="o">.</span><span class="n">bond_max_hdr_adc</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">13</span><span class="p">))</span>
     <span class="n">_</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">bullet</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span><span class="s2">&quot;T105a_v3v_out&quot;</span><span class="p">,</span> <span class="n">response</span><span class="p">[</span><span class="s2">&quot;result&quot;</span><span class="p">][</span><span class="s2">&quot;mV&quot;</span><span class="p">],</span>
                                                <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_MILLIVOLTS</span><span class="p">,</span>
                                                <span class="nb">min</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
@@ -516,7 +509,8 @@ The script becomes a program, and the test code becomes an interpreter for it</p
 <li><p>put expressions, formulas, DUT commands or BOND pin numbers in the script</p></li>
 <li><p>use one generic test item for unrelated tests, with the script choosing what it does</p></li>
 <li><p>put layers between the test item and the drivers or <code class="docutils literal notranslate"><span class="pre">ctx.record.measurement</span></code>: base
-classes, fixture classes, step objects, <code class="docutils literal notranslate"><span class="pre">meas()</span></code>/<code class="docutils literal notranslate"><span class="pre">check()</span></code> helpers, unit maps</p></li>
+classes, fixture classes, step objects, <code class="docutils literal notranslate"><span class="pre">meas()</span></code>/<code class="docutils literal notranslate"><span class="pre">check()</span></code> helpers of your own, unit maps.
+<code class="docutils literal notranslate"><span class="pre">self.expect()</span></code> is a Prism API, not a layer of your own</p></li>
 <li><p>generate the script from another program or repo.  The script in your scripts repo is the one
 that is changed, by hand, when a limit changes</p></li>
 <li><p>keep the scripts and test code in another repo and copy them into your scripts fork.  Write
