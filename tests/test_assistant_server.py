@@ -17,7 +17,8 @@ import prism_assistant  # noqa: E402
 
 TOOLS = {"list_docs", "read_doc", "search_docs", "read_file", "list_scripts", "lint_script",
          "check_settings", "list_drivers", "python_api", "repo_status"}
-PROMPTS = {"migrate_version", "write_test_script", "review_test_script", "use_bond",
+PROMPTS = {"migrate_version", "write_test_script", "review_test_script", "migrate_test_code",
+           "use_bond",
            "add_equipment", "plan_test_stages", "analyze_coverage",
            "plan_traceability", "plan_deployment", "setup_prism_computer"}
 
@@ -144,3 +145,26 @@ def test_boolean_and_fork_rules():
         assert "UNIT_BOOLEAN" in text
         assert "log_bullet()" in text
         assert "placeholder" in text
+
+
+def test_expect_rules():
+    assert "self.expect()" in prism_assistant.INSTRUCTIONS
+    assert "migrate_test_code" in prism_assistant.INSTRUCTIONS
+
+    async def go(c):
+        return (await c.get_prompt("write_test_script", {"product": "P1", "stage": "T01"}),
+                await c.get_prompt("review_test_script", {"script": "P1/P1_T01.scr"}),
+                await c.get_prompt("use_bond", {"product": "P1"}),
+                await c.get_prompt("migrate_version", {}))
+    for r in run(go):
+        assert "self.expect()" in r.messages[0].content.text
+
+
+def test_migrate_test_code_prompt():
+    async def go(c):
+        return await c.get_prompt("migrate_test_code", {"path": "public/prism/scripts/ow"})
+    text = run(go).messages[0].content.text
+    assert "public/prism/scripts/ow" in text
+    assert "Test Equipment Errors" in text
+    assert "with self.shared_lock" in text
+    assert "ask me before writing" in text

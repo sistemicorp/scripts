@@ -135,9 +135,18 @@ screenshots.
   log every measurement, no placeholder measurements, write and change scripts in your scripts
   fork (not copied in from another repo).  The Prism Assistant writes and reviews to these rules
   (Prism Assistant 0.4.3)
+* Test programs pass each driver response to ``self.expect()``, which ends the item as
+  ``INTERNAL_ERROR`` when the test equipment fails, instead of an ``if not response["success"]``
+  block after each driver call, see
+  :ref:`Test Equipment Errors <prism_programs:Test Equipment Errors>`.  Older programs keep
+  working.  The examples use it, and the Prism Assistant writes code with it and has a
+  ``migrate_test_code`` prompt to move older code to it (Prism Assistant 0.5.0)
 
 Bug fixes,
 
+* [BUGFIX] BOND_v0 example: `P1100_ADC_check` and `P1300_ADC` passed whatever the measurement,
+  the firmware update items could leave the shared lock held when stopped, and the teardown
+  did not turn the self test load off.  teensy4_v0 had the same lock bug.
 * [BUGFIX] Station Manager user sync (`SYNCUSERS`) failed on Prism, and sent every user instead of
   only `SERVERSYNC` users
 * [BUGFIX] Stations with `auto_sync_scripts` off were treated as on by Lente

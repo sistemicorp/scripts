@@ -79,6 +79,8 @@ example `/mcp__prism-assistant__migrate_version`,
 * `write_test_script` - write a script and its test code for one test stage
 * `review_test_script` - review a script and its test code, see
   :ref:`prism_scripts:Script Design`
+* `migrate_test_code` - move older test code to `self.expect()` for driver responses, see
+  :ref:`prism_programs:Test Equipment Errors`
 * `use_bond` - design the Pogo board from the template, set up BOND and its Pogo board
   header definition
 * `analyze_coverage` - analyse which faults the test detects on each part of a PCBA, see

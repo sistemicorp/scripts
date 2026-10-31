@@ -15,6 +15,12 @@ class TestItemStopped(BaseException):
     prism_dev has no item timer or abort, so it is not raised here."""
 
 
+class EquipmentError(BaseException):
+    """Raised by TestItem.expect() when a driver response has success False.
+    A BaseException so a script's `except Exception` does not swallow it;
+    the runner catches it and ends the item INTERNAL_ERROR."""
+
+
 class TestItem(object):
 
     BULLET_TEXT_MAX_LENGTH = 50
@@ -39,6 +45,28 @@ class TestItem(object):
             text = text[0:self.BULLET_TEXT_MAX_LENGTH]
 
         self.con.log_bullet(text, ovrwrite_last_line)
+
+    def expect(self, response):
+        """Return a driver response that succeeded, else end the item.
+        Wrap each driver call whose failure means the test equipment failed,
+            response = self.expect(self.bond.bond_max_hdr_adc(1, 6))
+        On failure the response is logged, "!<method> failed! <error>" is
+        shown as a bullet and EquipmentError is raised: the rest of the item
+        method does not run and the item ends INTERNAL_ERROR.
+        :param response: driver dict {"success": True/False, "result": {...}}
+        :return: response, unchanged
+        """
+        if not isinstance(response, dict):
+            raise TypeError("expect() takes a driver response dict, got {}".format(
+                type(response).__name__))
+        if response.get("success"):
+            return response
+
+        self.logger.error(response)
+        result = response.get("result")
+        error = result.get("error", "") if isinstance(result, dict) else ""
+        self.log_bullet("!{} failed! {}".format(response.get("method", "driver"), error))
+        raise EquipmentError(response)
 
     def input_button(self, buttons, timeout=10):
         """ Create a row of buttons horizontally for user selection

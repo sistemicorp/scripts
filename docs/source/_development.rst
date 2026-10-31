@@ -270,7 +270,8 @@ Errors,
 * ``self.item_start()`` must be called only once
 * every path must end with ``self.item_end()``, and every ``return`` must come right after it
   (or be ``return self.item_end(...)``).  Raising an exception is allowed; Prism ends the item
-  as ``INTERNAL_ERROR``.
+  as ``INTERNAL_ERROR``.  So is a failed ``self.expect()``, see
+  :ref:`prism_programs:Test Equipment Errors`.
 * ``self.item_end()`` must not be called twice on one path.  This usually means a missing
   ``return`` after an early ``self.item_end()``.
 * a result passed as a string must be a ``ResultAPI.RECORD_RESULT_*`` value

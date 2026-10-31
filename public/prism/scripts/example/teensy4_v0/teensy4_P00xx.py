@@ -118,18 +118,16 @@ class teensy4_P00xx(TestItem):
         self.log_bullet(f"{ctx.item.file}")
         self.log_bullet("Press Teensy Button")
 
-        self.shared_lock(DRIVER_TYPE).acquire()
-
-        result = subprocess.run(['./public/prism/drivers/teensy4/server/teensy_loader_cli',
-                                 '--mcu=TEENSY41',
-                                 '-w',
-                                 '-v',
-                                 '-s',
-                                 file_path],
-                                stdout=subprocess.PIPE).stdout.decode('utf-8')
+        # one Teensy CLI loader at a time, released even if the item is stopped
+        with self.shared_lock(DRIVER_TYPE):
+            result = subprocess.run(['./public/prism/drivers/teensy4/server/teensy_loader_cli',
+                                     '--mcu=TEENSY41',
+                                     '-w',
+                                     '-v',
+                                     '-s',
+                                     file_path],
+                                    stdout=subprocess.PIPE).stdout.decode('utf-8')
         self.logger.info(result)
-
-        self.shared_lock(DRIVER_TYPE).release()
 
         # expected output looks like,
         #   Teensy Loader, Command Line, Version 2.2
@@ -194,23 +192,13 @@ class teensy4_P00xx(TestItem):
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
-        result = _teensy.unique_id()
-        success = result['success']
-        if not success:
-            self.logger.error("failed on {}...".format('unique_id'))
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+        result = self.expect(_teensy.unique_id())
 
         unique_id = result['result']['unique_id']
         _, _, _bullet = ctx.record.measurement("teensy4_id", unique_id, ResultAPI.UNIT_STRING)
         self.log_bullet(_bullet)
 
-        result = _teensy.version()
-        success = result['success']
-        if not success:
-            self.logger.error("failed on {}...".format('version'))
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+        result = self.expect(_teensy.version())
 
         version = result['result']['version']
         _, _, _bullet = ctx.record.measurement("teensy4_version", version, ResultAPI.UNIT_STRING)
@@ -254,11 +242,7 @@ class teensy4_P00xx(TestItem):
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
-        result = self.teensy.reset()   # set Teensy to a known good state
-        if not result["success"]:
-            self.logger.error("failed to reset teensy")
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+        self.expect(self.teensy.reset())   # set Teensy to a known good state
 
         self.item_end()  # always last line of test
 
@@ -279,54 +263,46 @@ class teensy4_P00xx(TestItem):
 
         self.log_bullet(f"{ctx.item.file}")
 
-        # block other instances from reboot/Teensy CLI loader
-        self.shared_lock(DRIVER_TYPE).acquire()
+        # block other instances from reboot/Teensy CLI loader,
+        # released even if the item is stopped
+        with self.shared_lock(DRIVER_TYPE):
+            # close teensy connection, its going to get rebooted
+            self.logger.info("reboot_to_bootloader")
+            self.expect(self.teensy.reboot_to_bootloader())
 
-        # close teensy connection, its going to get rebooted
-        self.logger.info("reboot_to_bootloader")
-        result = self.teensy.reboot_to_bootloader()
-        if not result['success']:
-            self.logger.error("failed on {}...".format('reboot_to_bootloader'))
-            self.shared_lock(DRIVER_TYPE).release()
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+            self.teensy.close()
 
-        self.teensy.close()
+            attempts = 2
+            success = False
+            while attempts:
+                # NOTE: there is a bug somewhere, so we have to try this twice!
+                #       see https://forum.pjrc.com/threads/69236-TeensyLoader-CLI-issues
 
-        attempts = 2
-        success = False
-        while attempts:
-            # NOTE: there is a bug somewhere, so we have to try this twice!
-            #       see https://forum.pjrc.com/threads/69236-TeensyLoader-CLI-issues
+                result = subprocess.run(['./public/prism/drivers/teensy4/server/teensy_loader_cli',
+                                         '--mcu=TEENSY41',
+                                         '-w',
+                                         '-v',
+                                         file_path],
+                                        stdout=subprocess.PIPE).stdout.decode('utf-8')
+                self.logger.info(result)
 
-            result = subprocess.run(['./public/prism/drivers/teensy4/server/teensy_loader_cli',
-                                     '--mcu=TEENSY41',
-                                     '-w',
-                                     '-v',
-                                     file_path],
-                                    stdout=subprocess.PIPE).stdout.decode('utf-8')
-            self.logger.info(result)
+                # expected output looks like,
+                #   Teensy Loader, Command Line, Version 2.2
+                #   Read ".../teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
+                #   Waiting for Teensy device...
+                #    (hint: press the reset button)
+                #   Found HalfKay Bootloader
+                #   Read ".../teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
+                #   Programming..................................................................
+                #   Booting
 
-            # expected output looks like,
-            #   Teensy Loader, Command Line, Version 2.2
-            #   Read ".../teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
-            #   Waiting for Teensy device...
-            #    (hint: press the reset button)
-            #   Found HalfKay Bootloader
-            #   Read ".../teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
-            #   Programming..................................................................
-            #   Booting
+                # check for some keywords to confirm success
+                if result.count('Programming') and result.count('Booting'):
+                    success = True
+                    break
 
-            # check for some keywords to confirm success
-            if result.count('Programming') and result.count('Booting'):
-                success = True
-                break
-
-            attempts -= 1
-            self.sleep(0.1)
-
-        # other channels may use the Teensy CLI loader now
-        self.shared_lock(DRIVER_TYPE).release()
+                attempts -= 1
+                self.sleep(0.1)
 
         if not success:
             self.log_bullet("teensy_loader_cli failed")
@@ -407,23 +383,13 @@ class teensy4_P00xx(TestItem):
 
         self.log_bullet("Found teensy")
 
-        result = self.teensy.unique_id()
-        success = result['success']
-        if not success:
-            self.logger.error("failed on {}...".format('unique_id'))
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+        result = self.expect(self.teensy.unique_id())
 
         unique_id = result['result']['unique_id']
         _, _, _bullet = ctx.record.measurement("teensy4_id", unique_id, ResultAPI.UNIT_STRING)
         self.log_bullet(_bullet)
 
-        result = self.teensy.version()
-        success = result['success']
-        if not success:
-            self.logger.error("failed on {}...".format('version'))
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+        result = self.expect(self.teensy.version())
 
         version = result['result']['version']
         _, _, _bullet = ctx.record.measurement("teensy4_version", version, ResultAPI.UNIT_STRING)

@@ -17,6 +17,7 @@ from public.prism.api import ResultAPI
 from public.prism.ResultBaseKeysV1 import ResultBaseKeysV1
 from public.prism.script_lint import lint_script, errors, LEVEL_ERROR
 from core.shared_state import SharedState
+from core.test_item import EquipmentError
 from prism_result_scan import scan_result_file
 from prism_subs import find_sub_items_replace
 
@@ -173,6 +174,14 @@ class ChanCon(object):
         self.record.record_test_set_result(item_result_state)
         self.record.record_item_end()
 
+    def call_item(self, func):
+        """Run an item method; a failed expect() ends the item INTERNAL_ERROR"""
+        try:
+            func()
+        except EquipmentError:
+            self.logger.info("{} equipment error".format(self._item["id"]))
+            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+
     def log_bullet(self, text, ovrwrite_last_line):
         self.logger.info("BULLET: {}".format(text))
 
@@ -271,8 +280,7 @@ class ChanCon(object):
                         self.logger.error(msg)
                         raise ValueError(msg)
 
-                    func = getattr(test_klass, item["id"])
-                    func()
+                    self.call_item(getattr(test_klass, item["id"]))
 
                     _meta_result = self.record.record_meta_get_result()
                     if fail_fast and _meta_result != ResultAPI.RECORD_RESULT_PASS:
@@ -289,8 +297,7 @@ class ChanCon(object):
                         self.logger.error(msg)
                         raise ValueError(msg)
 
-                    func = getattr(test_klass, item["id"])
-                    func()
+                    self.call_item(getattr(test_klass, item["id"]))
 
                 else:
                     logger.error("teardown (last item) script should not be disabled")

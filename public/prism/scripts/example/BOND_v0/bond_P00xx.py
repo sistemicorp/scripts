@@ -73,11 +73,7 @@ class bond_P00xx(TestItem):
         """
         ctx = self.item_start()  # always first line of test
 
-        response = self.teensy.led(ctx.item.set)
-        if not response['success']:
-            self.logger.error(response)
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+        self.expect(self.teensy.led(ctx.item.set))
 
         self.item_end()  # always last line of test
 
@@ -135,21 +131,19 @@ class bond_P00xx(TestItem):
         self.logger.info(f"programming {ctx.item.file}")
         self.log_bullet(f"{ctx.item.file}")
 
-        self.shared_lock(DRIVER_TYPE_PROG).acquire()
-
-        result = subprocess.run([BOND_TEENSY_CLI_LOADER_PATH,
-                                 '--mcu=TEENSY41',
-                                 '-w',
-                                 '-v',
-                                 '-s',
-                                 file_path],
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE,
-                                text=True)
+        # one Teensy CLI loader at a time, released even if the item is stopped
+        with self.shared_lock(DRIVER_TYPE_PROG):
+            result = subprocess.run([BOND_TEENSY_CLI_LOADER_PATH,
+                                     '--mcu=TEENSY41',
+                                     '-w',
+                                     '-v',
+                                     '-s',
+                                     file_path],
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE,
+                                    text=True)
 
         self.logger.info(result)
-
-        self.shared_lock(DRIVER_TYPE_PROG).release()
 
         # expected output looks like,
         #  1747 bond_P00xx.py: 119 - teensy400xx.0: P200_Program() INFO  : Teensy Loader, ...
@@ -212,23 +206,13 @@ class bond_P00xx(TestItem):
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
-        result = _teensy.unique_id()
-        success = result['success']
-        if not success:
-            self.logger.error("failed on {}...".format('unique_id'))
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+        result = self.expect(_teensy.unique_id())
 
         unique_id = result['result']['unique_id']
         _, _, _bullet = ctx.record.measurement("teensy4_id", unique_id, ResultAPI.UNIT_STRING)
         self.log_bullet(_bullet)
 
-        result = _teensy.version()
-        success = result['success']
-        if not success:
-            self.logger.error("failed on {}...".format('version'))
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+        result = self.expect(_teensy.version())
 
         version = result['result']['version']
         _, _, _bullet = ctx.record.measurement("teensy4_version", version, ResultAPI.UNIT_STRING)
@@ -266,11 +250,7 @@ class bond_P00xx(TestItem):
         # self._teensy_port = driver["obj"]["port"]  # cache for after update reconnect
         self.teensy = driver["obj"]["hwdrv"]
 
-        result = self.teensy.reset()   # set Teensy to a known good state
-        if not result["success"]:
-            self.logger.error("failed to reset teensy")
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+        self.expect(self.teensy.reset())   # set Teensy to a known good state
 
         self.item_end()  # always last line of test
 
@@ -291,56 +271,48 @@ class bond_P00xx(TestItem):
 
         self.log_bullet(f"{ctx.item.file}")
 
-        # block other instances from reboot/Teensy CLI loader
-        self.shared_lock(DRIVER_TYPE).acquire()
+        # block other instances from reboot/Teensy CLI loader,
+        # released even if the item is stopped
+        with self.shared_lock(DRIVER_TYPE):
+            # close teensy connection, its going to get rebooted
+            self.logger.info("reboot_to_bootloader")
+            self.expect(self.teensy.reboot_to_bootloader())
 
-        # close teensy connection, its going to get rebooted
-        self.logger.info("reboot_to_bootloader")
-        result = self.teensy.reboot_to_bootloader()
-        if not result['success']:
-            self.logger.error("failed on {}...".format('reboot_to_bootloader'))
-            self.shared_lock(DRIVER_TYPE).release()
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+            self.teensy.close()
 
-        self.teensy.close()
+            attempts = 2
+            success = False
+            while attempts:
+                # NOTE: there is a bug somewhere, so we have to try this twice!
+                #       see https://forum.pjrc.com/threads/69236-TeensyLoader-CLI-issues
 
-        attempts = 2
-        success = False
-        while attempts:
-            # NOTE: there is a bug somewhere, so we have to try this twice!
-            #       see https://forum.pjrc.com/threads/69236-TeensyLoader-CLI-issues
+                result = subprocess.run([BOND_TEENSY_CLI_LOADER_PATH,
+                                         '--mcu=TEENSY41',
+                                         '-w',
+                                         '-v',
+                                         file_path],
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE,
+                                        text=True)
+                self.logger.info(result)
 
-            result = subprocess.run([BOND_TEENSY_CLI_LOADER_PATH,
-                                     '--mcu=TEENSY41',
-                                     '-w',
-                                     '-v',
-                                     file_path],
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE,
-                                    text=True)
-            self.logger.info(result)
+                # expected output looks like,
+                #   Teensy Loader, Command Line, Version 2.2
+                #   Read ".../teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
+                #   Waiting for Teensy device...
+                #    (hint: press the reset button)
+                #   Found HalfKay Bootloader
+                #   Read ".../teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
+                #   Programming..................................................................
+                #   Booting
 
-            # expected output looks like,
-            #   Teensy Loader, Command Line, Version 2.2
-            #   Read ".../teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
-            #   Waiting for Teensy device...
-            #    (hint: press the reset button)
-            #   Found HalfKay Bootloader
-            #   Read ".../teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
-            #   Programming..................................................................
-            #   Booting
+                # check for some keywords to confirm success
+                if result.stdout.count('Programming') and result.stdout.count('Booting'):
+                    success = True
+                    break
 
-            # check for some keywords to confirm success
-            if result.stdout.count('Programming') and result.stdout.count('Booting'):
-                success = True
-                break
-
-            attempts -= 1
-            self.sleep(0.1)
-
-        # other channels may use the Teensy CLI loader now
-        self.shared_lock(DRIVER_TYPE).release()
+                attempts -= 1
+                self.sleep(0.1)
 
         if not success:
             self.log_bullet("teensy_loader_cli failed")
@@ -432,23 +404,13 @@ class bond_P00xx(TestItem):
 
         self.log_bullet("Found teensy")
 
-        result = self.teensy.unique_id()
-        success = result['success']
-        if not success:
-            self.logger.error("failed on {}...".format('unique_id'))
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+        result = self.expect(self.teensy.unique_id())
 
         unique_id = result['result']['unique_id']
         _, _, _bullet = ctx.record.measurement("teensy4_id", unique_id, ResultAPI.UNIT_STRING)
         self.log_bullet(_bullet)
 
-        result = self.teensy.version()
-        success = result['success']
-        if not success:
-            self.logger.error("failed on {}...".format('version'))
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+        result = self.expect(self.teensy.version())
 
         version = result['result']['version']
         _, _, _bullet = ctx.record.measurement("teensy4_version", version, ResultAPI.UNIT_STRING)
@@ -522,11 +484,7 @@ class bond_P00xx(TestItem):
         self.logger.info("Found teensy4: {} {}, chan {}".format(driver, id, self.chan))
         self.teensy = driver["obj"]["hwdrv"]
 
-        result = self.teensy.reset()   # set Teensy to a known good state
-        if not result["success"]:
-            self.logger.error("failed to reset teensy")
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+        self.expect(self.teensy.reset())   # set Teensy to a known good state
 
         self.item_end()  # always last line of test
 
@@ -548,11 +506,7 @@ class bond_P00xx(TestItem):
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
-        response = self.teensy.bond_max_hdr_adc_cal(ctx.item.hdr)
-        if not response['success']:
-            self.logger.error(response)
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+        response = self.expect(self.teensy.bond_max_hdr_adc_cal(ctx.item.hdr))
 
         success, _result, _bullet = ctx.record.measurement(f"adc_cal_hdr_{ctx.item.hdr}",
                                                            response['result']['mV'],
@@ -561,7 +515,7 @@ class bond_P00xx(TestItem):
                                                            max=EXPECTED_MV + TOLERANCE_MV)
         self.log_bullet(_bullet)
 
-        self.item_end()  # always last line of test
+        self.item_end(_result)  # always last line of test
 
     def P1110_voltage_check(self):
         """ Check BOND voltage rails
@@ -581,11 +535,7 @@ class bond_P00xx(TestItem):
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
-        response = self.teensy.bist_voltage(ctx.item.voltage)
-        if not response['success']:
-            self.logger.error(response)
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+        response = self.expect(self.teensy.bist_voltage(ctx.item.voltage))
 
         success, _result, _bullet = ctx.record.measurement(f"{ctx.item.voltage}",
                                                            response['result']['mv'],
@@ -613,31 +563,13 @@ class bond_P00xx(TestItem):
 
         measurement_results = []
 
-        response = self.teensy.vbat_set(ctx.item.voltage_mv)
-        if not response['success']:
-            self.logger.error(response)
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
-
-        response = self.teensy.iox_selftest(True)
-        if not response['success']:
-            self.logger.error(response)
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
-
-        response = self.teensy.iox_vbat_con(True)
-        if not response['success']:
-            self.logger.error(response)
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+        self.expect(self.teensy.vbat_set(ctx.item.voltage_mv))
+        self.expect(self.teensy.iox_selftest(True))
+        self.expect(self.teensy.iox_vbat_con(True))
 
         self.sleep(0.01)
 
-        response = self.teensy.vbat_read()
-        if not response['success']:
-            self.logger.error(response)
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+        response = self.expect(self.teensy.vbat_read())
 
         _v = float(round(response['result']['v'], 3))
         _min = round(ctx.item.voltage_mv / 1000.0 - TOLERANCE_V, 3)
@@ -660,17 +592,8 @@ class bond_P00xx(TestItem):
         self.log_bullet(_bullet)
         measurement_results.append(_result)
 
-        response = self.teensy.iox_vbat_con(False)
-        if not response['success']:
-            self.logger.error(response)
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
-
-        response = self.teensy.iox_selftest(False)
-        if not response['success']:
-            self.logger.error(response)
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+        self.expect(self.teensy.iox_vbat_con(False))
+        self.expect(self.teensy.iox_selftest(False))
 
         self.item_end(measurement_results)  # always last line of test
 
@@ -681,11 +604,7 @@ class bond_P00xx(TestItem):
         """
         ctx = self.item_start()  # always first line of test
 
-        response = self.teensy.version()
-        if not response['success']:
-            self.logger.error(response)
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+        response = self.expect(self.teensy.version())
 
         success, _result, _bullet = ctx.record.measurement(None,
                                                            response['result']['version'],
@@ -705,31 +624,13 @@ class bond_P00xx(TestItem):
 
         measurement_results = []
 
-        response = self.teensy.vdut_set(ctx.item.voltage_mv)
-        if not response['success']:
-            self.logger.error(response)
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
-
-        response = self.teensy.iox_selftest(True)
-        if not response['success']:
-            self.logger.error(response)
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
-
-        response = self.teensy.vdut_con(True)
-        if not response['success']:
-            self.logger.error(response)
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+        self.expect(self.teensy.vdut_set(ctx.item.voltage_mv))
+        self.expect(self.teensy.iox_selftest(True))
+        self.expect(self.teensy.vdut_con(True))
 
         self.sleep(0.01)
 
-        response = self.teensy.vdut_read()
-        if not response['success']:
-            self.logger.error(response)
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+        response = self.expect(self.teensy.vdut_read())
 
         _v = float(round(response['result']['v'], 3))
         _min = round(ctx.item.voltage_mv / 1000.0 - TOLERANCE_V, 3)
@@ -752,17 +653,8 @@ class bond_P00xx(TestItem):
         self.log_bullet(_bullet)
         measurement_results.append(_result)
 
-        response = self.teensy.vdut_con(False)
-        if not response['success']:
-            self.logger.error(response)
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
-
-        response = self.teensy.iox_selftest(False)
-        if not response['success']:
-            self.logger.error(response)
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+        self.expect(self.teensy.vdut_con(False))
+        self.expect(self.teensy.iox_selftest(False))
 
         self.item_end(measurement_results)  # always last line of test
 
@@ -779,11 +671,7 @@ class bond_P00xx(TestItem):
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
-        response = self.teensy.bond_max_hdr_dac(ctx.item.hdr, ctx.item.pin, ctx.item.mv)
-        if not response['success']:
-            self.logger.error(response)
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+        self.expect(self.teensy.bond_max_hdr_dac(ctx.item.hdr, ctx.item.pin, ctx.item.mv))
 
         self.item_end()  # always last line of test
 
@@ -801,17 +689,13 @@ class bond_P00xx(TestItem):
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
 
-        response = self.teensy.bond_max_hdr_adc(ctx.item.hdr, ctx.item.pin)
-        if not response['success']:
-            self.logger.error(response)
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+        response = self.expect(self.teensy.bond_max_hdr_adc(ctx.item.hdr, ctx.item.pin))
 
         success, _result, _bullet = ctx.record.measurement(
             None, response['result']['mV'], min=ctx.item.min, max=ctx.item.max)
         self.log_bullet(_bullet)
 
-        self.item_end()  # always last line of test
+        self.item_end(_result)  # always last line of test
 
     def P1900_TEARDOWN(self):
         """ teardown BOND
@@ -819,17 +703,11 @@ class bond_P00xx(TestItem):
         """
         ctx = self.item_start()  # always first line of test
 
-        # disconnect all power to the DUT
-        response = self.teensy.iox_vbat_con(False)
-        if not response['success']:
-            self.logger.error(response)
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+        # self test load off, in case P1120/P1140 stopped part way
+        self.expect(self.teensy.iox_selftest(False))
 
-        response = self.teensy.vdut_con(False)
-        if not response['success']:
-            self.logger.error(response)
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+        # disconnect all power to the DUT
+        self.expect(self.teensy.iox_vbat_con(False))
+        self.expect(self.teensy.vdut_con(False))
 
         self.item_end()  # always last line of test

@@ -43,13 +43,7 @@ class teensy400xx(TestItem):
 
         self.teensy = driver["obj"]["hwdrv"]
 
-        answer = self.teensy.reset()
-        success = answer["success"]
-
-        if not success:
-            self.logger.error("failed to reset teensy")
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
-            return
+        self.expect(self.teensy.reset())  # set Teensy to a known good state
 
         self.item_end()  # always last line of test
 
@@ -68,16 +62,7 @@ class teensy400xx(TestItem):
         set = ctx.item.get("set", False)
         self.log_bullet("Setting LED {}".format(set))
 
-        answer = self.teensy.led(set)
-        self.logger.info(answer)
-        success = answer["success"]
-        result = answer["result"]["state"]
-
-        if not success:
-            self.logger.error(result)
-            self.log_bullet("UNKNOWN TEENSY ERROR")
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
-            return
+        self.expect(self.teensy.led(set))
 
         if set:
             buttons = ["ON", "Fail"]
@@ -126,16 +111,8 @@ class teensy400xx(TestItem):
 
         self.log_bullet("Initializing GPIO {} as {}".format(pin_number, mode))
 
-        answer = self.teensy.init_gpio(pin_number, mode)
-        self.logger.info(answer)
-        success = answer["success"]
+        answer = self.expect(self.teensy.init_gpio(pin_number, mode))
         result = answer["result"]["mode"]
-
-        if not success:
-            self.logger.error(answer["result"]["error"])
-            self.log_bullet("UNKNOWN TEENSY ERROR")
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
-            return
 
         self.log_bullet("GPIO {} is initialized as {} ".format(pin_number, result))
 
@@ -160,16 +137,8 @@ class teensy400xx(TestItem):
 
         self.log_bullet("Reading GPIO {} ".format(pin_number))
 
-        answer = self.teensy.read_gpio(pin_number)
-        self.logger.info(answer)
-        success = answer["success"]
+        answer = self.expect(self.teensy.read_gpio(pin_number))
         result = answer["result"]["state"]
-
-        if not success:
-            self.logger.error(answer["result"]["error"])
-            self.log_bullet("UNKNOWN TEENSY ERROR")
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
-            return
 
         self.log_bullet("GPIO {} is {} ".format(pin_number, result))
 
@@ -202,16 +171,8 @@ class teensy400xx(TestItem):
 
         self.log_bullet("Writing GPIO {} as {}".format(pin_number, state))
 
-        answer = self.teensy.write_gpio(pin_number, state)
-        self.logger.info(answer)
-        success = answer["success"]
+        answer = self.expect(self.teensy.write_gpio(pin_number, state))
         result = answer["result"]["state"]
-
-        if not success:
-            self.logger.error(answer["result"]["error"])
-            self.log_bullet("UNKNOWN TEENSY ERROR")
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
-            return
 
         self.log_bullet("GPIO {} is written as {} ".format(pin_number, result))
 
@@ -254,16 +215,8 @@ class teensy400xx(TestItem):
         self.log_bullet("Reading Analog Pin {}, {} times with an interval of {} ms".format(
             pin_number, sample_num, sample_rate))
 
-        answer = self.teensy.read_adc(pin_number, sample_num, sample_rate)
-        self.logger.info(answer)
-        success = answer["success"]
+        answer = self.expect(self.teensy.read_adc(pin_number, sample_num, sample_rate))
         result = answer["result"]["reading"]
-
-        if not success:
-            self.logger.error(answer["result"]["error"])
-            self.log_bullet("UNKNOWN TEENSY ERROR")
-            self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)  # always last line of test
-            return
 
         self.log_bullet("Pin {}'s ADC reading is {}".format(pin_number, result))
 

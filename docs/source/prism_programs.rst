@@ -244,18 +244,75 @@ Stopping Prism (``./prism.sh stop``) also aborts a running test and gives the te
 5 seconds to finish.
 
 
+Test Equipment Errors
+---------------------
+
+Drivers such as BOND, ST-LINK, nRF and Segger return a dict from each method,
+``{"success": True, "method": "...", "result": {...}}``.  ``success`` is ``False`` when the test
+equipment failed, for example BOND did not answer.  That is not a fail of the DUT, the item
+ends as ``INTERNAL_ERROR``.
+
+Pass the response to ``self.expect()``,
+
+::
+
+    response = self.expect(self.bond.bond_max_hdr_adc(1, 13))
+    _, result, bullet = ctx.record.measurement("T105a_v3v_out", response["result"]["mV"],
+                                               ResultAPI.UNIT_MILLIVOLTS,
+                                               min=ctx.item.min, max=ctx.item.max)
+
+    self.expect(self.bond.vdut_con(False))  # when the result is not needed
+
+* when ``success`` is ``True``, ``self.expect()`` returns the response unchanged
+* when ``success`` is ``False``, it logs the response, shows ``!<method> failed! <error>`` in the
+  channel log and ends the item as ``INTERNAL_ERROR``, right there.  The rest of the item does not
+  run, and Prism moves on to the teardown item.  Like ``self.check_abort()``, it raises an
+  exception that ``except Exception`` does not catch, so release held resources with ``with`` or
+  ``try/finally``, for example ``with self.shared_lock(...):``
+* the teardown item puts the test equipment in a safe state, for example turns DUT power off,
+  since an item that ends this way does not undo what it set up
+* when something must be done before the item ends, for example sending the DUT a command, check
+  ``response["success"]`` yourself, as below
+
+Use ``self.expect()`` only for driver responses.  Not for,
+
+* ``self.input_button()`` and ``self.input_textbox()``: no answer from the operator is not an
+  equipment error, handle ``success`` in the item
+* a DUT that does not answer or answers wrong: that is a fail of the DUT, record it and use a
+  ``fail`` message
+* driver methods that return ``True``/``False`` or a tuple, such as a driver's ``init()``
+
+Older programs check each response by hand.  This still works,
+
+::
+
+    response = self.bond.bond_max_hdr_adc(1, 13)
+    if not response["success"]:
+        self.logger.error(response)
+        self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
+        return
+
+To move to ``self.expect()``, replace each such block with one line,
+``response = self.expect(self.bond.bond_max_hdr_adc(1, 13))``, or ``self.expect(...)`` without
+``response =`` when the response is not used.  Keep the block when it does more than log and
+end the item, such as releasing a lock (change it to ``with``) or sending the DUT a command.
+Then run ``prism_dev.py --lint``.
+
+
 Errors in a Test Item
 ---------------------
 
 Prism records a test item as ``INTERNAL_ERROR``, a fail, and moves on to the teardown item when,
 
+* a driver response passed to ``self.expect()`` failed, see `Test Equipment Errors`_
 * the item raises an exception that it does not catch
 * the item returns without calling ``self.item_start()``
 * the result passed to ``self.item_end()`` is not one of the ``ResultAPI.RECORD_RESULT_*`` constants,
   or a list of them
 * ``self.item_end(_next="<id>")`` names an item that does not come later in the script
 
-The error is shown in the channel log and stored in the result ``errors`` list.
+The error is shown in the channel log.  Other than a failed ``self.expect()``, which is an
+equipment error and not a program error, it is also stored in the result ``errors`` list.
 
 An item that calls ``self.item_start()`` and returns without ``self.item_end()`` is recorded as
 ``TIMEOUT`` when its timeout expires.

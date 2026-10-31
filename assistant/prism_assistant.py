@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import prism_knowledge as pk  # noqa: E402
 
 SERVER_NAME = "prism-assistant"
-SERVER_VERSION = "0.4.3"
+SERVER_VERSION = "0.5.0"
 CONTACT = "info@sistemi.ca"
 
 INSTRUCTIONS = f"""\
@@ -66,9 +66,14 @@ Rules to follow when helping:
   file or class:
   - the program is one class inheriting only from TestItem: no base classes, mixins or shared
     modules of test items; two programs with the same setup or teardown each have their own
-  - in the test item, call the driver, check response["success"], and on failure log it,
-    self.item_end(...) and return.  No fixture class around BOND, no pin lookup by signal name
-    in another module
+  - in the test item, call the driver and pass its response dict to self.expect(),
+    `response = self.expect(self.bond.bond_max_hdr_adc(1, 13))`, or `self.expect(...)` alone
+    when the response is not used.  A failed response ends the item INTERNAL_ERROR (test
+    equipment error) right there.  Not for input_button/input_textbox, a DUT that doesn't
+    answer (a FAIL with a fail msg), or driver methods returning a bool or tuple.  Check
+    response["success"] by hand only when something must be done before the item ends, such
+    as a DUT command.  Hold locks with `with self.shared_lock(...):`, never acquire/release.
+    No fixture class around BOND, no pin lookup by signal name in another module
   - record with ctx.record.measurement(name, value, ResultAPI.UNIT_..., min=..., max=...) and
     self.log_bullet(bullet), the measurement name written out in full.  The units are the
     ResultAPI.UNIT_* constants of public/prism/api.py, written in each call
@@ -80,8 +85,9 @@ Rules to follow when helping:
     Never str(value) with force_fail; force_fail is for a string or number that must match
     exactly, such as a firmware version
   - no step objects, context managers or decorators that turn exceptions into results, no
-    meas()/check()/eq() helpers, no exception classes of your own for control flow; use try
-    only around the one call that can raise
+    meas()/check()/eq() helpers of your own, no exception classes of your own for control
+    flow; use try only around the one call that can raise.  self.expect() is a Prism API,
+    not a helper of your own
   - small pure functions (a checksum, a conversion) are fine in the program if they don't
     call a driver or record anything; a library for the DUT's own command protocol can be a
     separate module, like a driver
@@ -131,6 +137,11 @@ Rules to follow when helping:
   flexibility, and ask the customer to check their BOND against the BOND schematic
   public/prism/drivers/A4401_BOND/a4402-SCH_05.pdf.  See docs/source/prism_bond.rst
   Designing the Pogo Board for the steps, the stack up STEP model and the mechanical guidance.
+- Older test code checks each driver response with an `if not response["success"]:` block
+  that only logs, ends the item INTERNAL_ERROR and returns.  It still works.  When writing
+  new code use self.expect(); when reviewing or changing older code, propose moving it to
+  self.expect(), see docs/source/prism_programs.rst Test Equipment Errors and the
+  migrate_test_code prompt.
 - Prefer small, reviewable changes to the customer's files, and explain what each change does.
 - Number your questions so the customer can answer them easily.
 """
@@ -145,6 +156,8 @@ Help me migrate my Prism/Lente deployment from version {from_version} to {to_ver
    upstream Lente, whether I use HTTPS, and which drivers my scripts use.
 4. Run check_settings on my settings.json files (public/settings.json and any under deploy/).
 5. Lint each of my scripts with lint_script, skipping public/prism/scripts/example.
+   Note the test code that still checks driver responses by hand, it can move to
+   self.expect() with the migrate_test_code prompt.
 6. Give me an ordered checklist for my deployment: repo merge, settings changes per computer,
    vendor tools, licence, image tags, and the order to upgrade Lente and the Prisms.
 """
@@ -165,11 +178,13 @@ Help me write a Prism test script and its Python test code for {product}, test s
    the keys in the slots of my key slot table, using its constants.
 5. Write one test item method per test, its steps in order, calling the drivers and
    ctx.record.measurement directly, flat like public/prism/scripts/example/BOND_v0/bond_P00xx.py.
+   Pass each driver response to self.expect().
    The script only lists the tests, with their limits as fields on each item.
 6. Before you finish, check: could a technician change every limit in the script without
    reading Python?  Does the script hold any steps, expressions, commands or pins?  Does the
    code have a base class, a wrapper around a driver or ctx.record.measurement, a step object
-   or context manager, meas()/check() helpers, or a unit map?  Can each test item be read top
+   or context manager, meas()/check() helpers, or a unit map?  Is each driver response
+   passed to self.expect(), and every shared lock held with `with`?  Can each test item be read top
    to bottom without opening another file or class?  Is each fail msg at most 64 characters,
    and does the code call ctx.record.fail_msg() for it, with that fail entry on every script
    line that runs the item?  Is each pass/fail check a UNIT_BOOLEAN that is True when it
@@ -197,6 +212,10 @@ Review my Prism test script {script} and its Python test code.
    Check each fail msg is a terse hint of at most 64 characters, not a parts list, and that
    the code calls ctx.record.fail_msg() when the measurement it belongs to fails, with that
    ctx.item.fail[i] entry on every script line that runs the item.
+   Check each driver response is passed to self.expect() (list each hand written
+   `if not response["success"]:` block that only logs and ends the item, to move to
+   self.expect() as in the migrate_test_code prompt), and that it is not used for operator
+   input or DUT answers.  Check shared locks are held with `with`, not acquire/release.
    Check each pass/fail check is a UNIT_BOOLEAN that is True when it passes (not str(value)
    with force_fail), every measurement is logged with self.log_bullet(), there are no
    placeholder measurements for tests that aren't done, and the docstrings and comments match
@@ -207,6 +226,33 @@ Review my Prism test script {script} and its Python test code.
    slot table, and the serial number of each piece of test equipment in the setup item.
 6. Give me the findings, most important first, and propose the changes as small steps.  Ask me
    before changing my files.
+"""
+
+PROMPT_MIGRATE_CODE = """\
+Move my test code {path} to self.expect() for driver responses.
+
+1. Read docs/source/prism_programs.rst Test Equipment Errors, and compare
+   public/prism/scripts/example/BOND_v0/bond_P00xx.py, which is written this way.
+2. Read each test module (.py) under {path}, and list every place that checks a driver
+   response by hand: `if not response["success"]:` (or `success = response["success"]` then
+   `if not success:`) followed by only logging,
+   self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR) and return.  Count them per file.
+3. Replace each with one line: `response = self.expect(self.bond.vbat_read())` when the
+   response is used later in the item, else `self.expect(self.bond.vbat_set(3000))`.
+   Keep the same driver call and arguments.  Read response["result"] only after expect().
+4. Leave these as they are, and list them for me:
+   - a block that does more than log and end the item, for example sends the DUT a command
+     or releases a lock before ending.  A lock: change acquire()/release() to
+     `with self.shared_lock(...):` and then use self.expect() inside it
+   - input_button/input_textbox answers, and DUT command failures that end the item FAIL
+     with a fail msg
+   - driver methods that return a bool or a tuple
+5. Check that the teardown item puts the test equipment in a safe state (DUT power off, loads
+   off), since an item ended by self.expect() does not undo its own setup.
+6. Don't change anything else: limits, measurement names, fail entries and the order of the
+   steps stay the same.  Show me the changes per file, and ask me before writing them.
+7. Run lint_script on each script that runs the changed modules, and tell me how to run them
+   with `python prism_dev.py --script <path>`.
 """
 
 PROMPT_BOND = """\
@@ -220,7 +266,8 @@ Help me use BOND (the Sistemi Bed of Nails tester) for {product}.
 4. If the Pogo board is not designed yet, take me through docs/source/prism_bond.rst
    Designing the Pogo Board: the a5800-BONDPogo template, the schematic, the layout, the stack
    up STEP model and the mechanical checks.
-5. Help me write the Pogo board header definition file, and the test items that use it.
+5. Help me write the Pogo board header definition file, and the test items that use it,
+   passing each BOND response to self.expect().
 6. Lint the script with lint_script.
 """
 
@@ -425,6 +472,11 @@ def create_server():
     def review_test_script(script: str = "my script") -> str:
         """Review a script and its test code: readable list of tests, simple code, traceability."""
         return PROMPT_REVIEW_SCRIPT.format(script=script)
+
+    @mcp.prompt(title="Move test code to self.expect()")
+    def migrate_test_code(path: str = "public/prism/scripts") -> str:
+        """Replace hand written driver response checks in older test code with self.expect()."""
+        return PROMPT_MIGRATE_CODE.format(path=path)
 
     @mcp.prompt(title="Use BOND")
     def use_bond(product: str = "my product") -> str:
