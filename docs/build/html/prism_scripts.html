@@ -455,7 +455,15 @@ looking up pins by signal name in another module</p></li>
 <li><p>record with <code class="docutils literal notranslate"><span class="pre">ctx.record.measurement(name,</span> <span class="pre">value,</span> <span class="pre">ResultAPI.UNIT_MILLIVOLTS,</span> <span class="pre">min=...,</span> <span class="pre">max=...)</span></code>
 and <code class="docutils literal notranslate"><span class="pre">self.log_bullet(bullet)</span></code>, with the measurement name written out in full.  The units
 are the <code class="docutils literal notranslate"><span class="pre">ResultAPI.UNIT_*</span></code> constants in <code class="docutils literal notranslate"><span class="pre">public/prism/api.py</span></code>: write the constant in each
-call (<code class="docutils literal notranslate"><span class="pre">ResultAPI.UNIT_MILLIVOLTS</span></code>), with no map, alias or short names of your own for them</p></li>
+call (<code class="docutils literal notranslate"><span class="pre">ResultAPI.UNIT_MILLIVOLTS</span></code>), with no map, alias or short names of your own for them.
+Every measurement is followed by <code class="docutils literal notranslate"><span class="pre">self.log_bullet(bullet)</span></code>, so the operator sees it</p></li>
+<li><p>record a check that passes or fails, such as a DUT line that must be low, as a bool that is
+<code class="docutils literal notranslate"><span class="pre">True</span></code> when the check passes, named after the passing state,
+<code class="docutils literal notranslate"><span class="pre">ctx.record.measurement(&quot;T304a_dsr_off&quot;,</span> <span class="pre">r[&quot;dsr&quot;]</span> <span class="pre">is</span> <span class="pre">False,</span> <span class="pre">ResultAPI.UNIT_BOOLEAN)</span></code>.  Don’t
+record <code class="docutils literal notranslate"><span class="pre">str(value)</span></code> with <code class="docutils literal notranslate"><span class="pre">force_fail</span></code>.  <code class="docutils literal notranslate"><span class="pre">force_fail</span></code> is for a string or number that must
+match exactly, such as a firmware version</p></li>
+<li><p>a test item that calls <code class="docutils literal notranslate"><span class="pre">ctx.record.fail_msg(ctx.item.fail[i])</span></code> needs that entry in the
+<code class="docutils literal notranslate"><span class="pre">fail</span></code> list of each script line that runs it</p></li>
 <li><p>handle each error where it happens: log, <code class="docutils literal notranslate"><span class="pre">self.item_end(result)</span></code>, <code class="docutils literal notranslate"><span class="pre">return</span></code>.  No context
 managers or decorators that turn exceptions into results, and no exception classes of your
 own to jump out of a test item.  Use <code class="docutils literal notranslate"><span class="pre">try</span></code> only around the one call that can raise, such
@@ -511,6 +519,14 @@ The script becomes a program, and the test code becomes an interpreter for it</p
 classes, fixture classes, step objects, <code class="docutils literal notranslate"><span class="pre">meas()</span></code>/<code class="docutils literal notranslate"><span class="pre">check()</span></code> helpers, unit maps</p></li>
 <li><p>generate the script from another program or repo.  The script in your scripts repo is the one
 that is changed, by hand, when a limit changes</p></li>
+<li><p>keep the scripts and test code in another repo and copy them into your scripts fork.  Write
+and change them in the fork, and run <code class="docutils literal notranslate"><span class="pre">prism_dev.py</span> <span class="pre">--lint</span></code> there.  Supporting files made by a
+tool, such as a BOND header definition file or a pin table, are fine: keep the tool in the
+fork too, and say at the top of each file that it is generated, and from what</p></li>
+<li><p>record placeholder measurements for a test the fixture can’t do.  Leave it out of the script
+and list it with the coverage gaps, see <a class="reference internal" href="_coverage.html#pcba-test-coverage"><span class="std std-ref">PCBA Test Coverage</span></a></p></li>
+<li><p>leave docstrings and comments that no longer match the code, for example a docstring that
+says pins are looked up in a table when the code writes them in each call</p></li>
 </ul>
 <aside class="footnote-list brackets">
 <aside class="footnote brackets" id="id2" role="doc-footnote">

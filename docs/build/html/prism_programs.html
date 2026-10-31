@@ -909,7 +909,10 @@ of the testing and the requirements of ‘min’ and ‘max’.  Valid types are
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>For boolean type, <cite>measurement()</cite> will test that <cite>value</cite> is True.  If a <cite>value</cite> of False is
-a PASS, you will need to invert it before calling <cite>measurement()</cite>.</p>
+a PASS, you will need to invert it before calling <cite>measurement()</cite>.  Record a pass/fail check
+this way, as a bool that is True when it passes with <cite>ResultAPI.UNIT_BOOLEAN</cite>, and name it after
+the passing state, for example <cite>ctx.record.measurement(“dsr_off”, dsr is False, ResultAPI.UNIT_BOOLEAN)</cite>,
+rather than as a string with <cite>force_fail</cite>.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>

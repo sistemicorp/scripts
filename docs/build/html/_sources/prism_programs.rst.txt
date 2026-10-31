@@ -333,7 +333,10 @@ of the testing and the requirements of 'min' and 'max'.  Valid types are int, fl
 .. note::
 
     For boolean type, `measurement()` will test that `value` is True.  If a `value` of False is
-    a PASS, you will need to invert it before calling `measurement()`.
+    a PASS, you will need to invert it before calling `measurement()`.  Record a pass/fail check
+    this way, as a bool that is True when it passes with `ResultAPI.UNIT_BOOLEAN`, and name it after
+    the passing state, for example `ctx.record.measurement("dsr_off", dsr is False, ResultAPI.UNIT_BOOLEAN)`,
+    rather than as a string with `force_fail`.
 
 
 .. note::
