@@ -129,3 +129,18 @@ def test_fail_msg_rules():
                 await c.get_prompt("review_test_script", {"script": "P1/P1_T01.scr"}))
     for r in run(go):
         assert "fail_msg()" in r.messages[0].content.text
+
+
+def test_boolean_and_fork_rules():
+    assert "ResultAPI.UNIT_BOOLEAN" in prism_assistant.INSTRUCTIONS
+    assert "never keep them in another repo" in prism_assistant.INSTRUCTIONS
+    assert "placeholder measurements" in prism_assistant.INSTRUCTIONS
+
+    async def go(c):
+        return (await c.get_prompt("write_test_script", {"product": "P1", "stage": "T01"}),
+                await c.get_prompt("review_test_script", {"script": "P1/P1_T01.scr"}))
+    for r in run(go):
+        text = r.messages[0].content.text
+        assert "UNIT_BOOLEAN" in text
+        assert "log_bullet()" in text
+        assert "placeholder" in text

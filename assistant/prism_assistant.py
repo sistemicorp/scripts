@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import prism_knowledge as pk  # noqa: E402
 
 SERVER_NAME = "prism-assistant"
-SERVER_VERSION = "0.4.2"
+SERVER_VERSION = "0.4.3"
 CONTACT = "info@sistemi.ca"
 
 INSTRUCTIONS = f"""\
@@ -52,6 +52,10 @@ Rules to follow when helping:
   (a name, a firmware file name), as fields on the item itself ("min": 4900), not in `args`.
   Never put steps, action lists, expressions, DUT commands or BOND pins in a script, and never
   generate scripts from another program.  See docs/source/prism_scripts.rst Script Design.
+- The customer's scripts fork is where scripts and test code are written and changed, and
+  linted: never keep them in another repo and copy them in.  A tool may generate supporting
+  files (a BOND header definition file, a pin table) if the tool is in the fork too and each
+  generated file says so at the top.
 - Keep test code simple and easy to follow, it is maintained for the life of the product,
   often by people who did not write it.  One test item method per test, with its steps in
   order.  Call the drivers and ctx.record.measurement directly, without your own wrapper
@@ -68,7 +72,13 @@ Rules to follow when helping:
   - record with ctx.record.measurement(name, value, ResultAPI.UNIT_..., min=..., max=...) and
     self.log_bullet(bullet), the measurement name written out in full.  The units are the
     ResultAPI.UNIT_* constants of public/prism/api.py, written in each call
-    (ResultAPI.UNIT_MILLIVOLTS): no unit map, alias, short names or unit variables
+    (ResultAPI.UNIT_MILLIVOLTS): no unit map, alias, short names or unit variables.  Every
+    measurement is followed by self.log_bullet(bullet)
+  - a check that passes or fails (a DUT line must be low, a command answered OK) is a bool
+    that is True when it passes, named after the passing state,
+    ctx.record.measurement("T304a_dsr_off", r["dsr"] is False, ResultAPI.UNIT_BOOLEAN).
+    Never str(value) with force_fail; force_fail is for a string or number that must match
+    exactly, such as a firmware version
   - no step objects, context managers or decorators that turn exceptions into results, no
     meas()/check()/eq() helpers, no exception classes of your own for control flow; use try
     only around the one call that can raise
@@ -77,12 +87,16 @@ Rules to follow when helping:
     separate module, like a driver
   - an item using an earlier item's result checks it is there, else INTERNAL_ERROR naming the
     item it needs
+  - no placeholder measurements for a test the fixture can't do: leave it out of the script
+    and list it with the coverage gaps
+  - docstrings and comments match the code; fix any that describe an older design
   Repeated code between test items is fine: it keeps each item readable on its own.
 - Fail messages: an item's "fail" entries are {{"fid": ..., "msg": ...}}, msg at most 64
   characters (lint_script errors on longer), a terse hint for the operator or repair
   technician, like "3V_OUT low: check U7 R49".  Never copy a coverage parts list into msg.
   The test code must call ctx.record.fail_msg(ctx.item.fail[i]) when a measurement fails,
   as public/prism/scripts/example/prod_v0/tst00xx.py does, or the message is never shown.
+  Each script line that runs the item needs that fail[i] entry.
 - Test items: the first statement is `ctx = self.item_start()`, every path ends with
   `self.item_end(...)`, and the module file name matches the class name.  Use self.sleep()
   and self.check_abort(), not time.sleep().
@@ -157,7 +171,10 @@ Help me write a Prism test script and its Python test code for {product}, test s
    code have a base class, a wrapper around a driver or ctx.record.measurement, a step object
    or context manager, meas()/check() helpers, or a unit map?  Can each test item be read top
    to bottom without opening another file or class?  Is each fail msg at most 64 characters,
-   and does the code call ctx.record.fail_msg() for it?  Fix it if not.
+   and does the code call ctx.record.fail_msg() for it, with that fail entry on every script
+   line that runs the item?  Is each pass/fail check a UNIT_BOOLEAN that is True when it
+   passes, and is every measurement logged with self.log_bullet()?  Are there placeholder
+   measurements, or docstrings and comments that don't match the code?  Fix it if not.
 7. Run lint_script on the new script and fix every ERROR.  Tell me how to run it with
    `python prism_dev.py --script <path>`.
 """
@@ -178,7 +195,14 @@ Review my Prism test script {script} and its Python test code.
    context managers that turn exceptions into results, meas()/check() helpers, unit maps,
    measurement names built from a prefix.  Compare with public/prism/scripts/example.
    Check each fail msg is a terse hint of at most 64 characters, not a parts list, and that
-   the code calls ctx.record.fail_msg() when the measurement it belongs to fails.
+   the code calls ctx.record.fail_msg() when the measurement it belongs to fails, with that
+   ctx.item.fail[i] entry on every script line that runs the item.
+   Check each pass/fail check is a UNIT_BOOLEAN that is True when it passes (not str(value)
+   with force_fail), every measurement is logged with self.log_bullet(), there are no
+   placeholder measurements for tests that aren't done, and the docstrings and comments match
+   the code.
+   Check the scripts and test code are written in this fork, not copied in from another
+   repo, and that any generated supporting file says it is generated and its tool is here.
 5. Check the traceability: the unit serial number in key0, the key slots and names of my key
    slot table, and the serial number of each piece of test equipment in the setup item.
 6. Give me the findings, most important first, and propose the changes as small steps.  Ask me

@@ -434,7 +434,15 @@ file or class, other than the drivers and the Prism APIs.  So,
 * record with ``ctx.record.measurement(name, value, ResultAPI.UNIT_MILLIVOLTS, min=..., max=...)``
   and ``self.log_bullet(bullet)``, with the measurement name written out in full.  The units
   are the ``ResultAPI.UNIT_*`` constants in ``public/prism/api.py``: write the constant in each
-  call (``ResultAPI.UNIT_MILLIVOLTS``), with no map, alias or short names of your own for them
+  call (``ResultAPI.UNIT_MILLIVOLTS``), with no map, alias or short names of your own for them.
+  Every measurement is followed by ``self.log_bullet(bullet)``, so the operator sees it
+* record a check that passes or fails, such as a DUT line that must be low, as a bool that is
+  ``True`` when the check passes, named after the passing state,
+  ``ctx.record.measurement("T304a_dsr_off", r["dsr"] is False, ResultAPI.UNIT_BOOLEAN)``.  Don't
+  record ``str(value)`` with ``force_fail``.  ``force_fail`` is for a string or number that must
+  match exactly, such as a firmware version
+* a test item that calls ``ctx.record.fail_msg(ctx.item.fail[i])`` needs that entry in the
+  ``fail`` list of each script line that runs it
 * handle each error where it happens: log, ``self.item_end(result)``, ``return``.  No context
   managers or decorators that turn exceptions into results, and no exception classes of your
   own to jump out of a test item.  Use ``try`` only around the one call that can raise, such
@@ -495,6 +503,14 @@ Don't,
   classes, fixture classes, step objects, ``meas()``/``check()`` helpers, unit maps
 * generate the script from another program or repo.  The script in your scripts repo is the one
   that is changed, by hand, when a limit changes
+* keep the scripts and test code in another repo and copy them into your scripts fork.  Write
+  and change them in the fork, and run ``prism_dev.py --lint`` there.  Supporting files made by a
+  tool, such as a BOND header definition file or a pin table, are fine: keep the tool in the
+  fork too, and say at the top of each file that it is generated, and from what
+* record placeholder measurements for a test the fixture can't do.  Leave it out of the script
+  and list it with the coverage gaps, see :ref:`_coverage:PCBA Test Coverage`
+* leave docstrings and comments that no longer match the code, for example a docstring that
+  says pins are looked up in a table when the code writes them in each call
 
 
 

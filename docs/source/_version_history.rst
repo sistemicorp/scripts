@@ -131,6 +131,10 @@ screenshots.
 * Script linter: a ``fail`` ``msg`` must be a string of at most 64 characters, a terse hint for
   the operator.  The Prism Assistant writes them this way and checks the test code calls
   ``ctx.record.fail_msg()`` (Prism Assistant 0.4.2)
+* Script Design: record a pass/fail check as a ``UNIT_BOOLEAN`` that is ``True`` when it passes,
+  log every measurement, no placeholder measurements, write and change scripts in your scripts
+  fork (not copied in from another repo).  The Prism Assistant writes and reviews to these rules
+  (Prism Assistant 0.4.3)
 
 Bug fixes,
 
