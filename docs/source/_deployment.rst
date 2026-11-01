@@ -343,6 +343,11 @@ Settings.JSON File
             }
           },
 
+          // automatically sync public (scripts) folder
+          // Lente: will sync all downstream clients
+          // Prism: will sync with upstream Lente
+          "auto_sync_scripts": true,
+
           // ------------------------------------------------------------------
           // Below are only used by Lente and can be removed for Prism stations
 
@@ -355,9 +360,6 @@ Settings.JSON File
 
           // This Lente computer is pyramid root and creates manifest
           "root_authority": true,
-
-          // automatically sync Prism clients scripts
-          "auto_sync_scripts": true,
 
           // maximum size (MB, uncompressed) of the scripts package sent to stations,
           // see public/prism/scripts_zip.exclude to exclude files
