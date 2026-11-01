@@ -22,7 +22,7 @@ Every result has these fields in the Lente `record` table (see :doc:`Database <_
   :ref:`prism_scripts:info` section, often filled in from :ref:`prism_scripts:subs` or a
   :doc:`Traveller <prism_travellers>`
 * `meta_script`, the path of the script that ran, for example
-  `public/prism/scripts/mycompany/P001/P00100_T0100_SmokeTests.scr`
+  `public/prism/scripts/mycompany/P001/P001_BLT_00.scr`
 * `meta_git_public`, the version of your scripts repo (`public/VERSION`), see
   :ref:`_development:Create a Tag`
 * `meta_git_prism`, the version of Prism
@@ -31,7 +31,7 @@ Every result has these fields in the Lente `record` table (see :doc:`Database <_
 * `meta_result`, `meta_start`, `meta_end` and `_duration`
 
 Each test item and measurement is stored with its full name, which includes the module path and
-the item `id`, for example `mycompany.P001.P00100_T0100_SmokeTests.TST0200_measVDD.vdd`.
+the item `id`, for example `mycompany.P001.P001_BLT.BLT100_voltage.V3V3`.
 
 The result JSON file also has the operator and the station IP address.  These are kept in the
 result file backups (`public/result/.../bkup`), but they are not database columns.
@@ -169,13 +169,15 @@ files.  Decide how a change shows up in your searches,
 
 * Changing a limit or a test item in place keeps the script name.  Searches by `meta_script`
   then mix results from both versions.  Use `meta_git_public` or the date to separate them.
-* Making a new script version (for example `P00100_T0101_SmokeTests.scr`) keeps the versions
+* Making a new script version (for example `P001_BLT_01.scr`) keeps the versions
   separate in every search.  This is the better choice for changes made by an ECO.
-* Measurement names include the module and item names.  Renaming either starts a new series
-  in the database, which breaks trend charts and SQL queries across the change.
+* Measurement names include the module and item names, not the script name.  Renaming either
+  starts a new series in the database, which breaks trend charts and SQL queries across the
+  change.  So keep the version in the script name only, and don't version the program or the
+  test items.
 
-See :ref:`_prodplan:Naming Proposal` for a naming scheme that puts the stage and version in the
-names.
+See :ref:`_prodplan:Naming Proposal` for a naming scheme with the stage and version in the
+script name, and :ref:`_prodplan:An ECO Changes A Limit`.
 
 
 Example Queries
@@ -196,7 +198,7 @@ The firmware version recorded for each unit of a lot,
 
     select r.key0, m.value, r.meta_start
     from measurement m join record r on m.record_id = r.id
-    where m.name = 'mycompany.P001.P00100_T0100_SmokeTests.TST0100_connect.fw_ver'
+    where m.name = 'mycompany.P001.P001_BLT.BLT300_fw_check.fw_ver'
           and r.info_lot = 'L2026-07'
     order by r.meta_start
 

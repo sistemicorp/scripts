@@ -73,7 +73,7 @@ Plan it before production starts, because results that were not recorded can’t
 <a class="reference internal" href="prism_scripts.html#info"><span class="std std-ref">info</span></a> section, often filled in from <a class="reference internal" href="prism_scripts.html#subs"><span class="std std-ref">subs</span></a> or a
 <a class="reference internal" href="prism_travellers.html"><span class="doc">Traveller</span></a></p></li>
 <li><p><cite>meta_script</cite>, the path of the script that ran, for example
-<cite>public/prism/scripts/mycompany/P001/P00100_T0100_SmokeTests.scr</cite></p></li>
+<cite>public/prism/scripts/mycompany/P001/P001_BLT_00.scr</cite></p></li>
 <li><p><cite>meta_git_public</cite>, the version of your scripts repo (<cite>public/VERSION</cite>), see
 <a class="reference internal" href="_development.html#create-a-tag"><span class="std std-ref">Create a Tag</span></a></p></li>
 <li><p><cite>meta_git_prism</cite>, the version of Prism</p></li>
@@ -82,7 +82,7 @@ Plan it before production starts, because results that were not recorded can’t
 <li><p><cite>meta_result</cite>, <cite>meta_start</cite>, <cite>meta_end</cite> and <cite>_duration</cite></p></li>
 </ul>
 <p>Each test item and measurement is stored with its full name, which includes the module path and
-the item <cite>id</cite>, for example <cite>mycompany.P001.P00100_T0100_SmokeTests.TST0200_measVDD.vdd</cite>.</p>
+the item <cite>id</cite>, for example <cite>mycompany.P001.P001_BLT.BLT100_voltage.V3V3</cite>.</p>
 <p>The result JSON file also has the operator and the station IP address.  These are kept in the
 result file backups (<cite>public/result/…/bkup</cite>), but they are not database columns.</p>
 <p>Because <cite>meta_git_public</cite> is recorded, every file in your scripts repo is traceable: scripts,
@@ -241,13 +241,15 @@ files.  Decide how a change shows up in your searches,</p>
 <ul class="simple">
 <li><p>Changing a limit or a test item in place keeps the script name.  Searches by <cite>meta_script</cite>
 then mix results from both versions.  Use <cite>meta_git_public</cite> or the date to separate them.</p></li>
-<li><p>Making a new script version (for example <cite>P00100_T0101_SmokeTests.scr</cite>) keeps the versions
+<li><p>Making a new script version (for example <cite>P001_BLT_01.scr</cite>) keeps the versions
 separate in every search.  This is the better choice for changes made by an ECO.</p></li>
-<li><p>Measurement names include the module and item names.  Renaming either starts a new series
-in the database, which breaks trend charts and SQL queries across the change.</p></li>
+<li><p>Measurement names include the module and item names, not the script name.  Renaming either
+starts a new series in the database, which breaks trend charts and SQL queries across the
+change.  So keep the version in the script name only, and don’t version the program or the
+test items.</p></li>
 </ul>
-<p>See <a class="reference internal" href="_prodplan.html#naming-proposal"><span class="std std-ref">Naming Proposal</span></a> for a naming scheme that puts the stage and version in the
-names.</p>
+<p>See <a class="reference internal" href="_prodplan.html#naming-proposal"><span class="std std-ref">Naming Proposal</span></a> for a naming scheme with the stage and version in the
+script name, and <a class="reference internal" href="_prodplan.html#an-eco-changes-a-limit"><span class="std std-ref">An ECO Changes A Limit</span></a>.</p>
 </section>
 </section>
 <section id="example-queries">
@@ -262,7 +264,7 @@ names.</p>
 <p>The firmware version recorded for each unit of a lot,</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">select</span> <span class="n">r</span><span class="o">.</span><span class="n">key0</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">meta_start</span>
 <span class="kn">from</span> <span class="nn">measurement</span> <span class="n">m</span> <span class="n">join</span> <span class="n">record</span> <span class="n">r</span> <span class="n">on</span> <span class="n">m</span><span class="o">.</span><span class="n">record_id</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">id</span>
-<span class="n">where</span> <span class="n">m</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;mycompany.P001.P00100_T0100_SmokeTests.TST0100_connect.fw_ver&#39;</span>
+<span class="n">where</span> <span class="n">m</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;mycompany.P001.P001_BLT.BLT300_fw_check.fw_ver&#39;</span>
       <span class="ow">and</span> <span class="n">r</span><span class="o">.</span><span class="n">info_lot</span> <span class="o">=</span> <span class="s1">&#39;L2026-07&#39;</span>
 <span class="n">order</span> <span class="n">by</span> <span class="n">r</span><span class="o">.</span><span class="n">meta_start</span>
 </pre></div>

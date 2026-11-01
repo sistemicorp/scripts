@@ -43,7 +43,7 @@
   <section id="production-planning">
 <h1>Production Planning<a class="headerlink" href="#production-planning" title="Link to this heading">¶</a></h1>
 <p>What follows is a general discussion of a production flow, and how Lente/Prism
-would be configured.</p>
+is configured for it.</p>
 <nav class="contents local" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#production-infrastructure-cycle" id="id1">Production Infrastructure Cycle</a></p></li>
@@ -57,12 +57,27 @@ would be configured.</p>
 <li><p><a class="reference internal" href="#naming-conventions" id="id5">Naming Conventions</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#naming-proposal" id="id6">Naming Proposal</a></p></li>
-<li><p><a class="reference internal" href="#ip-addressing" id="id7">IP Addressing</a></p>
+<li><p><a class="reference internal" href="#naming-proposal" id="id6">Naming Proposal</a></p>
 <ul>
-<li><p><a class="reference internal" href="#prism-ips" id="id8">Prism IPs</a></p></li>
-<li><p><a class="reference internal" href="#lente-ips" id="id9">Lente IPs</a></p></li>
-<li><p><a class="reference internal" href="#example" id="id10">Example</a></p></li>
+<li><p><a class="reference internal" href="#names-in-the-database" id="id7">Names In The Database</a></p></li>
+<li><p><a class="reference internal" href="#product" id="id8">Product</a></p></li>
+<li><p><a class="reference internal" href="#folders-and-files" id="id9">Folders and Files</a></p></li>
+<li><p><a class="reference internal" href="#test-items" id="id10">Test Items</a></p></li>
+<li><p><a class="reference internal" href="#measurements" id="id11">Measurements</a></p></li>
+<li><p><a class="reference internal" href="#fail-messages" id="id12">Fail Messages</a></p></li>
+<li><p><a class="reference internal" href="#info-fields" id="id13">Info Fields</a></p></li>
+<li><p><a class="reference internal" href="#script-versions" id="id14">Script Versions</a></p></li>
+<li><p><a class="reference internal" href="#when-the-code-changes" id="id15">When The Code Changes</a></p></li>
+<li><p><a class="reference internal" href="#an-eco-changes-a-limit" id="id16">An ECO Changes A Limit</a></p></li>
+<li><p><a class="reference internal" href="#naming-example" id="id17">Naming Example</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#ip-addressing" id="id18">IP Addressing</a></p>
+<ul>
+<li><p><a class="reference internal" href="#lente-ips" id="id19">Lente IPs</a></p></li>
+<li><p><a class="reference internal" href="#prism-ips" id="id20">Prism IPs</a></p></li>
+<li><p><a class="reference internal" href="#lente-in-the-cloud" id="id21">Lente In The Cloud</a></p></li>
+<li><p><a class="reference internal" href="#example" id="id22">Example</a></p></li>
 </ul>
 </li>
 </ul>
@@ -71,12 +86,16 @@ would be configured.</p>
 <h2><a class="toc-backref" href="#id1" role="doc-backlink">Production Infrastructure Cycle</a><a class="headerlink" href="#production-infrastructure-cycle" title="Link to this heading">¶</a></h2>
 <img alt="_images/Screenshot_prodplan_02.png" src="_images/Screenshot_prodplan_02.png" />
 <p>The above diagram presents a flow for developing and deploying scripts.</p>
-<p>Git is used as a repository for development and releases.</p>
+<p>Git is used as a repository for development and releases.  Your scripts repo is a fork of the
+Sistemi <cite>scripts</cite> repo on GitHub.</p>
 <p>Lente script sync is used to deploy scripts to Prism stations.  Each station receives a copy of the
 Lente <cite>public/prism</cite> folder (drivers and scripts), see <a class="reference internal" href="_security.html#script-sync-exclusions"><span class="std std-ref">Script Sync Exclusions</span></a>.
-Lente can sync stations automatically when the scripts version changes (<cite>auto_sync_scripts</cite> in
+Stations get the scripts from Lente; Lente never connects to a station.  Lente can sync stations
+automatically when the scripts version changes (<cite>auto_sync_scripts</cite> in
 <a class="reference internal" href="_deployment.html#deploy-settings-file"><span class="std std-ref">settings.json</span></a>), and the root Lente can <cite>git pull</cite> new scripts from the
 Station Manager page.</p>
+<p><cite>settings.json</cite> is not synced.  Each Prism and Lente computer has its own copy, set up when the
+computer is installed, see <a class="reference internal" href="_deployment.html#prism-computer-checklist"><span class="std std-ref">Prism Computer Checklist</span></a>.</p>
 </section>
 <section id="stages">
 <h2><a class="toc-backref" href="#id2" role="doc-backlink">Stages</a><a class="headerlink" href="#stages" title="Link to this heading">¶</a></h2>
@@ -97,9 +116,16 @@ quantified before Factory 2 does any processing.</p>
 <li><p>This is often required so that damaged or faulty DUT can be quantified before
 more processing is done on the DUT</p></li>
 <li><p>Responsibility for damaged or faulty product needs to be assigned to the right sub-contractor</p></li>
+<li><p>The same T2 script runs in both factories.  The <cite>location</cite> of the result tells the outgoing
+and incoming tests apart</p></li>
 </ul>
 </li>
+<li><p>Factory 2 does process steps P4 and P5, creating DUT BOM3, and the product is tested, T3</p></li>
 </ul>
+<p>Each test in the diagram has its own lot (LOT#A to LOT#D).  The lot is the work order of that
+stage, so the same units can have a different lot at each stage.  The results of one unit are
+found together by its serial number (<cite>key0</cite>), not by its lot, see
+<a class="reference internal" href="_traceability.html"><span class="doc">Traceability</span></a>.</p>
 <section id="planning-your-test-stages">
 <h3><a class="toc-backref" href="#id3" role="doc-backlink">Planning Your Test Stages</a><a class="headerlink" href="#planning-your-test-stages" title="Link to this heading">¶</a></h3>
 <p>Each test stage is a separate script, usually run on its own jig.  How many stages you need depends on
@@ -135,26 +161,32 @@ and a Bed of Nails test must move to the connectors or to the DUT’s own interf
 programming jigs can feed one test jig.</p>
 <p>Within a stage,</p>
 <ul>
-<li><p>start with a setup item and end with a teardown item, and keep the teardown enabled.  Prism runs the
-teardown after a fail, a timeout or an abort.</p></li>
+<li><p>start with a setup item and end with a teardown item, and keep the teardown enabled.  The last
+item of the script is the teardown, Prism runs it after a fail, a timeout or an abort, see
+<a class="reference internal" href="prism_programs.html#timeouts-and-aborts"><span class="std std-ref">Timeouts and Aborts</span></a>.</p></li>
 <li><p>keep <code class="docutils literal notranslate"><span class="pre">fail_fast</span></code> on, unless the tests are independent of each other.</p></li>
 <li><p>order the tests so the cheapest and most likely failures come first.  For example check the power
 rails before programming.</p></li>
-<li><p>put the limits in the script <code class="docutils literal notranslate"><span class="pre">args</span></code> so they can be changed without changing code.</p></li>
+<li><p>put the limits in the script, on each item, so they can be changed without changing code, see
+<a class="reference internal" href="prism_scripts.html#script-design"><span class="std std-ref">Script Design</span></a>.</p></li>
 <li><p>one test item method can be used by several items, for example a voltage check for each rail,
 with the rail name and limits in each item,</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST100_voltage&quot;</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;V3V3&quot;</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">3200</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mi">3400</span><span class="p">}},</span>
-<span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST100_voltage&quot;</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;V1V8&quot;</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">1725</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mi">1875</span><span class="p">}},</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;BLT100_voltage&quot;</span><span class="p">,</span> <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;V3V3&quot;</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">3200</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mi">3400</span> <span class="p">},</span>
+<span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;BLT100_voltage&quot;</span><span class="p">,</span> <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;V1V8&quot;</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">1725</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mi">1875</span> <span class="p">},</span>
 </pre></div>
 </div>
-<p>The measurement name must be unique in the item, so build it from the rail name.</p>
+<p>Both items have the same item name, <code class="docutils literal notranslate"><span class="pre">BLT100_voltage</span></code>, so the measurement name is built from
+the rail name to keep the two measurements apart.</p>
 </li>
-<li><p>code shared by stages and products goes in a common module, see <cite>File Organization</cite> below.</p></li>
+<li><p>each program has all of its test items, there is no shared module of test items between
+stages or products.  Pure helper functions (a checksum, a DUT protocol) can be in their own
+module, see <a class="reference internal" href="prism_scripts.html#keep-the-program-simple"><span class="std std-ref">Keep the program simple</span></a>.</p></li>
 </ul>
 <p>To decide what a Bed of Nails stage must test, and which test points the board needs, do a
 <a class="reference internal" href="_coverage.html"><span class="doc">test coverage analysis</span></a>.</p>
-<p>Use the same unit id, key slots and measurement names in every stage, so that the results of all
-stages of a unit can be found together, see <a class="reference internal" href="_traceability.html"><span class="doc">Traceability</span></a>.</p>
+<p>Use the same unit id, key slots and measurement names (the last part of the name, for example
+<code class="docutils literal notranslate"><span class="pre">fw_ver</span></code>) in every stage, so that the results of all stages of a unit can be found together, see
+<a class="reference internal" href="_traceability.html"><span class="doc">Traceability</span></a>.</p>
 </section>
 </section>
 <section id="file-organization">
@@ -167,163 +199,284 @@ create a more specific solution.</p>
 rate, but none of the customer returns are associated with failures for this test.  So an ECO is created to change the
 limit of the test to reduce the failure rate to an expected 0.5%.  How should you implement this change so that you
 can track the new failure rate?  Or search if a product returned would have failed at the previous limit?  These
-are the kinds of things you need to think about when you implement test program and script files.</p>
+are the kinds of things you need to think about when you implement test program and script files.
+The <a class="reference internal" href="#naming-proposal">Naming Proposal</a> below answers these questions, see <a class="reference internal" href="#an-eco-changes-a-limit">An ECO Changes A Limit</a>.</p>
 <p>Prism has a high level prescribed directory structure.</p>
 <p>Constraints:</p>
 <ul class="simple">
 <li><p>all Prism files must be under <code class="docutils literal notranslate"><span class="pre">./public/prism</span></code></p></li>
 <li><p>all script files must be under <code class="docutils literal notranslate"><span class="pre">./public/prism/scripts</span></code></p></li>
+<li><p>files the tests need, such as firmware images, go in an <code class="docutils literal notranslate"><span class="pre">assets</span></code> folder next to the script,
+so they are versioned and synced with the script</p></li>
+<li><p>the scripts package sent to the stations has a maximum size (<cite>scripts_zip_max_mb</cite> in
+<a class="reference internal" href="_deployment.html#deploy-settings-file"><span class="std std-ref">settings.json</span></a>).  Leave large files that the stations don’t need
+out of it with <code class="docutils literal notranslate"><span class="pre">public/prism/scripts_zip.exclude</span></code>, see <a class="reference internal" href="_security.html#script-sync-exclusions"><span class="std std-ref">Script Sync Exclusions</span></a></p></li>
 </ul>
 <section id="naming-conventions">
 <h3><a class="toc-backref" href="#id5" role="doc-backlink">Naming Conventions</a><a class="headerlink" href="#naming-conventions" title="Link to this heading">¶</a></h3>
-<p>A naming strategy is totally up to you.  No strategy at also is also a choice.</p>
-<p>That being said, experience has taught that not having a strategy very quickly leads to confusion and
-chaos.  If you end up being successful, upfront planning will really pay off 1-2 years down the road when
-try to piece together when you built what, with what version of that, with what ECO, on what version of
-BOM, …</p>
-<p>Many small companies try to be cool and come up with nifty names to describe things.  That works short
-term but falls apart down the road.  The worst thing that can happen to you is that your successful!</p>
-<p>There is a reason why big companies use seemingly random numbers to name things… it works.  But you do
-need a “secret decoder ring” to determine what something is when you just have a generic number as a
-label.  This is whgat you keep track of in a spreadsheet (which is the secret decoder ring).</p>
-<p>Prism needs the names of the following,</p>
+<p>A naming strategy is up to you.  Not having a strategy is also a choice.</p>
+<p>That being said, experience has taught that not having a strategy quickly leads to confusion.
+Planning up front pays off 1-2 years later, when you need to piece together when you built what,
+with what version of the test, with what ECO, on what version of BOM, …</p>
+<p>Names that describe things are easy to start with, but they stop fitting as products and
+versions are added.  Plain numbers keep working, with a list (often a spreadsheet) that says what
+each number is.</p>
+<p>The names you choose end up in the result database, and they are what you search on,</p>
 <ul class="simple">
-<li><p>scripts</p>
-<ul>
-<li><p>specific to</p>
-<ul>
-<li><p>product</p></li>
-<li><p>stage (T1, T2, &amp; T3 in the diagram)</p></li>
-<li><p>version</p></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>program files</p>
-<ul>
-<li><p>specific to</p>
-<ul>
-<li><p>script</p></li>
-<li><p>stage (T1, T2, &amp; T3 in the diagram)</p></li>
-<li><p>version</p></li>
-<li><p>common (to everything)</p></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>Test Items (these are the test IDs indicated in the scripts and implemented in programs)</p>
-<ul>
-<li><p>specific to</p>
-<ul>
-<li><p>product</p></li>
-<li><p>stage (T1, T2, &amp; T3 in the diagram)</p></li>
-<li><p>version</p></li>
-</ul>
-</li>
-</ul>
-</li>
+<li><p>the script file name, recorded with each result (<cite>meta_script</cite>)</p></li>
+<li><p>the program (module) and test item names, which are the start of each measurement name</p></li>
+<li><p>the measurement names</p></li>
+<li><p>the <code class="docutils literal notranslate"><span class="pre">info</span></code> fields of the script: <cite>product</cite>, <cite>bom</cite>, <cite>lot</cite> and <cite>location</cite></p></li>
+<li><p>the keys, such as the serial number, see <a class="reference internal" href="_traceability.html#key-slot-plan"><span class="std std-ref">Key Slot Plan</span></a></p></li>
 </ul>
 <p>This is a lot to wrap your head around, so to avoid future confusion, a proposal for structure is presented.</p>
 </section>
 </section>
 <section id="naming-proposal">
 <h2><a class="toc-backref" href="#id6" role="doc-backlink">Naming Proposal</a><a class="headerlink" href="#naming-proposal" title="Link to this heading">¶</a></h2>
-<p>All of these naming conventions, versions, will end up in the results file, in that way, you precisely know
-by which scripts, programs, and methods a test was done.</p>
-<p>Product naming</p>
+<p>The proposal in short,</p>
 <ul class="simple">
-<li><p>P###mm</p>
+<li><p>the version of a test is in the <strong>script</strong> file name only</p></li>
+<li><p>program files, test item methods and measurement names are not versioned.  A name stays the same
+as long as what it measures stays the same</p></li>
+</ul>
+<p>This keeps the measurement names the same across versions, so trend charts and queries cover the
+whole life of a product, and the script name separates the versions.</p>
+<section id="names-in-the-database">
+<h3><a class="toc-backref" href="#id7" role="doc-backlink">Names In The Database</a><a class="headerlink" href="#names-in-the-database" title="Link to this heading">¶</a></h3>
+<p>Each measurement is stored with its full name, the program module path, the item <code class="docutils literal notranslate"><span class="pre">id</span></code> and the
+measurement name,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mycompany</span><span class="o">.</span><span class="n">P001</span><span class="o">.</span><span class="n">P001_BLT</span><span class="o">.</span><span class="n">BLT100_voltage</span><span class="o">.</span><span class="n">V3V3</span>
+\<span class="n">_______</span><span class="o">/</span> \<span class="n">__</span><span class="o">/</span> \<span class="n">______</span><span class="o">/</span> \<span class="n">____________</span><span class="o">/</span> \<span class="n">__</span><span class="o">/</span>
+ <span class="n">folder</span>   <span class="n">folder</span> <span class="n">program</span>  <span class="n">test</span> <span class="n">item</span>    <span class="n">measurement</span>
+</pre></div>
+</div>
+<p>The script file name is not part of it.  The script is recorded with each result, in
+<cite>meta_script</cite>.  So,</p>
+<ul class="simple">
+<li><p>renaming the program file, its folder, or a test item method gives each of its measurements a
+new name, and starts a new series in the database</p></li>
+<li><p>a new version of a script changes only <cite>meta_script</cite></p></li>
+</ul>
+<p>The full name is at most 128 characters.  Prism ends the item as <code class="docutils literal notranslate"><span class="pre">INTERNAL_ERROR</span></code> when it is
+longer, so keep the parts short.</p>
+</section>
+<section id="product">
+<h3><a class="toc-backref" href="#id8" role="doc-backlink">Product</a><a class="headerlink" href="#product" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">P###</span></code></p>
 <ul>
-<li><p>### =&gt; 000, 001, etc, represents a class of product</p></li>
-<li><p>mm =&gt; 00, 01, etc, model or version of the product</p></li>
+<li><p>### =&gt; 001, 002, etc, a product number</p></li>
 </ul>
 </li>
 <li><p>In a spreadsheet (or other tool) keep a list of P### that correspond to internal project names,
 or actual BOM numbers, etc.</p></li>
+<li><p>the <code class="docutils literal notranslate"><span class="pre">info</span></code> <cite>product</cite> of the script is the product number, for example <code class="docutils literal notranslate"><span class="pre">P001</span></code>.  The Lente
+Throughput &amp; Yield chart counts the units of each <cite>product</cite></p></li>
+<li><p>a model or variant that is tested the same way is the same product.  Put its BOM in the <code class="docutils literal notranslate"><span class="pre">info</span></code>
+<cite>bom</cite>.  A model that is tested differently is a new product number</p></li>
 </ul>
-<p>Test Script naming</p>
-<ul class="simple">
-<li><p>P###mm_Tssvv_DESCRIPTION.scr</p>
-<ul>
-<li><p>ss =&gt; 00, 01, etc, represents test stage number</p></li>
-<li><p>vv =&gt; 00, 01, etc, version</p></li>
-</ul>
-</li>
-</ul>
-<p>Test Program naming (product specific)</p>
-<ul class="simple">
-<li><p>P###mm_Tssvv_DESCRIPION.py</p>
-<ul>
-<li><p>the test script and test program don’t need to have the same name</p></li>
-</ul>
-</li>
-</ul>
-<p>Test Program naming (common)</p>
-<ul class="simple">
-<li><p>Fnnnvv_DESCRIPTION.py</p>
-<ul>
-<li><p>nnn =&gt; 000, 001, etc, represents test number</p></li>
-<li><p>vv =&gt; 00, 01, etc, version</p></li>
-</ul>
-</li>
-</ul>
-<p>Test Method naming</p>
-<ul class="simple">
-<li><p>TSTnnnvv_DESCRIPTION</p>
-<ul>
-<li><p>nnn =&gt; 000, 001, etc, represents test number</p></li>
-</ul>
-</li>
-</ul>
-<p>Example of files,</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">companyName</span>
-<span class="o">./</span><span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">companyName</span><span class="o">/</span><span class="n">P001</span>
-<span class="o">./</span><span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">companyName</span><span class="o">/</span><span class="n">P001</span><span class="o">/</span><span class="n">P00100_T0100_SmokeTests</span><span class="o">.</span><span class="n">scr</span>
-<span class="o">./</span><span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">companyName</span><span class="o">/</span><span class="n">P001</span><span class="o">/</span><span class="n">P00100_T0100_SmokeTests</span><span class="o">.</span><span class="n">py</span>
-<span class="o">./</span><span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">companyName</span><span class="o">/</span><span class="n">P001</span><span class="o">/</span><span class="n">P00100_T0200_LoadFinalCode</span><span class="o">.</span><span class="n">scr</span>
-<span class="o">./</span><span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">companyName</span><span class="o">/</span><span class="n">P001</span><span class="o">/</span><span class="n">P00100_T0200_LoadFinalCode</span><span class="o">.</span><span class="n">py</span>
-<span class="o">./</span><span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">companyName</span><span class="o">/</span><span class="n">comm</span><span class="o">/</span><span class="n">F00100_ResetSTM32F479</span><span class="o">.</span><span class="n">py</span>
+</section>
+<section id="folders-and-files">
+<h3><a class="toc-backref" href="#id9" role="doc-backlink">Folders and Files</a><a class="headerlink" href="#folders-and-files" title="Link to this heading">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">mycompany</span><span class="o">/</span><span class="n">P001</span><span class="o">/</span><span class="n">P001_BLT</span><span class="o">.</span><span class="n">py</span>
+<span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">mycompany</span><span class="o">/</span><span class="n">P001</span><span class="o">/</span><span class="n">P001_BLT_00</span><span class="o">.</span><span class="n">scr</span>
 </pre></div>
 </div>
-<p>Example script P00100_T0100_SmokeTests.scr,</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">mycompany</span></code> - one folder for all your products</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">P001</span></code> - one folder for each product</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">P001_BLT.py</span></code> - the program of a stage, <code class="docutils literal notranslate"><span class="pre">&lt;product&gt;_&lt;stage&gt;.py</span></code>, not versioned</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">P001_BLT_00.scr</span></code> - the script of a stage, <code class="docutils literal notranslate"><span class="pre">&lt;product&gt;_&lt;stage&gt;_&lt;vv&gt;.scr</span></code></p>
+<ul>
+<li><p>stage =&gt; BLT, FAT, PROG, …, a short name of the test stage, see
+<a class="reference internal" href="#planning-your-test-stages">Planning Your Test Stages</a></p></li>
+<li><p>vv =&gt; 00, 01, etc, the script version</p></li>
+</ul>
+</li>
+<li><p>the program file name and the class name must match, see <a class="reference internal" href="prism_programs.html#program-class-structure"><span class="std std-ref">Program Class Structure</span></a></p></li>
+<li><p>folder, program and item names are Python names: letters, digits and <code class="docutils literal notranslate"><span class="pre">_</span></code> only, starting with
+a letter.  No <code class="docutils literal notranslate"><span class="pre">-</span></code>, spaces or dots</p></li>
+<li><p>a stage can have more than one script, for example a script for each product variant, or for
+rework, <code class="docutils literal notranslate"><span class="pre">P001_BLT_REWORK_00.scr</span></code>.  They can share the stage program</p></li>
+</ul>
+</section>
+<section id="test-items">
+<h3><a class="toc-backref" href="#id10" role="doc-backlink">Test Items</a><a class="headerlink" href="#test-items" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;STAGE&gt;nnn_&lt;description&gt;</span></code>, for example <code class="docutils literal notranslate"><span class="pre">BLT100_voltage</span></code></p>
+<ul>
+<li><p>STAGE =&gt; the stage name, so the item names of each stage are different</p></li>
+<li><p>nnn =&gt; 000 to 999, the test number.  Number in steps of 10 or 100, so a new test can go
+between two others</p></li>
+<li><p>description =&gt; a few words, lower case</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;STAGE&gt;000_SETUP</span></code> is the first item, <code class="docutils literal notranslate"><span class="pre">&lt;STAGE&gt;990_TEARDOWN</span></code> the last</p></li>
+</ul>
+</li>
+<li><p>test items are not versioned, see <a class="reference internal" href="#when-the-code-changes">When The Code Changes</a></p></li>
+</ul>
+</section>
+<section id="measurements">
+<h3><a class="toc-backref" href="#id11" role="doc-backlink">Measurements</a><a class="headerlink" href="#measurements" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>a short lower case name, or the name of the rail or signal it measures, for example <code class="docutils literal notranslate"><span class="pre">fw_ver</span></code>,
+<code class="docutils literal notranslate"><span class="pre">V3V3</span></code></p></li>
+<li><p>the same name in every stage for the same value, for example <code class="docutils literal notranslate"><span class="pre">fw_ver</span></code></p></li>
+<li><p>the name of a repeated item comes from the item, <code class="docutils literal notranslate"><span class="pre">&quot;name&quot;:</span> <span class="pre">&quot;V3V3&quot;</span></code> above</p></li>
+</ul>
+</section>
+<section id="fail-messages">
+<h3><a class="toc-backref" href="#id12" role="doc-backlink">Fail Messages</a><a class="headerlink" href="#fail-messages" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">fid</span></code> =&gt; the test number and a count, for example <code class="docutils literal notranslate"><span class="pre">BLT100-1</span></code>, <code class="docutils literal notranslate"><span class="pre">BLT100-2</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">msg</span></code> =&gt; at most 64 characters, see <a class="reference internal" href="prism_scripts.html#script-design"><span class="std std-ref">Script Design</span></a></p></li>
+</ul>
+</section>
+<section id="info-fields">
+<h3><a class="toc-backref" href="#id13" role="doc-backlink">Info Fields</a><a class="headerlink" href="#info-fields" title="Link to this heading">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">info</span></code> fields of the script are database columns, see <a class="reference internal" href="prism_scripts.html#info"><span class="std std-ref">info</span></a>,</p>
+<ul class="simple">
+<li><p><cite>product</cite> - the product number, <code class="docutils literal notranslate"><span class="pre">P001</span></code></p></li>
+<li><p><cite>bom</cite> - your BOM number and revision, <code class="docutils literal notranslate"><span class="pre">B00012-001</span></code></p></li>
+<li><p><cite>lot</cite> - the work order, usually from a <code class="docutils literal notranslate"><span class="pre">subs</span></code> entry with a <code class="docutils literal notranslate"><span class="pre">regex</span></code>, see
+<a class="reference internal" href="_traceability.html#lots"><span class="std std-ref">Lots</span></a></p></li>
+<li><p><cite>location</cite> - the factory, or line, <code class="docutils literal notranslate"><span class="pre">FACTORY1</span></code></p></li>
+</ul>
+</section>
+<section id="script-versions">
+<h3><a class="toc-backref" href="#id14" role="doc-backlink">Script Versions</a><a class="headerlink" href="#script-versions" title="Link to this heading">¶</a></h3>
+<p>Make a new version of a script, <code class="docutils literal notranslate"><span class="pre">P001_BLT_01.scr</span></code>, when the test changes in a way you want to
+see in the results, for example an ECO that changes a limit.</p>
+<ul class="simple">
+<li><p>copy the script to the next version number, and change the copy</p></li>
+<li><p>say why at the top of the new script, <code class="docutils literal notranslate"><span class="pre">//</span> <span class="pre">ECO-123:</span> <span class="pre">V3V3</span> <span class="pre">max</span> <span class="pre">3400</span> <span class="pre">-&gt;</span> <span class="pre">3450</span></code>, and in the git
+commit</p></li>
+<li><p>the program is not copied.  All versions of the script use the same program</p></li>
+<li><p>remove the old version once the new one is in production, git keeps it.  Every result records
+the scripts version (<cite>meta_git_public</cite>), so the exact old files can always be found</p></li>
+</ul>
+<p>Changing a script in place, keeping its name, also works.  Its results are then separated by
+<cite>meta_git_public</cite> or by date, not by <cite>meta_script</cite>.</p>
+</section>
+<section id="when-the-code-changes">
+<h3><a class="toc-backref" href="#id15" role="doc-backlink">When The Code Changes</a><a class="headerlink" href="#when-the-code-changes" title="Link to this heading">¶</a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 40.0%" />
+<col style="width: 35.0%" />
+<col style="width: 25.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Change</p></th>
+<th class="head"><p>What to do</p></th>
+<th class="head"><p>Measurement names</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>a limit, enable, add or remove an item, in the script</p></td>
+<td><p>new script version</p></td>
+<td><p>unchanged</p></td>
+</tr>
+<tr class="row-odd"><td><p>a fix in the test code, the measurement still means the same</p></td>
+<td><p>change the program in place, and a new script version if you want it separate in searches</p></td>
+<td><p>unchanged</p></td>
+</tr>
+<tr class="row-even"><td><p>the measurement now means something else, a new test point, method or unit</p></td>
+<td><p>a new test item method, <code class="docutils literal notranslate"><span class="pre">BLT101_voltage</span></code>, used by a new script version</p></td>
+<td><p>new, on purpose</p></td>
+</tr>
+<tr class="row-odd"><td><p>a new test</p></td>
+<td><p>a new test item method, <code class="docutils literal notranslate"><span class="pre">BLT200_current</span></code></p></td>
+<td><p>new</p></td>
+</tr>
+</tbody>
+</table>
+<p>Because all versions of a script use the same program, an old script breaks if the program no longer
+has a method it uses.  Remove old scripts from the folder, and check the scripts with
+<code class="docutils literal notranslate"><span class="pre">prism_dev.py</span> <span class="pre">--lint</span></code> before a release.</p>
+</section>
+<section id="an-eco-changes-a-limit">
+<h3><a class="toc-backref" href="#id16" role="doc-backlink">An ECO Changes A Limit</a><a class="headerlink" href="#an-eco-changes-a-limit" title="Link to this heading">¶</a></h3>
+<p>The scenario from <a class="reference internal" href="#file-organization">File Organization</a>: the <code class="docutils literal notranslate"><span class="pre">V3V3</span></code> test fails 1%, and an ECO widens the limit.</p>
+<ol class="arabic simple">
+<li><p>Copy <code class="docutils literal notranslate"><span class="pre">P001_BLT_00.scr</span></code> to <code class="docutils literal notranslate"><span class="pre">P001_BLT_01.scr</span></code>, and change <code class="docutils literal notranslate"><span class="pre">&quot;max&quot;:</span> <span class="pre">3400</span></code> to <code class="docutils literal notranslate"><span class="pre">&quot;max&quot;:</span> <span class="pre">3450</span></code>.
+The program does not change.</p></li>
+<li><p>Release the scripts, and stations get them from Lente.</p></li>
+</ol>
+<p>Both versions record <code class="docutils literal notranslate"><span class="pre">mycompany.P001.P001_BLT.BLT100_voltage.V3V3</span></code>.  So,</p>
+<ul>
+<li><p>the trend chart of <code class="docutils literal notranslate"><span class="pre">V3V3</span></code> covers before and after the ECO</p></li>
+<li><p>the failure rate of each version,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">select</span> <span class="n">r</span><span class="o">.</span><span class="n">meta_script</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">meta_result</span><span class="p">,</span> <span class="n">count</span><span class="p">(</span><span class="o">*</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">record</span> <span class="n">r</span>
+<span class="n">where</span> <span class="n">r</span><span class="o">.</span><span class="n">info_product</span> <span class="o">=</span> <span class="s1">&#39;P001&#39;</span>
+<span class="n">group</span> <span class="n">by</span> <span class="n">r</span><span class="o">.</span><span class="n">meta_script</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">meta_result</span>
+</pre></div>
+</div>
+</li>
+<li><p>would a returned unit have failed the old limit?  Each measurement has its value and the limits it
+was checked against,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">select</span> <span class="n">r</span><span class="o">.</span><span class="n">key0</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">max</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">meta_script</span>
+<span class="kn">from</span> <span class="nn">measurement</span> <span class="n">m</span> <span class="n">join</span> <span class="n">record</span> <span class="n">r</span> <span class="n">on</span> <span class="n">m</span><span class="o">.</span><span class="n">record_id</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">id</span>
+<span class="n">where</span> <span class="n">m</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;mycompany.P001.P001_BLT.BLT100_voltage.V3V3&#39;</span>
+      <span class="ow">and</span> <span class="n">r</span><span class="o">.</span><span class="n">key0</span> <span class="o">=</span> <span class="s1">&#39;sn:A12345&#39;</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+<section id="naming-example">
+<h3><a class="toc-backref" href="#id17" role="doc-backlink">Naming Example</a><a class="headerlink" href="#naming-example" title="Link to this heading">¶</a></h3>
+<p>Files,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">mycompany</span>
+<span class="o">./</span><span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">mycompany</span><span class="o">/</span><span class="n">P001</span>
+<span class="o">./</span><span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">mycompany</span><span class="o">/</span><span class="n">P001</span><span class="o">/</span><span class="n">P001_BLT</span><span class="o">.</span><span class="n">py</span>
+<span class="o">./</span><span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">mycompany</span><span class="o">/</span><span class="n">P001</span><span class="o">/</span><span class="n">P001_BLT_01</span><span class="o">.</span><span class="n">scr</span>
+<span class="o">./</span><span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">mycompany</span><span class="o">/</span><span class="n">P001</span><span class="o">/</span><span class="n">P001_FAT</span><span class="o">.</span><span class="n">py</span>
+<span class="o">./</span><span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">mycompany</span><span class="o">/</span><span class="n">P001</span><span class="o">/</span><span class="n">P001_FAT_00</span><span class="o">.</span><span class="n">scr</span>
+<span class="o">./</span><span class="n">public</span><span class="o">/</span><span class="n">prism</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">mycompany</span><span class="o">/</span><span class="n">P001</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">P001_fw_1</span><span class="mf">.2</span><span class="o">.</span><span class="n">hex</span>
+</pre></div>
+</div>
+<p>Script <code class="docutils literal notranslate"><span class="pre">P001_BLT_01.scr</span></code>,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">P001</span> <span class="n">Board</span> <span class="n">Level</span> <span class="n">Test</span> <span class="p">(</span><span class="n">BLT</span><span class="p">)</span>
+<span class="o">//</span> <span class="n">ECO</span><span class="o">-</span><span class="mi">123</span><span class="p">:</span> <span class="n">V3V3</span> <span class="nb">max</span> <span class="mi">3400</span> <span class="o">-&gt;</span> <span class="mi">3450</span>
+<span class="p">{</span>
+  <span class="s2">&quot;subs&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;Lot&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Lot (format L####)&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;str&quot;</span><span class="p">,</span> <span class="s2">&quot;widget&quot;</span><span class="p">:</span> <span class="s2">&quot;textinput&quot;</span><span class="p">,</span> <span class="s2">&quot;regex&quot;</span><span class="p">:</span> <span class="s2">&quot;^L</span><span class="se">\\</span><span class="s2">d</span><span class="si">{4}</span><span class="s2">$&quot;</span><span class="p">,</span> <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;L0001&quot;</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
   <span class="s2">&quot;info&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="s2">&quot;product&quot;</span><span class="p">:</span> <span class="s2">&quot;P001_Shazam&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;product&quot;</span><span class="p">:</span> <span class="s2">&quot;P001&quot;</span><span class="p">,</span>
     <span class="s2">&quot;bom&quot;</span><span class="p">:</span> <span class="s2">&quot;B00012-001&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;lot&quot;</span><span class="p">:</span> <span class="s2">&quot;1922-1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;lot&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%%</span><span class="s2">Lot&quot;</span><span class="p">,</span>
     <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="s2">&quot;FACTORY1&quot;</span>
   <span class="p">},</span>
   <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="s2">&quot;fail_fast&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+    <span class="s2">&quot;fail_fast&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
     <span class="s2">&quot;drivers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;public.prism.drivers.fake.hwdrv_fake&quot;</span><span class="p">]</span>
   <span class="p">},</span>
   <span class="s2">&quot;tests&quot;</span><span class="p">:</span> <span class="p">[</span>
     <span class="p">{</span>
-      <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;public.prism.scripts.companyName.comm.F00100_ResetSTM32F479&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;public.prism.scripts.mycompany.P001.P001_BLT&quot;</span><span class="p">,</span>
       <span class="s2">&quot;options&quot;</span><span class="p">:</span> <span class="p">{},</span>
       <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST0100_setBOOT0&quot;</span><span class="p">,</span>     <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;out&quot;</span><span class="p">:</span> <span class="s2">&quot;LOW&quot;</span><span class="p">}},</span>
-        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST0200_powerVDD&quot;</span><span class="p">,</span>     <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;3300&quot;</span><span class="p">}},</span>
-        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST0300_delayMS&quot;</span><span class="p">,</span>      <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;delay_ms&quot;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">}},</span>
-      <span class="p">]</span>
-    <span class="p">},</span>
-    <span class="p">{</span>
-      <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;public.prism.scripts.companyName.P001.P00100_T0100_SmokeTests&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;options&quot;</span><span class="p">:</span> <span class="p">{},</span>
-      <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST0100_powerUP&quot;</span><span class="p">,</span>  <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span> <span class="p">},</span>
-        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST0200_measVDD&quot;</span><span class="p">,</span>  <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">3100</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mi">3400</span><span class="p">},</span>
-                                   <span class="s2">&quot;fail&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;fid&quot;</span><span class="p">:</span> <span class="s2">&quot;TST02-1&quot;</span><span class="p">,</span> <span class="s2">&quot;msg&quot;</span><span class="p">:</span> <span class="s2">&quot;Component U1&quot;</span><span class="p">},</span>
-                                            <span class="p">{</span><span class="s2">&quot;fid&quot;</span><span class="p">:</span> <span class="s2">&quot;TST02-2&quot;</span><span class="p">,</span> <span class="s2">&quot;msg&quot;</span><span class="p">:</span> <span class="s2">&quot;Component R1&quot;</span><span class="p">}]},</span>
-        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST0300_measVCC&quot;</span><span class="p">,</span>  <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">2600</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mi">2800</span><span class="p">},</span>
-                                   <span class="s2">&quot;fail&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;fid&quot;</span><span class="p">:</span> <span class="s2">&quot;TST03-1&quot;</span><span class="p">,</span> <span class="s2">&quot;msg&quot;</span><span class="p">:</span> <span class="s2">&quot;Component U2&quot;</span><span class="p">}]},</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;BLT000_SETUP&quot;</span><span class="p">,</span>    <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span> <span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;BLT100_voltage&quot;</span><span class="p">,</span>  <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;V3V3&quot;</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">3200</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mi">3450</span><span class="p">,</span>
+                                  <span class="s2">&quot;fail&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;fid&quot;</span><span class="p">:</span> <span class="s2">&quot;BLT100-1&quot;</span><span class="p">,</span> <span class="s2">&quot;msg&quot;</span><span class="p">:</span> <span class="s2">&quot;V3V3 out of range: check U1&quot;</span><span class="p">}]},</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;BLT100_voltage&quot;</span><span class="p">,</span>  <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;V1V8&quot;</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">1725</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mi">1875</span><span class="p">,</span>
+                                  <span class="s2">&quot;fail&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;fid&quot;</span><span class="p">:</span> <span class="s2">&quot;BLT100-2&quot;</span><span class="p">,</span> <span class="s2">&quot;msg&quot;</span><span class="p">:</span> <span class="s2">&quot;V1V8 out of range: check U2&quot;</span><span class="p">}]},</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;BLT200_program&quot;</span><span class="p">,</span>  <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="s2">&quot;P001_fw_1.2.hex&quot;</span><span class="p">,</span> <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">30</span> <span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;BLT300_fw_check&quot;</span><span class="p">,</span> <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;1.2&quot;</span> <span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;BLT990_TEARDOWN&quot;</span><span class="p">,</span> <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span> <span class="p">}</span>
       <span class="p">]</span>
     <span class="p">}</span>
   <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>Example program F00100_ResetSTM32F479,</p>
+<p>Program <code class="docutils literal notranslate"><span class="pre">P001_BLT.py</span></code>,</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#! /usr/bin/env python</span>
 <span class="c1"># -*- coding: utf-8 -*-</span>
 
@@ -332,73 +485,76 @@ or actual BOM numbers, etc.</p></li>
 <span class="kn">from</span> <span class="nn">public.prism.api</span> <span class="kn">import</span> <span class="n">ResultAPI</span>
 
 <span class="c1"># file name and class name must match</span>
-<span class="k">class</span> <span class="nc">F00100_ResetSTM32F479</span><span class="p">(</span><span class="n">TestItem</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">P001_BLT</span><span class="p">(</span><span class="n">TestItem</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">controller</span><span class="p">,</span> <span class="n">chan</span><span class="p">,</span> <span class="n">shared_state</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">controller</span><span class="p">,</span> <span class="n">chan</span><span class="p">,</span> <span class="n">shared_state</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;SC.</span><span class="si">{}</span><span class="s2">.</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">chan</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="nf">TST0100_setBOOT0</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
+    <span class="k">def</span> <span class="nf">BLT000_SETUP</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
         <span class="o">...</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span> <span class="c1"># always last line of test</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span>  <span class="c1"># always last line of test</span>
 
-    <span class="k">def</span> <span class="nf">TST0200_powerVDD</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
-        <span class="o">...</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span> <span class="c1"># always last line of test</span>
+    <span class="k">def</span> <span class="nf">BLT100_voltage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="o">...</span>  <span class="c1"># measure the rail ctx.item.name</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">bullet</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_MILLIVOLTS</span><span class="p">,</span>
+                                                   <span class="nb">min</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">max</span><span class="p">,</span>
+                                                   <span class="n">fail</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">fail</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="n">bullet</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>  <span class="c1"># always last line of test</span>
 
-    <span class="k">def</span> <span class="nf">TST0300_delayMS</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
+    <span class="k">def</span> <span class="nf">BLT200_program</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="o">...</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span> <span class="c1"># always last line of test</span>
+
+    <span class="k">def</span> <span class="nf">BLT300_fw_check</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="o">...</span>
+
+    <span class="k">def</span> <span class="nf">BLT990_TEARDOWN</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
+        <span class="o">...</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span>  <span class="c1"># always last line of test</span>
 </pre></div>
 </div>
-<p>Example program P00100_T0100_SmokeTests,</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#! /usr/bin/env python</span>
-<span class="c1"># -*- coding: utf-8 -*-</span>
-
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">from</span> <span class="nn">core.test_item</span> <span class="kn">import</span> <span class="n">TestItem</span>
-<span class="kn">from</span> <span class="nn">public.prism.api</span> <span class="kn">import</span> <span class="n">ResultAPI</span>
-
-<span class="c1"># file name and class name must match</span>
-<span class="k">class</span> <span class="nc">P00100_T0100_SmokeTests</span><span class="p">(</span><span class="n">TestItem</span><span class="p">):</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">controller</span><span class="p">,</span> <span class="n">chan</span><span class="p">,</span> <span class="n">shared_state</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">controller</span><span class="p">,</span> <span class="n">chan</span><span class="p">,</span> <span class="n">shared_state</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;SC.</span><span class="si">{}</span><span class="s2">.</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">chan</span><span class="p">))</span>
-
-    <span class="k">def</span> <span class="nf">TST0100_powerUP</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
-        <span class="o">...</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span> <span class="c1"># always last line of test</span>
-
-    <span class="k">def</span> <span class="nf">TST0200_measVDD</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
-        <span class="o">...</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span> <span class="c1"># always last line of test</span>
-
-    <span class="k">def</span> <span class="nf">TST0300_measVCC</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
-        <span class="o">...</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">()</span> <span class="c1"># always last line of test</span>
-</pre></div>
-</div>
+<p>See <a class="reference internal" href="prism_scripts.html#script-design"><span class="std std-ref">Script Design</span></a> for a complete <code class="docutils literal notranslate"><span class="pre">BLT100_voltage</span></code>.</p>
+</section>
 </section>
 <section id="ip-addressing">
-<h2><a class="toc-backref" href="#id7" role="doc-backlink">IP Addressing</a><a class="headerlink" href="#ip-addressing" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id18" role="doc-backlink">IP Addressing</a><a class="headerlink" href="#ip-addressing" title="Link to this heading">¶</a></h2>
 <p>What follows is a simple design for allocating the IP addresses of Prism and Lente
 computers.  You may decide to do this differently.</p>
+<p>Connections only go up the hierarchy.  A Prism connects to its Lente, and a Lente connects to
+the Lente above it (<cite>result_server_url</cite> in <a class="reference internal" href="_deployment.html#deploy-settings-file"><span class="std std-ref">settings.json</span></a>).  Nothing
+connects down to a Prism or to a lower Lente.</p>
 <p>Assumptions:</p>
 <ul class="simple">
-<li><p>Fixed IP addresses are used</p></li>
-<li><p>the LAN IP is 192.168.0.X</p></li>
+<li><p>the LAN is 192.168.0.X</p></li>
+<li><p>the fixed addresses below are outside the range your router (DHCP server) gives out.  Many
+routers give out addresses in 192.168.0.X, check its DHCP range</p></li>
 </ul>
-<section id="prism-ips">
-<h3><a class="toc-backref" href="#id8" role="doc-backlink">Prism IPs</a><a class="headerlink" href="#prism-ips" title="Link to this heading">¶</a></h3>
+<section id="lente-ips">
+<h3><a class="toc-backref" href="#id19" role="doc-backlink">Lente IPs</a><a class="headerlink" href="#lente-ips" title="Link to this heading">¶</a></h3>
+<p>Each Lente needs a fixed IP address, because the computers below it connect to it.</p>
 <ul class="simple">
-<li><p>Label each PC what its IP address is</p></li>
+<li><p>Label each PC with its IP address</p></li>
+<li><p>The tens digit is the level of the Lente in the hierarchy, the ones digit counts the Lentes of that
+level</p>
+<ul>
+<li><p>192.168.0.10 (first Lente at the lowest level)</p></li>
+<li><p>192.168.0.11 (second Lente at the lowest level)</p></li>
+<li><p>192.168.0.20 (first Lente at the next level up)</p></li>
+<li><p>etc</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="prism-ips">
+<h3><a class="toc-backref" href="#id20" role="doc-backlink">Prism IPs</a><a class="headerlink" href="#prism-ips" title="Link to this heading">¶</a></h3>
+<p>Prism only needs the address of its Lente (the <code class="docutils literal notranslate"><span class="pre">--server</span></code> of <code class="docutils literal notranslate"><span class="pre">prism.sh</span></code>).  A fixed IP address
+is not required, but it is easier to support a station when you know its address.</p>
+<ul class="simple">
+<li><p>Label each PC with its IP address</p></li>
 <li><p>Addresses</p>
 <ul>
 <li><p>192.168.0.100  (first Prism)</p></li>
@@ -409,26 +565,25 @@ computers.  You may decide to do this differently.</p>
 </li>
 </ul>
 </section>
-<section id="lente-ips">
-<h3><a class="toc-backref" href="#id9" role="doc-backlink">Lente IPs</a><a class="headerlink" href="#lente-ips" title="Link to this heading">¶</a></h3>
+<section id="lente-in-the-cloud">
+<h3><a class="toc-backref" href="#id21" role="doc-backlink">Lente In The Cloud</a><a class="headerlink" href="#lente-in-the-cloud" title="Link to this heading">¶</a></h3>
+<p>A Lente at the top of the hierarchy can be in the cloud.</p>
 <ul class="simple">
-<li><p>Label each PC what its IP address is</p></li>
-<li><p>Addresses</p>
-<ul>
-<li><p>192.168.0.10 (first Lente, at lowest level in hierarchy)</p></li>
-<li><p>192.168.0.20 (second Lente, at next level in hierarchy)</p></li>
-<li><p>etc</p></li>
-</ul>
-</li>
+<li><p>its address is set in <cite>result_server_url</cite> of each Lente below it, with the port, for example
+<code class="docutils literal notranslate"><span class="pre">&quot;https://lente.mycompany.com:6595&quot;</span></code></p></li>
+<li><p>use HTTPS, with a certificate signed by a public certificate authority, see
+<a class="reference internal" href="_security.html#https-and-ssl-certificates"><span class="std std-ref">HTTPS and SSL Certificates</span></a></p></li>
+<li><p>the factory makes outbound connections only, no port has to be opened into the factory network</p></li>
 </ul>
 </section>
 <section id="example">
-<h3><a class="toc-backref" href="#id10" role="doc-backlink">Example</a><a class="headerlink" href="#example" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id22" role="doc-backlink">Example</a><a class="headerlink" href="#example" title="Link to this heading">¶</a></h3>
 <p>In this example there are two factories,</p>
 <ul class="simple">
 <li><p>no computers are exchanged between the factories</p></li>
-<li><p>note Factory 1 has two levels of Lente, and note the IP addressing</p></li>
-<li><p>The IP address of Lente in the cloud is unknown, and is typically given to you</p></li>
+<li><p>Factory 1 has two levels of Lente, 192.168.0.10 and 192.168.0.11 send results to 192.168.0.20</p></li>
+<li><p>Factory 2 has one level of Lente, both send results to the Lente in the cloud</p></li>
+<li><p>The address of the Lente in the cloud is given to you by whoever runs it</p></li>
 </ul>
 <img alt="_images/Screenshot_system_network_04.png" src="_images/Screenshot_system_network_04.png" />
 </section>

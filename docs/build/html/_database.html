@@ -95,14 +95,15 @@ Use each <cite>key#</cite> for the same id in every test stage and product, see
 <h3><a class="toc-backref" href="#id3" role="doc-backlink">test_item</a><a class="headerlink" href="#test-item" title="Link to this heading">¶</a></h3>
 <p>For each test <cite>record</cite> there will multiple <cite>test_items</cite> as directed by the script.</p>
 <p>Note that the name of the test item should be treated like a serial number and should be “formatted”.
-See naming proposals.</p>
+See <a class="reference internal" href="_prodplan.html#naming-proposal"><span class="std std-ref">Naming Proposal</span></a>.</p>
 </section>
 <section id="measurement">
 <h3><a class="toc-backref" href="#id4" role="doc-backlink">measurement</a><a class="headerlink" href="#measurement" title="Link to this heading">¶</a></h3>
 <p>For each <cite>test_item</cite> there may be multiple <cite>measurements</cite>.  measurement has two foreign keys, <cite>record</cite>
 and <cite>test_item</cite>.</p>
 <p>Note that the name of the measurement should be treated like a serial number and should be “formatted”.
-See naming proposals.  Prism <cite>measurement()</cite> API enforces good naming.</p>
+See <a class="reference internal" href="_prodplan.html#naming-proposal"><span class="std std-ref">Naming Proposal</span></a>.  Prism <cite>measurement()</cite> checks that the name is unique in
+the test item and at most 128 characters long, including the module and item names.</p>
 </section>
 <section id="blob">
 <h3><a class="toc-backref" href="#id5" role="doc-backlink">blob</a><a class="headerlink" href="#blob" title="Link to this heading">¶</a></h3>

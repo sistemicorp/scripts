@@ -146,8 +146,8 @@ detail above and in the linked sections.
     not a laptop
   * Ubuntu 24.04, with an operator account and an admin account, see
     :ref:`Ubuntu File System and Users <deployment-ubuntu-filesystem>`
-  * wired LAN to Lente, with a fixed IP address, and a label on the computer with its IP address,
-    see :ref:`IP Addressing <_prodplan:IP Addressing>`
+  * wired LAN to Lente, and a label on the computer with its IP address.  A fixed IP address is
+    not required but helps support, see :ref:`IP Addressing <_prodplan:IP Addressing>`
 
 * Software
 
