@@ -42,7 +42,7 @@ test_item
 For each test `record` there will multiple `test_items` as directed by the script.
 
 Note that the name of the test item should be treated like a serial number and should be "formatted".
-See naming proposals.
+See :ref:`_prodplan:Naming Proposal`.
 
 measurement
 ===========
@@ -50,7 +50,8 @@ For each `test_item` there may be multiple `measurements`.  measurement has two 
 and `test_item`.
 
 Note that the name of the measurement should be treated like a serial number and should be "formatted".
-See naming proposals.  Prism `measurement()` API enforces good naming.
+See :ref:`_prodplan:Naming Proposal`.  Prism `measurement()` checks that the name is unique in
+the test item and at most 128 characters long, including the module and item names.
 
 blob
 ====

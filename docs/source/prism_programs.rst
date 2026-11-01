@@ -66,7 +66,7 @@ Lets make some general comments about the above script/program before diving int
   * there is no requirement for method names, the above uses ``sayHello`` for example
 
     * However, you should plan to have a test naming structure, as these test names is what you will be doing backend
-      database searches and filtering on.  See TBD-Planning
+      database searches and filtering on.  See :ref:`_prodplan:Naming Proposal`
 
 
 Program Class Structure
