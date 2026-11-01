@@ -183,6 +183,10 @@ stop, such as a missing part on a bus, is checked in the item and ends as <code 
 <code class="docutils literal notranslate"><span class="pre">fail</span></code> message, see <a class="reference internal" href="prism_programs.html#dut-command-errors"><span class="std std-ref">DUT Command Errors</span></a>.  No change
 to Prism.  The Prism Assistant writes and reviews DUT code this way, and its
 <code class="docutils literal notranslate"><span class="pre">migrate_test_code</span></code> prompt moves older libraries and test code to it (Prism Assistant 0.5.2)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ctx.record.measurement()</span></code> takes one sided limits: give only <code class="docutils literal notranslate"><span class="pre">min</span></code> or only <code class="docutils literal notranslate"><span class="pre">max</span></code> (for
+example <code class="docutils literal notranslate"><span class="pre">max=100</span></code> for a rail that must be off), and only that limit is checked; the other is
+stored empty.  Before, this was <code class="docutils literal notranslate"><span class="pre">INTERNAL_ERROR</span></code>.  Scripts no longer need a made-up second
+limit.  The Prism Assistant writes and reviews one sided checks this way (Prism Assistant 0.5.3)</p></li>
 <li><p>The example scripts follow the <a class="reference internal" href="_prodplan.html#naming-proposal"><span class="std std-ref">Naming Proposal</span></a>: test items are named
 <cite>&lt;STAGE&gt;nnn_&lt;description&gt;</cite> (for example <cite>TST010_meas</cite>, <cite>PROG020_program</cite>, <cite>BOND030_adc_check</cite>),
 with <cite>&lt;STAGE&gt;000_SETUP</cite> and <cite>&lt;STAGE&gt;990_TEARDOWN</cite>, and limits and other values are fields on the

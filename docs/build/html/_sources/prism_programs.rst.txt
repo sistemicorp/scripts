@@ -490,8 +490,10 @@ of the testing and the requirements of 'min' and 'max'.  Valid types are int, fl
 
 .. note::
 
-    For integer and float types, `measurement()` will test `min <= value <= max`.
-    Either set both `min` and `max`, or set both to None, one sided limits are not supported.
+    For integer and float types, `measurement()` will test `min <= value <= max`.  For a one sided
+    check give only the limit you need, for example `max=100` for a rail that must be off: only
+    that limit is checked, and the other is stored empty (`None`), as for a measurement without
+    limits.  With neither limit the measurement is recorded and always passes.
 
 .. note::
 

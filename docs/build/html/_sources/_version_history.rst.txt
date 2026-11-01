@@ -154,6 +154,10 @@ screenshots.
   ``fail`` message, see :ref:`DUT Command Errors <prism_programs:DUT Command Errors>`.  No change
   to Prism.  The Prism Assistant writes and reviews DUT code this way, and its
   ``migrate_test_code`` prompt moves older libraries and test code to it (Prism Assistant 0.5.2)
+* ``ctx.record.measurement()`` takes one sided limits: give only ``min`` or only ``max`` (for
+  example ``max=100`` for a rail that must be off), and only that limit is checked; the other is
+  stored empty.  Before, this was ``INTERNAL_ERROR``.  Scripts no longer need a made-up second
+  limit.  The Prism Assistant writes and reviews one sided checks this way (Prism Assistant 0.5.3)
 * The example scripts follow the :ref:`_prodplan:Naming Proposal`: test items are named
   `<STAGE>nnn_<description>` (for example `TST010_meas`, `PROG020_program`, `BOND030_adc_check`),
   with `<STAGE>000_SETUP` and `<STAGE>990_TEARDOWN`, and limits and other values are fields on the

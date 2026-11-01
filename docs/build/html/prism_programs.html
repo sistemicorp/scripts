@@ -1044,8 +1044,10 @@ rather than as a string with <cite>force_fail</cite>.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>For integer and float types, <cite>measurement()</cite> will test <cite>min &lt;= value &lt;= max</cite>.
-Either set both <cite>min</cite> and <cite>max</cite>, or set both to None, one sided limits are not supported.</p>
+<p>For integer and float types, <cite>measurement()</cite> will test <cite>min &lt;= value &lt;= max</cite>.  For a one sided
+check give only the limit you need, for example <cite>max=100</cite> for a rail that must be off: only
+that limit is checked, and the other is stored empty (<cite>None</cite>), as for a measurement without
+limits.  With neither limit the measurement is recorded and always passes.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>

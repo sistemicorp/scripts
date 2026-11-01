@@ -361,6 +361,10 @@ A good script looks like this,
 
 * each line is one test, and the limits are on the line
 * put fields on the item itself (``"min": 4900``), not in ``args``, so the line is easy to read
+* a one sided check has only the limit it needs, for example ``"max": 100`` for a rail that must
+  be off, or ``"ratio_min": 0.97``.  Don't add a second limit that isn't a real one, a technician
+  reads every number on the line as a limit.  The test code passes only that limit,
+  ``ctx.record.measurement(..., max=ctx.item.max)``
 * a comment says why a test is disabled
 * a ``fail`` message is a terse hint for the operator or repair technician, at most 64
   characters, like ``"3V_OUT low: check U7 R49"``.  Not the full list of parts a test covers,
