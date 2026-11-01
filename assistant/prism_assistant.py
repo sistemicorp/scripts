@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import prism_knowledge as pk  # noqa: E402
 
 SERVER_NAME = "prism-assistant"
-SERVER_VERSION = "0.5.0"
+SERVER_VERSION = "0.5.1"
 CONTACT = "info@sistemi.ca"
 
 INSTRUCTIONS = f"""\
@@ -100,8 +100,10 @@ Rules to follow when helping:
 - Fail messages: an item's "fail" entries are {{"fid": ..., "msg": ...}}, msg at most 64
   characters (lint_script errors on longer), a terse hint for the operator or repair
   technician, like "3V_OUT low: check U7 R49".  Never copy a coverage parts list into msg.
-  The test code must call ctx.record.fail_msg(ctx.item.fail[i]) when a measurement fails,
-  as public/prism/scripts/example/prod_v0/tst00xx.py does, or the message is never shown.
+  The test code passes the entry to the measurement it belongs to,
+  ctx.record.measurement(..., fail=ctx.item.fail[i]), as
+  public/prism/scripts/example/prod_v0/tst00xx.py does, or the message is never shown.
+  ctx.record.fail_msg(ctx.item.fail[i]) is only for a failure not decided by one measurement.
   Each script line that runs the item needs that fail[i] entry.
 - Test items: the first statement is `ctx = self.item_start()`, every path ends with
   `self.item_end(...)`, and the module file name matches the class name.  Use self.sleep()
@@ -141,7 +143,8 @@ Rules to follow when helping:
   that only logs, ends the item INTERNAL_ERROR and returns.  It still works.  When writing
   new code use self.expect(); when reviewing or changing older code, propose moving it to
   self.expect(), see docs/source/prism_programs.rst Test Equipment Errors and the
-  migrate_test_code prompt.
+  migrate_test_code prompt.  The same for an `if _result == ResultAPI.RECORD_RESULT_FAIL:
+  ctx.record.fail_msg(...)` block after a measurement: it moves to fail= on the measurement.
 - Prefer small, reviewable changes to the customer's files, and explain what each change does.
 - Number your questions so the customer can answer them easily.
 """
@@ -156,8 +159,8 @@ Help me migrate my Prism/Lente deployment from version {from_version} to {to_ver
    upstream Lente, whether I use HTTPS, and which drivers my scripts use.
 4. Run check_settings on my settings.json files (public/settings.json and any under deploy/).
 5. Lint each of my scripts with lint_script, skipping public/prism/scripts/example.
-   Note the test code that still checks driver responses by hand, it can move to
-   self.expect() with the migrate_test_code prompt.
+   Note the test code that still checks driver responses or failed measurements by hand, it
+   can move to self.expect() and fail= with the migrate_test_code prompt.
 6. Give me an ordered checklist for my deployment: repo merge, settings changes per computer,
    vendor tools, licence, image tags, and the order to upgrade Lente and the Prisms.
 """
@@ -186,8 +189,8 @@ Help me write a Prism test script and its Python test code for {product}, test s
    or context manager, meas()/check() helpers, or a unit map?  Is each driver response
    passed to self.expect(), and every shared lock held with `with`?  Can each test item be read top
    to bottom without opening another file or class?  Is each fail msg at most 64 characters,
-   and does the code call ctx.record.fail_msg() for it, with that fail entry on every script
-   line that runs the item?  Is each pass/fail check a UNIT_BOOLEAN that is True when it
+   is it passed with fail= to the measurement it belongs to, and is that fail entry on every
+   script line that runs the item?  Is each pass/fail check a UNIT_BOOLEAN that is True when it
    passes, and is every measurement logged with self.log_bullet()?  Are there placeholder
    measurements, or docstrings and comments that don't match the code?  Fix it if not.
 7. Run lint_script on the new script and fix every ERROR.  Tell me how to run it with
@@ -210,8 +213,9 @@ Review my Prism test script {script} and its Python test code.
    context managers that turn exceptions into results, meas()/check() helpers, unit maps,
    measurement names built from a prefix.  Compare with public/prism/scripts/example.
    Check each fail msg is a terse hint of at most 64 characters, not a parts list, and that
-   the code calls ctx.record.fail_msg() when the measurement it belongs to fails, with that
-   ctx.item.fail[i] entry on every script line that runs the item.
+   the code passes it with fail=ctx.item.fail[i] to the measurement it belongs to (list each
+   `if _result == ResultAPI.RECORD_RESULT_FAIL: ctx.record.fail_msg(...)` block, to move to
+   fail=), with that ctx.item.fail[i] entry on every script line that runs the item.
    Check each driver response is passed to self.expect() (list each hand written
    `if not response["success"]:` block that only logs and ends the item, to move to
    self.expect() as in the migrate_test_code prompt), and that it is not used for operator
@@ -229,10 +233,12 @@ Review my Prism test script {script} and its Python test code.
 """
 
 PROMPT_MIGRATE_CODE = """\
-Move my test code {path} to self.expect() for driver responses.
+Move my test code {path} to self.expect() for driver responses, and to fail= for
+measurement fail messages.
 
-1. Read docs/source/prism_programs.rst Test Equipment Errors, and compare
-   public/prism/scripts/example/BOND_v0/bond_P00xx.py, which is written this way.
+1. Read docs/source/prism_programs.rst Test Equipment Errors and Binning Failures, and compare
+   public/prism/scripts/example/BOND_v0/bond_P00xx.py and prod_v0/tst00xx.py, which are
+   written this way.
 2. Read each test module (.py) under {path}, and list every place that checks a driver
    response by hand: `if not response["success"]:` (or `success = response["success"]` then
    `if not success:`) followed by only logging,
@@ -240,18 +246,22 @@ Move my test code {path} to self.expect() for driver responses.
 3. Replace each with one line: `response = self.expect(self.bond.vbat_read())` when the
    response is used later in the item, else `self.expect(self.bond.vbat_set(3000))`.
    Keep the same driver call and arguments.  Read response["result"] only after expect().
-4. Leave these as they are, and list them for me:
+4. List every `if _result == ResultAPI.RECORD_RESULT_FAIL:` block that only calls
+   ctx.record.fail_msg(ctx.item.fail[i]) for the measurement just before it.  Delete the block
+   and pass the same entry to that measurement: ctx.record.measurement(..., fail=ctx.item.fail[i]).
+   Keep fail_msg() where the entry is picked from more than one measurement or check.
+5. Leave these as they are, and list them for me:
    - a block that does more than log and end the item, for example sends the DUT a command
      or releases a lock before ending.  A lock: change acquire()/release() to
      `with self.shared_lock(...):` and then use self.expect() inside it
    - input_button/input_textbox answers, and DUT command failures that end the item FAIL
      with a fail msg
    - driver methods that return a bool or a tuple
-5. Check that the teardown item puts the test equipment in a safe state (DUT power off, loads
+6. Check that the teardown item puts the test equipment in a safe state (DUT power off, loads
    off), since an item ended by self.expect() does not undo its own setup.
-6. Don't change anything else: limits, measurement names, fail entries and the order of the
+7. Don't change anything else: limits, measurement names, fail entries and the order of the
    steps stay the same.  Show me the changes per file, and ask me before writing them.
-7. Run lint_script on each script that runs the changed modules, and tell me how to run them
+8. Run lint_script on each script that runs the changed modules, and tell me how to run them
    with `python prism_dev.py --script <path>`.
 """
 
@@ -473,9 +483,9 @@ def create_server():
         """Review a script and its test code: readable list of tests, simple code, traceability."""
         return PROMPT_REVIEW_SCRIPT.format(script=script)
 
-    @mcp.prompt(title="Move test code to self.expect()")
+    @mcp.prompt(title="Move test code to self.expect() and fail=")
     def migrate_test_code(path: str = "public/prism/scripts") -> str:
-        """Replace hand written driver response checks in older test code with self.expect()."""
+        """Replace hand written driver response and fail message checks in older test code."""
         return PROMPT_MIGRATE_CODE.format(path=path)
 
     @mcp.prompt(title="Use BOND")

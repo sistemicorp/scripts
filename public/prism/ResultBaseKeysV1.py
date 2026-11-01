@@ -164,7 +164,7 @@ class ResultBaseKeysV1(ResultBaseClass):
         return True, None
 
     def measurement(self, name, value, unit=ResultAPI.UNIT_NONE, min=None, max=None,
-                    force_fail=False):
+                    force_fail=False, fail=None):
         """ Check and store a measurement
         - performs a check on the value, returning one of ResultAPI.RECORD_RESULT_*
         - all values are stored as strings in the dB, converted here
@@ -176,6 +176,8 @@ class ResultBaseKeysV1(ResultBaseClass):
         :param max: min limit (int or float), None to ignore
         :param value: any
         :param unit: one of self.UNIT_*
+        :param fail: a script "fail" entry (ctx.item.fail[i]), attached to the record
+                     with fail_msg() when the measurement fails, None to ignore
         :return: success, result, msg
             success: True: measurement accepted
                      False: a error occurred
@@ -219,6 +221,11 @@ class ResultBaseKeysV1(ResultBaseClass):
 
         if not isinstance(value, (int, float, bool, str)):
             msg = "Unsupported value type {}".format(type(value))
+            self.logger.error(msg)
+            return False, ResultAPI.RECORD_RESULT_INTERNAL_ERROR, msg
+
+        if fail is not None and not isinstance(fail, dict):
+            msg = "fail must be a script fail entry (dict), got {}".format(type(fail))
             self.logger.error(msg)
             return False, ResultAPI.RECORD_RESULT_INTERNAL_ERROR, msg
 
@@ -322,6 +329,8 @@ class ResultBaseKeysV1(ResultBaseClass):
         d["result"] = _pass
         self._item["measurements"].append(d)
         self.logger.info(d)
+        if fail is not None and _pass == ResultAPI.RECORD_RESULT_FAIL:
+            self.fail_msg(fail)
         return True, _pass, _bullet
 
     def setCustomJSONB(self, jsonb_dict):

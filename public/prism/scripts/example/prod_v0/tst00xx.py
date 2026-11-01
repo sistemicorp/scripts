@@ -47,9 +47,10 @@ class tst00xx(TestItem):
         #    From script "config" (lower precedence) "options" (higher)
         #
         #  - record functions
-        #    - ctx.record.measurement(name, value, unit, min=None, max=None)
+        #    - ctx.record.measurement(name, value, unit, min=None, max=None, fail=None)
         #      - name: name of the measurement, should be unique per test item
         #      - unit: from ResultAPI.UNIT_*
+        #      - fail: script fail entry, ctx.item.fail[i], recorded if the measurement fails
         #
         #    - ctx.record.add_key("name", value, slot=0)
         #      - slot is 0-4, Lente shows slot 0 in summary results
@@ -59,7 +60,7 @@ class tst00xx(TestItem):
         #      - get all previously stored keys
         #
         #    - ctx.record.fail_msg(msg)
-        #      - add a fail message to the record
+        #      - add a fail message to the record, when the fail is not from one measurement
         #
         # self.chan  # this channel (0-7)
         #
@@ -190,15 +191,11 @@ class tst00xx(TestItem):
                                                            adc_measurement,
                                                            ResultAPI.UNIT_DB,
                                                            ctx.item.args.min,
-                                                           ctx.item.args.max)
+                                                           ctx.item.args.max,
+                                                           fail=ctx.item.fail[FAIL_APPLE])
         if not success:
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
-
-        # if failed, there is a msg in script to attach to the record, for repair purposes
-        if _result == ResultAPI.RECORD_RESULT_FAIL:
-            msg = ctx.item.fail[FAIL_APPLE]
-            ctx.record.fail_msg(msg)
 
         self.log_bullet(_bullet)
         measurement_results.append(_result)
@@ -209,15 +206,11 @@ class tst00xx(TestItem):
                                                            adc_measurement,
                                                            ResultAPI.UNIT_DB,
                                                            ctx.item.args.min,
-                                                           ctx.item.args.max)
+                                                           ctx.item.args.max,
+                                                           fail=ctx.item.fail[FAIL_BANANNA])
         if not success:
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
-
-        # if failed, there is a msg in script to attach to the record, for repair purposes
-        if _result == ResultAPI.RECORD_RESULT_FAIL:
-            msg = ctx.item.fail[FAIL_BANANNA]
-            ctx.record.fail_msg(msg)
 
         self.log_bullet(_bullet)
         measurement_results.append(_result)

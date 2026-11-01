@@ -317,9 +317,9 @@ See ``public/prism/scripts/example/prod_v0/tst00xx.py`` for usage.
     * ``fid`` - a unique ID for this failure mode
     * ``msg`` - message to show operator, at most 64 characters, a short hint like
       ``"3V_OUT low: check U7 R49"``
-    * the test code attaches it to the result with ``ctx.record.fail_msg(ctx.item.fail[0])``
-      when a measurement fails, see :ref:`prism_programs:Binning Failures`.  Without that call
-      the ``fail`` list is never shown
+    * the test code attaches it to the result when a measurement fails, with
+      ``ctx.record.measurement(..., fail=ctx.item.fail[0])``, see
+      :ref:`prism_programs:Binning Failures`.  Without that the ``fail`` list is never shown
   * any other field your test code needs, for example ``"name": "V5V", "min": 4900, "max": 5100``,
     read in the program as ``ctx.item.min``.  Fields on the item itself are easier to read than
     fields inside ``args``, see :ref:`prism_scripts:Script Design`
@@ -438,8 +438,10 @@ file or class, other than the drivers and the Prism APIs.  So,
   ``ctx.record.measurement("T304a_dsr_off", r["dsr"] is False, ResultAPI.UNIT_BOOLEAN)``.  Don't
   record ``str(value)`` with ``force_fail``.  ``force_fail`` is for a string or number that must
   match exactly, such as a firmware version
-* a test item that calls ``ctx.record.fail_msg(ctx.item.fail[i])`` needs that entry in the
-  ``fail`` list of each script line that runs it
+* attach a binning message with ``fail=ctx.item.fail[i]`` on the measurement it belongs to,
+  not an ``if _result == ResultAPI.RECORD_RESULT_FAIL: ctx.record.fail_msg(...)`` block after it.
+  A test item that uses ``ctx.item.fail[i]`` needs that entry in the ``fail`` list of each script
+  line that runs it
 * handle each error where it happens: a failed driver response with ``self.expect()``, any
   other error with log, ``self.item_end(result)``, ``return``.  No context managers or
   decorators that turn exceptions into results, and no exception classes of your own to jump

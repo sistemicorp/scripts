@@ -123,13 +123,14 @@ def test_flat_test_code_rules():
 
 def test_fail_msg_rules():
     assert "at most 64" in prism_assistant.INSTRUCTIONS
-    assert "ctx.record.fail_msg" in prism_assistant.INSTRUCTIONS
+    assert "fail=ctx.item.fail[i]" in prism_assistant.INSTRUCTIONS
 
     async def go(c):
         return (await c.get_prompt("write_test_script", {"product": "P1", "stage": "T01"}),
-                await c.get_prompt("review_test_script", {"script": "P1/P1_T01.scr"}))
+                await c.get_prompt("review_test_script", {"script": "P1/P1_T01.scr"}),
+                await c.get_prompt("migrate_test_code", {}))
     for r in run(go):
-        assert "fail_msg()" in r.messages[0].content.text
+        assert "fail=" in r.messages[0].content.text
 
 
 def test_boolean_and_fork_rules():

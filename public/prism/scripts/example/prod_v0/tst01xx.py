@@ -65,15 +65,11 @@ class tst01xx(TestItem):
                                                            random(),
                                                            ResultAPI.UNIT_DB,
                                                            ctx.item.args.min,
-                                                           ctx.item.args.max)
+                                                           ctx.item.args.max,
+                                                           fail=ctx.item.fail[FAIL_ID])
         if not success:
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
-
-        # set the failure msg on failure
-        if _result == ResultAPI.RECORD_RESULT_FAIL:
-            msg = ctx.item.fail[FAIL_ID]
-            ctx.record.fail_msg(msg)
 
         self.log_bullet(_bullet)
         measurement_results.append(_result)
@@ -82,15 +78,11 @@ class tst01xx(TestItem):
                                                            randint(0, 10),
                                                            ResultAPI.UNIT_DB,
                                                            ctx.item.args.min,
-                                                           ctx.item.args.min)
+                                                           ctx.item.args.min,
+                                                           fail=ctx.item.fail[FAIL_ID])
         if not success:
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
-
-        # set the failure msg on failure
-        if _result == ResultAPI.RECORD_RESULT_FAIL:
-            msg = ctx.item.fail[FAIL_ID]
-            ctx.record.fail_msg(msg)
 
         self.log_bullet(_bullet)
         measurement_results.append(_result)

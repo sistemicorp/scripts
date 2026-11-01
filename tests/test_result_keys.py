@@ -1,4 +1,4 @@
-"""Tests for public/prism/ResultBaseKeysV1.py add_key() and measurement() limits.
+"""Tests for public/prism/ResultBaseKeysV1.py add_key() and measurement() limits and fail=.
 
 Run from the scripts repo root: python -m pytest tests
 """
@@ -11,7 +11,7 @@ MEAS_VALUE_MAX_LEN = 128  # Lente measurement.value column
 
 def make_record():
     r = ResultBaseKeysV1(0, script_filename="test.scr")
-    r._item = {"name": "tst00xx.TST000", "measurements": []}
+    r._item = {"name": "tst00xx.TST000", "measurements": [], "fail_msg": {}}
     return r
 
 
@@ -63,3 +63,46 @@ def test_measurement_string_too_long():
     assert result == ResultAPI.RECORD_RESULT_INTERNAL_ERROR
     success, result, _ = r.measurement("ver", "v" * MEAS_VALUE_MAX_LEN, ResultAPI.UNIT_STRING)
     assert success and result == ResultAPI.RECORD_RESULT_PASS
+
+
+FAIL_ENTRY = {"fid": "TST000-0", "msg": "3V_OUT low: check U7 R49"}
+
+
+def test_measurement_fail_entry_recorded_on_fail():
+    # scripts#66: fail= attaches the script fail entry when the measurement fails
+    r = make_record()
+    success, result, _ = r.measurement("v3", 2.1, ResultAPI.UNIT_VOLTS, 3.0, 3.6, fail=FAIL_ENTRY)
+    assert success
+    assert result == ResultAPI.RECORD_RESULT_FAIL
+    assert r.record_item_get()["fail_msg"] == FAIL_ENTRY
+
+
+def test_measurement_fail_entry_not_recorded_on_pass():
+    r = make_record()
+    success, result, _ = r.measurement("v3", 3.3, ResultAPI.UNIT_VOLTS, 3.0, 3.6, fail=FAIL_ENTRY)
+    assert success
+    assert result == ResultAPI.RECORD_RESULT_PASS
+    assert r.record_item_get()["fail_msg"] == {}
+
+
+def test_measurement_fail_entry_with_bool_and_force_fail():
+    # [Edge] boolean check and force_fail use the same rule
+    r = make_record()
+    _, result, _ = r.measurement("dsr_off", False, ResultAPI.UNIT_BOOLEAN, fail=FAIL_ENTRY)
+    assert result == ResultAPI.RECORD_RESULT_FAIL
+    assert r.record_item_get()["fail_msg"] == FAIL_ENTRY
+
+    r = make_record()
+    _, result, _ = r.measurement("ver", "1.0", ResultAPI.UNIT_STRING, force_fail=True,
+                                 fail=FAIL_ENTRY)
+    assert result == ResultAPI.RECORD_RESULT_FAIL
+    assert r.record_item_get()["fail_msg"] == FAIL_ENTRY
+
+
+def test_measurement_fail_entry_not_a_dict():
+    # [Unhappy] passing the index instead of ctx.item.fail[i] is an authoring error
+    r = make_record()
+    success, result, _ = r.measurement("v3", 2.1, ResultAPI.UNIT_VOLTS, 3.0, 3.6, fail=0)
+    assert not success
+    assert result == ResultAPI.RECORD_RESULT_INTERNAL_ERROR
+    assert r.record_item_get()["measurements"] == []
