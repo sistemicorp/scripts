@@ -11,7 +11,7 @@ class ResultAPI():
 
     TESTITEM_TIMEOUT = 10.0  # default test item timeout in seconds
     # Note this can be overridden for any specific test item,
-    # see Example test item TST008_TextInput
+    # see Example test item TST090_text_input
 
     RECORD_RESULT_UNKNOWN = "UNKNOWN"  # this is an error if not changed
     RECORD_RESULT_PASS = "PASS"

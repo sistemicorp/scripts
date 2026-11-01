@@ -103,16 +103,16 @@ def test_test_label_print_fails_is_error(monkeypatch, notices):
 # ---- brother_v0 example ------------------------------------------------------
 
 def run_setup(monkeypatch, notices, devnodes, args, chan):
-    """ discover printers into a SharedState, run BRTHR0xxSETUP on chan,
+    """ discover printers into a SharedState, run BRTHR000_SETUP on chan,
     :return: record, printer selected by the test item """
     num, drivers = discover(monkeypatch, devnodes, args)
     ss = SharedState()
     ss.add_drivers(DRIVER_TYPE, drivers, shared=(num == 0))
     script = {"info": {}, "config": {}, "tests": []}
     con = prism_dev.ChanCon(chan, script, ss, "brother_v0.scr")
-    con._item, con._options = {"id": "BRTHR0xxSETUP", "enable": True}, {}
+    con._item, con._options = {"id": "BRTHR000_SETUP", "enable": True}, {}
     t = brthr00xx(con, chan, ss)
-    t.BRTHR0xxSETUP()
+    t.BRTHR000_SETUP()
     return con.record, t.printer
 
 

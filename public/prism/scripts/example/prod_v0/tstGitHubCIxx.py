@@ -24,12 +24,12 @@ class tstGitHubCIxx(TestItem):
 
         self.hw_prism_play = None
 
-    def TST0xxSETUP(self):
+    def TST000_SETUP(self):
         """  Setup up for testing
         - main purpose is to get a local handle to the connected hardware
         - store the ID of the hardware for tracking purposes
 
-            {"id": "TST0xxSETUP",           "enable": true },
+            {"id": "TST000_SETUP",           "enable": true },
 
         """
         ctx = self.item_start()  # always first line of test
@@ -47,12 +47,12 @@ class tstGitHubCIxx(TestItem):
         _result = ResultAPI.RECORD_RESULT_PASS
         self.item_end(_result)  # always last line of test
 
-    def TST0xxTEARDOWN(self):
+    def TST990_TEARDOWN(self):
         """  Always called at the end of testing
         - process any cleanup, closing, etc
         - if there was a FAIL of an earlier test item, this is STILL called
 
-            {"id": "TST0xxTEARDOWN",        "enable": true },
+            {"id": "TST990_TEARDOWN",        "enable": true },
 
         """
         ctx = self.item_start()  # always first line of test
@@ -63,13 +63,13 @@ class tstGitHubCIxx(TestItem):
 
         self.item_end(ResultAPI.RECORD_RESULT_PASS)  # always last line of test
 
-    def TST001_KeyAdd(self):
+    def TST010_key_add(self):
         """ Example of adding a GitHub reference key to the test record for tracking purposes
 
         Content/order of the references is determined by the developer.  In this example
         $GITHUB_WORKFLOW_SHA is passed as the first reference.
 
-        {"id": "TST001_KeyAdd",         "enable": true },
+        {"id": "TST010_key_add",         "enable": true },
         """
         ctx = self.item_start()   # always first line of test
 
@@ -87,10 +87,10 @@ class tstGitHubCIxx(TestItem):
 
         self.item_end(ResultAPI.RECORD_RESULT_PASS)  # always last line of test
 
-    def TST002_UseArtifact(self):
+    def TST020_use_artifact(self):
         """  Example of using the artifact downloaded from GitHub in a test
 
-            {"id": "TST002_UseArtifact",           "enable": true },
+            {"id": "TST020_use_artifact",           "enable": true },
 
         """
         ctx = self.item_start()  # always first line of test

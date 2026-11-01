@@ -213,12 +213,12 @@ After programming, the teensy will show up as a serial, like so,
        82                   prism_dev.py: 199 -                      ChanCon.0:                 run() INFO  : number channels 1
        82                   prism_dev.py: 210 -                      ChanCon.0:                 run() INFO  : Module: public.prism.scripts.example.BOND_v0.bond_P00xx, fail_fast: True
        88                   test_item.py:  22 -                  SC.TestItem.0:            __init__() INFO  : DONE
-       88                   prism_dev.py: 219 -                      ChanCon.0:                 run() INFO  : ITEM: {'id': 'P0xxSETUP', 'enable': True}
+       88                   prism_dev.py: 219 -                      ChanCon.0:                 run() INFO  : ITEM: {'id': 'PROG000_SETUP', 'enable': True}
        88                   test_item.py:  29 -                  teensy400xx.0:          log_bullet() WARNI : bullet text max length exceeded, truncating
        88                   prism_dev.py: 142 -                      ChanCon.0:          log_bullet() INFO  : BULLET: teensy4: {'channel': 0, 'type': 'TEENSY4_PROG', 'o
-       88                  bond_P00xx.py:  58 -                  teensy400xx.0:           P0xxSETUP() INFO  : teensy4: {'channel': 0, 'type': 'TEENSY4_PROG', 'obj': {'id': 0, 'version': '0.0', 'unique_id': '0.0'}} <built-in function id>, chan 0
-       88                   prism_dev.py: 219 -                      ChanCon.0:                 run() INFO  : ITEM: {'id': 'P100_Check', 'enable': True}
-      376                  bond_P00xx.py:  79 -                  teensy400xx.0:          P100_Check() INFO  : Bus 006 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+       88                  bond_P00xx.py:  58 -                  teensy400xx.0:           PROG000_SETUP() INFO  : teensy4: {'channel': 0, 'type': 'TEENSY4_PROG', 'obj': {'id': 0, 'version': '0.0', 'unique_id': '0.0'}} <built-in function id>, chan 0
+       88                   prism_dev.py: 219 -                      ChanCon.0:                 run() INFO  : ITEM: {'id': 'PROG010_check', 'enable': True}
+      376                  bond_P00xx.py:  79 -                  teensy400xx.0:          PROG010_check() INFO  : Bus 006 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
     Bus 005 Device 005: ID 05e3:0610 Genesys Logic, Inc. Hub
     Bus 005 Device 003: ID 0489:e0cd Foxconn / Hon Hai Wireless_Device
     Bus 005 Device 013: ID 1c4f:0002 SiGma Micro Keyboard TRACER Gamma Ivory
@@ -235,20 +235,20 @@ After programming, the teensy will show up as a serial, like so,
     Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
     
       376                   prism_dev.py: 142 -                      ChanCon.0:          log_bullet() INFO  : BULLET: Teensys on USB: 1
-      376                   prism_dev.py: 219 -                      ChanCon.0:                 run() INFO  : ITEM: {'id': 'P200_Program', 'enable': True, 'file': 'teensy4_server.ino.hex'}
+      376                   prism_dev.py: 219 -                      ChanCon.0:                 run() INFO  : ITEM: {'id': 'PROG020_program', 'enable': True, 'file': 'teensy4_server.ino.hex'}
       376                   prism_dev.py: 142 -                      ChanCon.0:          log_bullet() INFO  : BULLET: teensy4_server.ino.hex
       376                   prism_dev.py: 142 -                      ChanCon.0:          log_bullet() INFO  : BULLET: Press Teensy Button
-     1495                  bond_P00xx.py: 118 -                  teensy400xx.0:        P200_Program() INFO  : Teensy Loader, Command Line, Version 2.2
+     1495                  bond_P00xx.py: 118 -                  teensy400xx.0:        PROG020_program() INFO  : Teensy Loader, Command Line, Version 2.2
     Read "./public/prism/scripts/example/teensy4_v0/assets/teensy4_server.ino.hex": 70656 bytes, 0.9% usage
     Found HalfKay Bootloader
     Programming..................................................................
     Booting
     
-     1495                   prism_dev.py: 219 -                      ChanCon.0:                 run() INFO  : ITEM: {'id': 'P300_Verify', 'enable': True, 'delay': 5}
+     1495                   prism_dev.py: 219 -                      ChanCon.0:                 run() INFO  : ITEM: {'id': 'PROG030_verify', 'enable': True, 'delay': 5}
      1495                   prism_dev.py: 142 -                      ChanCon.0:          log_bullet() INFO  : BULLET: 5s wait for boot
      6501                   prism_dev.py: 142 -                      ChanCon.0:          log_bullet() INFO  : BULLET: done wait
-     6505                  bond_P00xx.py: 158 -                  teensy400xx.0:         P300_Verify() INFO  : Serial Ports to look for Teensy ['/dev/ttyACM0']
-     6505                  bond_P00xx.py: 166 -                  teensy400xx.0:         P300_Verify() INFO  : Trying teensy at /dev/ttyACM0...
+     6505                  bond_P00xx.py: 158 -                  teensy400xx.0:         PROG030_verify() INFO  : Serial Ports to look for Teensy ['/dev/ttyACM0']
+     6505                  bond_P00xx.py: 166 -                  teensy400xx.0:         PROG030_verify() INFO  : Trying teensy at /dev/ttyACM0...
      6505                     Teensy4.py:  79 -                     teensy.try:            __init__() INFO  : version 0.1.0
      6506                     Teensy4.py:  88 -                     teensy.try:                init() INFO  : attempting to install Teensy on port /dev/ttyACM0
      8512                     Teensy4.py: 246 -                     teensy.try:             version() INFO  : version
@@ -259,12 +259,12 @@ After programming, the teensy will show up as a serial, like so,
      8515                     Teensy4.py: 222 -                     teensy.try:           unique_id() INFO  : unique_id
      8515                     Teensy4.py: 191 -                     teensy.try:       _rpc_validate() INFO  : {'success': True, 'method': 'unique_id', 'result': {'unique_id': '04:e9:e5:15:5f:99'}}
      8515            ResultBaseKeysV1.py: 272 -             ResultBaseKeysV1.0:         measurement() INFO  : teensy4_id: 04:e9:e5:15:5f:99 STR :: PASS
-     8515            ResultBaseKeysV1.py: 296 -             ResultBaseKeysV1.0:         measurement() INFO  : {'name': 'P300_Verify.teensy4_id', 'unit': 'STR', 'min': None, 'max': None, 'value': '04:e9:e5:15:5f:99', 'result': 'PASS'}
+     8515            ResultBaseKeysV1.py: 296 -             ResultBaseKeysV1.0:         measurement() INFO  : {'name': 'PROG030_verify.teensy4_id', 'unit': 'STR', 'min': None, 'max': None, 'value': '04:e9:e5:15:5f:99', 'result': 'PASS'}
      8515                   prism_dev.py: 142 -                      ChanCon.0:          log_bullet() INFO  : BULLET: teensy4_id: 04:e9:e5:15:5f:99 STR :: PASS
      8515                     Teensy4.py: 246 -                     teensy.try:             version() INFO  : version
      8516                     Teensy4.py: 191 -                     teensy.try:       _rpc_validate() INFO  : {'success': True, 'method': 'version', 'result': {'version': '0.1.0'}}
      8516            ResultBaseKeysV1.py: 272 -             ResultBaseKeysV1.0:         measurement() INFO  : teensy4_version: 0.1.0 STR :: PASS
-     8516            ResultBaseKeysV1.py: 296 -             ResultBaseKeysV1.0:         measurement() INFO  : {'name': 'P300_Verify.teensy4_version', 'unit': 'STR', 'min': None, 'max': None, 'value': '0.1.0', 'result': 'PASS'}
+     8516            ResultBaseKeysV1.py: 296 -             ResultBaseKeysV1.0:         measurement() INFO  : {'name': 'PROG030_verify.teensy4_version', 'unit': 'STR', 'min': None, 'max': None, 'value': '0.1.0', 'result': 'PASS'}
      8516                   prism_dev.py: 142 -                      ChanCon.0:          log_bullet() INFO  : BULLET: teensy4_version: 0.1.0 STR :: PASS
      8516                     Teensy4.py: 125 -                     teensy.try:               close() INFO  : closing /dev/ttyACM0
      8518             resultBaseClass.py: 186 -             ResultBaseKeysV1.0:      record_publish() INFO  : Result: PASS, Created: result_f06516f9-75e7-4f61-a9d9-bff73112aa08.json

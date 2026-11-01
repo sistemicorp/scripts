@@ -149,32 +149,32 @@ context
           "options": { "fail_fast": false, "myVar": "something" },
           "items": [
             {"id": "sayHello"},
-            {"id": "TST000_Meas",  "enable": true, "args": {"min": 0, "max": 10},
-                                   "fail": [ {"fid": "TST000-0", "msg": "Component apple R1"},
-                                             {"fid": "TST000-1", "msg": "Component banana R1"}] },
+            {"id": "TST020_meas_fail", "enable": true, "min": 0, "max": 10,
+                                       "fail": [ {"fid": "TST020-1", "msg": "Component apple R1"},
+                                                 {"fid": "TST020-2", "msg": "Component banana R1"}] },
           ]
         }
       ]
     }
 
-* And lets assume we are in the ``TST000_Meas`` method, then we can access (print) anything that is relevent,
+* And lets assume we are in the ``TST020_meas_fail`` method, then we can access (print) anything that is relevent,
 
 ::
 
-    def TST000_Meas(self):
+    def TST020_meas_fail(self):
         ctx = self.item_start()  # always first line of test
 
-        print(ctx.item)          # = {"id": "TST000", "enable": True,  "args": {"min": 0, "max": 10}}
-        print(ctx.item.args)     # = {"min": 0, "max": 10}
-        print(ctx.item.args.max) # = 10
-        print(ctx.options)       # = { "fail_fast": False, "myVar": "something" }
+        print(ctx.item)              # = {"id": "TST020_meas_fail", "enable": True, "min": 0, "max": 10, "fail": [...]}
+        print(ctx.item.max)          # = 10
+        print(ctx.item.get("max", 5))  # = 10, 5 when the item has no "max"
+        print(ctx.options)           # = { "fail_fast": False, "myVar": "something" }
         ...
 
         self.item_end() # always last line of test
 
 * in Python, you can do ``print(dir(ctx))`` to get a list of everything available to you
 * When designing your test script and program structure, consider what user configurable variables you want to be
-  defined in the script ``args`` section and which you want in the program.  Things like min/max limits may change
+  defined in the script, on each item, and which you want in the program.  Things like min/max limits may change
   over the product life cycle, and its better to make those things editable by a non-programmer.
   See :ref:`prism_scripts:Script Design`
 
@@ -202,7 +202,7 @@ For example,
 
 ::
 
-    def TST009_LogPctProgress(self):
+    def TST100_log_progress(self):
         ctx = self.item_start()  # always first line of test
 
         percent = 0
@@ -374,7 +374,7 @@ Example of measurement API is show in the example above, but are reviewed here i
 
 ``name`` - this will be appended to the full name of the test, which is the module path of the
 program (without the leading `public.prism.scripts.`), the class method (item ``id``), and finally this name.
-For example, `example.prod_v0.tst00xx.TST000_Meas.apples`.  As such the final test name is a unique
+For example, `example.prod_v0.tst00xx.TST010_meas.apples`.  As such the final test name is a unique
 identifier, and it must be 128 characters or less.
 
 .. note::
@@ -443,8 +443,8 @@ Measurements are called thru the ``ctx.record.measurement()`` API like this,
         success, _result, _bullet = ctx.record.measurement("apples",
                                                            random.randint(0, 10),
                                                            ResultAPI.UNIT_DB,
-                                                           ctx.item.args.min,
-                                                           ctx.item.args.max)
+                                                           ctx.item.min,
+                                                           ctx.item.max)
         self.log_bullet(_bullet)
         self.item_end(_result)  # always last line of test
 
@@ -473,7 +473,7 @@ a "binning code" when a failure occurs.
 
 The "binning mechanism" is provided by the ``fail`` field for the test item in the script.  There is a list
 of binning failure IDs (``fid``) with a corresponding ``msg`` for the user in the script.  This is shown in the
-example ``TST001_Meas`` above.  Repeated here.
+example ``TST020_meas_fail`` above.  Repeated here.
 
 Example Notes:
 
@@ -500,26 +500,26 @@ Example Notes:
 
 ::
 
-    {"id": "TST001_Meas",  "enable": true, "args": {"min": 0, "max": 10},
-                           // fail: this is a list of 'fid' and 'msg' that get displayed and
-                           //       recorded with the test record.  The python code for this
-                           //       test item assigns which item in the list best represents
-                           //       the failure mode.  This information is to assist repair.
-                           "fail": [ {"fid": "TST000-0", "msg": "Component apple R1"},
-                                     {"fid": "TST000-1", "msg": "Component banana R1"}] },
+    {"id": "TST020_meas_fail", "enable": true, "min": 0, "max": 10,
+                               // fail: this is a list of 'fid' and 'msg' that get displayed and
+                               //       recorded with the test record.  The python code for this
+                               //       test item assigns which item in the list best represents
+                               //       the failure mode.  This information is to assist repair.
+                               "fail": [ {"fid": "TST020-1", "msg": "Component apple R1"},
+                                         {"fid": "TST020-2", "msg": "Component banana R1"}] },
 
 Program code,
 
 ::
 
-    def TST001_Meas(self):
+    def TST020_meas_fail(self):
         """ Measurement example, with multiple failure messages
         - example of taking multiple measurements, and sending as a list of results
         - if any test fails, this test item fails
 
-            {"id": "TST001_Meas",    "enable": true, "args": {"min": 0, "max": 10},
-                                     "fail": [ {"fid": "TST000-0", "msg": "Component apple R1"},
-                                               {"fid": "TST000-1", "msg": "Component banana R1"}] },
+            {"id": "TST020_meas_fail", "enable": true, "min": 0, "max": 10,
+                                       "fail": [ {"fid": "TST020-1", "msg": "Component apple R1"},
+                                                 {"fid": "TST020-2", "msg": "Component banana R1"}] },
         """
         ctx = self.item_start()   # always first line of test
 
@@ -534,8 +534,8 @@ Program code,
         success, _result, _bullet = ctx.record.measurement("apples",
                                                            random.randint(0, 10),
                                                            ResultAPI.UNIT_DB,
-                                                           ctx.item.args.min,
-                                                           ctx.item.args.max,
+                                                           ctx.item.min,
+                                                           ctx.item.max,
                                                            fail=ctx.item.fail[FAIL_APPLE])
         if not success:
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
@@ -548,8 +548,8 @@ Program code,
         success, _result, _bullet = ctx.record.measurement("bananas",
                                                            random.randint(0, 10),
                                                            ResultAPI.UNIT_DB,
-                                                           ctx.item.args.min,
-                                                           ctx.item.args.max,
+                                                           ctx.item.min,
+                                                           ctx.item.max,
                                                            fail=ctx.item.fail[FAIL_BANANNA])
         if not success:
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)

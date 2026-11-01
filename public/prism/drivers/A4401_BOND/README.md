@@ -88,19 +88,19 @@ arguments.
    - At the top level is the script test item (`public/prism/scripts/example/BOND_v0/bond_selftest_0.scr`),
 
 
-      {"id": "P1100_ADC_check",      "enable": true, "hdr": 1 },
+      {"id": "BOND030_adc_check",      "enable": true, "hdr": 1 },
 
 
    - The corresponding code in the associated Python file (`bond_P00xx.py`),
 
 
-    def P1100_ADC_check(self):
+    def BOND030_adc_check(self):
         """ ADC Check/Validate conversion
         - each MAX11311 on each header has an ADC input connected to Voltage Reference
           for self testing each chip
         - BOND's reference voltage is 2500mV
 
-        {"id": "P1100_ADC_check",      "enable": true, "hdr": 1 },
+        {"id": "BOND030_adc_check",      "enable": true, "hdr": 1 },
 
         """
         ctx = self.item_start()  # always first line of test

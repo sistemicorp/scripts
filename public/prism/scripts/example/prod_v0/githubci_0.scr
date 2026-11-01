@@ -25,12 +25,12 @@
         "fail_fast": true
       },
       "items": [
-        {"id": "TST0xxSETUP",           "enable": true },
-        {"id": "TST001_KeyAdd",         "enable": true},
-        {"id": "TST002_UseArtifact",    "enable": true},
+        {"id": "TST000_SETUP",        "enable": true },
+        {"id": "TST010_key_add",      "enable": true},
+        {"id": "TST020_use_artifact", "enable": true},
 
         // always called, no matter if test fails above
-        {"id": "TST0xxTEARDOWN",        "enable": true }
+        {"id": "TST990_TEARDOWN",     "enable": true }
       ]
     }
   ]

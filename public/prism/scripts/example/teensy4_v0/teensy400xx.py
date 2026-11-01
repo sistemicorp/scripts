@@ -24,7 +24,7 @@ class teensy400xx(TestItem):
         self.logger = logging.getLogger("teensy400xx.{}".format(self.chan))
         self.teensy = None
 
-    def T0xxSETUP(self):
+    def T000_SETUP(self):
         ctx = self.item_start()  # always first line of test
 
         # drivers are stored in the shared_state and are retrieved as,

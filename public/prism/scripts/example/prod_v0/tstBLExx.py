@@ -27,12 +27,12 @@ class tstBLExx(TestItem):
         self.hw_fake = None
         self.hw_ble = None
 
-    def TST0xxSETUP(self):
+    def TST000_SETUP(self):
         """  Setup up for testing
         - main purpose is to get a local handle to the connected hardware
         - store the ID of the hardware for tracking purposes
 
-            {"id": "TST0xxSETUP",           "enable": true },
+            {"id": "TST000_SETUP",           "enable": true },
 
         """
         ctx = self.item_start()  # always first line of test
@@ -50,20 +50,20 @@ class tstBLExx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def TST0xxTEARDOWN(self):
+    def TST990_TEARDOWN(self):
         """  Always called at the end of testing
         - process any cleanup, closing, etc
 
-            {"id": "TST0xxTEARDOWN",        "enable": true },
+            {"id": "TST990_TEARDOWN",        "enable": true },
 
         """
         ctx = self.item_start()  # always first line of test
         self.item_end()  # always last line of test
 
-    def TST000_ble(self):
+    def TST010_ble(self):
         """ Measurement example, simplest example
 
-        {"id": "TST000_ble",            "enable": true, "rssi": {"min": -90, "max": 0}},
+        {"id": "TST010_ble",            "enable": true, "min": -90, "max": 0},
 
         """
         ctx = self.item_start()   # always first line of test
@@ -98,8 +98,8 @@ class tstBLExx(TestItem):
         success, _result, _bullet = ctx.record.measurement(None,
                                                            ad["rssi"],
                                                            ResultAPI.UNIT_DB,
-                                                           ctx.item.rssi.min,
-                                                           ctx.item.rssi.max)
+                                                           ctx.item.min,
+                                                           ctx.item.max)
 
         self.log_bullet(_bullet)
         self.item_end(_result)  # always last line of test

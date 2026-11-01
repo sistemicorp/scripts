@@ -36,10 +36,9 @@
       "module": "public.prism.scripts.example.barcode_count_v0.tst00xx",
       "options": { "fail_fast": false },
       "items": [
-        {"id": "TST000_Scan",           "enable": true, "timeout": 300,
-                                        "args": {"regex": "^(?P<product>P\\d{3})-S(?P<sn>\\d{5})$",
-                                                 "ready_beep": true} },
-        {"id": "TST0xxTEARDOWN",        "enable": true }
+        {"id": "TST010_scan",     "enable": true, "timeout": 300, "ready_beep": true,
+                                  "regex": "^(?P<product>P\\d{3})-S(?P<sn>\\d{5})$" },
+        {"id": "TST990_TEARDOWN", "enable": true }
       ]
     }
   ]

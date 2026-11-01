@@ -25,12 +25,12 @@
       "module": "public.prism.scripts.example.dso_v0.pydso",
       "options": {},
       "items": [
-        {"id": "PYDSO000SETUP",     "enable": true },
-        {"id": "PYDSO010SETCHAN",   "enable": true, "chan": 1 },
-        {"id": "PYDSO010SETCHAN",   "enable": true, "chan": 2 },
-        {"id": "PYDSO010SETCHAN",   "enable": true, "chan": 3 },
-        {"id": "PYDSO010SETCHAN",   "enable": true, "chan": 4 },
-        {"id": "PYDSO999TRDN",      "enable": true }
+        {"id": "PYDSO000_SETUP",    "enable": true },
+        {"id": "PYDSO010_set_chan", "enable": true, "chan": 1 },
+        {"id": "PYDSO010_set_chan", "enable": true, "chan": 2 },
+        {"id": "PYDSO010_set_chan", "enable": true, "chan": 3 },
+        {"id": "PYDSO010_set_chan", "enable": true, "chan": 4 },
+        {"id": "PYDSO990_TEARDOWN", "enable": true }
       ]
     }
   ]

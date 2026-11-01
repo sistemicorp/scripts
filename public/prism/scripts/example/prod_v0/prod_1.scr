@@ -31,16 +31,16 @@
       "type" : "str", "widget": "select", "choices": ["canada/ontario/milton",
                                                       "us/newyork/buffalo"],
       // inner dependant substitutions based on user input
-      "subs" : {"canada/ontario/milton": { "TST000Min": { "val": 0.1, "type": "num" }},
-                "us/newyork/buffalo":    { "TST000Min": { "val": 0.2, "type": "num" }}
+      "subs" : {"canada/ontario/milton": { "TST010Min": { "val": 0.1, "type": "num" }},
+                "us/newyork/buffalo":    { "TST010Min": { "val": 0.2, "type": "num" }}
       }
     },
-    "TST000Max": {
-      "title": "TST000 Max Attenuation (db)",
+    "TST010Max": {
+      "title": "TST010 Max Attenuation (db)",
       "type" : "num", "widget": "select", "choices": [9.0, 10.0, 11.0]
     },
-    "TST000Enable": {
-      "title": "TST000_Meas Enable",
+    "TST010Enable": {
+      "title": "TST010_meas Enable",
       "type" : "str", "widget": "select", "choices": ["true", "false"]
     }
   },
@@ -62,11 +62,11 @@
         // add more key/value as required
       },
       "items": [
-        {"id": "TST0xxSETUP",        "enable": true },
-        {"id": "TST000_Meas",        "enable": "%%TST000Enable", "args": {"min": "%%TST000Min", "max": "%%TST000Max"}},
+        {"id": "TST000_SETUP",    "enable": true },
+        {"id": "TST010_meas",     "enable": "%%TST010Enable", "min": "%%TST010Min", "max": "%%TST010Max"},
 
         // always called, no matter if test fails above
-        {"id": "TST0xxTEARDOWN",     "enable": true },
+        {"id": "TST990_TEARDOWN", "enable": true },
       ]
     }
   ]

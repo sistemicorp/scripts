@@ -27,9 +27,9 @@
       "options": {
       },
       "items": [
-        {"id": "P500_SETUP",          "enable": true, "timeout": 30 },
-        {"id": "P600_Update",         "enable": true, "file": "teensy4_server.ino.hex" },
-        {"id": "P700_Verify",         "enable": true, "delay": 2 },
+        {"id": "UPD000_SETUP",  "enable": true, "timeout": 30 },
+        {"id": "UPD010_update", "enable": true, "file": "teensy4_server.ino.hex" },
+        {"id": "UPD020_verify", "enable": true, "delay": 2 },
       ]
     }
   ]

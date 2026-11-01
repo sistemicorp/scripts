@@ -19,12 +19,12 @@ class tst00xx(TestItem):
         super().__init__(controller, chan, shared_state)
         self.logger = logging.getLogger("tst00xx.{}".format(self.chan))
 
-    def TST0xxSETUP(self):
+    def TST000_SETUP(self):
         """  Setup up for testing
         - main purpose is to get a local handle to the connected hardware
         - store the ID of the hardware for tracking purposes
 
-            {"id": "TST0xxSETUP",           "enable": true },
+            {"id": "TST000_SETUP",           "enable": true },
         """
         ctx = self.item_start()  # always first line of test
 
@@ -46,11 +46,11 @@ class tst00xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def TST0xxTEARDOWN(self):
+    def TST990_TEARDOWN(self):
         """  Always called at the end of testing
         - process any cleanup, closing, etc
 
-            {"id": "TST0xxTEARDOWN",        "enable": true },
+            {"id": "TST990_TEARDOWN",        "enable": true },
         """
         ctx = self.item_start()  # always first line of test
         self.item_end()  # always last line of test

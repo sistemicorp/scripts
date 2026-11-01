@@ -16,7 +16,7 @@ import tempfile
 import qrcode
 from fpdf import FPDF
 
-PRODUCT_RE = r"^P\d{3}$"   # matches count_0.scr TST000_Scan args regex
+PRODUCT_RE = r"^P\d{3}$"   # matches count_0.scr TST010_scan regex
 SERIAL_MAX = 99999          # five digits
 
 # Letter page layout, mm

@@ -20,9 +20,9 @@
       "module": "public.prism.scripts.example.brother_v0.brthr00xx",
       "options": {},
       "items": [
-        {"id": "BRTHR0xxSETUP",         "enable": true, },
-        {"id": "BRTHR001_PrintRUID",    "enable": true, },
-        {"id": "BRTHR0xxTRDN",          "enable": true, }
+        {"id": "BRTHR000_SETUP",      "enable": true, },
+        {"id": "BRTHR010_print_ruid", "enable": true, },
+        {"id": "BRTHR990_TEARDOWN",   "enable": true, }
       ]
     },
   ]

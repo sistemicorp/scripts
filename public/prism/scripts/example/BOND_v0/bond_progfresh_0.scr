@@ -24,11 +24,11 @@
       "options": {
       },
       "items": [
-        {"id": "P000_SETUP",          "enable": true },
-        {"id": "P100_Check",          "enable": true },
-        {"id": "P200_Program",        "enable": true, "file": "teensy4_server.ino.hex" },
-        {"id": "P300_Reconnect",      "enable": true, "timeout": 30, "delay": 24 },
-        {"id": "P900_TEARDOWN",       "enable": true}
+        {"id": "PROG000_SETUP",     "enable": true },
+        {"id": "PROG010_check",     "enable": true },
+        {"id": "PROG020_program",   "enable": true, "file": "teensy4_server.ino.hex" },
+        {"id": "PROG030_reconnect", "enable": true, "timeout": 30, "delay": 24 },
+        {"id": "PROG990_TEARDOWN",  "enable": true}
       ]
     }
   ]

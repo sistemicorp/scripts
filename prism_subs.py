@@ -148,7 +148,7 @@ if __name__ == "__main__":
     s = [{"Lot": "12345"},
          {"Loc": "canada/ontario/milton"},
          # {"Loc": "us/newyork/buffalo"},
-         {"TST000Max": "9"}
+         {"TST010Max": "9"}
          ]
     final_script_text = find_sub_items_replace(script_text, s)
     # rename subs key so that prism_dev.py will not error

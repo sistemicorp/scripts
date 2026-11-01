@@ -171,7 +171,7 @@ def test_discover_two_scanners_is_one_channel(monkeypatch):
     assert drivers[0]["unique_id"] == "/usb/3-2"
 
 
-# ---- TST000_Scan ------------------------------------------------------------
+# ---- TST010_scan ------------------------------------------------------------
 
 class QuietScanner(Scanner):
     """ Counts ready beeps instead of playing them """
@@ -186,13 +186,14 @@ class QuietScanner(Scanner):
 
 @pytest.fixture
 def scan_item():
-    """ :return: function(textbox_response, args=None) -> (record, scanner) """
+    """ :return: function(textbox_response, fields=None) -> (record, scanner) """
     script = prism_dev.apply_sub_defaults(load_script())
 
-    def run(response, args=None):
+    def run(response, fields=None):
         item = dict(script["tests"][0]["items"][0])
-        if args is not None:
-            item["args"] = args
+        if fields is not None:
+            item.pop("ready_beep", None)
+            item.update(fields)
         ss = SharedState()
         scanner = QuietScanner()
         ss.add_drivers(DRIVER_TYPE, [{"id": 0, "hwdrv": scanner}])
@@ -200,7 +201,7 @@ def scan_item():
         con._item, con._options = item, script["tests"][0]["options"]
         t = tst00xx(con, 0, ss)
         t.input_textbox = lambda *a, **k: response
-        t.TST000_Scan()
+        t.TST010_scan()
         return con.record, scanner
     return run
 
@@ -217,11 +218,11 @@ def test_scan_good_barcode(scan_item):
 @pytest.mark.parametrize("ready_beep, beeps", [(False, 0), (None, 1)])
 def test_scan_ready_beep_arg(scan_item, ready_beep, beeps):
     # [Edge] ready_beep false turns the beep off, absent means on
-    args = {"regex": load_script()["tests"][0]["items"][0]["args"]["regex"]}
+    fields = {}
     if ready_beep is not None:
-        args["ready_beep"] = ready_beep
+        fields["ready_beep"] = ready_beep
     _, scanner = scan_item({"success": True, "textbox": "P001-S00123", "err": None},
-                           args=prism_dev.attrdict(args))
+                           fields=fields)
     assert scanner.beeps == beeps
 
 
@@ -250,7 +251,7 @@ def test_lot_regex():
 # ---- make_barcodes ----------------------------------------------------------
 
 def test_barcode_strings_match_script_regex():
-    regex = load_script()["tests"][0]["items"][0]["args"]["regex"]
+    regex = load_script()["tests"][0]["items"][0]["regex"]
     codes = make_barcodes.barcode_strings("P001", 99998, 2)
     assert codes == ["P001-S99998", "P001-S99999"]
     assert all(re.match(regex, c) for c in codes)

@@ -28,7 +28,8 @@ Getting Started
    emulator and the DUT supply.
 #. Copy the example folder to your product, for example
    `public/prism/scripts/myproduct/BLT`, and change the scripts and test code, see the example's
-   `README.md`.  The `P1000`-`P1999` test items are examples, add your own tests after them.
+   `README.md`.  The `BOND` test items are examples, add your own tests named for your stage, for example
+   `BLT100_voltage`, see :ref:`_prodplan:Test Items`.
 
 `bond_update_0.scr` updates the firmware of a BOND that is already programmed.  Run it only
 once per Prism start, as the BOND's USB port can change after the update.  The Arduino IDE must be
@@ -190,7 +191,7 @@ to `self.expect()`, which ends the item as `INTERNAL_ERROR` when `success` is `F
     response = self.expect(self.teensy.bond_max_hdr_adc(hdr=1, pin=9))
     success, _result, _bullet = ctx.record.measurement("v3v3", response['result']['mV'],
                                                        ResultAPI.UNIT_MILLIVOLTS,
-                                                       ctx.item.args.min, ctx.item.args.max)
+                                                       ctx.item.min, ctx.item.max)
 
 The main methods, see `A4401_BOND.py` for all of them and their arguments,
 

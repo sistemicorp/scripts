@@ -32,29 +32,29 @@
         // Think of these options like global variable to all test items in this module.
       },
       "items": [
-        {"id": "TST0xxSETUP",           "enable": true },
-        {"id": "TST000_Meas",           "enable": true, "args": {"min": 0, "max": 10}},
-        {"id": "TST001_Meas",           "enable": true, "args": {"min": 0, "max": 10},
-                                        // fail: this is a list of 'fid' and 'msg' that get displayed and
-                                        //       recorded with the test record.  The python code for this
-                                        //       test item assigns which item in the list best represents
-                                        //       the failure mode.  This information is to assist repair.
-                                        "fail": [ {"fid": "TST000-0", "msg": "Component apple R1"},
-                                                  {"fid": "TST000-1", "msg": "Component banana R1"}] },
-        {"id": "TST002_Skip",           "enable": false },
-        {"id": "TST003_Buttons",        "enable": true, "timeout": 20 },
-        {"id": "TST004_KeyAdd",         "enable": true },
-        {"id": "TST005_KeyGet",         "enable": true },
-        {"id": "TST006_RsrcLock",       "enable": true, "args": {"holdTime": 1}, "timeout": 60 },
-        {"id": "TST007_HWDriver",       "enable": true },
-        {"id": "TST008_TextInput",      "enable": true, "timeout": 20 },
-        {"id": "TST009_LogPctProgress", "enable": true, "timeout": 15 },
-        {"id": "TST010_BlobUnknown",    "enable": true },
-        {"id": "TST011_BlobXY",         "enable": true },
-        {"id": "TST012_JSONB",          "enable": true },
+        {"id": "TST000_SETUP",        "enable": true },
+        {"id": "TST010_meas",         "enable": true, "min": 0, "max": 10},
+        {"id": "TST020_meas_fail",    "enable": true, "min": 0, "max": 10,
+                                      // fail: this is a list of 'fid' and 'msg' that get displayed and
+                                      //       recorded with the test record.  The python code for this
+                                      //       test item assigns which item in the list best represents
+                                      //       the failure mode.  This information is to assist repair.
+                                      "fail": [ {"fid": "TST020-1", "msg": "Component apple R1"},
+                                                {"fid": "TST020-2", "msg": "Component banana R1"}] },
+        {"id": "TST030_skip",         "enable": false },
+        {"id": "TST040_buttons",      "enable": true, "timeout": 20 },
+        {"id": "TST050_key_add",      "enable": true },
+        {"id": "TST060_key_get",      "enable": true },
+        {"id": "TST070_rsrc_lock",    "enable": true, "hold_time": 1, "timeout": 60 },
+        {"id": "TST080_hw_driver",    "enable": true },
+        {"id": "TST090_text_input",   "enable": true, "timeout": 20 },
+        {"id": "TST100_log_progress", "enable": true, "timeout": 15 },
+        {"id": "TST110_blob_unknown", "enable": true },
+        {"id": "TST120_blob_xy",      "enable": true },
+        {"id": "TST130_jsonb",        "enable": true },
 
         // always called, no matter if test fails above
-        {"id": "TST0xxTEARDOWN",        "enable": true }
+        {"id": "TST990_TEARDOWN",     "enable": true }
       ]
     }
   ],

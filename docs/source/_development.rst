@@ -254,8 +254,8 @@ A script problem names the script section, and a code problem names the file, li
 
         ERROR info.lot: longer than 16 characters
         ERROR tests[0].items[3] TST003: no method TST003 in public.prism.scripts.my_v0.tst00xx
-        ERROR public/prism/scripts/my_v0/tst00xx.py:212 TST001_Meas: return before item_end()
-        WARN public/prism/scripts/my_v0/tst00xx.py:240 TST006_RsrcLock: time.sleep() cannot be stopped by a timeout, use self.sleep()
+        ERROR public/prism/scripts/my_v0/tst00xx.py:212 TST020_meas_fail: return before item_end()
+        WARN public/prism/scripts/my_v0/tst00xx.py:240 TST070_rsrc_lock: time.sleep() cannot be stopped by a timeout, use self.sleep()
 
 
 Test item checks

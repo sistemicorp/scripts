@@ -26,10 +26,10 @@ class prog_P00xx(TestItem):
         self.logger = logging.getLogger("nrfdk.{}".format(self.chan))
         self._nrfjprog = None
 
-    def P0xxSETUP(self):
+    def PROG000_SETUP(self):
         """
 
-        {"id": "P0xxSETUP",          "enable": true, "target": "nrf52"},
+        {"id": "PROG000_SETUP",          "enable": true, "target": "nrf52"},
 
         :return:
         """
@@ -55,7 +55,7 @@ class prog_P00xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def P0xxTRDN(self):
+    def PROG990_TEARDOWN(self):
         """ Teardown
         - always the last test called
         :return:
@@ -64,11 +64,11 @@ class prog_P00xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def P100_Program(self):
+    def PROG010_program(self):
         """ Program
         - the file argument assume path TEENSY4_ASSETS_PATH
 
-        {"id": "P100_Program",        "enable": true, "file": "teensy4_server.ino.hex" },
+        {"id": "PROG010_program",        "enable": true, "file": "teensy4_server.ino.hex" },
 
         """
         ctx = self.item_start()  # always first line of test

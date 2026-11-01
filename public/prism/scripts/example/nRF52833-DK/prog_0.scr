@@ -16,9 +16,9 @@
       "options": {
       },
       "items": [
-        {"id": "P0xxSETUP",          "enable": true, "target": "nrf52"},
-        {"id": "P100_Program",       "enable": true, "file": "blinky_pca10100e.hex" },
-        {"id": "P0xxTRDN",           "enable": true},
+        {"id": "PROG000_SETUP",    "enable": true, "target": "nrf52"},
+        {"id": "PROG010_program",  "enable": true, "file": "blinky_pca10100e.hex" },
+        {"id": "PROG990_TEARDOWN", "enable": true},
       ]
     }
   ]

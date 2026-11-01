@@ -20,13 +20,13 @@ Barcode Format
 The barcode holds `P###-S#####`, where `P###` is the product model number and `#####` is the
 product serial number, for example `P001-S00123`.
 
-The test checks each scan against the regex in the script, `TST000_Scan` `args` `regex`,
+The test checks each scan against the regex in the script, `TST010_scan` `regex`,
 `^(?P<product>P\d{3})-S(?P<sn>\d{5})$`.  The regex groups `product` and `sn` pick the fields
 from the barcode, so a different barcode format only needs a new regex,
 
 * `product` is saved as the result `info` `product`, `P001`
 * `sn` is saved as `key0`, `sn:00123`
-* the whole barcode is saved as the measurement `TST000_Scan.barcode`
+* the whole barcode is saved as the measurement `TST010_scan.barcode`
 
 A scan that does not match the format is recorded as a FAIL.
 
@@ -79,7 +79,7 @@ next text box is ready about a second after a scan.
 
 * The beep plays on the Prism computer, using `aplay`.  Set `AUDIO_DEVICE` in `Scanners.py` if the
   default sound output is not the right one, `aplay -L` lists them.
-* Set `"ready_beep": false` in the `TST000_Scan` `args` to turn the beep off.
+* Set `"ready_beep": false` in the `TST010_scan` item to turn the beep off.
 
 The scan item has a 5 minute timeout (`"timeout": 300` in the script).  If nothing is scanned in
 that time, the item is recorded as `TIMEOUT` and the script stops restarting, so an idle station

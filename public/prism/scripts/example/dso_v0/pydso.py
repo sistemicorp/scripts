@@ -35,13 +35,13 @@ class pydso(TestItem):
         self.dso_ch = 1
         self.dso_lock = None
 
-    def PYDSO000SETUP(self):
+    def PYDSO000_SETUP(self):
         """ Get driver from SharedState Open DSO and get DSO name, serial number,
         and save it to the record
         - a shared scope is locked with a lock shared by all channels, a scope of
           this channel's own has a lock of its own
 
-        {"id": "PYDSO000SETUP",           "enable": true },
+        {"id": "PYDSO000_SETUP",           "enable": true },
         """
         ctx = self.item_start()  # always first line of test
 
@@ -80,11 +80,11 @@ class pydso(TestItem):
         self.logger.info("DSO channel {} assigned".format(self.dso_ch))
         self.item_end()  # always last line of test
 
-    def PYDSO010SETCHAN(self):
+    def PYDSO010_set_chan(self):
         """ Change the channel of the scope, and measure voltage, just for fun
         - this case depends on a setup being configured, ie set timebase, scale, etc
 
-        {"id": "PYDSO010SETCHAN",   "enable": true, "chan": 1 },
+        {"id": "PYDSO010_set_chan",   "enable": true, "chan": 1 },
         """
         ctx = self.item_start()  # always first line of test
         chan = ctx.item.get("chan", 1)
@@ -113,10 +113,10 @@ class pydso(TestItem):
             self.sleep(0.1)  # give it some time to sit here, else its too fast
         self.item_end()  # always last line of test
 
-    def PYDSO020AUTOMEAS(self):
+    def PYDSO020_auto_meas(self):
         """ Autoscale and then measure stuff
 
-        {"id": "PYDSO020AUTOMEAS",   "enable": true, "50Ohm": true },
+        {"id": "PYDSO020_auto_meas",   "enable": true, "50Ohm": true },
         """
         ctx = self.item_start()  # always first line of test
         chan50Ohm = ctx.item.get("50Ohm", False)
@@ -160,7 +160,7 @@ class pydso(TestItem):
 
         self.item_end()  # always last line of test
 
-    def PYDSO999TRDN(self):
+    def PYDSO990_TEARDOWN(self):
         ctx = self.item_start()  # always first line of test
 
         self.item_end()  # always last line of test

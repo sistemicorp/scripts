@@ -64,23 +64,23 @@ scripts/public$ prism/drivers/prism_play/prism_play_cli.py -c 0 -w actions-runne
   INFO Initialized PrismPlayPipe: channel=0
   INFO Opening Read Pipe: /home/andrew/git/scripts/public/actions-runner/prism_play_pipe_ch0-stat.pipe
   INFO Sending play command: {<Fields.CMD: 'cmd'>: <Cmd.PLAY: 'play'>, <Fields.CHANNEL: 'channel'>: 0, <Fields.ARTIFACT: 'artifact'>: 'public/actions-runner/testfile.txt', <Fields.REFERENCES: 'references'>: ['1234567']}
-  INFO Step update: 0, TST0xxTEARDOWN, UNKNOWN, STATE_DONE, 100%, 4, 4
+  INFO Step update: 0, TST990_TEARDOWN, UNKNOWN, STATE_DONE, 100%, 4, 4
   INFO Prism is idle
-  INFO Step update: 0, TST0xxSETUP, UNKNOWN, STATE_READY, 0%, 1, 4
-  INFO Step update: 0, TST0xxSETUP, UNKNOWN, STATE_RUNNING, 25%, 1, 4
-  INFO Step update: 0, TST0xxSETUP, PASS, STATE_RUNNING, 25%, 1, 4
-  INFO Step update: 0, TST0xxSETUP, PASS, STATE_RUNNING, 25%, 1, 4
-  INFO Step update: 0, TST001_KeyAdd, PASS, STATE_RUNNING, 50%, 2, 4
-  INFO Step update: 0, TST001_KeyAdd, PASS, STATE_RUNNING, 50%, 2, 4
-  INFO Step update: 0, TST001_KeyAdd, PASS, STATE_RUNNING, 50%, 2, 4
-  INFO Step update: 0, TST002_UseArtifact, PASS, STATE_RUNNING, 75%, 3, 4
-  INFO Step update: 0, TST002_UseArtifact, PASS, STATE_RUNNING, 75%, 3, 4
-  INFO Step update: 0, TST002_UseArtifact, PASS, STATE_RUNNING, 75%, 3, 4
-  INFO Step update: 0, TST0xxTEARDOWN, PASS, STATE_RUNNING, 75%, 4, 4
-  INFO Step update: 0, TST0xxTEARDOWN, PASS, STATE_RUNNING, 75%, 4, 4
-  INFO Step update: 0, TST0xxTEARDOWN, PASS, STATE_RUNNING, 75%, 4, 4
-  INFO Step update: 0, TST0xxTEARDOWN, PASS, STATE_ENDING, 75%, 4, 4
-  INFO Step update: 0, TST0xxTEARDOWN, PASS, STATE_DONE, 75%, 4, 4
+  INFO Step update: 0, TST000_SETUP, UNKNOWN, STATE_READY, 0%, 1, 4
+  INFO Step update: 0, TST000_SETUP, UNKNOWN, STATE_RUNNING, 25%, 1, 4
+  INFO Step update: 0, TST000_SETUP, PASS, STATE_RUNNING, 25%, 1, 4
+  INFO Step update: 0, TST000_SETUP, PASS, STATE_RUNNING, 25%, 1, 4
+  INFO Step update: 0, TST010_key_add, PASS, STATE_RUNNING, 50%, 2, 4
+  INFO Step update: 0, TST010_key_add, PASS, STATE_RUNNING, 50%, 2, 4
+  INFO Step update: 0, TST010_key_add, PASS, STATE_RUNNING, 50%, 2, 4
+  INFO Step update: 0, TST020_use_artifact, PASS, STATE_RUNNING, 75%, 3, 4
+  INFO Step update: 0, TST020_use_artifact, PASS, STATE_RUNNING, 75%, 3, 4
+  INFO Step update: 0, TST020_use_artifact, PASS, STATE_RUNNING, 75%, 3, 4
+  INFO Step update: 0, TST990_TEARDOWN, PASS, STATE_RUNNING, 75%, 4, 4
+  INFO Step update: 0, TST990_TEARDOWN, PASS, STATE_RUNNING, 75%, 4, 4
+  INFO Step update: 0, TST990_TEARDOWN, PASS, STATE_RUNNING, 75%, 4, 4
+  INFO Step update: 0, TST990_TEARDOWN, PASS, STATE_ENDING, 75%, 4, 4
+  INFO Step update: 0, TST990_TEARDOWN, PASS, STATE_DONE, 75%, 4, 4
   INFO Play completed with result: PASS
   INFO Passed
 scripts/public$

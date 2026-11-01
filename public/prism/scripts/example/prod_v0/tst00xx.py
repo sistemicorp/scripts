@@ -30,17 +30,18 @@ class tst00xx(TestItem):
         # API Reference:
         #
         # from prod_0.scr:
-        #   {"id": "TST000_Meas",  "enable": true, "args": {"min": 0, "max": 10},
-        #                          "fail": [ {"fid": "TST000-0", "msg": "Component apple R1"},
-        #                                    {"fid": "TST000-1", "msg": "Component banana R1"}] },
+        #   {"id": "TST020_meas_fail", "enable": true, "min": 0, "max": 10,
+        #    "fail": [ {"fid": "TST020-1", "msg": "Component apple R1"},
+        #              {"fid": "TST020-2", "msg": "Component banana R1"}] },
         #
         # ctx = self.item_start()  # always first line of test
         #  - ctx (context) is a namespace of content from the test script,
         #    returned as a python dict,
         #  - ctx.config = script config section
-        #  - ctx.item = {"id": "TST000", "enable": True,  "args": {"min": 0, "max": 10}}
-        #  - ctx.item.args = {"min": 0, "max": 10}
-        #  - ctx.item.args.max = 10
+        #  - ctx.item = {"id": "TST020_meas_fail", "enable": True, "min": 0, "max": 10,
+        #                "fail": [...]}
+        #  - ctx.item.max = 10
+        #  - ctx.item.get("max", 10)  # with a default, when the field may be missing
         #  - ctx.options = { "fail_fast": False }
         #  - ctx.options.fail_fast = <True|False>
         #  - ctx.fail_fast = <True|False>
@@ -77,7 +78,7 @@ class tst00xx(TestItem):
         #
         # self.check_abort()
         #   - call in while/for loops, ends the item if it timed out or was aborted
-        #   - release held resources with `with` or try/finally (see TST006_RsrcLock)
+        #   - release held resources with `with` or try/finally (see TST070_rsrc_lock)
         #
         # self.item_end([result[s]]) # always last line of test
         #  - result is one of ResultAPI.RECORD_* constants
@@ -98,12 +99,12 @@ class tst00xx(TestItem):
         #
         self.hw_fake = None
 
-    def TST0xxSETUP(self):
+    def TST000_SETUP(self):
         """  Setup up for testing
         - main purpose is to get a local handle to the connected hardware
         - store the ID of the hardware for tracking purposes
 
-            {"id": "TST0xxSETUP",           "enable": true },
+            {"id": "TST000_SETUP",           "enable": true },
 
         """
         ctx = self.item_start()  # always first line of test
@@ -125,12 +126,12 @@ class tst00xx(TestItem):
         self.log_bullet(_bullet)
         self.item_end(_result)  # always last line of test
 
-    def TST0xxTEARDOWN(self):
+    def TST990_TEARDOWN(self):
         """  Always called at the end of testing
         - process any cleanup, closing, etc
         - if there was a FAIL of an earlier test item, this is STILL called
 
-            {"id": "TST0xxTEARDOWN",        "enable": true },
+            {"id": "TST990_TEARDOWN",        "enable": true },
 
         """
         ctx = self.item_start()  # always first line of test
@@ -138,7 +139,7 @@ class tst00xx(TestItem):
         # play sound based on whether passing or failing
         # NOTE: playing these sounds could have also been placed
         #       in the driver that implements player show_pass_fail()
-        # hw_fake is None if TST0xxSETUP did not get that far
+        # hw_fake is None if TST000_SETUP did not get that far
         meta_result = ctx.record.record_meta_get_result()
         if self.hw_fake is None:
             self.log_bullet("no fake hardware to play a sound")
@@ -149,10 +150,10 @@ class tst00xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def TST000_Meas(self):
+    def TST010_meas(self):
         """ Measurement example, simplest example
 
-        {"id": "TST000_Meas",    "enable": true, "args": {"min": 0, "max": 10},
+        {"id": "TST010_meas",    "enable": true, "min": 0, "max": 10,
 
         """
         ctx = self.item_start()   # always first line of test
@@ -161,20 +162,20 @@ class tst00xx(TestItem):
         success, _result, _bullet = ctx.record.measurement("apples",
                                                            adc_measurement,
                                                            ResultAPI.UNIT_DB,
-                                                           ctx.item.args.min,
-                                                           ctx.item.args.max)
+                                                           ctx.item.min,
+                                                           ctx.item.max)
 
         self.log_bullet(_bullet)
         self.item_end(_result)  # always last line of test
 
-    def TST001_Meas(self):
+    def TST020_meas_fail(self):
         """ Measurement example, with multiple failure messages
         - example of taking multiple measurements, and sending as a list of results
         - example of measurement indicating possible failed components
 
-        {"id": "TST001_Meas",    "enable": true, "args": {"min": 0, "max": 10},
-                                 "fail": [ {"fid": "TST000-0", "msg": "Component apple R1"},
-                                           {"fid": "TST000-1", "msg": "Component banana R1"}] },
+        {"id": "TST020_meas_fail",    "enable": true, "min": 0, "max": 10,
+                                 "fail": [ {"fid": "TST020-1", "msg": "Component apple R1"},
+                                           {"fid": "TST020-2", "msg": "Component banana R1"}] },
         """
         ctx = self.item_start()   # always first line of test
 
@@ -190,8 +191,8 @@ class tst00xx(TestItem):
         success, _result, _bullet = ctx.record.measurement("apples",
                                                            adc_measurement,
                                                            ResultAPI.UNIT_DB,
-                                                           ctx.item.args.min,
-                                                           ctx.item.args.max,
+                                                           ctx.item.min,
+                                                           ctx.item.max,
                                                            fail=ctx.item.fail[FAIL_APPLE])
         if not success:
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
@@ -205,8 +206,8 @@ class tst00xx(TestItem):
         success, _result, _bullet = ctx.record.measurement("bananas",
                                                            adc_measurement,
                                                            ResultAPI.UNIT_DB,
-                                                           ctx.item.args.min,
-                                                           ctx.item.args.max,
+                                                           ctx.item.min,
+                                                           ctx.item.max,
                                                            fail=ctx.item.fail[FAIL_BANANNA])
         if not success:
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
@@ -218,10 +219,10 @@ class tst00xx(TestItem):
         # Note that we can send a list of measurements
         self.item_end(item_result_state=measurement_results)  # always last line of test
 
-    def TST002_Skip(self):
+    def TST030_skip(self):
         """ Example of an item that is skipped
 
-        {"id": "TST002_Skip",           "enable": false },
+        {"id": "TST030_skip",           "enable": false },
         """
         ctx = self.item_start()   # always first line of test
         # this is a skipped test for testing, in some scripts
@@ -232,11 +233,11 @@ class tst00xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def TST003_Buttons(self):
+    def TST040_buttons(self):
         """ Select one of three buttons
         - capture the button index in the test record
 
-        {"id": "TST003_Buttons",        "enable": true, "timeout": 10 },
+        {"id": "TST040_buttons",        "enable": true, "timeout": 10 },
         """
         ctx = self.item_start()   # always first line of test
 
@@ -258,14 +259,14 @@ class tst00xx(TestItem):
 
         self.item_end(_result)  # always last line of test
 
-    def TST004_KeyAdd(self):
+    def TST050_key_add(self):
         """ How use of keys: keys are things like serial numbers.
         - every call to self.add_key(k,v) adds the "k:v" to the next available
           key# in the record, you can force the slot though.  It depends how you will
           manage the keys in the final database; either by convention force every slot
           to represent a specific thing (preferred), or search all keys for the 'k' you want.
 
-        {"id": "TST004_KeyAdd",         "enable": true },
+        {"id": "TST050_key_add",         "enable": true },
         """
         ctx = self.item_start()   # always first line of test
 
@@ -277,11 +278,11 @@ class tst00xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def TST005_KeyGet(self):
+    def TST060_key_get(self):
         """ How use of keys works
         - retrieve a previous key, otherwise fail test
 
-        {"id": "TST005_KeyGet",         "enable": true },
+        {"id": "TST060_key_get",         "enable": true },
         """
         ctx = self.item_start()  # always first line of test
 
@@ -296,17 +297,17 @@ class tst00xx(TestItem):
         self.log_bullet("got key[0]: {}".format(keys.get("key0", "NOT FOUND!")))
         self.item_end()  # always last line of test
 
-    def TST006_RsrcLock(self):
+    def TST070_rsrc_lock(self):
         """ Demonstrate locking of a resource in shared_state
         - lock a resource for some time, and then release
         - note the hold time comes from the test script
         - this is useful for a piece of test equipment that is shared across channels
 
-        {"id": "TST006_RsrcLock",       "enable": true, "args": {"holdTime": 1}, "timeout": 60 },
+        {"id": "TST070_rsrc_lock",       "enable": true, "hold_time": 1, "timeout": 60 },
         """
         ctx = self.item_start()  # always first line of test
 
-        hold_time = ctx.item.args.get("holdTime", 5)  # a safe way to get parms, a default backup
+        hold_time = ctx.item.get("hold_time", 5)  # a safe way to get parms, a default backup
 
         self.log_bullet("waiting for my_resource...")
         with self.shared_lock("my_resource"):  # released even if the item is stopped
@@ -320,7 +321,7 @@ class tst00xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def TST007_HWDriver(self):
+    def TST080_hw_driver(self):
         """ How to get a driver that was initialized when script was loaded
         - when the script is loaded, HW driver are initialized and stored in the shared
           state.  The format of the return data is,
@@ -342,13 +343,13 @@ class tst00xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def TST008_TextInput(self):
+    def TST090_text_input(self):
         """ Text Input Box
         - input text boxes in production are probably a bad idea unless the data
           is coming from a scanner.  User input error correction is not something
           scalable in production setting.
 
-        {"id": "TST008_TextInput",      "enable": true, "timeout": 10 },
+        {"id": "TST090_text_input",      "enable": true, "timeout": 10 },
 
         """
         ctx = self.item_start()   # always first line of test
@@ -370,10 +371,10 @@ class tst00xx(TestItem):
 
         self.item_end(_result)  # always last line of test
 
-    def TST009_LogPctProgress(self):
+    def TST100_log_progress(self):
         """ Demo a log bullet with increasing percent
 
-        {"id": "TST009_LogPctProgress", "enable": true, "timeout": 15 },
+        {"id": "TST100_log_progress", "enable": true, "timeout": 15 },
 
         """
         ctx = self.item_start()  # always first line of test
@@ -389,11 +390,11 @@ class tst00xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def TST010_BlobUnknown(self):
+    def TST110_blob_unknown(self):
         """ Blob Unknown
         - create a string of random characters using BLOB_UNKNOWN
 
-            {"id": "TST010_BlobUnknown",    "enable": true },
+            {"id": "TST110_blob_unknown",    "enable": true },
         """
         ctx = self.item_start()   # always first line of test
 
@@ -410,13 +411,13 @@ class tst00xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def TST011_BlobXY(self):
+    def TST120_blob_xy(self):
         """ Blob XY Plots
 
         An example of creating a waveform, with a template to fit
         - testing wave fitting the template is beyond the scope of this example
 
-        {"id": "TST011_BlobXY",    "enable": true },
+        {"id": "TST120_blob_xy",    "enable": true },
         """
         ctx = self.item_start()   # always first line of test
         from numpy import sin, arange
@@ -470,10 +471,10 @@ class tst00xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def TST012_JSONB(self):
+    def TST130_jsonb(self):
         """ postgres JSONB object example
 
-        {"id": "TST012_JSONB",          "enable": true },
+        {"id": "TST130_jsonb",          "enable": true },
         """
         ctx = self.item_start()   # always first line of test
 

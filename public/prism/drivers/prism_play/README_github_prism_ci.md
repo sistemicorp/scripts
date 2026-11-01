@@ -110,7 +110,7 @@ scripts/public$ less log/prism.log
 <...>
 2026-04-30 14:26:46,440:         SC.ChanCon.0:                channel.py:                    log_bullet  935 - INFO  : Artifact: /app/public/actions-runner/_work/Workspace1/Worksp
 2026-04-30 14:26:46,440:               Master:                 master.py:            onCHANNEL_VIEW_LOG  233 - INFO  : ch_root.view_log - ch: 0, log: .    Artifact: /app/public/actions-runner/_work/Workspace1/Worksp
-2026-04-30 14:26:46,441:            tst00xx.0:          tstGitHubCIxx.py:            TST002_UseArtifact  114 - ERROR : Error reading artifact /app/public/actions-runner/_work/Workspace1/Workspace1/artifact.txtbad: [Errno 2] No such file or directory: '/app/public/actions-runner/_work/Workspace1/Workspace1/artifact.txtbad'
+2026-04-30 14:26:46,441:            tst00xx.0:          tstGitHubCIxx.py:            TST020_use_artifact  114 - ERROR : Error reading artifact /app/public/actions-runner/_work/Workspace1/Workspace1/artifact.txtbad: [Errno 2] No such file or directory: '/app/public/actions-runner/_work/Workspace1/Workspace1/artifact.txtbad'
 2026-04-30 14:26:46,441:         SC.ChanCon.0:                channel.py:                    log_bullet  935 - INFO  : ERROR: GitHub integration
 2026-04-30 14:26:46,441:               Master:                 master.py:            onCHANNEL_VIEW_LOG  233 - INFO  : ch_root.view_log - ch: 0, log: .    ERROR: GitHub integration
 ```

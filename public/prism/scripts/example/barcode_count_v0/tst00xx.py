@@ -30,34 +30,33 @@ class tst00xx(TestItem):
             return None
         return drivers[0]["obj"]["hwdrv"]
 
-    def TST0xxTEARDOWN(self):
+    def TST990_TEARDOWN(self):
         """  Always called at the end of testing
         - process any cleanup, closing, etc
 
-            {"id": "TST0xxTEARDOWN",        "enable": true },
+            {"id": "TST990_TEARDOWN",        "enable": true },
 
         """
         ctx = self.item_start()  # always first line of test
         self.item_end()  # always last line of test
 
-    def TST000_Scan(self):
+    def TST010_scan(self):
         """ Scan barcode
-        - args.regex is the barcode format, P###-S#####, its groups "product" and "sn"
+        - regex is the barcode format, P###-S#####, its groups "product" and "sn"
           pick the fields, product goes to info product, sn is the serial number key
-        - args.ready_beep, beep when ready for the scan, default true
+        - ready_beep, beep when ready for the scan, default true
         - if nothing is scanned before the item timeout, Prism records TIMEOUT,
           and the scanner stops restarting the script, until the next good scan
 
-        {"id": "TST000_Scan", "enable": true, "timeout": 300,
-                              "args": {"regex": "^(?P<product>P\\d{3})-S(?P<sn>\\d{5})$",
-                                       "ready_beep": true} },
+        {"id": "TST010_scan", "enable": true, "timeout": 300, "ready_beep": true,
+                              "regex": "^(?P<product>P\\d{3})-S(?P<sn>\\d{5})$" },
 
         """
         ctx = self.item_start()   # always first line of test
         scanner = self._scanner()
 
         self.log_bullet("Scan barcode")
-        if scanner and ctx.item.args.get("ready_beep", True):
+        if scanner and ctx.item.get("ready_beep", True):
             scanner.ready_beep()
         user_text = self.input_textbox("Scan:", "barcode", timeout=self.TEXTBOX_TIMEOUT_SEC)
 
@@ -71,7 +70,7 @@ class tst00xx(TestItem):
             return
 
         barcode = user_text["textbox"].strip()
-        match = re.match(ctx.item.args.regex, barcode)
+        match = re.match(ctx.item.regex, barcode)
         if not match:
             _, _result, _bullet = ctx.record.measurement("barcode", barcode, ResultAPI.UNIT_STRING,
                                                          force_fail=True)

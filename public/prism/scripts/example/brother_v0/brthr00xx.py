@@ -31,7 +31,7 @@ class brthr00xx(TestItem):
         self.logger = logging.getLogger("{}.{}".format(__name__, self.chan))
         self.printer = None
 
-    def BRTHR0xxSETUP(self):
+    def BRTHR000_SETUP(self):
         """ Get the Printer handle from the shared state
 
         """
@@ -45,12 +45,12 @@ class brthr00xx(TestItem):
         self.printer = printer_info[0]['obj']['hwdrv']
         self.item_end()  # always last line of test
 
-    def BRTHR0xxTRDN(self):
+    def BRTHR990_TEARDOWN(self):
         ctx = self.item_start()  # always first line of test
         # there is nothing to do...
         self.item_end()  # always last line of test
 
-    def BRTHR001_PrintRUID(self):
+    def BRTHR010_print_ruid(self):
         """ Print the test record RUID on the label
         """
         ctx = self.item_start()   # always first line of test

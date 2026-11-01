@@ -140,7 +140,7 @@ class Fake(object):
 
     def play_sound(self, pass_fail: bool):
         """ Play a sound to indicate pass/fail
-        - the example TST0xxTEARDOWN calls here
+        - the example TST990_TEARDOWN calls here
         - this could be called by show_pass_fail() below
         - this is blocking, play short sounds
         """
@@ -175,11 +175,11 @@ class Fake(object):
         """ Called by Prism with test details in progress
         - can be used by hardware to display test status
         - examples
-            show_msg  117 - INFO  : 0, TST0xxSETUP, UNKNOWN, STATE_RUNNING, 6%, 1, 15
-            show_msg  117 - INFO  : 0, TST0xxSETUP, PASS, STATE_RUNNING, 6%, 1, 15
-            show_msg  117 - INFO  : 0, TST0xxSETUP, PASS, STATE_RUNNING, 6%, 1, 15
-            show_msg  117 - INFO  : 0, TST000_Meas, PASS, STATE_RUNNING, 13%, 2, 15
-            show_msg  117 - INFO  : 0, TST000_Meas, PASS, STATE_RUNNING, 13%, 2, 15
+            show_msg  117 - INFO  : 0, TST000_SETUP, UNKNOWN, STATE_RUNNING, 6%, 1, 15
+            show_msg  117 - INFO  : 0, TST000_SETUP, PASS, STATE_RUNNING, 6%, 1, 15
+            show_msg  117 - INFO  : 0, TST000_SETUP, PASS, STATE_RUNNING, 6%, 1, 15
+            show_msg  117 - INFO  : 0, TST010_meas, PASS, STATE_RUNNING, 13%, 2, 15
+            show_msg  117 - INFO  : 0, TST010_meas, PASS, STATE_RUNNING, 13%, 2, 15
 
         :param msg: csv: channel/slot #, Test ID, Pass/Fail, State, %done, item#, total items
         """

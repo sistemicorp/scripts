@@ -24,10 +24,10 @@
       "options": {
       },
       "items": [
-        {"id": "P0xxSETUP",           "enable": true },
-        {"id": "P100_Check",          "enable": true },
-        {"id": "P200_Program",        "enable": true, "file": "teensy4_server.ino.hex" },
-        {"id": "P300_Verify",         "enable": true, "delay": 5 },
+        {"id": "PROG000_SETUP",   "enable": true },
+        {"id": "PROG010_check",   "enable": true },
+        {"id": "PROG020_program", "enable": true, "file": "teensy4_server.ino.hex" },
+        {"id": "PROG030_verify",  "enable": true, "delay": 5 },
       ]
     }
   ]

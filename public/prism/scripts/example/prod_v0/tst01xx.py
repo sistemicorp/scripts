@@ -21,12 +21,12 @@ class tst01xx(TestItem):
         super().__init__(controller, chan, shared_state)
         self.logger = logging.getLogger("tst01xx.{}".format(self.chan))
 
-    def TST1xxSETUP(self):
+    def TST500_SETUP(self):
         """  Setup up for testing
         - main purpose is to get a local handle to the connected hardware
         - store the ID of the hardware for tracking purposes
 
-            {"id": "TST0xxSETUP",           "enable": true },
+            {"id": "TST500_SETUP", "enable": true },
 
         """
         ctx = self.item_start()  # always first line of test
@@ -34,21 +34,21 @@ class tst01xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def TST0xxTEARDOWN(self):
+    def TST990_TEARDOWN(self):
         """  Always called at the end of testing
         - process any cleanup, closing, etc
 
-            {"id": "TST0xxTEARDOWN",        "enable": true },
+            {"id": "TST990_TEARDOWN",        "enable": true },
 
         """
         ctx = self.item_start()  # always first line of test
         self.item_end()  # always last line of test
 
-    def TST100_Meas(self):
+    def TST510_meas(self):
         """ Example test
 
-        {"id": "TST100_Meas", "enable": true,  "args": {"min": 0, "max": "%%TST100Max"},
-                      "fail": [ {"fid": "TST100-0", "msg": "Component R1"} ] },
+        {"id": "TST510_meas", "enable": true,  "min": 0, "max": "%%TST510Max",
+                      "fail": [ {"fid": "TST510-1", "msg": "Component R1"} ] },
         """
         ctx = self.item_start()   # always first line of test
 
@@ -57,15 +57,15 @@ class tst01xx(TestItem):
         # example of taking multiple measurements, and sending as a list of results
         # if any test fails, this test item fails
         # This test has a failure message in the script, depending on the failure mode,
-        # "fail": [ {"fid": "TST100-0", "msg": "Component R1"} ] }
+        # "fail": [ {"fid": "TST510-1", "msg": "Component R1"} ] }
         FAIL_ID = 0
 
         measurement_results = []
         success, _result, _bullet = ctx.record.measurement("apples",
                                                            random(),
                                                            ResultAPI.UNIT_DB,
-                                                           ctx.item.args.min,
-                                                           ctx.item.args.max,
+                                                           ctx.item.min,
+                                                           ctx.item.max,
                                                            fail=ctx.item.fail[FAIL_ID])
         if not success:
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
@@ -75,10 +75,10 @@ class tst01xx(TestItem):
         measurement_results.append(_result)
 
         success, _result, _bullet = ctx.record.measurement("bananas",
-                                                           randint(0, 10),
+                                                           float(randint(0, 10)),
                                                            ResultAPI.UNIT_DB,
-                                                           ctx.item.args.min,
-                                                           ctx.item.args.min,
+                                                           ctx.item.min,
+                                                           ctx.item.max,
                                                            fail=ctx.item.fail[FAIL_ID])
         if not success:
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
@@ -89,10 +89,10 @@ class tst01xx(TestItem):
 
         self.item_end(item_result_state=measurement_results)  # always last line of test
 
-    def TST101_Skip(self):
+    def TST520_skip(self):
         """ Example of a test that is skipped
 
-        {"id": "TST101_Skip", "enable": false },
+        {"id": "TST520_skip", "enable": false },
 
         """
         ctx = self.item_start()   # always first line of test

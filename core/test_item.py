@@ -71,7 +71,7 @@ class TestItem(object):
     def input_button(self, buttons, timeout=10):
         """ Create a row of buttons horizontally for user selection
         - each button entry looks like,
-             {"value": "one",   "callback":"_TST005_button_handler", ["name": <unique_name>]}
+             {"value": "one",   "callback":"_TST040_button_handler", ["name": <unique_name>]}
         :param timeout: seconds
         :param buttons: list of button dicts
         :return {'success': True/False, 'button': <#>, ['err': <msg>]}

@@ -27,9 +27,10 @@ class bond_P00xx(TestItem):
     BOND uses the Teensy4 example as a starting point.
 
     Tests:
-        P000-P999: For Teensy management (updating)
-        P1000-P1999: Example BOND testing (Can be deleted)
-        P2000-P9999: Your product specific tests
+        PROG: program a new BOND (bond_progfresh_0.scr)
+        UPD: update the BOND firmware (bond_update_0.scr)
+        BOND: BOND self test examples (bond_selftest_0.scr), can be deleted
+        Your product tests: your stage name, for example BLT100_voltage
 
     Helpful:
     https://forum.pjrc.com/threads/66942-Program-Teensy-4-from-command-line-without-pushing-the-button?highlight=bootloader
@@ -45,7 +46,7 @@ class bond_P00xx(TestItem):
         self._teensy_usb_path = None
         self._teensy_ports_cache = None
 
-    def P000_SETUP(self):
+    def PROG000_SETUP(self):
         """ Setup for programming BOND
 
         """
@@ -66,10 +67,10 @@ class bond_P00xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def P010_led(self):
+    def BOND010_led(self):
         """ Turn on/off LED
 
-            {"id": "P010_led",             "enable": true, "set": true },
+            {"id": "BOND010_led",             "enable": true, "set": true },
         """
         ctx = self.item_start()  # always first line of test
 
@@ -77,10 +78,10 @@ class bond_P00xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def P100_Check(self):
+    def PROG010_check(self):
         """ Check Teensy Connected
 
-        {"id": "P100_Check",          "enable": true },
+        {"id": "PROG010_check",          "enable": true },
 
         use lsusb to see if there is a Teensy attached, example outputs,
             $ lsusb
@@ -107,7 +108,7 @@ class bond_P00xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def P200_Program(self):
+    def PROG020_program(self):
         """ Program Teensy
         - the file argument assume path BOND_ASSETS_PATH
         - Used for programming a fresh teensy that has only bootloader running
@@ -117,7 +118,7 @@ class bond_P00xx(TestItem):
                  the Teensy is programmed by the Arduino IDE.  So this is here as
                  a prototype...
 
-        {"id": "P200_Program",        "enable": true, "file": "teensy4_server.ino.hex" },
+        {"id": "PROG020_program",        "enable": true, "file": "teensy4_server.ino.hex" },
 
         """
         ctx = self.item_start()  # always first line of test
@@ -146,7 +147,7 @@ class bond_P00xx(TestItem):
         self.logger.info(result)
 
         # expected output looks like,
-        #  1747 bond_P00xx.py: 119 - teensy400xx.0: P200_Program() INFO  : Teensy Loader, ...
+        #  1747 bond_P00xx.py: 119 - teensy400xx.0: PROG020_program() INFO  : Teensy Loader, ...
         # Read ".../BOND_v0/assets/teensy4_server.ino.hex": 102400 bytes, 1.3% usage
         # Found HalfKay Bootloader
         # Programming.................................................................................................
@@ -165,11 +166,11 @@ class bond_P00xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def P300_Reconnect(self):
+    def PROG030_reconnect(self):
         """ Verify Teensy
         - by verifying that we can install instance of driver
 
-        {"id": "P300_Verify",         "enable": true, "delay": 10 },
+        {"id": "PROG030_verify",         "enable": true, "delay": 10 },
 
         """
         ctx = self.item_start()  # always first line of test
@@ -221,12 +222,12 @@ class bond_P00xx(TestItem):
         _teensy.close()
         self.item_end()  # always last line of test
 
-    def P500_SETUP(self):
+    def UPD000_SETUP(self):
         """ Setup teensy for Update (means its already running our server code)
         - close the current connection to Teensy
-        - cache the port, so we can open it later in P700_Verify
+        - cache the port, so we can open it later in UPD020_verify
 
-        {"id": "P500_SETUP",          "enable": true },
+        {"id": "UPD000_SETUP",          "enable": true },
 
         :return:
         """
@@ -254,10 +255,10 @@ class bond_P00xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def P600_Update(self):
+    def UPD010_update(self):
         """ Update the teensy Firmware
 
-        {"id": "P600_Update",         "enable": true, "file": "teensy4_server.ino.hex" },
+        {"id": "UPD010_update",         "enable": true, "file": "teensy4_server.ino.hex" },
 
         :return:
         """
@@ -359,14 +360,14 @@ class bond_P00xx(TestItem):
 
         return port
 
-    def P700_Verify(self):
+    def UPD020_verify(self):
         """ Verify Teensy
         - by verifying that we can re-install instance of driver after the update
         - this is difficult because on USB re-enumeration teensy may be on a different
           serial port.  So use the usb_path to find the correct port.
         - NOTE when BOND boots it has a long self test to run, so there is a large delay
 
-        {"id": "P700_Verify",         "enable": true, "delay": 5 },
+        {"id": "UPD020_verify",         "enable": true, "delay": 5 },
 
         """
         ctx = self.item_start()  # always first line of test
@@ -419,11 +420,11 @@ class bond_P00xx(TestItem):
         self.log_bullet("! ONLY RUN ONCE !")
         self.item_end()  # always last line of test
 
-    def P800_USBTree(self):
+    def PROG800_usb_tree(self):
         """ USB Tree
         - this is debug code to learn about pyudev.Context()
 
-        {"id": "P800_USBTree",        "enable": true },
+        {"id": "PROG800_usb_tree",        "enable": true },
 
         Device('/sys/devices/pci0000:00/0000:00:11.0/0000:02:03.0/usb1')
         Device('/sys/devices/pci0000:00/0000:00:11.0/0000:02:03.0/usb1/1-0:1.0')
@@ -453,7 +454,7 @@ class bond_P00xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def P900_TEARDOWN(self):
+    def PROG990_TEARDOWN(self):
         """ teardown for programming BOND
 
         """
@@ -461,10 +462,10 @@ class bond_P00xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def P1000_SETUP(self):
+    def BOND000_SETUP(self):
         """ Setup for testing DUT
 
-        {"id": "P1000_SETUP",          "enable": true },
+        {"id": "BOND000_SETUP",          "enable": true },
 
         """
         ctx = self.item_start()  # always first line of test
@@ -488,13 +489,13 @@ class bond_P00xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def P1100_ADC_check(self):
+    def BOND030_adc_check(self):
         """ ADC Check/Validate conversion
         - each MAX11311 on each header has an ADC input connected to Voltage Reference
           for self testing each chip
         - BOND's reference voltage is 2500mV
 
-        {"id": "P1100_ADC_check",      "enable": true, "hdr": 1 },
+        {"id": "BOND030_adc_check",      "enable": true, "hdr": 1 },
 
         """
         ctx = self.item_start()  # always first line of test
@@ -517,13 +518,13 @@ class bond_P00xx(TestItem):
 
         self.item_end(_result)  # always last line of test
 
-    def P1110_voltage_check(self):
+    def BOND040_voltage_check(self):
         """ Check BOND voltage rails
         - these voltages are checked when BOND driver is installed, see
           the A4401_BOND.init() function.
         - the names of the voltages are "V6V", "V5V", "V3V3A", "V3V3D", see A4401_BOND.BIST_VOLTAGES
 
-        {"id": "P1110_voltage_check",      "enable": true, "voltage": "V6V" },
+        {"id": "BOND040_voltage_check",      "enable": true, "voltage": "V6V" },
 
         """
         ctx = self.item_start()  # always first line of test
@@ -551,10 +552,10 @@ class bond_P00xx(TestItem):
 
         self.item_end(measurement_results)  # always last line of test
 
-    def P1120_vbat_check(self):
+    def BOND050_vbat_check(self):
         """ Check VBAT at voltage, and self test load
 
-            {"id": "P1120_vbat_check",      "enable": true, "voltage_mv": 3000 },
+            {"id": "BOND050_vbat_check",      "enable": true, "voltage_mv": 3000 },
         """
         ctx = self.item_start()  # always first line of test
         SELFTEST_LOAD_OHMS = 200.0
@@ -597,10 +598,10 @@ class bond_P00xx(TestItem):
 
         self.item_end(measurement_results)  # always last line of test
 
-    def P1130_version(self):
+    def BOND020_version(self):
         """ Get Bond firmware version
 
-            {"id": "P1130_version",        "enable": true },
+            {"id": "BOND020_version",        "enable": true },
         """
         ctx = self.item_start()  # always first line of test
 
@@ -612,10 +613,10 @@ class bond_P00xx(TestItem):
         self.log_bullet(_bullet)
         self.item_end(_result)  # always last line of test
 
-    def P1140_vdut_check(self):
+    def BOND060_vdut_check(self):
         """ Check VDUT at voltage, and self test load
 
-            {"id": "P1140_vdut_check",      "enable": true, "voltage_mv": 3000 },
+            {"id": "BOND060_vdut_check",      "enable": true, "voltage_mv": 3000 },
         """
         ctx = self.item_start()  # always first line of test
         SELFTEST_LOAD_OHMS = 200.0
@@ -658,10 +659,10 @@ class bond_P00xx(TestItem):
 
         self.item_end(measurement_results)  # always last line of test
 
-    def P1200_DAC(self):
+    def BOND100_dac(self):
         """ Set BOND DAC pin
 
-        {"id": "P1200_DAC",      "enable": true, "hdr": 1, "pin": 6, "mv": 3300 },
+        {"id": "BOND100_dac",      "enable": true, "hdr": 1, "pin": 6, "mv": 3300 },
 
         """
         ctx = self.item_start()  # always first line of test
@@ -675,10 +676,10 @@ class bond_P00xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def P1300_ADC(self):
+    def BOND110_adc(self):
         """ read BOND ADC pin
 
-        {"id": "P1300_ADC",            "enable": true, "hdr": 2, "pin": 14,
+        {"id": "BOND110_adc",            "enable": true, "hdr": 2, "pin": 14,
                                                        "min": 3200, "max": 3400 },
 
         """
@@ -697,7 +698,7 @@ class bond_P00xx(TestItem):
 
         self.item_end(_result)  # always last line of test
 
-    def P1900_TEARDOWN(self):
+    def BOND990_TEARDOWN(self):
         """ teardown BOND
 
         """

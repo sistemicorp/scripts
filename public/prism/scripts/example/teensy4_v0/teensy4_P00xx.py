@@ -53,7 +53,7 @@ class teensy4_P00xx(TestItem):
         self._teensy_usb_path = None
         self._teensy_ports_cache = None
 
-    def P0xxSETUP(self):
+    def PROG000_SETUP(self):
         ctx = self.item_start()  # always first line of test
 
         # drivers are stored in the shared_state and are retrieved as,
@@ -71,10 +71,10 @@ class teensy4_P00xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def P100_Check(self):
+    def PROG010_check(self):
         """ Check Teensy Connected
 
-        {"id": "P100_Check",          "enable": true },
+        {"id": "PROG010_check",          "enable": true },
 
         use lsusb to see if there is a Teensy attached, expected output,
             $ lsusb
@@ -100,11 +100,11 @@ class teensy4_P00xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def P200_Program(self):
+    def PROG020_program(self):
         """ Program Teensy
         - the file argument assume path TEENSY4_ASSETS_PATH
 
-        {"id": "P200_Program",        "enable": true, "file": "teensy4_server.ino.hex" },
+        {"id": "PROG020_program",        "enable": true, "file": "teensy4_server.ino.hex" },
 
         """
         ctx = self.item_start()  # always first line of test
@@ -152,11 +152,11 @@ class teensy4_P00xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def P300_Verify(self):
+    def PROG030_verify(self):
         """ Verify Teensy
         - by verifying that we can install instance of driver
 
-        {"id": "P300_Verify",         "enable": true },
+        {"id": "PROG030_verify",         "enable": true },
 
         """
         ctx = self.item_start()  # always first line of test
@@ -207,12 +207,12 @@ class teensy4_P00xx(TestItem):
         _teensy.close()
         self.item_end()  # always last line of test
 
-    def P500_SETUP(self):
+    def UPD000_SETUP(self):
         """ Setup teensy for Update
         - close the current connection to Teensy
-        - cache the port, so we can open it later in P700_Verify
+        - cache the port, so we can open it later in UPD020_verify
 
-        {"id": "P500_SETUP",          "enable": true },
+        {"id": "UPD000_SETUP",          "enable": true },
 
         :return:
         """
@@ -246,10 +246,10 @@ class teensy4_P00xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def P600_Update(self):
+    def UPD010_update(self):
         """ Update the teensy Firmware
 
-        {"id": "P600_Update",         "enable": true, "file": "teensy4_server.ino.hex" },
+        {"id": "UPD010_update",         "enable": true, "file": "teensy4_server.ino.hex" },
 
         :return:
         """
@@ -348,13 +348,13 @@ class teensy4_P00xx(TestItem):
 
         return port
 
-    def P700_Verify(self):
+    def UPD020_verify(self):
         """ Verify Teensy
         - by verifying that we can re-install instance of driver after the update
         - this is difficult because on USB re-enumeration teensy may be on a different
           serial port.  So use the usb_path to find the correct port.
 
-        {"id": "P700_Verify",         "enable": true, "delay": 5 },
+        {"id": "UPD020_verify",         "enable": true, "delay": 5 },
 
         """
         ctx = self.item_start()  # always first line of test
@@ -398,11 +398,11 @@ class teensy4_P00xx(TestItem):
         self.log_bullet("! ONLY RUN ONCE !")
         self.item_end()  # always last line of test
 
-    def P800_USBTree(self):
+    def PROG800_usb_tree(self):
         """ USB Tree
         - this is debug code to learn about pyudev.Context()
 
-        {"id": "P800_USBTree",        "enable": true },
+        {"id": "PROG800_usb_tree",        "enable": true },
 
         Device('/sys/devices/pci0000:00/0000:00:11.0/0000:02:03.0/usb1')
         Device('/sys/devices/pci0000:00/0000:00:11.0/0000:02:03.0/usb1/1-0:1.0')
