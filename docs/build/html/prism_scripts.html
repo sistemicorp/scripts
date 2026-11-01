@@ -341,9 +341,9 @@ objects, and any <code class="docutils literal notranslate"><span class="pre">ti
 <li><p><code class="docutils literal notranslate"><span class="pre">fid</span></code> - a unique ID for this failure mode</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">msg</span></code> - message to show operator, at most 64 characters, a short hint like
 <code class="docutils literal notranslate"><span class="pre">&quot;3V_OUT</span> <span class="pre">low:</span> <span class="pre">check</span> <span class="pre">U7</span> <span class="pre">R49&quot;</span></code></p></li>
-<li><p>the test code attaches it to the result with <code class="docutils literal notranslate"><span class="pre">ctx.record.fail_msg(ctx.item.fail[0])</span></code>
-when a measurement fails, see <a class="reference internal" href="prism_programs.html#binning-failures"><span class="std std-ref">Binning Failures</span></a>.  Without that call
-the <code class="docutils literal notranslate"><span class="pre">fail</span></code> list is never shown</p></li>
+<li><p>the test code attaches it to the result when a measurement fails, with
+<code class="docutils literal notranslate"><span class="pre">ctx.record.measurement(...,</span> <span class="pre">fail=ctx.item.fail[0])</span></code>, see
+<a class="reference internal" href="prism_programs.html#binning-failures"><span class="std std-ref">Binning Failures</span></a>.  Without that the <code class="docutils literal notranslate"><span class="pre">fail</span></code> list is never shown</p></li>
 </ul>
 </li>
 <li><p>any other field your test code needs, for example <code class="docutils literal notranslate"><span class="pre">&quot;name&quot;:</span> <span class="pre">&quot;V5V&quot;,</span> <span class="pre">&quot;min&quot;:</span> <span class="pre">4900,</span> <span class="pre">&quot;max&quot;:</span> <span class="pre">5100</span></code>,
@@ -459,8 +459,10 @@ Every measurement is followed by <code class="docutils literal notranslate"><spa
 <code class="docutils literal notranslate"><span class="pre">ctx.record.measurement(&quot;T304a_dsr_off&quot;,</span> <span class="pre">r[&quot;dsr&quot;]</span> <span class="pre">is</span> <span class="pre">False,</span> <span class="pre">ResultAPI.UNIT_BOOLEAN)</span></code>.  Don’t
 record <code class="docutils literal notranslate"><span class="pre">str(value)</span></code> with <code class="docutils literal notranslate"><span class="pre">force_fail</span></code>.  <code class="docutils literal notranslate"><span class="pre">force_fail</span></code> is for a string or number that must
 match exactly, such as a firmware version</p></li>
-<li><p>a test item that calls <code class="docutils literal notranslate"><span class="pre">ctx.record.fail_msg(ctx.item.fail[i])</span></code> needs that entry in the
-<code class="docutils literal notranslate"><span class="pre">fail</span></code> list of each script line that runs it</p></li>
+<li><p>attach a binning message with <code class="docutils literal notranslate"><span class="pre">fail=ctx.item.fail[i]</span></code> on the measurement it belongs to,
+not an <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">_result</span> <span class="pre">==</span> <span class="pre">ResultAPI.RECORD_RESULT_FAIL:</span> <span class="pre">ctx.record.fail_msg(...)</span></code> block after it.
+A test item that uses <code class="docutils literal notranslate"><span class="pre">ctx.item.fail[i]</span></code> needs that entry in the <code class="docutils literal notranslate"><span class="pre">fail</span></code> list of each script
+line that runs it</p></li>
 <li><p>handle each error where it happens: a failed driver response with <code class="docutils literal notranslate"><span class="pre">self.expect()</span></code>, any
 other error with log, <code class="docutils literal notranslate"><span class="pre">self.item_end(result)</span></code>, <code class="docutils literal notranslate"><span class="pre">return</span></code>.  No context managers or
 decorators that turn exceptions into results, and no exception classes of your own to jump

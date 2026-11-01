@@ -170,6 +170,12 @@ block after each driver call, see
 <a class="reference internal" href="prism_programs.html#test-equipment-errors"><span class="std std-ref">Test Equipment Errors</span></a>.  Older programs keep
 working.  The examples use it, and the Prism Assistant writes code with it and has a
 <code class="docutils literal notranslate"><span class="pre">migrate_test_code</span></code> prompt to move older code to it (Prism Assistant 0.5.0)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ctx.record.measurement()</span></code> takes <code class="docutils literal notranslate"><span class="pre">fail=ctx.item.fail[i]</span></code>, and attaches that fail message
+to the record when the measurement fails, instead of an
+<code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">_result</span> <span class="pre">==</span> <span class="pre">ResultAPI.RECORD_RESULT_FAIL:</span> <span class="pre">ctx.record.fail_msg(...)</span></code> block after it, see
+<a class="reference internal" href="prism_programs.html#binning-failures"><span class="std std-ref">Binning Failures</span></a>.  Older programs keep working.  The
+examples use it, and the Prism Assistant writes code with it and its <code class="docutils literal notranslate"><span class="pre">migrate_test_code</span></code>
+prompt moves older code to it (Prism Assistant 0.5.1)</p></li>
 </ul>
 <p>Bug fixes,</p>
 <ul class="simple">

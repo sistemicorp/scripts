@@ -398,9 +398,10 @@ It is the example distributed with the system, <cite>public/prism/scripts/exampl
         <span class="c1">#    From script &quot;config&quot; (lower precedence) &quot;options&quot; (higher)</span>
         <span class="c1">#</span>
         <span class="c1">#  - record functions</span>
-        <span class="c1">#    - ctx.record.measurement(name, value, unit, min=None, max=None)</span>
+        <span class="c1">#    - ctx.record.measurement(name, value, unit, min=None, max=None, fail=None)</span>
         <span class="c1">#      - name: name of the measurement, should be unique per test item</span>
         <span class="c1">#      - unit: from ResultAPI.UNIT_*</span>
+        <span class="c1">#      - fail: script fail entry, ctx.item.fail[i], recorded if the measurement fails</span>
         <span class="c1">#</span>
         <span class="c1">#    - ctx.record.add_key(&quot;name&quot;, value, slot=0)</span>
         <span class="c1">#      - slot is 0-4, Lente shows slot 0 in summary results</span>
@@ -410,7 +411,7 @@ It is the example distributed with the system, <cite>public/prism/scripts/exampl
         <span class="c1">#      - get all previously stored keys</span>
         <span class="c1">#</span>
         <span class="c1">#    - ctx.record.fail_msg(msg)</span>
-        <span class="c1">#      - add a fail message to the record</span>
+        <span class="c1">#      - add a fail message to the record, when the fail is not from one measurement</span>
         <span class="c1">#</span>
         <span class="c1"># self.chan  # this channel (0-7)</span>
         <span class="c1">#</span>
@@ -541,15 +542,11 @@ It is the example distributed with the system, <cite>public/prism/scripts/exampl
                                                            <span class="n">adc_measurement</span><span class="p">,</span>
                                                            <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_DB</span><span class="p">,</span>
                                                            <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">min</span><span class="p">,</span>
-                                                           <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
+                                                           <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">max</span><span class="p">,</span>
+                                                           <span class="n">fail</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">fail</span><span class="p">[</span><span class="n">FAIL_APPLE</span><span class="p">])</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_INTERNAL_ERROR</span><span class="p">)</span>
             <span class="k">return</span>
-
-        <span class="c1"># if failed, there is a msg in script to attach to the record, for repair purposes</span>
-        <span class="k">if</span> <span class="n">_result</span> <span class="o">==</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_FAIL</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">fail</span><span class="p">[</span><span class="n">FAIL_APPLE</span><span class="p">]</span>
-            <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">fail_msg</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="n">_bullet</span><span class="p">)</span>
         <span class="n">measurement_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_result</span><span class="p">)</span>
@@ -560,15 +557,11 @@ It is the example distributed with the system, <cite>public/prism/scripts/exampl
                                                            <span class="n">adc_measurement</span><span class="p">,</span>
                                                            <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_DB</span><span class="p">,</span>
                                                            <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">min</span><span class="p">,</span>
-                                                           <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
+                                                           <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">max</span><span class="p">,</span>
+                                                           <span class="n">fail</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">fail</span><span class="p">[</span><span class="n">FAIL_BANANNA</span><span class="p">])</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_INTERNAL_ERROR</span><span class="p">)</span>
             <span class="k">return</span>
-
-        <span class="c1"># if failed, there is a msg in script to attach to the record, for repair purposes</span>
-        <span class="k">if</span> <span class="n">_result</span> <span class="o">==</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_FAIL</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">fail</span><span class="p">[</span><span class="n">FAIL_BANANNA</span><span class="p">]</span>
-            <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">fail_msg</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="n">_bullet</span><span class="p">)</span>
         <span class="n">measurement_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_result</span><span class="p">)</span>
@@ -1041,11 +1034,20 @@ to <code class="docutils literal notranslate"><span class="pre">self.item_end()<
 is a FAIL, the test item will FAIL.</p></li>
 <li><p>There is a co-operation between the test script and the test code as per the index to the type of failure.
 This is coded in the constants <code class="docutils literal notranslate"><span class="pre">FAIL_APPLE</span></code> and <code class="docutils literal notranslate"><span class="pre">FAIL_BANANNA</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">ctx.record.fail_msg()</span></code> is used to set the user facing “binning” message</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fail=ctx.item.fail[i]</span></code> on <code class="docutils literal notranslate"><span class="pre">ctx.record.measurement()</span></code> sets the user facing “binning” message
+when that measurement fails.  Nothing is set when it passes</p></li>
 <li><p>The <code class="docutils literal notranslate"><span class="pre">fid</span></code> text represents the “binning” code</p></li>
 <li><p>The <code class="docutils literal notranslate"><span class="pre">msg</span></code> is there to provide a hint to the test engineer of where the problem might be,
 at most 64 characters (the script linter checks it)</p></li>
-<li><p>The <code class="docutils literal notranslate"><span class="pre">fail</span></code> list is only shown when the code calls <code class="docutils literal notranslate"><span class="pre">ctx.record.fail_msg()</span></code></p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">fail</span></code> list is only shown when the code passes an entry with <code class="docutils literal notranslate"><span class="pre">fail=</span></code>, or calls
+<code class="docutils literal notranslate"><span class="pre">ctx.record.fail_msg()</span></code></p></li>
+<li><p>A test item records one binning message.  When more than one measurement with <code class="docutils literal notranslate"><span class="pre">fail=</span></code> fails,
+the last one is kept</p></li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">ctx.record.fail_msg(ctx.item.fail[i])</span></code> yourself only when the failure is not decided by one
+measurement, for example picking the entry from which of several checks failed.  Older code that
+calls <code class="docutils literal notranslate"><span class="pre">fail_msg()</span></code> after each measurement keeps working, and can be moved to <code class="docutils literal notranslate"><span class="pre">fail=</span></code> by
+deleting the <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">_result</span> <span class="pre">==</span> <span class="pre">ResultAPI.RECORD_RESULT_FAIL:</span></code> block and passing its entry with
+<code class="docutils literal notranslate"><span class="pre">fail=</span></code></p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;TST001_Meas&quot;</span><span class="p">,</span>  <span class="s2">&quot;enable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
                        <span class="o">//</span> <span class="n">fail</span><span class="p">:</span> <span class="n">this</span> <span class="ow">is</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="s1">&#39;fid&#39;</span> <span class="ow">and</span> <span class="s1">&#39;msg&#39;</span> <span class="n">that</span> <span class="n">get</span> <span class="n">displayed</span> <span class="ow">and</span>
@@ -1080,15 +1082,11 @@ at most 64 characters (the script linter checks it)</p></li>
                                                        <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
                                                        <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_DB</span><span class="p">,</span>
                                                        <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">min</span><span class="p">,</span>
-                                                       <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
+                                                       <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">max</span><span class="p">,</span>
+                                                       <span class="n">fail</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">fail</span><span class="p">[</span><span class="n">FAIL_APPLE</span><span class="p">])</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_INTERNAL_ERROR</span><span class="p">)</span>
         <span class="k">return</span>
-
-    <span class="c1"># if failed, there is a msg in script to attach to the record, for repair purposes</span>
-    <span class="k">if</span> <span class="n">_result</span> <span class="o">==</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_FAIL</span><span class="p">:</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">fail</span><span class="p">[</span><span class="n">FAIL_APPLE</span><span class="p">]</span>
-        <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">fail_msg</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="n">_bullet</span><span class="p">)</span>
     <span class="n">measurement_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_result</span><span class="p">)</span>
@@ -1098,15 +1096,11 @@ at most 64 characters (the script linter checks it)</p></li>
                                                        <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
                                                        <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_DB</span><span class="p">,</span>
                                                        <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">min</span><span class="p">,</span>
-                                                       <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
+                                                       <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">max</span><span class="p">,</span>
+                                                       <span class="n">fail</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">fail</span><span class="p">[</span><span class="n">FAIL_BANANNA</span><span class="p">])</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_INTERNAL_ERROR</span><span class="p">)</span>
         <span class="k">return</span>
-
-    <span class="c1"># if failed, there is a msg in script to attach to the record, for repair purposes</span>
-    <span class="k">if</span> <span class="n">_result</span> <span class="o">==</span> <span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_FAIL</span><span class="p">:</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">fail</span><span class="p">[</span><span class="n">FAIL_BANANNA</span><span class="p">]</span>
-        <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">fail_msg</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="n">_bullet</span><span class="p">)</span>
     <span class="n">measurement_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_result</span><span class="p">)</span>

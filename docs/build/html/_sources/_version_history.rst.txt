@@ -141,6 +141,12 @@ screenshots.
   :ref:`Test Equipment Errors <prism_programs:Test Equipment Errors>`.  Older programs keep
   working.  The examples use it, and the Prism Assistant writes code with it and has a
   ``migrate_test_code`` prompt to move older code to it (Prism Assistant 0.5.0)
+* ``ctx.record.measurement()`` takes ``fail=ctx.item.fail[i]``, and attaches that fail message
+  to the record when the measurement fails, instead of an
+  ``if _result == ResultAPI.RECORD_RESULT_FAIL: ctx.record.fail_msg(...)`` block after it, see
+  :ref:`Binning Failures <prism_programs:Binning Failures>`.  Older programs keep working.  The
+  examples use it, and the Prism Assistant writes code with it and its ``migrate_test_code``
+  prompt moves older code to it (Prism Assistant 0.5.1)
 
 Bug fixes,
 

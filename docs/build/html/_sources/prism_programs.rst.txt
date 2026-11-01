@@ -483,11 +483,20 @@ Example Notes:
   is a FAIL, the test item will FAIL.
 * There is a co-operation between the test script and the test code as per the index to the type of failure.
   This is coded in the constants ``FAIL_APPLE`` and ``FAIL_BANANNA``
-* ``ctx.record.fail_msg()`` is used to set the user facing "binning" message
+* ``fail=ctx.item.fail[i]`` on ``ctx.record.measurement()`` sets the user facing "binning" message
+  when that measurement fails.  Nothing is set when it passes
 * The ``fid`` text represents the "binning" code
 * The ``msg`` is there to provide a hint to the test engineer of where the problem might be,
   at most 64 characters (the script linter checks it)
-* The ``fail`` list is only shown when the code calls ``ctx.record.fail_msg()``
+* The ``fail`` list is only shown when the code passes an entry with ``fail=``, or calls
+  ``ctx.record.fail_msg()``
+* A test item records one binning message.  When more than one measurement with ``fail=`` fails,
+  the last one is kept
+* Use ``ctx.record.fail_msg(ctx.item.fail[i])`` yourself only when the failure is not decided by one
+  measurement, for example picking the entry from which of several checks failed.  Older code that
+  calls ``fail_msg()`` after each measurement keeps working, and can be moved to ``fail=`` by
+  deleting the ``if _result == ResultAPI.RECORD_RESULT_FAIL:`` block and passing its entry with
+  ``fail=``
 
 ::
 
@@ -526,15 +535,11 @@ Program code,
                                                            random.randint(0, 10),
                                                            ResultAPI.UNIT_DB,
                                                            ctx.item.args.min,
-                                                           ctx.item.args.max)
+                                                           ctx.item.args.max,
+                                                           fail=ctx.item.fail[FAIL_APPLE])
         if not success:
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
-
-        # if failed, there is a msg in script to attach to the record, for repair purposes
-        if _result == ResultAPI.RECORD_RESULT_FAIL:
-            msg = ctx.item.fail[FAIL_APPLE]
-            ctx.record.fail_msg(msg)
 
         self.log_bullet(_bullet)
         measurement_results.append(_result)
@@ -544,15 +549,11 @@ Program code,
                                                            random.randint(0, 10),
                                                            ResultAPI.UNIT_DB,
                                                            ctx.item.args.min,
-                                                           ctx.item.args.max)
+                                                           ctx.item.args.max,
+                                                           fail=ctx.item.fail[FAIL_BANANNA])
         if not success:
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
-
-        # if failed, there is a msg in script to attach to the record, for repair purposes
-        if _result == ResultAPI.RECORD_RESULT_FAIL:
-            msg = ctx.item.fail[FAIL_BANANNA]
-            ctx.record.fail_msg(msg)
 
         self.log_bullet(_bullet)
         measurement_results.append(_result)
