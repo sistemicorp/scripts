@@ -79,8 +79,9 @@ example `/mcp__prism-assistant__migrate_version`,
 * `write_test_script` - write a script and its test code for one test stage
 * `review_test_script` - review a script and its test code, see
   :ref:`prism_scripts:Script Design`
-* `migrate_test_code` - move older test code to `self.expect()` for driver responses and to
-  `fail=` for measurement fail messages, see :ref:`prism_programs:Test Equipment Errors` and
+* `migrate_test_code` - move older test code to `self.expect()` for driver and DUT command
+  responses and to `fail=` for measurement fail messages, see
+  :ref:`prism_programs:Test Equipment Errors`, :ref:`prism_programs:DUT Command Errors` and
   :ref:`prism_programs:Binning Failures`
 * `use_bond` - design the Pogo board from the template, set up BOND and its Pogo board
   header definition

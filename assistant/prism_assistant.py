@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import prism_knowledge as pk  # noqa: E402
 
 SERVER_NAME = "prism-assistant"
-SERVER_VERSION = "0.5.1"
+SERVER_VERSION = "0.5.2"
 CONTACT = "info@sistemi.ca"
 
 INSTRUCTIONS = f"""\
@@ -69,11 +69,22 @@ Rules to follow when helping:
   - in the test item, call the driver and pass its response dict to self.expect(),
     `response = self.expect(self.bond.bond_max_hdr_adc(1, 13))`, or `self.expect(...)` alone
     when the response is not used.  A failed response ends the item INTERNAL_ERROR (test
-    equipment error) right there.  Not for input_button/input_textbox, a DUT that doesn't
-    answer (a FAIL with a fail msg), or driver methods returning a bool or tuple.  Check
+    equipment error) right there.  success means the call ran and returned a value, never a
+    pass/fail: a value out of its limits is checked with ctx.record.measurement().  Not for
+    input_button/input_textbox, or driver methods returning a bool or tuple.  Check
     response["success"] by hand only when something must be done before the item ends, such
     as a DUT command.  Hold locks with `with self.shared_lock(...):`, never acquire/release.
     No fixture class around BOND, no pin lookup by signal name in another module
+  - DUT commands: the DUT protocol library returns the driver dict {{"success", "method",
+    "result"}} with the error text in result["error"], converting the DUT's own reply format
+    if needed; success is False only when the command could not run (no reply, unknown
+    command, bad arguments), never for a test result.  Pass each DUT command's response to
+    self.expect() too.  Except where a fault on the board can stop the command (a missing or
+    badly soldered part gives no answer on a bus): there check response["success"] in the
+    item, end it FAIL with its fail msg, and say why in the docstring.  Prefer DUT firmware
+    that reports such faults as values ({{"ack": False}}).  The item that first opens the DUT
+    link records "the DUT answered" as a UNIT_BOOLEAN with a fail msg.  See
+    docs/source/prism_programs.rst DUT Command Errors
   - record with ctx.record.measurement(name, value, ResultAPI.UNIT_..., min=..., max=...) and
     self.log_bullet(bullet), the measurement name written out in full.  The units are the
     ResultAPI.UNIT_* constants of public/prism/api.py, written in each call
@@ -145,6 +156,9 @@ Rules to follow when helping:
   self.expect(), see docs/source/prism_programs.rst Test Equipment Errors and the
   migrate_test_code prompt.  The same for an `if _result == ResultAPI.RECORD_RESULT_FAIL:
   ctx.record.fail_msg(...)` block after a measurement: it moves to fail= on the measurement.
+  And for a DUT protocol library with its own reply format and an `if not r[...]:` block after
+  each DUT command that ends the item FAIL: the library moves to the driver dict and the
+  blocks to self.expect(), except for the commands a fault on the board can stop.
 - Prefer small, reviewable changes to the customer's files, and explain what each change does.
 - Number your questions so the customer can answer them easily.
 """
@@ -181,18 +195,24 @@ Help me write a Prism test script and its Python test code for {product}, test s
    the keys in the slots of my key slot table, using its constants.
 5. Write one test item method per test, its steps in order, calling the drivers and
    ctx.record.measurement directly, flat like public/prism/scripts/example/BOND_v0/bond_P00xx.py.
-   Pass each driver response to self.expect().
+   Pass each driver response to self.expect().  A DUT protocol library returns the driver
+   dict, and each DUT command's response goes to self.expect() too, except for a command a
+   fault on the board can stop (check success, end FAIL with the fail msg, say why in the
+   docstring), see docs/source/prism_programs.rst DUT Command Errors.
    The script only lists the tests, with their limits as fields on each item.
 6. Before you finish, check: could a technician change every limit in the script without
    reading Python?  Does the script hold any steps, expressions, commands or pins?  Does the
    code have a base class, a wrapper around a driver or ctx.record.measurement, a step object
-   or context manager, meas()/check() helpers, or a unit map?  Is each driver response
-   passed to self.expect(), and every shared lock held with `with`?  Can each test item be read top
-   to bottom without opening another file or class?  Is each fail msg at most 64 characters,
-   is it passed with fail= to the measurement it belongs to, and is that fail entry on every
-   script line that runs the item?  Is each pass/fail check a UNIT_BOOLEAN that is True when it
-   passes, and is every measurement logged with self.log_bullet()?  Are there placeholder
-   measurements, or docstrings and comments that don't match the code?  Fix it if not.
+   or context manager, meas()/check() helpers, or a unit map?  Is each driver response passed
+   to self.expect(), and every shared lock held with `with`?  Does the DUT library return the
+   driver dict, is each DUT command passed to self.expect() unless a fault on the board can
+   stop it, and does each hand written DUT check say why in the docstring?  Can each test
+   item be read top to bottom without opening another file or class?  Is each fail msg at
+   most 64 characters, is it passed with fail= to the measurement it belongs to, and is that
+   fail entry on every script line that runs the item?  Is each pass/fail check a
+   UNIT_BOOLEAN that is True when it passes, and is every measurement logged with
+   self.log_bullet()?  Are there placeholder measurements, or docstrings and comments that
+   don't match the code?  Fix it if not.
 7. Run lint_script on the new script and fix every ERROR.  Tell me how to run it with
    `python prism_dev.py --script <path>`.
 """
@@ -219,7 +239,13 @@ Review my Prism test script {script} and its Python test code.
    Check each driver response is passed to self.expect() (list each hand written
    `if not response["success"]:` block that only logs and ends the item, to move to
    self.expect() as in the migrate_test_code prompt), and that it is not used for operator
-   input or DUT answers.  Check shared locks are held with `with`, not acquire/release.
+   input.  Check the DUT protocol library returns the driver dict with success False only
+   when a command could not run (list any test result reported as success False), and that
+   each DUT command goes to self.expect() unless a fault on the board can stop it; list each
+   hand written DUT check that only logs and ends the item, and say whether a board fault
+   can cause it (keep, with the reason in the docstring) or not (move to self.expect()).
+   Check the item that first opens the DUT link records "the DUT answered" with a fail msg.
+   Check shared locks are held with `with`, not acquire/release.
    Check each pass/fail check is a UNIT_BOOLEAN that is True when it passes (not str(value)
    with force_fail), every measurement is logged with self.log_bullet(), there are no
    placeholder measurements for tests that aren't done, and the docstrings and comments match
@@ -233,8 +259,8 @@ Review my Prism test script {script} and its Python test code.
 """
 
 PROMPT_MIGRATE_CODE = """\
-Move my test code {path} to self.expect() for driver responses, and to fail= for
-measurement fail messages.
+Move my test code {path} to self.expect() for driver and DUT command responses, and to fail=
+for measurement fail messages.
 
 1. Read docs/source/prism_programs.rst Test Equipment Errors and Binning Failures, and compare
    public/prism/scripts/example/BOND_v0/bond_P00xx.py and prod_v0/tst00xx.py, which are
@@ -250,18 +276,30 @@ measurement fail messages.
    ctx.record.fail_msg(ctx.item.fail[i]) for the measurement just before it.  Delete the block
    and pass the same entry to that measurement: ctx.record.measurement(..., fail=ctx.item.fail[i]).
    Keep fail_msg() where the entry is picked from more than one measurement or check.
-5. Leave these as they are, and list them for me:
+5. If the code sends commands to the DUT through a protocol library of its own (read
+   docs/source/prism_programs.rst DUT Command Errors):
+   - when the library returns its own reply format, change its command methods to return the
+     driver dict {{"success": ..., "method": ..., "result": {{..., "error": ...}}}}, with
+     success False only when the command could not run.  Don't change the DUT firmware.
+     Change each value read in the test code from r["value"] to r["result"]["value"]
+   - list each block after a DUT command that only logs and ends the item (FAIL or
+     INTERNAL_ERROR).  For each, say whether a fault on the board can stop that command (a
+     missing or badly soldered part, no answer on a bus).  If not, replace it with
+     `r = self.expect(self.dut.cmd(...))`.  If so, keep it, ending FAIL with its fail msg,
+     and add the reason to the docstring.  Ask me about the ones you are not sure of
+   - check the item that first opens the DUT link records "the DUT answered" as a
+     UNIT_BOOLEAN with a fail msg
+6. Leave these as they are, and list them for me:
    - a block that does more than log and end the item, for example sends the DUT a command
      or releases a lock before ending.  A lock: change acquire()/release() to
      `with self.shared_lock(...):` and then use self.expect() inside it
-   - input_button/input_textbox answers, and DUT command failures that end the item FAIL
-     with a fail msg
+   - input_button/input_textbox answers
    - driver methods that return a bool or a tuple
-6. Check that the teardown item puts the test equipment in a safe state (DUT power off, loads
+7. Check that the teardown item puts the test equipment in a safe state (DUT power off, loads
    off), since an item ended by self.expect() does not undo its own setup.
-7. Don't change anything else: limits, measurement names, fail entries and the order of the
+8. Don't change anything else: limits, measurement names, fail entries and the order of the
    steps stay the same.  Show me the changes per file, and ask me before writing them.
-8. Run lint_script on each script that runs the changed modules, and tell me how to run them
+9. Run lint_script on each script that runs the changed modules, and tell me how to run them
    with `python prism_dev.py --script <path>`.
 """
 
@@ -485,7 +523,7 @@ def create_server():
 
     @mcp.prompt(title="Move test code to self.expect() and fail=")
     def migrate_test_code(path: str = "public/prism/scripts") -> str:
-        """Replace hand written driver response and fail message checks in older test code."""
+        """Replace hand written driver, DUT command and fail message checks in older test code."""
         return PROMPT_MIGRATE_CODE.format(path=path)
 
     @mcp.prompt(title="Use BOND")

@@ -161,6 +161,24 @@ def test_expect_rules():
         assert "self.expect()" in r.messages[0].content.text
 
 
+def test_dut_command_rules():
+    assert "DUT Command Errors" in prism_assistant.INSTRUCTIONS
+    assert 'result["error"]' in prism_assistant.INSTRUCTIONS
+    assert "never for a test result" in prism_assistant.INSTRUCTIONS
+
+    async def go(c):
+        return (await c.get_prompt("write_test_script", {"product": "P1", "stage": "T01"}),
+                await c.get_prompt("review_test_script", {"script": "P1/P1_T01.scr"}),
+                await c.get_prompt("migrate_test_code", {"path": "public/prism/scripts"}))
+    for r in run(go):
+        text = r.messages[0].content.text
+        assert "DUT" in text
+        assert "fault on the board" in text
+    migrate = run(go)[2].messages[0].content.text
+    assert '"result": {..., "error": ...}' in migrate
+    assert 'r["result"]["value"]' in migrate
+
+
 def test_migrate_test_code_prompt():
     async def go(c):
         return await c.get_prompt("migrate_test_code", {"path": "public/prism/scripts/ow"})
