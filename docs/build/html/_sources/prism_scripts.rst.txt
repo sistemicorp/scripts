@@ -426,6 +426,10 @@ file or class, other than the drivers and the Prism APIs.  So,
   ``BLT100_voltage`` above.  It ends the item as ``INTERNAL_ERROR`` when the test equipment
   fails, see :ref:`prism_programs:Test Equipment Errors`.  No fixture class around BOND, and no
   looking up pins by signal name in another module
+* pass each DUT command's response to ``self.expect()`` too, unless a fault on the board can stop
+  the command (a missing part gives no answer on a bus): then check ``success`` in the item, end
+  it as ``FAIL`` with its ``fail`` message, and say why in the docstring, see
+  :ref:`prism_programs:DUT Command Errors`
 * record with ``ctx.record.measurement(name, value, ResultAPI.UNIT_MILLIVOLTS, min=..., max=...)``
   and ``self.log_bullet(bullet)``, with the measurement name written out in full.  The units
   are the ``ResultAPI.UNIT_*`` constants in ``public/prism/api.py``: write the constant in each
@@ -451,7 +455,9 @@ file or class, other than the drivers and the Prism APIs.  So,
 * small pure functions in the program are fine, for example a checksum or a unit conversion,
   as long as they don't call a driver or record anything
 * a library for the DUT's own protocol (its command link) can be a separate module, the same
-  as a driver.  It doesn't record measurements or call BOND
+  as a driver.  It doesn't record measurements or call BOND.  Its command methods return the
+  driver dict, ``{"success": ..., "method": ..., "result": {...}}``, with ``success`` ``False``
+  only when the command could not run, never for a test result
 
 The examples in ``public/prism/scripts/example`` are written this way, for example
 ``BOND_v0/bond_P00xx.py``.

@@ -147,6 +147,13 @@ screenshots.
   :ref:`Binning Failures <prism_programs:Binning Failures>`.  Older programs keep working.  The
   examples use it, and the Prism Assistant writes code with it and its ``migrate_test_code``
   prompt moves older code to it (Prism Assistant 0.5.1)
+* A DUT protocol library returns the driver dict, ``{"success": ..., "method": ..., "result": {...}}``,
+  so test code passes each DUT command's response to ``self.expect()`` too.  ``success`` means the
+  command ran and returned a value, never a test result.  A command that a fault on the board can
+  stop, such as a missing part on a bus, is checked in the item and ends as ``FAIL`` with its
+  ``fail`` message, see :ref:`DUT Command Errors <prism_programs:DUT Command Errors>`.  No change
+  to Prism.  The Prism Assistant writes and reviews DUT code this way, and its
+  ``migrate_test_code`` prompt moves older libraries and test code to it (Prism Assistant 0.5.2)
 * The example scripts follow the :ref:`_prodplan:Naming Proposal`: test items are named
   `<STAGE>nnn_<description>` (for example `TST010_meas`, `PROG020_program`, `BOND030_adc_check`),
   with `<STAGE>000_SETUP` and `<STAGE>990_TEARDOWN`, and limits and other values are fields on the

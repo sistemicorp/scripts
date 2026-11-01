@@ -445,6 +445,10 @@ each program has its own copy</p></li>
 <code class="docutils literal notranslate"><span class="pre">BLT100_voltage</span></code> above.  It ends the item as <code class="docutils literal notranslate"><span class="pre">INTERNAL_ERROR</span></code> when the test equipment
 fails, see <a class="reference internal" href="prism_programs.html#test-equipment-errors"><span class="std std-ref">Test Equipment Errors</span></a>.  No fixture class around BOND, and no
 looking up pins by signal name in another module</p></li>
+<li><p>pass each DUT command’s response to <code class="docutils literal notranslate"><span class="pre">self.expect()</span></code> too, unless a fault on the board can stop
+the command (a missing part gives no answer on a bus): then check <code class="docutils literal notranslate"><span class="pre">success</span></code> in the item, end
+it as <code class="docutils literal notranslate"><span class="pre">FAIL</span></code> with its <code class="docutils literal notranslate"><span class="pre">fail</span></code> message, and say why in the docstring, see
+<a class="reference internal" href="prism_programs.html#dut-command-errors"><span class="std std-ref">DUT Command Errors</span></a></p></li>
 <li><p>record with <code class="docutils literal notranslate"><span class="pre">ctx.record.measurement(name,</span> <span class="pre">value,</span> <span class="pre">ResultAPI.UNIT_MILLIVOLTS,</span> <span class="pre">min=...,</span> <span class="pre">max=...)</span></code>
 and <code class="docutils literal notranslate"><span class="pre">self.log_bullet(bullet)</span></code>, with the measurement name written out in full.  The units
 are the <code class="docutils literal notranslate"><span class="pre">ResultAPI.UNIT_*</span></code> constants in <code class="docutils literal notranslate"><span class="pre">public/prism/api.py</span></code>: write the constant in each
@@ -470,7 +474,9 @@ needs when it is not</p></li>
 <li><p>small pure functions in the program are fine, for example a checksum or a unit conversion,
 as long as they don’t call a driver or record anything</p></li>
 <li><p>a library for the DUT’s own protocol (its command link) can be a separate module, the same
-as a driver.  It doesn’t record measurements or call BOND</p></li>
+as a driver.  It doesn’t record measurements or call BOND.  Its command methods return the
+driver dict, <code class="docutils literal notranslate"><span class="pre">{&quot;success&quot;:</span> <span class="pre">...,</span> <span class="pre">&quot;method&quot;:</span> <span class="pre">...,</span> <span class="pre">&quot;result&quot;:</span> <span class="pre">{...}}</span></code>, with <code class="docutils literal notranslate"><span class="pre">success</span></code> <code class="docutils literal notranslate"><span class="pre">False</span></code>
+only when the command could not run, never for a test result</p></li>
 </ul>
 <p>The examples in <code class="docutils literal notranslate"><span class="pre">public/prism/scripts/example</span></code> are written this way, for example
 <code class="docutils literal notranslate"><span class="pre">BOND_v0/bond_P00xx.py</span></code>.</p>

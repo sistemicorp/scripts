@@ -248,9 +248,12 @@ Test Equipment Errors
 ---------------------
 
 Drivers such as BOND, ST-LINK, nRF and Segger return a dict from each method,
-``{"success": True, "method": "...", "result": {...}}``.  ``success`` is ``False`` when the test
-equipment failed, for example BOND did not answer.  That is not a fail of the DUT, the item
-ends as ``INTERNAL_ERROR``.
+``{"success": True, "method": "...", "result": {...}}``.  ``success`` means the method ran and
+returned a value: it exists, its arguments were accepted and the equipment answered.  It is not
+a pass or fail of the test: a value that is out of its limits comes back in ``result`` with
+``success`` ``True``, and the item checks it with ``ctx.record.measurement()``.  ``success`` is
+``False`` when the test equipment failed, for example BOND did not answer.  That is not a fail
+of the DUT, the item ends as ``INTERNAL_ERROR``.
 
 Pass the response to ``self.expect()``,
 
@@ -274,12 +277,13 @@ Pass the response to ``self.expect()``,
 * when something must be done before the item ends, for example sending the DUT a command, check
   ``response["success"]`` yourself, as below
 
-Use ``self.expect()`` only for driver responses.  Not for,
+Use ``self.expect()`` for driver responses, and for DUT commands sent through a DUT protocol
+library that returns the same dict, see `DUT Command Errors`_.  Not for,
 
 * ``self.input_button()`` and ``self.input_textbox()``: no answer from the operator is not an
   equipment error, handle ``success`` in the item
-* a DUT that does not answer or answers wrong: that is a fail of the DUT, record it and use a
-  ``fail`` message
+* a DUT command that a fault on the board can stop, see `DUT Command Errors`_
+* a value the DUT or the equipment returned: check it with ``ctx.record.measurement()``
 * driver methods that return ``True``/``False`` or a tuple, such as a driver's ``init()``
 
 Older programs check each response by hand.  This still works,
@@ -299,12 +303,100 @@ end the item, such as releasing a lock (change it to ``with``) or sending the DU
 Then run ``prism_dev.py --lint``.
 
 
+DUT Command Errors
+------------------
+
+A program that sends commands to the DUT, for example to a test firmware on the DUT over a
+serial link, keeps that protocol in a library module of its own, like a driver.  Each command
+method of the library returns the same dict as a driver,
+
+::
+
+    {"success": True,  "method": "rail_3v3", "result": {...}}       # the command ran
+    {"success": False, "method": "rail_3v3", "result": {"error": "no reply in 5.0 s"}}
+
+* ``success`` means the command ran and returned a value: the DUT answered, and knew the command
+  and its arguments.  ``success`` is ``False`` only when the command could not run: no reply,
+  an unknown command, bad arguments
+* the values the DUT returns are in ``result``.  A test result is a value, never ``success``
+  ``False``: a sensor that doesn't answer on its bus comes back as, for example,
+  ``{"ack": False}`` with ``success`` ``True``, and the item records it with
+  ``ctx.record.measurement()``
+* the error text is in ``result["error"]``, which ``self.expect()`` shows in the channel log
+* when the DUT replies in its own format, the library converts it.  The DUT firmware doesn't
+  change,
+
+::
+
+    def cmd(self, line, timeout=5.0):
+        r = self._send_and_wait(line, timeout)     # the DUT's reply, {"cmd": ..., "done": ..., ...}
+        return {"success": r["done"], "method": r["cmd"],
+                "result": dict(r, error=r.get("why", ""))}
+
+Pass the response to ``self.expect()`` when a failed command can only mean the station or the
+test setup is wrong.  That is the usual case: the command and its arguments are written in the
+program, and an earlier item has shown that the DUT answers.  The item ends as
+``INTERNAL_ERROR``, the same as for a driver,
+
+::
+
+    self.expect(self.dut.cmd("rail_3v3 -e"))
+    self.sleep(0.05)
+    response = self.expect(self.bond.bond_max_hdr_adc(1, 13))
+    _, result, bullet = ctx.record.measurement("v3v3", response["result"]["mV"] / 1000,
+                                               ResultAPI.UNIT_VOLTS,
+                                               min=ctx.item.min, max=ctx.item.max,
+                                               fail=ctx.item.fail[0])
+    self.log_bullet(bullet)
+
+Don't use ``self.expect()`` when a fault on the board can stop the command, for example a missing
+or badly soldered part gives no answer on a bus, and the DUT firmware can't report it as a
+value.  The board is then the likely cause, so check ``success`` in the item and end it as
+``FAIL`` with its ``fail`` message, for the repair technician.  Say why in the docstring,
+
+::
+
+    def TST330_sensor_id(self):
+        """ Humidity sensor id over I2C.  Not expect(): with U12 missing or not soldered
+        the DUT gets no I2C ack and the command fails, a board fault.
+
+            {"id": "TST330_sensor_id", "enable": true,
+             "fail": [{"fid": "TST330-1", "msg": "Humidity sensor id: check U12 R20 R21"}]},
+        """
+        ctx = self.item_start()  # always first line of test
+
+        response = self.dut.cmd("sensor_id")
+        if not response["success"]:
+            self.logger.error(response)
+            self.log_bullet(f"DUT sensor_id: {response['result']['error']}")
+            ctx.record.fail_msg(ctx.item.fail[0])
+            self.item_end(ResultAPI.RECORD_RESULT_FAIL)
+            return
+        _, result, bullet = ctx.record.measurement("dev_id", response["result"]["dev"],
+                                                   ResultAPI.UNIT_INT, min=0x07d0, max=0x07d0,
+                                                   fail=ctx.item.fail[0])
+        self.log_bullet(bullet)
+        self.item_end(result)  # always last line of test
+
+The item that first opens the link to the DUT records whether the DUT answered as a
+``UNIT_BOOLEAN`` measurement with a ``fail`` message, so a board that never answers, for example
+one that doesn't power up or boot, ends as ``FAIL`` with a hint.  A DUT that stops answering
+later in the test is unexpected, and ``INTERNAL_ERROR`` is the right result.
+
+Older programs check each DUT reply by hand and end the item as ``FAIL``.  This still works.  To
+move to ``self.expect()``, change the library to return the dict above, change each
+``r["value"]`` in the test code to ``r["result"]["value"]``, and replace each block whose command
+only the station or the setup can stop with ``self.expect(...)``.  Keep the blocks of the commands
+a fault on the board can stop.
+
+
 Errors in a Test Item
 ---------------------
 
 Prism records a test item as ``INTERNAL_ERROR``, a fail, and moves on to the teardown item when,
 
-* a driver response passed to ``self.expect()`` failed, see `Test Equipment Errors`_
+* a driver or DUT library response passed to ``self.expect()`` failed, see
+  `Test Equipment Errors`_ and `DUT Command Errors`_
 * the item raises an exception that it does not catch
 * the item returns without calling ``self.item_start()``
 * the result passed to ``self.item_end()`` is not one of the ``ResultAPI.RECORD_RESULT_*`` constants,

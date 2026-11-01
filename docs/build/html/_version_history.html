@@ -176,6 +176,13 @@ to the record when the measurement fails, instead of an
 <a class="reference internal" href="prism_programs.html#binning-failures"><span class="std std-ref">Binning Failures</span></a>.  Older programs keep working.  The
 examples use it, and the Prism Assistant writes code with it and its <code class="docutils literal notranslate"><span class="pre">migrate_test_code</span></code>
 prompt moves older code to it (Prism Assistant 0.5.1)</p></li>
+<li><p>A DUT protocol library returns the driver dict, <code class="docutils literal notranslate"><span class="pre">{&quot;success&quot;:</span> <span class="pre">...,</span> <span class="pre">&quot;method&quot;:</span> <span class="pre">...,</span> <span class="pre">&quot;result&quot;:</span> <span class="pre">{...}}</span></code>,
+so test code passes each DUT command’s response to <code class="docutils literal notranslate"><span class="pre">self.expect()</span></code> too.  <code class="docutils literal notranslate"><span class="pre">success</span></code> means the
+command ran and returned a value, never a test result.  A command that a fault on the board can
+stop, such as a missing part on a bus, is checked in the item and ends as <code class="docutils literal notranslate"><span class="pre">FAIL</span></code> with its
+<code class="docutils literal notranslate"><span class="pre">fail</span></code> message, see <a class="reference internal" href="prism_programs.html#dut-command-errors"><span class="std std-ref">DUT Command Errors</span></a>.  No change
+to Prism.  The Prism Assistant writes and reviews DUT code this way, and its
+<code class="docutils literal notranslate"><span class="pre">migrate_test_code</span></code> prompt moves older libraries and test code to it (Prism Assistant 0.5.2)</p></li>
 <li><p>The example scripts follow the <a class="reference internal" href="_prodplan.html#naming-proposal"><span class="std std-ref">Naming Proposal</span></a>: test items are named
 <cite>&lt;STAGE&gt;nnn_&lt;description&gt;</cite> (for example <cite>TST010_meas</cite>, <cite>PROG020_program</cite>, <cite>BOND030_adc_check</cite>),
 with <cite>&lt;STAGE&gt;000_SETUP</cite> and <cite>&lt;STAGE&gt;990_TEARDOWN</cite>, and limits and other values are fields on the

@@ -279,9 +279,12 @@ Stopping Prism (<code class="docutils literal notranslate"><span class="pre">./p
 <section id="test-equipment-errors">
 <h2>Test Equipment Errors<a class="headerlink" href="#test-equipment-errors" title="Link to this heading">¶</a></h2>
 <p>Drivers such as BOND, ST-LINK, nRF and Segger return a dict from each method,
-<code class="docutils literal notranslate"><span class="pre">{&quot;success&quot;:</span> <span class="pre">True,</span> <span class="pre">&quot;method&quot;:</span> <span class="pre">&quot;...&quot;,</span> <span class="pre">&quot;result&quot;:</span> <span class="pre">{...}}</span></code>.  <code class="docutils literal notranslate"><span class="pre">success</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code> when the test
-equipment failed, for example BOND did not answer.  That is not a fail of the DUT, the item
-ends as <code class="docutils literal notranslate"><span class="pre">INTERNAL_ERROR</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">{&quot;success&quot;:</span> <span class="pre">True,</span> <span class="pre">&quot;method&quot;:</span> <span class="pre">&quot;...&quot;,</span> <span class="pre">&quot;result&quot;:</span> <span class="pre">{...}}</span></code>.  <code class="docutils literal notranslate"><span class="pre">success</span></code> means the method ran and
+returned a value: it exists, its arguments were accepted and the equipment answered.  It is not
+a pass or fail of the test: a value that is out of its limits comes back in <code class="docutils literal notranslate"><span class="pre">result</span></code> with
+<code class="docutils literal notranslate"><span class="pre">success</span></code> <code class="docutils literal notranslate"><span class="pre">True</span></code>, and the item checks it with <code class="docutils literal notranslate"><span class="pre">ctx.record.measurement()</span></code>.  <code class="docutils literal notranslate"><span class="pre">success</span></code> is
+<code class="docutils literal notranslate"><span class="pre">False</span></code> when the test equipment failed, for example BOND did not answer.  That is not a fail
+of the DUT, the item ends as <code class="docutils literal notranslate"><span class="pre">INTERNAL_ERROR</span></code>.</p>
 <p>Pass the response to <code class="docutils literal notranslate"><span class="pre">self.expect()</span></code>,</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bond</span><span class="o">.</span><span class="n">bond_max_hdr_adc</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">13</span><span class="p">))</span>
 <span class="n">_</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">bullet</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span><span class="s2">&quot;T105a_v3v_out&quot;</span><span class="p">,</span> <span class="n">response</span><span class="p">[</span><span class="s2">&quot;result&quot;</span><span class="p">][</span><span class="s2">&quot;mV&quot;</span><span class="p">],</span>
@@ -303,12 +306,13 @@ since an item that ends this way does not undo what it set up</p></li>
 <li><p>when something must be done before the item ends, for example sending the DUT a command, check
 <code class="docutils literal notranslate"><span class="pre">response[&quot;success&quot;]</span></code> yourself, as below</p></li>
 </ul>
-<p>Use <code class="docutils literal notranslate"><span class="pre">self.expect()</span></code> only for driver responses.  Not for,</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">self.expect()</span></code> for driver responses, and for DUT commands sent through a DUT protocol
+library that returns the same dict, see <a class="reference internal" href="#dut-command-errors">DUT Command Errors</a>.  Not for,</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">self.input_button()</span></code> and <code class="docutils literal notranslate"><span class="pre">self.input_textbox()</span></code>: no answer from the operator is not an
 equipment error, handle <code class="docutils literal notranslate"><span class="pre">success</span></code> in the item</p></li>
-<li><p>a DUT that does not answer or answers wrong: that is a fail of the DUT, record it and use a
-<code class="docutils literal notranslate"><span class="pre">fail</span></code> message</p></li>
+<li><p>a DUT command that a fault on the board can stop, see <a class="reference internal" href="#dut-command-errors">DUT Command Errors</a></p></li>
+<li><p>a value the DUT or the equipment returned: check it with <code class="docutils literal notranslate"><span class="pre">ctx.record.measurement()</span></code></p></li>
 <li><p>driver methods that return <code class="docutils literal notranslate"><span class="pre">True</span></code>/<code class="docutils literal notranslate"><span class="pre">False</span></code> or a tuple, such as a driver’s <code class="docutils literal notranslate"><span class="pre">init()</span></code></p></li>
 </ul>
 <p>Older programs check each response by hand.  This still works,</p>
@@ -325,11 +329,90 @@ equipment error, handle <code class="docutils literal notranslate"><span class="
 end the item, such as releasing a lock (change it to <code class="docutils literal notranslate"><span class="pre">with</span></code>) or sending the DUT a command.
 Then run <code class="docutils literal notranslate"><span class="pre">prism_dev.py</span> <span class="pre">--lint</span></code>.</p>
 </section>
+<section id="dut-command-errors">
+<h2>DUT Command Errors<a class="headerlink" href="#dut-command-errors" title="Link to this heading">¶</a></h2>
+<p>A program that sends commands to the DUT, for example to a test firmware on the DUT over a
+serial link, keeps that protocol in a library module of its own, like a driver.  Each command
+method of the library returns the same dict as a driver,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>  <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;rail_3v3&quot;</span><span class="p">,</span> <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="p">{</span><span class="o">...</span><span class="p">}}</span>       <span class="c1"># the command ran</span>
+<span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;rail_3v3&quot;</span><span class="p">,</span> <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;no reply in 5.0 s&quot;</span><span class="p">}}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">success</span></code> means the command ran and returned a value: the DUT answered, and knew the command
+and its arguments.  <code class="docutils literal notranslate"><span class="pre">success</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code> only when the command could not run: no reply,
+an unknown command, bad arguments</p></li>
+<li><p>the values the DUT returns are in <code class="docutils literal notranslate"><span class="pre">result</span></code>.  A test result is a value, never <code class="docutils literal notranslate"><span class="pre">success</span></code>
+<code class="docutils literal notranslate"><span class="pre">False</span></code>: a sensor that doesn’t answer on its bus comes back as, for example,
+<code class="docutils literal notranslate"><span class="pre">{&quot;ack&quot;:</span> <span class="pre">False}</span></code> with <code class="docutils literal notranslate"><span class="pre">success</span></code> <code class="docutils literal notranslate"><span class="pre">True</span></code>, and the item records it with
+<code class="docutils literal notranslate"><span class="pre">ctx.record.measurement()</span></code></p></li>
+<li><p>the error text is in <code class="docutils literal notranslate"><span class="pre">result[&quot;error&quot;]</span></code>, which <code class="docutils literal notranslate"><span class="pre">self.expect()</span></code> shows in the channel log</p></li>
+<li><p>when the DUT replies in its own format, the library converts it.  The DUT firmware doesn’t
+change,</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">5.0</span><span class="p">):</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_and_wait</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>     <span class="c1"># the DUT&#39;s reply, {&quot;cmd&quot;: ..., &quot;done&quot;: ..., ...}</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="s2">&quot;done&quot;</span><span class="p">],</span> <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="s2">&quot;cmd&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="n">r</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;why&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))}</span>
+</pre></div>
+</div>
+<p>Pass the response to <code class="docutils literal notranslate"><span class="pre">self.expect()</span></code> when a failed command can only mean the station or the
+test setup is wrong.  That is the usual case: the command and its arguments are written in the
+program, and an earlier item has shown that the DUT answers.  The item ends as
+<code class="docutils literal notranslate"><span class="pre">INTERNAL_ERROR</span></code>, the same as for a driver,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">expect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dut</span><span class="o">.</span><span class="n">cmd</span><span class="p">(</span><span class="s2">&quot;rail_3v3 -e&quot;</span><span class="p">))</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bond</span><span class="o">.</span><span class="n">bond_max_hdr_adc</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">13</span><span class="p">))</span>
+<span class="n">_</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">bullet</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span><span class="s2">&quot;v3v3&quot;</span><span class="p">,</span> <span class="n">response</span><span class="p">[</span><span class="s2">&quot;result&quot;</span><span class="p">][</span><span class="s2">&quot;mV&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span>
+                                           <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_VOLTS</span><span class="p">,</span>
+                                           <span class="nb">min</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">max</span><span class="p">,</span>
+                                           <span class="n">fail</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">fail</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="n">bullet</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Don’t use <code class="docutils literal notranslate"><span class="pre">self.expect()</span></code> when a fault on the board can stop the command, for example a missing
+or badly soldered part gives no answer on a bus, and the DUT firmware can’t report it as a
+value.  The board is then the likely cause, so check <code class="docutils literal notranslate"><span class="pre">success</span></code> in the item and end it as
+<code class="docutils literal notranslate"><span class="pre">FAIL</span></code> with its <code class="docutils literal notranslate"><span class="pre">fail</span></code> message, for the repair technician.  Say why in the docstring,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">TST330_sensor_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Humidity sensor id over I2C.  Not expect(): with U12 missing or not soldered</span>
+<span class="sd">    the DUT gets no I2C ack and the command fails, a board fault.</span>
+
+<span class="sd">        {&quot;id&quot;: &quot;TST330_sensor_id&quot;, &quot;enable&quot;: true,</span>
+<span class="sd">         &quot;fail&quot;: [{&quot;fid&quot;: &quot;TST330-1&quot;, &quot;msg&quot;: &quot;Humidity sensor id: check U12 R20 R21&quot;}]},</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_start</span><span class="p">()</span>  <span class="c1"># always first line of test</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dut</span><span class="o">.</span><span class="n">cmd</span><span class="p">(</span><span class="s2">&quot;sensor_id&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">response</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DUT sensor_id: </span><span class="si">{</span><span class="n">response</span><span class="p">[</span><span class="s1">&#39;result&#39;</span><span class="p">][</span><span class="s1">&#39;error&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">fail_msg</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">fail</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">ResultAPI</span><span class="o">.</span><span class="n">RECORD_RESULT_FAIL</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">bullet</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span><span class="s2">&quot;dev_id&quot;</span><span class="p">,</span> <span class="n">response</span><span class="p">[</span><span class="s2">&quot;result&quot;</span><span class="p">][</span><span class="s2">&quot;dev&quot;</span><span class="p">],</span>
+                                               <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_INT</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mh">0x07d0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mh">0x07d0</span><span class="p">,</span>
+                                               <span class="n">fail</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">fail</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">log_bullet</span><span class="p">(</span><span class="n">bullet</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">item_end</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>  <span class="c1"># always last line of test</span>
+</pre></div>
+</div>
+<p>The item that first opens the link to the DUT records whether the DUT answered as a
+<code class="docutils literal notranslate"><span class="pre">UNIT_BOOLEAN</span></code> measurement with a <code class="docutils literal notranslate"><span class="pre">fail</span></code> message, so a board that never answers, for example
+one that doesn’t power up or boot, ends as <code class="docutils literal notranslate"><span class="pre">FAIL</span></code> with a hint.  A DUT that stops answering
+later in the test is unexpected, and <code class="docutils literal notranslate"><span class="pre">INTERNAL_ERROR</span></code> is the right result.</p>
+<p>Older programs check each DUT reply by hand and end the item as <code class="docutils literal notranslate"><span class="pre">FAIL</span></code>.  This still works.  To
+move to <code class="docutils literal notranslate"><span class="pre">self.expect()</span></code>, change the library to return the dict above, change each
+<code class="docutils literal notranslate"><span class="pre">r[&quot;value&quot;]</span></code> in the test code to <code class="docutils literal notranslate"><span class="pre">r[&quot;result&quot;][&quot;value&quot;]</span></code>, and replace each block whose command
+only the station or the setup can stop with <code class="docutils literal notranslate"><span class="pre">self.expect(...)</span></code>.  Keep the blocks of the commands
+a fault on the board can stop.</p>
+</section>
 <section id="errors-in-a-test-item">
 <h2>Errors in a Test Item<a class="headerlink" href="#errors-in-a-test-item" title="Link to this heading">¶</a></h2>
 <p>Prism records a test item as <code class="docutils literal notranslate"><span class="pre">INTERNAL_ERROR</span></code>, a fail, and moves on to the teardown item when,</p>
 <ul class="simple">
-<li><p>a driver response passed to <code class="docutils literal notranslate"><span class="pre">self.expect()</span></code> failed, see <a class="reference internal" href="#test-equipment-errors">Test Equipment Errors</a></p></li>
+<li><p>a driver or DUT library response passed to <code class="docutils literal notranslate"><span class="pre">self.expect()</span></code> failed, see
+<a class="reference internal" href="#test-equipment-errors">Test Equipment Errors</a> and <a class="reference internal" href="#dut-command-errors">DUT Command Errors</a></p></li>
 <li><p>the item raises an exception that it does not catch</p></li>
 <li><p>the item returns without calling <code class="docutils literal notranslate"><span class="pre">self.item_start()</span></code></p></li>
 <li><p>the result passed to <code class="docutils literal notranslate"><span class="pre">self.item_end()</span></code> is not one of the <code class="docutils literal notranslate"><span class="pre">ResultAPI.RECORD_RESULT_*</span></code> constants,
