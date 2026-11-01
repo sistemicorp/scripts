@@ -390,6 +390,11 @@ different key shows a <cite>site_key does not match Lente</cite> notice.</p></li
     }
   },
 
+  // automatically sync public (scripts) folder
+  // Lente: will sync all downstream clients
+  // Prism: will sync with upstream Lente
+  &quot;auto_sync_scripts&quot;: true,
+
   // ------------------------------------------------------------------
   // Below are only used by Lente and can be removed for Prism stations
 
@@ -402,9 +407,6 @@ different key shows a <cite>site_key does not match Lente</cite> notice.</p></li
 
   // This Lente computer is pyramid root and creates manifest
   &quot;root_authority&quot;: true,
-
-  // automatically sync Prism clients scripts
-  &quot;auto_sync_scripts&quot;: true,
 
   // maximum size (MB, uncompressed) of the scripts package sent to stations,
   // see public/prism/scripts_zip.exclude to exclude files
