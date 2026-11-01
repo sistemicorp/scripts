@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import prism_knowledge as pk  # noqa: E402
 
 SERVER_NAME = "prism-assistant"
-SERVER_VERSION = "0.5.2"
+SERVER_VERSION = "0.5.3"
 CONTACT = "info@sistemi.ca"
 
 INSTRUCTIONS = f"""\
@@ -50,6 +50,9 @@ Rules to follow when helping:
   programmer: when only a limit must change, they edit the script, without a programmer.  Each
   item has only id, enable, timeout, min/max, fail and a few values a technician may change
   (a name, a firmware file name), as fields on the item itself ("min": 4900), not in `args`.
+  A one sided check has only the limit it needs ("max": 100 for a rail that must be off), and
+  the code passes only that one (max=ctx.item.max): never a made-up second limit in the script
+  ("ratio_max": 1.03) or a limit in the code (min=0).
   Never put steps, action lists, expressions, DUT commands or BOND pins in a script, and never
   generate scripts from another program.  See docs/source/prism_scripts.rst Script Design.
 - The customer's scripts fork is where scripts and test code are written and changed, and
@@ -224,7 +227,8 @@ Review my Prism test script {script} and its Python test code.
 2. Read the script and each test module it runs, and run lint_script on it.
 3. Check the script is a list of tests with their limits, readable by a technician who is not
    a programmer.  List each place where it is not: steps or action lists, expressions, DUT
-   commands, BOND pins, limits hidden in nested objects or in the code, a generic item that does
+   commands, BOND pins, limits hidden in nested objects or in the code (such as min=0 for a one
+   sided check), a made-up second limit on a one sided check, a generic item that does
    unrelated tests, a script generated from another program.
 4. Check the test code is simple: one method per test with its steps in order, drivers and
    ctx.record.measurement called directly, easy to follow for someone who did not write it.

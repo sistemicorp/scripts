@@ -173,7 +173,8 @@ class ResultBaseKeysV1(ResultBaseClass):
         :param name: must be unique per test item
         :param force_fail: when set, forces measurement to fail
         :param min: min limit (int or float), None to ignore
-        :param max: min limit (int or float), None to ignore
+        :param max: max limit (int or float), None to ignore
+          (only min or only max: a one sided check)
         :param value: any
         :param unit: one of self.UNIT_*
         :param fail: a script "fail" entry (ctx.item.fail[i]), attached to the record
@@ -243,32 +244,33 @@ class ResultBaseKeysV1(ResultBaseClass):
 
         d = {"name": lname, "unit": unit}
 
-        if isinstance(min, float) and isinstance(max, float) and isinstance(value, float):
-            if force_fail:
-                _pass = ResultAPI.RECORD_RESULT_FAIL
-            elif min <= value <= max:
-                _pass = ResultAPI.RECORD_RESULT_PASS
-            else:
-                _pass = ResultAPI.RECORD_RESULT_FAIL
-            d["min"] = "{:.9g}".format(min)
-            d["max"] = "{:.9g}".format(max)
-            d["value"] = "{:.9g}".format(value)
-            _bullet = "{}: {} <= {} <= {} {} :: {}".format(
-                name, d["min"], d["value"], d["max"], unit, _pass)
-            self.logger.info(_bullet)
+        # numbers with limits: both, or one sided (the missing limit is None and not checked)
+        has_limit = min is not None or max is not None
+        if has_limit and isinstance(value, float) and \
+                isinstance(min, (float, type(None))) and isinstance(max, (float, type(None))):
+            fmt = "{:.9g}"
+        elif has_limit and isinstance(value, int) and \
+                isinstance(min, (int, type(None))) and isinstance(max, (int, type(None))):
+            fmt = "{}"
+        else:
+            fmt = None
 
-        elif isinstance(min, int) and isinstance(max, int) and isinstance(value, int):
+        if fmt is not None:
             if force_fail:
                 _pass = ResultAPI.RECORD_RESULT_FAIL
-            elif min <= value <= max:
+            elif (min is None or min <= value) and (max is None or value <= max):
                 _pass = ResultAPI.RECORD_RESULT_PASS
             else:
                 _pass = ResultAPI.RECORD_RESULT_FAIL
-            d["min"] = "{}".format(str(min))
-            d["max"] = "{}".format(str(max))
-            d["value"] = "{}".format(str(value))
-            _bullet = "{}: {} <= {} <= {} {} :: {}".format(
-                name, d["min"], d["value"], d["max"], unit, _pass)
+            d["min"] = None if min is None else fmt.format(min)
+            d["max"] = None if max is None else fmt.format(max)
+            d["value"] = fmt.format(value)
+            _check = d["value"]
+            if min is not None:
+                _check = "{} <= {}".format(d["min"], _check)
+            if max is not None:
+                _check = "{} <= {}".format(_check, d["max"])
+            _bullet = "{}: {} {} :: {}".format(name, _check, unit, _pass)
             self.logger.info(_bullet)
 
         # this needs to be before 'isinstance(value, (int, float, str))', because boolean is an int

@@ -179,6 +179,15 @@ def test_dut_command_rules():
     assert 'r["result"]["value"]' in migrate
 
 
+def test_one_sided_limit_rules():
+    assert "one sided" in prism_assistant.INSTRUCTIONS
+    assert "max=ctx.item.max" in prism_assistant.INSTRUCTIONS
+
+    async def go(c):
+        return await c.get_prompt("review_test_script", {"script": "P1/P1_T01.scr"})
+    assert "made-up second limit" in run(go).messages[0].content.text
+
+
 def test_migrate_test_code_prompt():
     async def go(c):
         return await c.get_prompt("migrate_test_code", {"path": "public/prism/scripts/ow"})

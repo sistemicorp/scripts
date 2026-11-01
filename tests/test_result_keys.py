@@ -106,3 +106,54 @@ def test_measurement_fail_entry_not_a_dict():
     assert not success
     assert result == ResultAPI.RECORD_RESULT_INTERNAL_ERROR
     assert r.record_item_get()["measurements"] == []
+
+
+def test_measurement_one_sided_max():
+    # scripts#67: a float with max only checks max, min is stored as None
+    r = make_record()
+    success, result, bullet = r.measurement("v_off", 12.0, ResultAPI.UNIT_MILLIVOLTS, max=100)
+    assert success and result == ResultAPI.RECORD_RESULT_PASS
+    m = r.record_item_get()["measurements"][-1]
+    assert m["min"] is None and m["max"] == "100" and m["value"] == "12"
+    assert bullet == "v_off: 12 <= 100 milliVolts :: PASS"
+
+    success, result, _ = r.measurement("v_off2", 150.0, ResultAPI.UNIT_MILLIVOLTS, max=100)
+    assert success and result == ResultAPI.RECORD_RESULT_FAIL
+
+
+def test_measurement_one_sided_min():
+    r = make_record()
+    success, result, bullet = r.measurement("ratio", 0.98, ResultAPI.UNIT_FLOAT, min=0.97)
+    assert success and result == ResultAPI.RECORD_RESULT_PASS
+    m = r.record_item_get()["measurements"][-1]
+    assert m["min"] == "0.97" and m["max"] is None
+    assert bullet == "ratio: 0.97 <= 0.98 Float :: PASS"
+
+    _, result, _ = r.measurement("ratio2", 0.9, ResultAPI.UNIT_FLOAT, min=0.97)
+    assert result == ResultAPI.RECORD_RESULT_FAIL
+
+
+def test_measurement_one_sided_int():
+    # [Edge] an error count with max only; the limit itself passes
+    r = make_record()
+    _, result, _ = r.measurement("errors", 0, ResultAPI.UNIT_INT, max=0)
+    assert result == ResultAPI.RECORD_RESULT_PASS
+    _, result, _ = r.measurement("errors2", 1, ResultAPI.UNIT_INT, max=0, fail=FAIL_ENTRY)
+    assert result == ResultAPI.RECORD_RESULT_FAIL
+    assert r.record_item_get()["fail_msg"] == FAIL_ENTRY
+
+
+def test_measurement_one_sided_force_fail_and_types():
+    r = make_record()
+    _, result, _ = r.measurement("i", 1.0, ResultAPI.UNIT_MILLIAMPS, max=5, force_fail=True)
+    assert result == ResultAPI.RECORD_RESULT_FAIL
+    # [Unhappy] an int value with a float limit is still a type mismatch
+    success, result, _ = r.measurement("n", 3, ResultAPI.UNIT_INT, max=5.0)
+    assert not success and result == ResultAPI.RECORD_RESULT_INTERNAL_ERROR
+
+
+def test_measurement_two_sided_unchanged():
+    r = make_record()
+    _, result, bullet = r.measurement("v3", 3.3, ResultAPI.UNIT_VOLTS, 3.0, 3.6)
+    assert result == ResultAPI.RECORD_RESULT_PASS
+    assert bullet == "v3: 3 <= 3.3 <= 3.6 Volts :: PASS"
