@@ -147,6 +147,10 @@ screenshots.
   :ref:`Binning Failures <prism_programs:Binning Failures>`.  Older programs keep working.  The
   examples use it, and the Prism Assistant writes code with it and its ``migrate_test_code``
   prompt moves older code to it (Prism Assistant 0.5.1)
+* The example scripts follow the :ref:`_prodplan:Naming Proposal`: test items are named
+  `<STAGE>nnn_<description>` (for example `TST010_meas`, `PROG020_program`, `BOND030_adc_check`),
+  with `<STAGE>000_SETUP` and `<STAGE>990_TEARDOWN`, and limits and other values are fields on the
+  item (`"min": 0`), not in `args`.  `args` still works
 
 Bug fixes,
 
@@ -216,6 +220,10 @@ Migration Guide
   `get_drivers(self.chan, type=...)`, as in the `brother_v0` example.
 * The same applies to the `agilent_dso_usb_1` driver: add `{"shared": true}` to keep one
   shared scope, and get it with `get_drivers(self.chan, type=...)`, as in the `dso_v0` example.
+* The example test items were renamed.  A script of yours that uses an example module directly
+  (for example `public.prism.scripts.example.BOND_v0.bond_P00xx`) must use the new item ids, see
+  the example's `.scr` files, and `prism_dev.py --lint` lists the old ones.  Copies of the
+  examples in your own folders are not affected.
 
 
 *********

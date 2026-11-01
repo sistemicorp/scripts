@@ -247,7 +247,7 @@ The script that populates this new table,
                 -- get button the user pressed
                 meas_button := (select measurement.value from measurement
                                 where new.id = measurement.record_id and
-                                measurement.name = 'example.prod_v0.tst00xx.TST003_Buttons.button');
+                                measurement.name = 'example.prod_v0.tst00xx.TST040_buttons.button');
                 raise log 'Button %', meas_button;
 
                 -- export to my new table

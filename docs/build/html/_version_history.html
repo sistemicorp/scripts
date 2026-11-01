@@ -176,6 +176,10 @@ to the record when the measurement fails, instead of an
 <a class="reference internal" href="prism_programs.html#binning-failures"><span class="std std-ref">Binning Failures</span></a>.  Older programs keep working.  The
 examples use it, and the Prism Assistant writes code with it and its <code class="docutils literal notranslate"><span class="pre">migrate_test_code</span></code>
 prompt moves older code to it (Prism Assistant 0.5.1)</p></li>
+<li><p>The example scripts follow the <a class="reference internal" href="_prodplan.html#naming-proposal"><span class="std std-ref">Naming Proposal</span></a>: test items are named
+<cite>&lt;STAGE&gt;nnn_&lt;description&gt;</cite> (for example <cite>TST010_meas</cite>, <cite>PROG020_program</cite>, <cite>BOND030_adc_check</cite>),
+with <cite>&lt;STAGE&gt;000_SETUP</cite> and <cite>&lt;STAGE&gt;990_TEARDOWN</cite>, and limits and other values are fields on the
+item (<cite>“min”: 0</cite>), not in <cite>args</cite>.  <cite>args</cite> still works</p></li>
 </ul>
 <p>Bug fixes,</p>
 <ul class="simple">
@@ -244,6 +248,10 @@ channel, and the number of printers must match the other drivers’ number of ch
 <cite>get_drivers(self.chan, type=…)</cite>, as in the <cite>brother_v0</cite> example.</p></li>
 <li><p>The same applies to the <cite>agilent_dso_usb_1</cite> driver: add <cite>{“shared”: true}</cite> to keep one
 shared scope, and get it with <cite>get_drivers(self.chan, type=…)</cite>, as in the <cite>dso_v0</cite> example.</p></li>
+<li><p>The example test items were renamed.  A script of yours that uses an example module directly
+(for example <cite>public.prism.scripts.example.BOND_v0.bond_P00xx</cite>) must use the new item ids, see
+the example’s <cite>.scr</cite> files, and <cite>prism_dev.py –lint</cite> lists the old ones.  Copies of the
+examples in your own folders are not affected.</p></li>
 </ul>
 </section>
 </section>

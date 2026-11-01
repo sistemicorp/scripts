@@ -77,22 +77,22 @@ Here is a full example of what `subs` section could look like (taken from exampl
       "type" : "str", "widget": "select", "choices": ["canada/ontario/milton",
                                                       "us/newyork/buffalo"],
       // inner dependant substitutions based on user input
-      "subs" : {"canada/ontario/milton": { "TST000Min": { "val": 0.1, "type": "num" }},
-                "us/newyork/buffalo":    { "TST000Min": { "val": 0.2, "type": "num" }}
+      "subs" : {"canada/ontario/milton": { "TST010Min": { "val": 0.1, "type": "num" }},
+                "us/newyork/buffalo":    { "TST010Min": { "val": 0.2, "type": "num" }}
       }
     },
-    "TST000Max": {
-      "title": "TST000 Max Attenuation (db)",
+    "TST010Max": {
+      "title": "TST010 Max Attenuation (db)",
       "type" : "num", "widget": "select", "choices": [9.0, 10.0, 11.0]
     },
-    "TST000Enable": {
-      "title": "TST000_Meas Enable",
+    "TST010Enable": {
+      "title": "TST010_meas Enable",
       "type" : "str", "widget": "select", "choices": ["true", "false"]
     }
   },
 
   // and how it looks in the test item,
-  {"id": "TST000_Meas",     "enable": "%%TST000Enable", "args": {"min": "%%TST000Min", "max": "%%TST000Max"}},
+  {"id": "TST010_meas",     "enable": "%%TST010Enable", "min": "%%TST010Min", "max": "%%TST010Max"},
 
 
 ``key``
@@ -140,7 +140,7 @@ Inner Subs
 ----------
 
 Inner subs allow one User sub to be able to set multiple other subs.  An example is shown in the ``subs`` section
-above.  In the above example, when `Location` is selected by the user, `TST000Min` is assigned a value
+above.  In the above example, when `Location` is selected by the user, `TST010Min` is assigned a value
 depending on the `Location` selected.
 
 From the example,
@@ -151,13 +151,13 @@ From the example,
       "title": "Location",
       "type" : "str", "widget": "select", "choices": ["canada/ontario/milton",
                                                       "us/newyork/buffalo"],
-      "subs" : {"canada/ontario/milton": { "TST000Min": { "val": 0.1, "type": "num" }},
-                "us/newyork/buffalo":    { "TST000Min": { "val": 0.2, "type": "num" }}
+      "subs" : {"canada/ontario/milton": { "TST010Min": { "val": 0.1, "type": "num" }},
+                "us/newyork/buffalo":    { "TST010Min": { "val": 0.2, "type": "num" }}
       }
     },
 
     // used in a test item
-    {"id": "TST000_Meas", "args": {"min": "%%TST000Min", "max": "%%TST000Max"}},
+    {"id": "TST010_meas", "min": "%%TST010Min", "max": "%%TST010Max"},
 
 * The keys of the inner ``subs`` (``canada/ontario/milton``, ``us/newyork/buffalo``) are the values
   the Operator can pick, and must match the ``choices`` exactly.
@@ -167,9 +167,9 @@ From the example,
   * ``type`` works as described for ``type`` above; for `num` the quotes around ``"%%<key>"`` are removed.
 
 * Inner subs are not shown on the Test Configuration page; the Operator only picks `Location`.
-  Here, picking ``us/newyork/buffalo`` makes the test item ``"args": {"min": 0.2, ...}``.
+  Here, picking ``us/newyork/buffalo`` makes the test item ``"min": 0.2``.
 * An inner sub key must not also be a key of the top level ``subs`` section.
-* Every choice should list every inner sub.  If the picked value has no entry, ``"%%TST000Min"`` is
+* Every choice should list every inner sub.  If the picked value has no entry, ``"%%TST010Min"`` is
   left in the script and `Validate` fails with `ERROR: script subs problem`.
 * Only one level is supported, an inner sub cannot have its own ``subs``.
 * A :ref:`prism_travellers:Travellers` stores only the Operator's picks; the inner subs are applied
@@ -250,7 +250,7 @@ tests
 This section has a list of test definitions
 
 * each definition has fields ``module``, ``options``, ``items``
-* ``items`` has fields ``id``, ``enable``, ``fail``, and ``args``
+* ``items`` has fields ``id``, ``enable``, ``timeout``, ``fail``, and any fields your test code needs
 
 Consider the following ``test`` section, which only has ONE test definition in the JSON list.  An example of more than
 one test definition will be shown later.
@@ -267,12 +267,12 @@ See ``public/prism/scripts/example/prod_v0/tst00xx.py`` for usage.
         // add more key/value as required
       },
       "items": [
-        {"id": "TST0xxSETUP",           "enable": true },
-        {"id": "TST000_Meas",           "enable": true, "args": {"min": 0, "max": "%%TST000Max"},
-                                        "fail": [ {"fid": "TST000-0", "msg": "Component apple R1"},
-                                                  {"fid": "TST000-1", "msg": "Component banana R1"}] },
-        {"id": "TST002_Skip",           "enable": false },
-        {"id": "TST0xxTEARDOWN",        "enable": true }
+        {"id": "TST000_SETUP",    "enable": true },
+        {"id": "TST010_meas",     "enable": true, "min": 0, "max": "%%TST010Max",
+                                  "fail": [ {"fid": "TST010-1", "msg": "Component apple R1"},
+                                            {"fid": "TST010-2", "msg": "Component banana R1"}] },
+        {"id": "TST030_skip",     "enable": false },
+        {"id": "TST990_TEARDOWN", "enable": true }
       ]
     }
   ]
@@ -307,13 +307,9 @@ See ``public/prism/scripts/example/prod_v0/tst00xx.py`` for usage.
   * ``id`` - A unique identifier of the test, which is also the Python (class) function name in `module`.
   * ``enable`` - `true` or `false`, can be omitted if always enabled
   * ``timeout`` - seconds allowed for this test item, overrides ``options`` ``timeout``
-  * ``args`` - a list of key/value pairs of any name/value required by your application
-
-    * in the example shown, ``min`` and ``max`` keys are used and assigned values
-    * note that ``max`` is using a ``subs`` entry
   * ``fail`` - a list of failure messages to present to the Operator and to store in the result database
 
-    * These failure modes are accessed programmatically by your test code, see TBD
+    * These failure modes are accessed programmatically by your test code
     * ``fid`` - a unique ID for this failure mode
     * ``msg`` - message to show operator, at most 64 characters, a short hint like
       ``"3V_OUT low: check U7 R49"``
@@ -321,8 +317,10 @@ See ``public/prism/scripts/example/prod_v0/tst00xx.py`` for usage.
       ``ctx.record.measurement(..., fail=ctx.item.fail[0])``, see
       :ref:`prism_programs:Binning Failures`.  Without that the ``fail`` list is never shown
   * any other field your test code needs, for example ``"name": "V5V", "min": 4900, "max": 5100``,
-    read in the program as ``ctx.item.min``.  Fields on the item itself are easier to read than
-    fields inside ``args``, see :ref:`prism_scripts:Script Design`
+    read in the program as ``ctx.item.min``.  In the example shown, ``min`` and ``max`` are used,
+    and ``max`` is using a ``subs`` entry
+  * ``args`` - an object of fields, read in the program as ``ctx.item.args.min``.  Older scripts
+    use it.  Fields on the item itself are easier to read, see :ref:`prism_scripts:Script Design`
 
 
 Script Design

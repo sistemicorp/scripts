@@ -270,7 +270,7 @@ AS $function$
             -- get button the user pressed
             meas_button := (select measurement.value from measurement
                             where new.id = measurement.record_id and
-                            measurement.name = &#39;example.prod_v0.tst00xx.TST003_Buttons.button&#39;);
+                            measurement.name = &#39;example.prod_v0.tst00xx.TST040_buttons.button&#39;);
             raise log &#39;Button %&#39;, meas_button;
 
             -- export to my new table

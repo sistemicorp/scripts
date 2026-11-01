@@ -83,7 +83,8 @@ It checks the BOND supplies, the header ADCs against the 2.5V reference, the bat
 emulator and the DUT supply.</p></li>
 <li><p>Copy the example folder to your product, for example
 <cite>public/prism/scripts/myproduct/BLT</cite>, and change the scripts and test code, see the example’s
-<cite>README.md</cite>.  The <cite>P1000</cite>-<cite>P1999</cite> test items are examples, add your own tests after them.</p></li>
+<cite>README.md</cite>.  The <cite>BOND</cite> test items are examples, add your own tests named for your stage, for example
+<cite>BLT100_voltage</cite>, see <a class="reference internal" href="_prodplan.html#test-items"><span class="std std-ref">Test Items</span></a>.</p></li>
 </ol>
 <p><cite>bond_update_0.scr</cite> updates the firmware of a BOND that is already programmed.  Run it only
 once per Prism start, as the BOND’s USB port can change after the update.  The Arduino IDE must be
@@ -222,7 +223,7 @@ to <cite>self.expect()</cite>, which ends the item as <cite>INTERNAL_ERROR</cite
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">teensy</span><span class="o">.</span><span class="n">bond_max_hdr_adc</span><span class="p">(</span><span class="n">hdr</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">pin</span><span class="o">=</span><span class="mi">9</span><span class="p">))</span>
 <span class="n">success</span><span class="p">,</span> <span class="n">_result</span><span class="p">,</span> <span class="n">_bullet</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span><span class="s2">&quot;v3v3&quot;</span><span class="p">,</span> <span class="n">response</span><span class="p">[</span><span class="s1">&#39;result&#39;</span><span class="p">][</span><span class="s1">&#39;mV&#39;</span><span class="p">],</span>
                                                    <span class="n">ResultAPI</span><span class="o">.</span><span class="n">UNIT_MILLIVOLTS</span><span class="p">,</span>
-                                                   <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
+                                                   <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The main methods, see <cite>A4401_BOND.py</cite> for all of them and their arguments,</p>
