@@ -412,10 +412,15 @@ A4401_BOND
 Sistemi BOND (Bed of Nails Design), a Teensy 4.1 based tester with configurable analog and
 digital pins, a DUT supply and a battery emulator, see :doc:`BOND <prism_bond>`.
 
-* Driver types: `A4401_BOND`, and `A4401_BOND_PROG` for `hwdrv_A4401_BOND_prog`
+* Driver types: `A4401_BOND`, `A4401_BOND_PROG` for `hwdrv_A4401_BOND_prog`, and
+  `A4401_BOND_UPDATE` for `hwdrv_A4401_BOND_update`
 * `hwdrv_A4401_BOND` takes the path of the Pogo board header definition file, and makes one
-  channel per BOND, in USB path order.
+  channel per BOND, in USB path order.  The firmware version is checked, a BOND running another
+  version is not used.
 * `hwdrv_A4401_BOND_prog` programs the firmware into a new BOND, `bond_progfresh_0.scr`.
+* `hwdrv_A4401_BOND_update` updates the firmware of BONDs that are already programmed,
+  `bond_update_0.scr`.  It accepts any firmware version, and makes one channel per BOND, in USB
+  path order.
 * Setup and pin rules, see `public/prism/drivers/A4401_BOND/README.md`
 
 

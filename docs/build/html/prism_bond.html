@@ -86,9 +86,12 @@ emulator and the DUT supply.</p></li>
 <cite>README.md</cite>.  The <cite>BOND</cite> test items are examples, add your own tests named for your stage, for example
 <cite>BLT100_voltage</cite>, see <a class="reference internal" href="_prodplan.html#test-items"><span class="std std-ref">Test Items</span></a>.</p></li>
 </ol>
-<p><cite>bond_update_0.scr</cite> updates the firmware of a BOND that is already programmed.  Run it only
-once per Prism start, as the BOND’s USB port can change after the update.  The Arduino IDE must be
-closed while Prism uses BOND.</p>
+<p><cite>bond_update_0.scr</cite> updates the firmware of a BOND that is already programmed, with any
+firmware version, to the firmware in the example’s <cite>assets</cite> folder.  A BOND running another
+version than the BOND driver is refused by the other scripts, so update it first.  No Pogo board
+is needed and the jig does not need to be closed.  The item <cite>UPD020_verify</cite> passes only when the
+BOND runs the new firmware.  Run it only once per Prism start, as the BOND’s USB port can change
+after the update.  The Arduino IDE must be closed while Prism uses BOND.</p>
 </section>
 <section id="designing-the-pogo-board">
 <h2><a class="toc-backref" href="#id3" role="doc-backlink">Designing the Pogo Board</a><a class="headerlink" href="#designing-the-pogo-board" title="Link to this heading">¶</a></h2>

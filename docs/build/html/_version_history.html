@@ -197,6 +197,10 @@ item (<cite>“min”: 0</cite>), not in <cite>args</cite>.  <cite>args</cite> s
 <li><p>[BUGFIX] BOND_v0 example: <cite>P1100_ADC_check</cite> and <cite>P1300_ADC</cite> passed whatever the measurement,
 the firmware update items could leave the shared lock held when stopped, and the teardown
 did not turn the self test load off.  teensy4_v0 had the same lock bug.</p></li>
+<li><p>[BUGFIX] BOND_v0 example: <cite>bond_update_0.scr</cite> could not update a BOND running another
+firmware version, as its driver refused that BOND.  It now uses <cite>hwdrv_A4401_BOND_update</cite>, which
+accepts any firmware version and needs no Pogo board or closed jig.  After the update the BOND is
+found again by its USB port, and must pass the full driver init with the new version.</p></li>
 <li><p>[BUGFIX] Station Manager user sync (<cite>SYNCUSERS</cite>) failed on Prism, and sent every user instead of
 only <cite>SERVERSYNC</cite> users</p></li>
 <li><p>[BUGFIX] Stations with <cite>auto_sync_scripts</cite> off were treated as on by Lente</p></li>

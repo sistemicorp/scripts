@@ -31,9 +31,12 @@ Getting Started
    `README.md`.  The `BOND` test items are examples, add your own tests named for your stage, for example
    `BLT100_voltage`, see :ref:`_prodplan:Test Items`.
 
-`bond_update_0.scr` updates the firmware of a BOND that is already programmed.  Run it only
-once per Prism start, as the BOND's USB port can change after the update.  The Arduino IDE must be
-closed while Prism uses BOND.
+`bond_update_0.scr` updates the firmware of a BOND that is already programmed, with any
+firmware version, to the firmware in the example's `assets` folder.  A BOND running another
+version than the BOND driver is refused by the other scripts, so update it first.  No Pogo board
+is needed and the jig does not need to be closed.  The item `UPD020_verify` passes only when the
+BOND runs the new firmware.  Run it only once per Prism start, as the BOND's USB port can change
+after the update.  The Arduino IDE must be closed while Prism uses BOND.
 
 
 Designing the Pogo Board

@@ -425,10 +425,15 @@ set, is its <cite>play</cite> function, and it has <cite>show_pass_fail</cite> a
 <p>Sistemi BOND (Bed of Nails Design), a Teensy 4.1 based tester with configurable analog and
 digital pins, a DUT supply and a battery emulator, see <a class="reference internal" href="prism_bond.html"><span class="doc">BOND</span></a>.</p>
 <ul class="simple">
-<li><p>Driver types: <cite>A4401_BOND</cite>, and <cite>A4401_BOND_PROG</cite> for <cite>hwdrv_A4401_BOND_prog</cite></p></li>
+<li><p>Driver types: <cite>A4401_BOND</cite>, <cite>A4401_BOND_PROG</cite> for <cite>hwdrv_A4401_BOND_prog</cite>, and
+<cite>A4401_BOND_UPDATE</cite> for <cite>hwdrv_A4401_BOND_update</cite></p></li>
 <li><p><cite>hwdrv_A4401_BOND</cite> takes the path of the Pogo board header definition file, and makes one
-channel per BOND, in USB path order.</p></li>
+channel per BOND, in USB path order.  The firmware version is checked, a BOND running another
+version is not used.</p></li>
 <li><p><cite>hwdrv_A4401_BOND_prog</cite> programs the firmware into a new BOND, <cite>bond_progfresh_0.scr</cite>.</p></li>
+<li><p><cite>hwdrv_A4401_BOND_update</cite> updates the firmware of BONDs that are already programmed,
+<cite>bond_update_0.scr</cite>.  It accepts any firmware version, and makes one channel per BOND, in USB
+path order.</p></li>
 <li><p>Setup and pin rules, see <cite>public/prism/drivers/A4401_BOND/README.md</cite></p></li>
 </ul>
 </section>
