@@ -12,7 +12,9 @@ import os
 import pyudev
 
 from public.prism.drivers.common.list_serial import serial_ports
-from public.prism.drivers.A4401_BOND.A4401_BOND import A4401_BOND, DRIVER_TYPE, DRIVER_TYPE_PROG
+from public.prism.drivers.A4401_BOND.A4401_BOND import A4401_BOND, DRIVER_TYPE, DRIVER_TYPE_PROG, \
+    DRIVER_TYPE_UPDATE
+from public.prism.drivers.A4401_BOND.hwdrv_A4401_BOND import teensy_ports
 
 
 BOND_ASSETS_PATH = "./public/prism/scripts/example/BOND_v0/assets"
@@ -223,9 +225,10 @@ class bond_P00xx(TestItem):
         self.item_end()  # always last line of test
 
     def UPD000_SETUP(self):
-        """ Setup teensy for Update (means its already running our server code)
-        - close the current connection to Teensy
-        - cache the port, so we can open it later in UPD020_verify
+        """ Setup BOND for Update (means its already running a BOND server firmware)
+        - the driver is hwdrv_A4401_BOND_update, it accepts any firmware version
+        - record the unique id and the firmware version before the update
+        - cache the USB path, to find the port again in UPD020_verify
 
         {"id": "UPD000_SETUP",          "enable": true },
 
@@ -234,24 +237,25 @@ class bond_P00xx(TestItem):
         ctx = self.item_start()  # always first line of test
 
         # drivers are stored in the shared_state and are retrieved as,
-        drivers = self.shared_state.get_drivers(self.chan, type=DRIVER_TYPE)
+        drivers = self.shared_state.get_drivers(self.chan, type=DRIVER_TYPE_UPDATE)
         if not (len(drivers) == 1):
             self.logger.error("Unexpected number of drivers: {}".format(drivers))
             self.log_bullet("Unexpected number of drivers")
             self.item_end(ResultAPI.RECORD_RESULT_INTERNAL_ERROR)
             return
-        driver = drivers[0]  # this is a dict from hwdrv_teensy4
+        driver = drivers[0]  # this is a dict from hwdrv_A4401_BOND_update
 
         id = driver["obj"]["unique_id"]  # save the id of the teensy4 for the record
         _, _, _bullet = ctx.record.measurement("teensy4_id", id, ResultAPI.UNIT_STRING)
         self.log_bullet(_bullet)
         self.logger.info("Found teensy4: {} {}, chan {}".format(driver, id, self.chan))
 
-        self._teensy_usb_path = driver["obj"]["usb_path"]  # cache for after update reconnect
-        # self._teensy_port = driver["obj"]["port"]  # cache for after update reconnect
-        self.teensy = driver["obj"]["hwdrv"]
+        _, _, _bullet = ctx.record.measurement("teensy4_version_old", driver["obj"]["fw_version"],
+                                               ResultAPI.UNIT_STRING)
+        self.log_bullet(_bullet)
 
-        self.expect(self.teensy.reset())   # set Teensy to a known good state
+        self._teensy_usb_path = driver["obj"]["usb_path"]  # cache for after update reconnect
+        self.teensy = driver["obj"]["hwdrv"]
 
         self.item_end()  # always last line of test
 
@@ -274,7 +278,7 @@ class bond_P00xx(TestItem):
 
         # block other instances from reboot/Teensy CLI loader,
         # released even if the item is stopped
-        with self.shared_lock(DRIVER_TYPE):
+        with self.shared_lock(DRIVER_TYPE_UPDATE):
             # close teensy connection, its going to get rebooted
             self.logger.info("reboot_to_bootloader")
             self.expect(self.teensy.reboot_to_bootloader())
@@ -322,43 +326,28 @@ class bond_P00xx(TestItem):
 
         self.item_end()  # always last line of test
 
-    def _find_matching_ttyACM_from_usb_path(self, ref_path):
-        """ Find longest matching USB path
-        - the USB path might look different on different systems...
-        - TODO: find out how to break the path down to the port mapping on the hub.
-                it would be better to match port hubs.  Today, just looking for longest match
-                which will include the port.
-          FIXME: This code might be a bit old now, see other project to see if this has changed.
-
-        Example USB Device path:
-        'usb_path': '/devices/pci0000:00/0000:00:08.1/0000:03:00.3/usb1/1-2/1-2.1/1-2.1.4/'
-                    '1-2.1.4.1/1-2.1.4.1:1.0/tty/ttyACM3'
-
-        :param ref_path: path to find the longest match
-        :return: string port (example ttyACM0)
+    @staticmethod
+    def _usb_device_path(tty_device_path):
+        """ USB device path of a ttyACM device path
+        - '/devices/.../usb3/3-2/3-2:1.0/tty/ttyACM0' -> '/devices/.../usb3/3-2'
+        - the USB device path is set by the hub port, so it is the same after the
+          Teensy re-enumerates, even when the ttyACM number changes
         """
-        # find the matching tty port from the usb_path
-        port = None
-        match_len = 0
-        context = pyudev.Context()
-        for device in context.list_devices(subsystem='tty'):
-            _node = str(device.device_node)
-            if "ttyACM" in _node:
-                device_path = device.device_path
-                self.logger.info(f"{_node}, {device_path}")
-                # compare strings to find longest matching
-                _idx = 0
-                while _idx < len(self._teensy_usb_path):
-                    if device_path[_idx] == self._teensy_usb_path[_idx]:
-                        if _idx > match_len:
-                            port = _node
-                            match_len = _idx
+        return os.path.dirname(tty_device_path.split('/tty/')[0])
 
-                    _idx += 1
+    def _find_matching_ttyACM_from_usb_path(self, ref_path):
+        """ Find the Teensy port on the same USB device path as ref_path
 
-                self.logger.info(f"{port} {match_len}")
+        :param ref_path: tty device path of the Teensy before the update
+        :return: port (example /dev/ttyACM0), or None
+        """
+        ref_usb = self._usb_device_path(ref_path)
+        for port, device_path in teensy_ports():
+            self.logger.info(f"{port}, {device_path}")
+            if self._usb_device_path(device_path) == ref_usb:
+                return port
 
-        return port
+        return None
 
     def UPD020_verify(self):
         """ Verify Teensy
@@ -367,7 +356,7 @@ class bond_P00xx(TestItem):
           serial port.  So use the usb_path to find the correct port.
         - NOTE when BOND boots it has a long self test to run, so there is a large delay
 
-        {"id": "UPD020_verify",         "enable": true, "delay": 5 },
+        {"id": "UPD020_verify",         "enable": true, "delay": 24 },
 
         """
         ctx = self.item_start()  # always first line of test
@@ -394,9 +383,10 @@ class bond_P00xx(TestItem):
 
         self.logger.info("Trying teensy at {}...".format(port))
 
-        # re-connect to teensy at new port
+        # re-connect to teensy at new port, the full init checks the firmware version,
+        # status and BIST voltages, there is no header definition file for the update
         self.teensy.set_port(port)
-        success = self.teensy.init()
+        success = self.teensy.init(skip_max11311=True)
         if not success:
             self.log_bullet("Failed init")
             self.logger.error("failed on {}...".format(port))

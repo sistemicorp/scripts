@@ -23,6 +23,7 @@ except ImportError:
 
 DRIVER_TYPE = "A4401_BOND"
 DRIVER_TYPE_PROG = "A4401_BOND_PROG"
+DRIVER_TYPE_UPDATE = "A4401_BOND_UPDATE"
 
 
 class A4401_BOND:
@@ -130,13 +131,8 @@ class A4401_BOND:
             self.logger.error("MAX11311 port definition file must be specified")
             return False
 
-        if self.rpc is None:
-            try:
-                self.rpc = Interface(self.port)
-
-            except Exception as e:
-                self.logger.error(e)
-                return False
+        if not self.connect():
+            return False
 
         version_response = self.version()
         if not version_response["success"]:
@@ -186,6 +182,26 @@ class A4401_BOND:
 
         # finally, all is well
         self.logger.info("Installed A4401BOND on port {}".format(self.port))
+        return True
+
+    def connect(self):
+        """ Open the simpleRPC connection only
+        - no version check and no setup, any BOND firmware version is accepted
+        - used on its own by the firmware update (hwdrv_A4401_BOND_update), where the
+          running firmware may be a different version than this driver
+
+        :return: <True/False> whether the connection is open
+        """
+        if self.rpc is not None:
+            return True
+
+        try:
+            self.rpc = Interface(self.port)
+
+        except Exception as e:
+            self.logger.error(e)
+            return False
+
         return True
 
     def close(self):

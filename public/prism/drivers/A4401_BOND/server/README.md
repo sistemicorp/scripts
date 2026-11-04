@@ -275,7 +275,11 @@ After programming, the teensy will show up as a serial, like so,
    - If BOND's Teensy is running the server code, it can be updated via Prism.  The server code has some functions to
      to put Teensy into a mode where new code can be uploaded to it.  This updating path is different then the above
      path which only the Teensy's built in bootloader is available.
-   - See the example BOND script for the update code.
+   - See the example BOND script `bond_update_0.scr` for the update code.  It uses
+     `hwdrv_A4401_BOND_update`, which accepts a BOND running any firmware version.
+   - From a terminal (Arduino IDE closed),
+
+       ~/git/scripts$ python prism_dev.py --script public/prism/scripts/example/BOND_v0/bond_update_0.scr
 
 
 

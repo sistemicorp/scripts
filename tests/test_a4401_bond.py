@@ -364,3 +364,89 @@ def test_hwdrv_init_failure_closes_port(fake_udev):
     num, _, drivers = hwdrv_module.HWDriver().discover_channels("hdr._json")
     assert num == -1 and drivers == []
     assert FakeHwdrvBond.closed == ["/dev/ttyACM9"]
+
+
+# ---- firmware update (bond_update_0.scr) -------------------------------------------------------
+
+from public.prism.drivers.A4401_BOND import hwdrv_A4401_BOND_update as update_module  # noqa: E402
+
+
+class FakeUpdateBond:
+    """Stands in for A4401_BOND in the update hwdrv, runs old firmware 0.1.0,
+    connect fails on /dev/ttyACM9."""
+    closed = []
+
+    def __init__(self, port, loggerIn=None, header_def_filename=None):
+        self.port = port
+
+    def connect(self):
+        return self.port != "/dev/ttyACM9"
+
+    def init(self, *a, **k):
+        raise AssertionError("the update hwdrv must not call init(), it checks the version")
+
+    def version(self):
+        return {"success": True, "result": {"version": "0.1.0"}}
+
+    def unique_id(self):
+        return {"success": True, "result": {"unique_id": "uid-" + self.port}}
+
+    def close(self):
+        FakeUpdateBond.closed.append(self.port)
+
+
+@pytest.fixture
+def fake_update_udev(monkeypatch):
+    devices = []
+    context = types.SimpleNamespace(list_devices=lambda subsystem: devices)
+    monkeypatch.setattr(hwdrv_module.pyudev, "Context", lambda: context)
+    monkeypatch.setattr(update_module, "A4401_BOND", FakeUpdateBond)
+    monkeypatch.setattr(update_module, "pub_notice", lambda *a, **k: None)
+    FakeUpdateBond.closed = []
+    return devices
+
+
+def test_update_hwdrv_accepts_other_firmware_version(fake_update_udev):
+    """[Unhappy] bond_update_0.scr used hwdrv_A4401_BOND, which refuses a BOND running another
+    firmware version, so an old BOND could never be updated"""
+    fake_update_udev += [FakeUdevDevice("/dev/ttyACM2", "/usb3/3-2.4"),
+                         FakeUdevDevice("/dev/ttyACM1", "/usb3/3-2.1")]
+    num, driver_type, drivers = update_module.HWDriver().discover_channels()
+    assert num == 2 and driver_type == "A4401_BOND_UPDATE"
+    assert [(d["id"], d["port"]) for d in drivers] == [(0, "/dev/ttyACM1"), (1, "/dev/ttyACM2")]
+    assert drivers[0]["fw_version"] == "0.1.0"
+    assert drivers[0]["unique_id"] == "uid-/dev/ttyACM1"
+    assert "play" not in drivers[0]  # the jig does not need to be closed
+    assert FakeUpdateBond.closed == []
+
+
+def test_update_hwdrv_connect_failure_closes_port(fake_update_udev):
+    """[Unhappy]"""
+    fake_update_udev.append(FakeUdevDevice("/dev/ttyACM9", "/usb3/3-2.9"))
+    num, _, drivers = update_module.HWDriver().discover_channels()
+    assert num == -1 and drivers == []
+    assert FakeUpdateBond.closed == ["/dev/ttyACM9"]
+
+
+def test_connect_does_not_check_version():
+    rpc = FakeRPC()
+    bond = make_bond(rpc=rpc)
+    assert bond.connect()
+    assert rpc.calls == []
+    assert bond.version()["success"]
+
+
+def test_update_finds_port_on_same_usb_device(monkeypatch):
+    """[Unhappy] the old matcher compared paths char by char, and raised IndexError when a
+    tty device path was shorter than the cached one"""
+    from public.prism.scripts.example.BOND_v0 import bond_P00xx as upd_module
+    before = "/devices/pci0/usb3/3-2/3-2:1.0/tty/ttyACM0"
+    after = [("/dev/ttyACM3", "/devices/pci0/usb3/3-1/3-1:1.0/tty/ttyACM3"),
+             ("/dev/ttyACM1", "/devices/pci0/usb3/3-2/3-2:1.0/tty/ttyACM1"),
+             ("/dev/ttyACM4", "/devices/x")]
+    monkeypatch.setattr(upd_module, "teensy_ports", lambda: after)
+    item = upd_module.bond_P00xx.__new__(upd_module.bond_P00xx)
+    item.logger = logging.getLogger("test.upd")
+    assert item._find_matching_ttyACM_from_usb_path(before) == "/dev/ttyACM1"
+    monkeypatch.setattr(upd_module, "teensy_ports", lambda: after[:1])
+    assert item._find_matching_ttyACM_from_usb_path(before) is None
